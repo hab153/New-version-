@@ -47,7 +47,8 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
-    .icon-circle {      width: 80px;
+    .icon-circle {
+      width: 80px;
       height: 80px;
       background: rgba(200, 255, 87, 0.1);
       border: 2px solid var(--accent);
@@ -94,10 +95,41 @@
       box-shadow: 0 0 15px var(--accent);
     }
 
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .status-msg {
       font-family: var(--font-mono);
-      font-size: 12px;      margin-top: 20px;
+      font-size: 12px;
+      margin-top: 20px;
       color: var(--text-2);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--bg-void);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error {
+      color: #ff4d4d;
+    }
+
+    .success {
+      color: var(--accent);
     }
   </style>
 </head>
@@ -107,32 +139,130 @@
     <div class="card">
       <div class="icon-circle">✓</div>
       
-      <h1>You're Now Pro! 🚀</h1>
-      <p>
-        Thank you for supporting Skyline AA-1. Your payment was successful. 
-        You now have unlimited access to Simon Squibb’s coaching and advanced features.
+      <h1 id="title">Processing Your Upgrade... 🔄</h1>
+      <p id="message">
+        Please wait while we verify your payment and upgrade your account.
       </p>
 
-      <!-- Button redirects to Dashboard -->
-      <a href="dashboard.html" class="btn">Go to Dashboard</a>
+      <button id="dashboardBtn" class="btn" style="display: none;">Go to Dashboard</button>
+      <button id="retryBtn" class="btn" style="display: none; background: #ff4d4d;">Try Again</button>
 
       <div class="status-msg" id="debugInfo"></div>
     </div>
   </div>
 
   <script>
-    // Optional: Check URL parameters for status (if Flutterwave sends them)
+    // Get backend URL from environment or use default
+    const BACKEND_URL = window.BACKEND_URL || 'https://your-backend.onrender.com'; // UPDATE THIS!
+    
+    // FIX 5: Get tx_ref from URL
     const urlParams = new URLSearchParams(window.location.search);
+    const tx_ref = urlParams.get('tx_ref');
     const status = urlParams.get('status');
     
-    if (status && status !== 'successful') {
-        document.querySelector('h1').innerText = "Payment Status: " + status;
-        document.querySelector('h1').style.color = "#ff4d4d";
+    const titleEl = document.getElementById('title');
+    const messageEl = document.getElementById('message');
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const debugInfo = document.getElementById('debugInfo');
+    
+    debugInfo.textContent = `tx_ref: ${tx_ref || 'Not found'} | status: ${status || 'Not provided'}`;
+    
+    // Function to verify payment
+    async function verifyPayment() {
+        if (!tx_ref) {
+            console.error('No tx_ref found in URL');
+            titleEl.textContent = "Missing Payment Reference ❌";
+            messageEl.innerHTML = "We couldn't find your payment reference. Please contact support.";
+            debugInfo.innerHTML += '<br>❌ ERROR: No tx_ref parameter in URL';
+            dashboardBtn.style.display = 'inline-block';
+            dashboardBtn.textContent = 'Return to Dashboard';
+            return;
+        }
+        
+        try {
+            console.log(`Verifying payment for tx_ref: ${tx_ref}`);
+            debugInfo.innerHTML += `<br>🔄 Verifying with backend: ${BACKEND_URL}/api/verify-payment/${tx_ref}`;
+            
+            const response = await fetch(`${BACKEND_URL}/api/verify-payment/${tx_ref}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const data = await response.json();
+            console.log('Verification response:', data);
+            debugInfo.innerHTML += `<br>📦 Response: ${JSON.stringify(data)}`;
+            
+            if (data.success === true) {
+                // Payment verified successfully
+                titleEl.textContent = "You're Now Pro! 🚀";
+                messageEl.innerHTML = "Thank you for supporting Skyline AA-1. Your payment was successful. You now have unlimited access to Simon Squibb's coaching and advanced features.";
+                messageEl.style.color = '';
+                dashboardBtn.style.display = 'inline-block';
+                dashboardBtn.textContent = 'Go to Dashboard';
+                debugInfo.innerHTML += '<br>✅ Payment verified successfully!';
+            } else {
+                // Payment verification failed
+                titleEl.textContent = "Verification Pending ⏳";
+                messageEl.innerHTML = "We're still processing your payment. It may take a few minutes. You can try refreshing this page or contact support if the issue persists.";
+                retryBtn.style.display = 'inline-block';
+                dashboardBtn.style.display = 'inline-block';
+                dashboardBtn.textContent = 'Go to Dashboard Anyway';
+                debugInfo.innerHTML += `<br>⚠️ Verification issue: ${data.message || 'Unknown error'}`;
+            }
+        } catch (error) {
+            console.error('Verification error:', error);
+            titleEl.textContent = "Verification Error ❌";
+            messageEl.innerHTML = "We couldn't verify your payment. Please contact support or try again.";
+            retryBtn.style.display = 'inline-block';
+            dashboardBtn.style.display = 'inline-block';
+            dashboardBtn.textContent = 'Go to Dashboard Anyway';
+            debugInfo.innerHTML += `<br>❌ Network error: ${error.message}`;
+        }
+    }
+    
+    // Handle dashboard button click
+    dashboardBtn.addEventListener('click', () => {
+        window.location.href = 'dashboard.html';
+    });
+    
+    // Handle retry button click
+    retryBtn.addEventListener('click', () => {
+        titleEl.textContent = "Processing Your Upgrade... 🔄";
+        messageEl.innerHTML = "Please wait while we verify your payment and upgrade your account.";
+        dashboardBtn.style.display = 'none';
+        retryBtn.style.display = 'none';
+        verifyPayment();
+    });
+    
+    // Check if this is a direct Flutterwave redirect with status
+    if (status === 'successful' || status === 'success') {
+        debugInfo.innerHTML += '<br>✅ Flutterwave reports successful payment';
+        verifyPayment();
+    } else if (status && status !== 'successful') {
+        titleEl.textContent = "Payment Status: " + status;
+        titleEl.style.color = "#ff4d4d";
         document.querySelector('.icon-circle').style.borderColor = "#ff4d4d";
         document.querySelector('.icon-circle').style.color = "#ff4d4d";
-        document.querySelector('p').innerText = "There was an issue with your payment. Please try again or contact support.";
+        messageEl.innerHTML = "There was an issue with your payment. Please try again or contact support.";
+        dashboardBtn.style.display = 'inline-block';
+        dashboardBtn.textContent = 'Return to Dashboard';
+        retryBtn.style.display = 'inline-block';
+        debugInfo.innerHTML += `<br>⚠️ Payment status: ${status}`;
+    } else if (tx_ref) {
+        // We have tx_ref, verify the payment
+        verifyPayment();
+    } else {
+        // No parameters at all
+        titleEl.textContent = "Payment Success? 🤔";
+        messageEl.innerHTML = "You've reached this page but we don't have payment details. If you just completed a payment, please contact support.";
+        dashboardBtn.style.display = 'inline-block';
+        dashboardBtn.textContent = 'Go to Dashboard';
+        debugInfo.innerHTML += '<br>⚠️ No payment reference found in URL';
     }
   </script>
 
 </body>
-</html>
+  </html>
