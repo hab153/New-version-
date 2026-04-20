@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dream Sessions | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-void: #060608;
+      --bg-base: #0b0c0f;
+      --bg-surface: #0f1115;
+      --bg-raised: #151820;
+      --bg-hover: #1b1f2a;
+      --border: rgba(255,255,255,0.055);
+      --border-bright: rgba(200,255,87,0.25);
+      --accent: #c8ff57;
+      --accent-dim: rgba(200,255,87,0.08);
+      --text-1: #e8eaf0;
+      --text-2: #7c8194;
+      --text-3: #3e4255;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
+      --radius: 10px;
+      --topbar-h: 60px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-void);
+      color: var(--text-1);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 10;
+      height: var(--topbar-h);
+      padding: 0 28px;
+      background: rgba(11,12,15,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transition: color 0.18s;
+    }
+    .back-btn:hover { color: var(--accent); }
+
+    .topbar-brand {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-3);
+      letter-spacing: 0.14em;
+    }
+
+    .page-body {
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-body::-webkit-scrollbar { width: 4px; }
+    .page-body::-webkit-scrollbar-track { background: transparent; }
+    .page-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+
+    .history-container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 52px 28px 80px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-eyebrow::after {
+      content: '';
+      height: 1px;
+      width: 36px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    .page-title {
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 800;
+      color: var(--text-1);
+      line-height: 1.15;
+    }
+
+    .page-subtitle {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    /* SIMPLE SEARCH BAR */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      pointer-events: none;
+      z-index: 2;
+    }
+    
+    .search-input {
+      width: 100%;
+      height: 46px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-1);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 0 50px 0 42px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    
+    .search-input:focus {
+      border-color: var(--accent);
+      background: var(--bg-raised);
+    }
+    
+    .search-input::placeholder {
+      color: var(--text-3);
+      font-size: 12px;
+    }
+    
+    .search-clear {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      opacity: 0;
+      visibility: hidden;
+    }
+    
+    .search-clear.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .search-clear:hover {
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* Session list */
+    #sessionList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-item {
+      position: relative;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px 18px 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none;
+    }
+
+    .session-item:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-raised);
+      transform: translateX(3px);
+    }
+
+    .session-left { flex: 1; min-width: 0; }
+
+    .session-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-1);
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .session-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 5px;
+    }
+
+    .session-date {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-3);
+    }
+
+    .session-arrow {
+      color: var(--text-3);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .session-item:hover .session-arrow {
+      color: var(--accent);
+      transform: translateX(3px);
+    }
+
+    .state-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-surface);
+      text-align: center;
+      padding: 64px 32px;
+    }
+
+    .state-icon { font-size: 36px; margin-bottom: 16px; opacity: 0.5; }
+    .state-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+    .state-desc { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .session-item {
+      animation: fadeUp 0.3s ease forwards;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="page.html" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M10 12L6 8L10 4"/>
+      </svg>
+      Back to Chat
+    </a>
+    <span class="topbar-brand">Skyline AA-1</span>
+  </header>
+
+  <div class="page-body">
+    <div class="history-container">
+
+      <div class="page-header">
+        <div class="page-eyebrow">Memory Archive</div>
+        <h1 class="page-title">Your Dream Sessions</h1>
+        <p class="page-subtitle">Every conversation, saved and searchable.</p>
+      </div>
+
+      <!-- SIMPLE SEARCH BAR -->
+      <div class="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="6.5" cy="6.5" r="4.5"/>
+          <path d="M11 11l3 3"/>
+        </svg>
+        <input class="search-input" type="text" id="searchInput" placeholder="Search by title..." autocomplete="off" />
+        <button class="search-clear" id="searchClearBtn" aria-label="Clear">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 4L12 12M12 4L4 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Session list -->
+      <div id="sessionList">
+        <div class="state-card">
+          <div class="state-icon">📋</div>
+          <div class="state-title">Loading sessions...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    let allSessions = [];
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function escapeHTML(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // SIMPLE: Show only sessions that match search, hide others
+    function filterSessions() {
+      const searchInput = document.getElementById('searchInput');
+      const query = searchInput.value.toLowerCase().trim();
+      const clearBtn = document.getElementById('searchClearBtn');
+      const items = document.querySelectorAll('.session-item');
+      
+      if (query === '') {
+        // Show ALL sessions
+        items.forEach(item => {
+          item.classList.remove('hidden');
+        });
+        clearBtn.classList.remove('visible');
+      } else {
+        // Show ONLY matching sessions
+        clearBtn.classList.add('visible');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+          const title = item.querySelector('.session-title').innerText.toLowerCase();
+          if (title.includes(query)) {
+            item.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+        
+        // Show "no results" message if nothing found
+        let noResultsMsg = document.getElementById('noResultsMsg');
+        if (visibleCount === 0) {
+          if (!noResultsMsg) {
+            noResultsMsg = document.createElement('div');
+            noResultsMsg.id = 'noResultsMsg';
+            noResultsMsg.className = 'state-card';
+            noResultsMsg.innerHTML = `
+              <div class="state-icon">🔍</div>
+              <div class="state-title">No matching sessions</div>
+              <div class="state-desc">Try a different search term.</div>
+            `;
+            document.getElementById('sessionList').appendChild(noResultsMsg);
+          }
+        } else {
+          if (noResultsMsg) noResultsMsg.remove();
+        }
+      }
+    }
+
+    // Clear search and show all
+    function clearSearch() {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = '';
+      filterSessions();
+      searchInput.focus();
+    }
+
+    // Render all sessions from API
+    async function loadSessions() {
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/sessions', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        allSessions = await res.json();
+        
+        if (allSessions.length === 0) {
+          document.getElementById('sessionList').innerHTML = `
+            <div class="state-card">
+              <div class="state-icon">🌙</div>
+              <div class="state-title">No sessions yet</div>
+              <div class="state-desc">Start a conversation in the chat to see it here.</div>
+            </div>`;
+          return;
+        }
+        
+        // Build the list HTML
+        const listContainer = document.getElementById('sessionList');
+        listContainer.innerHTML = '';
+        
+        allSessions.forEach(session => {
+          const item = document.createElement('a');
+          item.className = 'session-item';
+          item.href = `page.html?session=${session._id}`;
+          item.innerHTML = `
+            <div class="session-left">
+              <div class="session-title">${escapeHTML(session.title)}</div>
+              <div class="session-meta">
+                <span class="session-date">${formatDate(session.lastUpdated)}</span>
+              </div>
+            </div>
+            <svg class="session-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M6 4l4 4-4 4"/>
+            </svg>`;
+          listContainer.appendChild(item);
+        });
+        
+        // Set up search event
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('searchClearBtn');
+        
+        searchInput.addEventListener('input', filterSessions);
+        clearBtn.addEventListener('click', clearSearch);
+        
+        // ESC key clears
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') clearSearch();
+        });
+        
+      } catch (err) {
+        console.error('Error:', err);
+        document.getElementById('sessionList').innerHTML = `
+          <div class="state-card">
+            <div class="state-icon">⚠️</div>
+            <div class="state-title">Failed to load</div>
+            <div class="state-desc">Check your connection and try again.</div>
+          </div>`;
+      }
+    }
+
+    loadSessions();
+  </script>
+</body>
+</html>

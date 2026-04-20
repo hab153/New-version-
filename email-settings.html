@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Settings | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318;
+      --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e;
+      --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif;
+    }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
+    
+    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; }
+    .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .back-btn:hover { color: var(--accent); }
+
+    .container { max-width: 500px; margin: 40px auto; padding: 0 20px; }
+    
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    input {
+      width: 100%; background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-1); padding: 12px; border-radius: 8px; font-family: var(--font-sans);
+      font-size: 14px; box-sizing: border-box; transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .save-btn {
+      background: var(--accent); color: #060608; border: none; padding: 14px 24px;
+      border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px;
+      transition: transform 0.1s;
+    }
+    .save-btn:active { transform: scale(0.98); }
+
+    .status-msg { margin-top: 15px; text-align: center; font-size: 13px; font-family: var(--font-mono); }
+    .success { color: var(--accent); }
+    .error { color: #ff4d4d; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <h1>Email Settings</h1>
+    
+    <div class="form-group">
+      <label>Current Email</label>
+      <input type="email" id="currentEmailDisplay" disabled placeholder="Loading...">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.06); margin: 30px 0;">
+
+    <h2 style="font-size: 18px; margin-bottom: 20px;">Update Email</h2>
+    <form id="emailForm">
+      <div class="form-group">
+        <label>New Email Address</label>
+        <input type="email" id="newEmail" required placeholder="Enter new email">
+      </div>
+
+      <div class="form-group">
+        <label>Current Password (Required)</label>
+        <input type="password" id="currentPassword" required placeholder="Verify identity">
+      </div>
+
+      <button type="submit" class="save-btn">Update Email</button>
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    const statusMsg = document.getElementById('statusMsg');
+
+    // Load Current Email
+    async function loadEmailInfo() {
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('currentEmailDisplay').value = user.email;
+        }
+      } catch (err) {
+        console.error("Failed to load email info");
+      }
+    }
+    // Handle Email Change
+    document.getElementById('emailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = "Updating...";
+      statusMsg.className = "status-msg";
+
+      const newEmail = document.getElementById('newEmail').value;
+      const currentPassword = document.getElementById('currentPassword').value;
+
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/change-email', {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ newEmail, currentPassword })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          statusMsg.textContent = data.message;
+          statusMsg.className = "status-msg success";
+          document.getElementById('currentEmailDisplay').value = newEmail;
+          document.getElementById('newEmail').value = '';
+          document.getElementById('currentPassword').value = '';
+        } else {
+          statusMsg.textContent = data.message;
+          statusMsg.className = "status-msg error";
+        }
+      } catch (err) {
+        statusMsg.textContent = "Network error.";
+        statusMsg.className = "status-msg error";
+      }
+    });
+
+    loadEmailInfo();
+  </script>
+</body>
+</html>

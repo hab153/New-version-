@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Skyline | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void: #060608;
+      --bg-base: #0b0c0f;
+      --bg-surface: #111318;
+      --border: rgba(255,255,255,0.06);
+      --accent: #c8ff57;
+      --text-1: #e8eaf0;
+      --text-2: #8c909e;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
+    }
+
+    body {
+      background: var(--bg-void);
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+
+    /* Topbar */
+    .topbar {
+      height: 58px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .back-btn {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 13px;
+      display: flex;      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--accent); }
+
+    /* Content Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-family: var(--font-mono);
+      color: var(--accent);
+      font-size: 14px;
+      margin-bottom: 40px;
+      display: block;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      color: var(--text-1);
+    }
+
+    p {
+      color: var(--text-2);
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 30px;
+    }
+
+    li {
+      color: var(--text-2);
+      margin-bottom: 12px;      padding-left: 20px;
+      position: relative;
+    }
+
+    li::before {
+      content: '›';
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    .highlight-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 40px 0;
+    }
+
+    .highlight-box p {
+      margin-bottom: 0;
+      color: var(--text-1);
+      font-style: italic;
+    }
+
+    .tagline {
+      text-align: center;
+      margin-top: 60px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .tagline h3 {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      h1 { font-size: 26px; }
+      .container { padding: 40px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <h1>About Skyline</h1>
+    <span class="subtitle">Intelligent AI-Powered Platform</span>
+
+    <p>Skyline is an intelligent AI-powered platform designed to help users turn ideas into real income opportunities.</p>
+
+    <p>The goal of Skyline is simple: to guide anyone—from beginners to experienced individuals—toward practical ways of making money, building skills, and starting businesses using smart technology.</p>
+
+    <p>Skyline allows users to input their interests, skills, and goals, and then generates personalized suggestions, step-by-step plans, and actionable strategies. Instead of just giving generic answers, Skyline focuses on real-world application and practical execution.</p>
+
+    <h2>The Memory System</h2>
+    <p>One of Skyline’s core features is its memory system. The app learns from previous interactions by storing user inputs and responses, allowing it to provide faster, more relevant, and more personalized results over time.</p>
+
+    <p>Skyline also includes a structured system that adapts to each user. Whether someone wants to start a small online hustle, build a business, or explore new income streams, Skyline provides clear direction and guidance.</p>
+
+    <h2>Who is Skyline For?</h2>
+    <p>The platform is built for global users and supports different levels of experience. It is especially useful for:</p>
+    
+    <ul>
+      <li>Beginners who don’t know where to start</li>
+      <li>Students looking for income opportunities</li>
+      <li>Freelancers seeking new ideas</li>
+      <li>Individuals who want to grow financially</li>
+    </ul>
+
+    <div class="highlight-box">
+      <p>Skyline is not just an AI chatbot—it is a thinking system designed to help users make better decisions and take action.</p>
+    </div>
+
+    <p>While Skyline uses advanced AI to generate responses, users are encouraged to review and validate all suggestions, as no system is perfect.</p>
+
+    <p>Skyline’s vision is to evolve into a powerful “thinking machine” that helps people build businesses, make money, and solve real-life problems using intelligence and technology.</p>
+
+    <div class="tagline">
+      <h3>Skyline — Think. Build. Earn.</h3>
+    </div>
+  </div>
+
+</body>
+</html>

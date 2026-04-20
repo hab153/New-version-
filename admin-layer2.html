@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Layer 2 | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg-void: #060608; --bg-surface: #111318; --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e; --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif; }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .container { background: var(--bg-surface); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+    h1 { font-size: 20px; margin-bottom: 10px; }
+    p { color: var(--text-2); font-size: 13px; margin-bottom: 20px; }
+    input { width: 100%; background: #0b0c0f; border: 1px solid rgba(255,255,255,0.1); color: var(--text-1); padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+    input:focus { outline: none; border-color: var(--accent); }
+    button { background: var(--accent); color: #060608; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+    .status { margin-top: 15px; font-size: 12px; font-family: var(--font-mono); min-height: 20px; }
+    .error { color: #ff4d4d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Layer 2: Identity</h1>
+    <p>Verify your personal history.</p>
+    <form id="layer2Form">
+      <input type="text" id="dish" placeholder="Favorite Dish" required>
+      <input type="text" id="pn" placeholder="Your PN Code" required>
+      <input type="text" id="mum" placeholder="Mum's Name" required>
+      <input type="text" id="dm" placeholder="DM Code" required>
+      <button type="submit">Verify Layer 2</button>
+      <div id="status" class="status"></div>
+    </form>
+  </div>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    document.getElementById('layer2Form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('status');
+      status.textContent = "Verifying...";
+      
+      const data = {
+        dish: document.getElementById('dish').value,
+        pn: document.getElementById('pn').value,
+        mum: document.getElementById('mum').value,
+        dm: document.getElementById('dm').value
+      };
+
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/verify-layer-2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', result.token);
+          window.location.href = result.nextStep;
+        } else {
+          status.textContent = result.message;
+          status.className = "status error";
+        }
+      } catch (err) {
+        status.textContent = "Network Error";
+        status.className = "status error";
+      }
+    });
+  </script>
+</body>
+</html>

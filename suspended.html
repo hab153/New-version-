@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Suspended | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void: #060608; --bg-surface: #111318;
+      --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e;
+      --danger: #ff4d4d;
+      --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif;
+    }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+    
+    .container { max-width: 500px; padding: 20px; }
+    .icon { font-size: 48px; margin-bottom: 20px; color: var(--danger); }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    p { color: var(--text-2); line-height: 1.6; margin-bottom: 30px; }
+    
+    .countdown-box {
+      background: var(--bg-surface); padding: 20px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06); margin-bottom: 30px;
+    }
+    .timer { font-family: var(--font-mono); font-size: 28px; color: var(--accent); font-weight: 700; }
+    .label { font-size: 12px; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+
+    .logout-btn {
+      background: transparent; border: 1px solid var(--text-2); color: var(--text-2);
+      padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--text-1); color: var(--text-1); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="icon">⚠️</div>
+    <h1>Account Suspended</h1>
+    <p>According to our safety policies, users must be at least 13 years old to use Skyline AA-1. Your account has been temporarily suspended until your 13th birthday.</p>
+    
+    <div class="countdown-box">
+      <div class="timer" id="timer">Loading...</div>
+      <div class="label">Time Until Reactivation</div>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">Sign Out</button>
+  </div>
+
+  <script>
+    // Get suspension end date from URL or LocalStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    let endsAt = urlParams.get('ends') || localStorage.getItem('suspensionEnds');
+
+    if (!endsAt) {
+      // Fallback if no date is found
+      document.getElementById('timer').textContent = "Unknown Date";
+    } else {
+      const endDate = new Date(endsAt);
+      
+      function updateTimer() {
+        const now = new Date();
+        const diff = endDate - now;
+
+        if (diff <= 0) {
+          document.getElementById('timer').textContent = "Account Active";
+          // Optional: Auto-redirect to login or verification
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        document.getElementById('timer').textContent = `${days}d ${hours}h ${minutes}m`;
+      }
+
+      setInterval(updateTimer, 1000);
+      updateTimer();
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

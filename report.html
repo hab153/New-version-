@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report an Issue | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318; --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e; --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif; }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
+    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; }
+    .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .back-btn:hover { color: var(--accent); }
+    .container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    p { color: var(--text-2); margin-bottom: 30px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; }
+    input, textarea, select { width: 100%; background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.1); color: var(--text-1); padding: 12px; border-radius: 8px; font-family: var(--font-sans); box-sizing: border-box; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+    button { background: var(--accent); color: #060608; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+    .status-msg { margin-top: 15px; text-align: center; font-size: 13px; font-family: var(--font-mono); }
+    .success { color: var(--accent); }
+    .error { color: #ff4d4d; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <h1>Report an Issue</h1>
+    <p>If you encounter bugs, scams, or inappropriate behavior, please report it here. Your report goes directly to the Admin team.</p>
+    
+    <form id="reportForm">
+      <div class="form-group">
+        <label>Subject</label>
+        <select id="subject" required>
+          <option value="Bug">Technical Bug</option>
+          <option value="Scam">Suspicious User/Scam</option>
+          <option value="Feature">Feature Request</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="message" rows="6" placeholder="Describe the issue in detail..." required></textarea>
+      </div>
+
+      <button type="submit">Submit Report</button>
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const statusMsg = document.getElementById('statusMsg');
+      statusMsg.textContent = "Sending...";
+      
+      const data = {
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+      };
+
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          statusMsg.textContent = "Report submitted successfully. Thank you.";
+          statusMsg.className = "status-msg success";
+          document.getElementById('reportForm').reset();
+        } else {
+          statusMsg.textContent = "Failed to send report.";
+          statusMsg.className = "status-msg error";
+        }
+      } catch (err) {
+        statusMsg.textContent = "Network Error.";
+        statusMsg.className = "status-msg error";
+      }
+    });
+  </script>
+</body>
+</html>

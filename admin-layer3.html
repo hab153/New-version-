@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Layer 3 | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { 
+      --bg-void: #060608; 
+      --bg-surface: #111318; 
+      --accent: #c8ff57; 
+      --text-1: #e8eaf0; 
+      --text-2: #8c909e; 
+      --font-mono: 'IBM Plex Mono', monospace; 
+      --font-sans: 'Syne', sans-serif; 
+    }
+    body { 
+      background: var(--bg-void); 
+      color: var(--text-1); 
+      font-family: var(--font-sans); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      height: 100vh; 
+      margin: 0; 
+    }
+    .container { 
+      background: var(--bg-surface); 
+      padding: 40px; 
+      border-radius: 16px; 
+      width: 100%; 
+      max-width: 400px; 
+      text-align: center; 
+      border: 1px solid rgba(255,255,255,0.06); 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    h1 { font-size: 20px; margin-bottom: 10px; color: var(--accent); }
+    p { color: var(--text-2); font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
+    
+    .input-group { text-align: left; margin-bottom: 15px; }
+    label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    input { 
+      width: 100%; 
+      background: #0b0c0f; 
+      border: 1px solid rgba(255,255,255,0.1); 
+      color: var(--text-1); 
+      padding: 12px;       border-radius: 8px; 
+      box-sizing: border-box; 
+      font-family: var(--font-sans);
+      transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(200, 255, 87, 0.1); }
+    
+    button { 
+      background: var(--accent); 
+      color: #060608; 
+      border: none; 
+      padding: 14px; 
+      border-radius: 8px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      width: 100%; 
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: transform 0.1s;
+    }
+    button:active { transform: scale(0.98); }
+    
+    .status { margin-top: 20px; font-size: 12px; font-family: var(--font-mono); min-height: 20px; }
+    .error { color: #ff4d4d; }
+    .success { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Layer 3: Security</h1>
+    <p>Final verification. Please answer your deep-security questions.</p>
+    <form id="layer3Form">
+      <div class="input-group">
+        <label>Dad's Name</label>
+        <input type="text" id="dad" placeholder="Enter answer" required autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Best Friend's Name</label>
+        <input type="text" id="friend" placeholder="Enter answer" required autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Enemy's Name</label>
+        <input type="text" id="enemy" placeholder="Enter answer" required autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>App Name</label>
+        <input type="text" id="app" placeholder="Enter answer" required autocomplete="off">
+      </div>      
+      <button type="submit">Access Dashboard</button>
+      <div id="status" class="status"></div>
+    </form>
+  </div>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    document.getElementById('layer3Form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('status');
+      status.textContent = "Verifying Final Layer...";
+      status.className = "status";
+      
+      const data = {
+        dad: document.getElementById('dad').value,
+        friend: document.getElementById('friend').value,
+        enemy: document.getElementById('enemy').value,
+        app: document.getElementById('app').value
+      };
+
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/verify-layer-3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        
+        if (res.ok) {
+          status.textContent = "Access Granted. Redirecting...";
+          status.className = "status success";
+          localStorage.setItem('token', result.token);
+          setTimeout(() => {
+            window.location.href = result.nextStep;
+          }, 1000);
+        } else {
+          status.textContent = result.message;
+          status.className = "status error";
+        }
+      } catch (err) {
+        status.textContent = "Network Error";
+        status.className = "status error";
+      }
+    });
+  </script>
+</body>
+</html>

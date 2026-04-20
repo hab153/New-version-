@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Age Verification | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318;
+      --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e;
+      --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif;
+    }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    
+    .container { background: var(--bg-surface); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+    h1 { font-size: 22px; margin-bottom: 10px; }
+    p { color: var(--text-2); font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
+    
+    .date-inputs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .input-group { flex: 1; text-align: left; }
+    label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-2); margin-bottom: 5px; text-transform: uppercase; }
+    
+    input, select {
+      width: 100%; background: var(--bg-base); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-1); padding: 12px; border-radius: 8px; font-family: var(--font-sans);
+      box-sizing: border-box;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+    .verify-btn {
+      background: var(--accent); color: #060608; border: none; padding: 14px;
+      border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px;
+    }
+    .status-msg { margin-top: 15px; font-size: 13px; font-family: var(--font-mono); min-height: 20px; }
+    .error { color: #ff4d4d; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Age Verification</h1>
+    <p>To comply with safety regulations, please verify your age to access Skyline AA-1.</p>
+    
+    <form id="ageForm">
+      <div class="date-inputs">
+        <div class="input-group">
+          <label>Month</label>
+          <select id="month" required>            <option value="" disabled selected>MM</option>
+            <option value="1">01</option><option value="2">02</option><option value="3">03</option>
+            <option value="4">04</option><option value="5">05</option><option value="6">06</option>
+            <option value="7">07</option><option value="8">08</option><option value="9">09</option>
+            <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Day</label>
+          <input type="number" id="day" min="1" max="31" placeholder="DD" required>
+        </div>
+        <div class="input-group">
+          <label>Year</label>
+          <input type="number" id="year" min="1900" max="2026" placeholder="YYYY" required>
+        </div>
+      </div>
+      
+      <button type="submit" class="verify-btn">Verify Age</button>
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    document.getElementById('ageForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const statusMsg = document.getElementById('statusMsg');
+      statusMsg.textContent = "Verifying...";
+      statusMsg.className = "status-msg";
+
+      const day = document.getElementById('day').value;
+      const month = document.getElementById('month').value;
+      const year = document.getElementById('year').value;
+
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/verify-age', {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ day, month, year })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          statusMsg.textContent = "Verified! Redirecting...";          statusMsg.style.color = "var(--accent)";
+          setTimeout(() => window.location.href = "page.html", 1500);
+        } else if (res.status === 403) {
+          // Underage - Redirect to suspended page with date
+          const endDate = new Date(data.suspensionEnds).toLocaleDateString();
+          localStorage.setItem('suspensionEnds', data.suspensionEnds);
+          window.location.href = `suspended.html?ends=${encodeURIComponent(endDate)}`;
+        } else {
+          statusMsg.textContent = data.message;
+          statusMsg.className = "status-msg error";
+        }
+      } catch (err) {
+        statusMsg.textContent = "Network Error";
+        statusMsg.className = "status-msg error";
+      }
+    });
+  </script>
+</body>
+</html>

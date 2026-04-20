@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318; --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e; --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif; }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
+    
+    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; }
+    .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .back-btn:hover { color: var(--accent); }
+
+    .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    p.subtitle { color: var(--text-2); margin-bottom: 30px; font-size: 14px; }
+
+    .notif-list { display: flex; flex-direction: column; gap: 15px; }
+    
+    .notif-item { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: transform 0.2s; }
+    .notif-item:hover { border-color: var(--accent); transform: translateX(5px); }
+    
+    .notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .notif-title { font-weight: 600; color: var(--accent); font-size: 16px; }
+    .notif-date { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+    
+    .notif-body { color: var(--text-1); line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
+    
+    .empty-state { text-align: center; color: var(--text-2); padding: 40px; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <h1>Messages from Admin</h1>
+    <p class="subtitle">Important updates, warnings, or support messages from the Skyline Team.</p>
+    
+    <div id="notifList" class="notif-list">
+      <div class="empty-state">Loading messages...</div>
+    </div>
+  </div>
+
+  <script>    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    async function loadNotifications() {
+      const list = document.getElementById('notifList');
+      
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/notifications', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to load');
+        
+        const notifs = await res.json();
+        list.innerHTML = '';
+
+        if (notifs.length === 0) {
+          list.innerHTML = '<div class="empty-state">No messages from Admin yet.</div>';
+          return;
+        }
+
+        notifs.forEach(n => {
+          // Clean up the content if it has the prefix
+          let content = n.content;
+          if(content.startsWith('[ADMIN MESSAGE]:')) {
+            content = content.replace('[ADMIN MESSAGE]:', '').trim();
+          }
+
+          const date = new Date(n.createdAt).toLocaleDateString() + ' at ' + new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+          const div = document.createElement('div');
+          div.className = 'notif-item';
+          div.innerHTML = `
+            <div class="notif-header">
+              <span class="notif-title">Admin Message</span>
+              <span class="notif-date">${date}</span>
+            </div>
+            <div class="notif-body">${content}</div>
+          `;
+          list.appendChild(div);
+        });
+
+      } catch (err) {
+        list.innerHTML = '<div class="empty-state" style="color:#ff4d4d">Error loading messages.</div>';
+      }
+    }
+
+    loadNotifications();
+  </script>
+</body></html>

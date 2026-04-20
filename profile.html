@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318;
+      --bg-raised: #181b22; --border: rgba(255,255,255,0.06);
+      --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e;
+      --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif;
+    }
+    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
+    
+    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; }
+    .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .back-btn:hover { color: var(--accent); }
+
+    .container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    input, select, textarea {
+      width: 100%; background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text-1); padding: 12px; border-radius: 8px; font-family: var(--font-sans);
+      font-size: 14px; box-sizing: border-box; transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .save-btn {
+      background: var(--accent); color: #060608; border: none; padding: 14px 24px;
+      border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px;
+      transition: transform 0.1s;
+    }
+    .save-btn:active { transform: scale(0.98); }
+
+    .status-msg { margin-top: 15px; text-align: center; font-size: 13px; font-family: var(--font-mono); }
+    .success { color: var(--accent); }
+    .error { color: #ff4d4d; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  </header>
+
+  <div class="container">
+    <h1>Edit Profile</h1>
+    <form id="profileForm">
+      
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fullName" placeholder="e.g. Habeebullah">
+      </div>
+
+      <div class="form-group">
+        <label>Username (Read Only)</label>
+        <input type="text" id="username" disabled style="opacity: 0.5; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label>Email (Read Only)</label>
+        <input type="email" id="email" disabled style="opacity: 0.5; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label>Primary Goal</label>
+        <input type="text" id="primaryGoal" placeholder="e.g. Become a Full Stack Developer">
+      </div>
+
+      <div class="form-group">
+        <label>Skill Level</label>
+        <select id="skillLevel">
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+          <option value="Expert">Expert</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Interests (Comma separated)</label>
+        <input type="text" id="interests" placeholder="e.g. AI, Web Design, Finance">
+      </div>
+
+      <div class="form-group">
+        <label>Country</label>
+        <input type="text" id="country" placeholder="e.g. Nigeria">
+      </div>
+
+      <div class="form-group">
+        <label>Bio</label>        <textarea id="bio" placeholder="Tell us about yourself..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Profile Picture URL</label>
+        <input type="text" id="profilePicture" placeholder="https://...">
+      </div>
+
+      <button type="submit" class="save-btn">Save Changes</button>
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "login.html";
+
+    const form = document.getElementById('profileForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // Load Profile Data
+    async function loadProfile() {
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('fullName').value = user.fullName || '';
+          document.getElementById('username').value = user.username || '';
+          document.getElementById('email').value = user.email || '';
+          document.getElementById('primaryGoal').value = user.primaryGoal || '';
+          document.getElementById('skillLevel').value = user.skillLevel || 'Beginner';
+          document.getElementById('interests').value = user.interests || '';
+          document.getElementById('country').value = user.country || '';
+          document.getElementById('bio').value = user.bio || '';
+          document.getElementById('profilePicture').value = user.profilePicture || '';
+        }
+      } catch (err) {
+        statusMsg.textContent = "Failed to load profile.";
+        statusMsg.className = "status-msg error";
+      }
+    }
+
+    // Save Profile Data
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = "Saving...";
+      statusMsg.className = "status-msg";
+      const data = {
+        fullName: document.getElementById('fullName').value,
+        primaryGoal: document.getElementById('primaryGoal').value,
+        skillLevel: document.getElementById('skillLevel').value,
+        interests: document.getElementById('interests').value,
+        country: document.getElementById('country').value,
+        bio: document.getElementById('bio').value,
+        profilePicture: document.getElementById('profilePicture').value
+      };
+
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          statusMsg.textContent = "Profile updated successfully!";
+          statusMsg.className = "status-msg success";
+        } else {
+          statusMsg.textContent = "Error updating profile.";
+          statusMsg.className = "status-msg error";
+        }
+      } catch (err) {
+        statusMsg.textContent = "Network error.";
+        statusMsg.className = "status-msg error";
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>
