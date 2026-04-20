@@ -48,13 +48,12 @@
       height: 100vh;
       position: relative;
     }
-
     /* ── Noise overlay ── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
       opacity: 0.6;
@@ -75,6 +74,12 @@
       backdrop-filter: blur(12px);
     }
 
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .topbar-brand {
       display: flex;
       align-items: center;
@@ -91,14 +96,33 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent-glow);
+      background: var(--accent);      box-shadow: 0 0 8px var(--accent-glow);
       animation: pulse 2.4s ease-in-out infinite;
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* PRO BADGE STYLES */
+    .pro-badge {
+      background: #333;
+      color: #888;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.3s ease;
+    }
+
+    .pro-badge.is-pro {
+      background: var(--accent);
+      color: #060608;
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     .topbar-title {
@@ -121,8 +145,7 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 3px;
+      justify-content: center;      gap: 3px;
       flex-direction: column;
       transition: background 0.2s, border-color 0.2s;
       outline: none;
@@ -171,8 +194,7 @@
     }
 
     .dropdown a {
-      display: flex;
-      align-items: center;
+      display: flex;      align-items: center;
       gap: 10px;
       padding: 11px 14px;
       color: var(--text-2);
@@ -221,8 +243,7 @@
       justify-content: center;
       gap: 16px;
       padding: 40px 20px;
-      text-align: center;
-      animation: fadeIn 0.6s ease;
+      text-align: center;      animation: fadeIn 0.6s ease;
     }
 
     .welcome-logo {
@@ -271,8 +292,7 @@
 
     /* ── Message row ── */
     .msg-row {
-      display: flex;
-      padding: 4px 24px;
+      display: flex;      padding: 4px 24px;
       animation: msgIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
     }
 
@@ -284,7 +304,7 @@
     .msg-row.user { justify-content: flex-end; }
     .msg-row.ai   { justify-content: flex-start; }
 
-    /* ── Bubble ── */
+    /* ── Bubble ─ */
     .bubble {
       max-width: 75%;
       padding: 16px 20px;
@@ -321,8 +341,7 @@
 
     .plan-summary { color: var(--text-2); margin-bottom: 16px; font-style: italic; }
 
-    .plan-blocker {
-      margin-bottom: 12px;
+    .plan-blocker {      margin-bottom: 12px;
       padding: 8px 12px;
       background: rgba(200,255,87,0.06);
       border-left: 2px solid var(--accent);
@@ -372,7 +391,6 @@
       border-color: var(--accent);
       background: var(--accent-dim);
     }
-
     .plan-question .plan-question-hint {
       display: block;
       font-size: 10px;
@@ -421,8 +439,7 @@
       margin-top: 4px;
     }
 
-    .msg-row.ai   { gap: 10px; }
-    .msg-row.user { gap: 10px; flex-direction: row-reverse; }
+    .msg-row.ai   { gap: 10px; }    .msg-row.user { gap: 10px; flex-direction: row-reverse; }
 
     .msg-row.ai .avatar {
       background: var(--bg-raised);
@@ -472,7 +489,6 @@
       0%, 60%, 100% { transform: translateY(0);    background: var(--text-3); }
       30%            { transform: translateY(-5px); background: var(--accent); }
     }
-
     /* ── INPUT BAR ── */
     .input-bar {
       position: relative; z-index: 10;
@@ -522,7 +538,6 @@
 
     .send-btn:hover { transform: scale(1.06); box-shadow: 0 0 18px var(--accent-glow); }
     .send-btn:active { transform: scale(0.95); }
-
     .send-btn:disabled {
       background: var(--bg-hover); cursor: default;
       transform: none; box-shadow: none;
@@ -561,13 +576,16 @@
 
   <!-- ── TOPBAR ── -->
   <header class="topbar">
-    <div class="topbar-brand">
-      <span class="dot"></span>
-      <span>Skyline AA-1</span>
+    <div class="topbar-left">
+      <div class="topbar-brand">
+        <span class="dot"></span>
+        <span>Skyline AA-1</span>
+      </div>
+      <!-- PRO BADGE ELEMENT -->
+      <div id="proBadge" class="pro-badge">Free Plan</div>
     </div>
 
     <span class="topbar-title">Dream Architect</span>
-
     <div class="menu-wrap">
       <button class="menu-btn" id="menuBtn" aria-label="Menu" title="Options">
         <span></span><span></span><span></span>
@@ -617,8 +635,7 @@
       </div>
       <h2>What is your dream?</h2>
       <p>Describe your goal, and Skyline AA-1 will build your strategic roadmap.</p>
-      <div class="welcome-tags">
-        <span class="welcome-tag" onclick="fillPrompt('I want to start a sustainable fashion brand')">Fashion Brand</span>
+      <div class="welcome-tags">        <span class="welcome-tag" onclick="fillPrompt('I want to start a sustainable fashion brand')">Fashion Brand</span>
         <span class="welcome-tag" onclick="fillPrompt('I want to become a full-stack developer in 6 months')">Learn Coding</span>
         <span class="welcome-tag" onclick="fillPrompt('I want to buy a house in Lagos by 2028')">Real Estate</span>
       </div>
@@ -668,9 +685,8 @@
 
     // Refine mode state — set when user clicks a follow-up question
     let refineState = null; // { originalPlan, dreamDescription } or null
-
     /* ── DOM refs ── */
-    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner;
+    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner, proBadge;
 
     /* ── Init ── */
     document.addEventListener('DOMContentLoaded', () => {
@@ -682,6 +698,10 @@
       dropdown     = document.getElementById('dropdown');
       charCount    = document.getElementById('charCount');
       refineBanner = document.getElementById('refineBanner');
+      proBadge     = document.getElementById('proBadge');
+
+      // CHECK PRO STATUS ON LOAD
+      checkProStatus();
 
       menuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -695,6 +715,36 @@
 
       loadHistory();
     });
+
+    /* ── CHECK SUBSCRIPTION STATUS ── */
+    async function checkProStatus() {
+      try {
+        // Fetch user data from Render Backend
+        const response = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Check if user is Pro
+          if (user.subscriptionTier === 'pro') {
+            console.log("User is PRO. Unlimited access enabled.");
+            
+            // Update UI to show Pro Status            if (proBadge) {
+              proBadge.innerText = "PRO MEMBER";
+              proBadge.classList.add('is-pro');
+            }
+          } else {
+            console.log("User is FREE. Limits apply.");
+          }
+        }
+      } catch (err) {
+        console.error("Error checking pro status:", err);
+      }
+    }
 
     /* ────────────────────────────────────────
        ROUTING: decides chat vs plan mode.
@@ -732,8 +782,7 @@
         /\b(start|launch|build|create|open|found|run|grow|set up)\b.{0,50}\b(business|company|brand|startup|app|platform|service|shop|store|restaurant|agency|clinic|school|studio)\b/,
         /\b(become a|become an)\b.{0,30}\b(doctor|developer|designer|coach|writer|lawyer|engineer|entrepreneur|freelancer|consultant)\b/,
         /\b(earn|make|generate|create).{0,20}\b(money|income|revenue|profit|living|salary)\b/,
-        /\b(sell|offer|provide|deliver).{0,40}\b(service|product|course|coaching|consulting|tutoring)\b/,
-        /\b(quit|leave|escape).{0,20}\b(job|9.?5|corporate|office)\b/,
+        /\b(sell|offer|provide|deliver).{0,40}\b(service|product|course|coaching|consulting|tutoring)\b/,        /\b(quit|leave|escape).{0,20}\b(job|9.?5|corporate|office)\b/,
       ];
 
       for (const p of dreamPatterns) {
@@ -782,7 +831,6 @@
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ message: userText, history: conversationHistory, sessionId: currentSessionId })
           });
-
           const data = await response.json();
           hideTyping();
 
@@ -832,8 +880,7 @@
               followUpAnswer: userText,
               dreamDescription,
               sessionId: currentSessionId
-            })
-          });
+            })          });
 
           const data = await response.json();
           hideTyping();
@@ -882,8 +929,7 @@
                   if (planData.title && planData.phases) {
                     appendMessage('ai', formatPlanToHTML(planData, planData.title), true);
                     conversationHistory.push({
-                      role: 'assistant',
-                      content: `Plan: "${planData.title}". ${planData.summary}`
+                      role: 'assistant',                      content: `Plan: "${planData.title}". ${planData.summary}`
                     });
                   } else {
                     appendMessage('ai', msg.content);
@@ -932,8 +978,7 @@
         data.phases.forEach(phase => {
           html += `<div class="plan-phase">
             <span class="plan-phase-title">${escapeHTML(phase.phaseName)}</span>`;
-          if (Array.isArray(phase.steps)) {
-            phase.steps.forEach(step => {
+          if (Array.isArray(phase.steps)) {            phase.steps.forEach(step => {
               const tool = step.tool
                 ? ` <span class="plan-step-tool">· ${escapeHTML(step.tool)}</span>`
                 : '';
@@ -982,8 +1027,7 @@
         el.style.background = 'var(--accent-dim)';
 
         // Focus input with helpful placeholder
-        msgInput.placeholder = 'Answer Simon\'s question to refine your plan...';
-        msgInput.focus();
+        msgInput.placeholder = 'Answer Simon\'s question to refine your plan...';        msgInput.focus();
         scrollToBottom();
       } catch (e) {
         console.error('Refine mode error:', e);
@@ -1002,7 +1046,7 @@
       });
     }
 
-    /* ── Helpers ── */
+    /* ── Helpers ─ */
     function pushSessionToURL(sid) {
       const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?session=${sid}`;
       window.history.pushState({ path: newUrl }, '', newUrl);
@@ -1032,8 +1076,7 @@
       scrollToBottom();
     }
 
-    function showTyping() {
-      const row = document.createElement('div');
+    function showTyping() {      const row = document.createElement('div');
       row.className = 'msg-row ai';
       row.id = 'typingRow';
       row.innerHTML = `
@@ -1056,9 +1099,9 @@
 
     function escapeHTML(str) {
       return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
         .replace(/\n/g, '<br>');
     }
 
@@ -1082,8 +1125,7 @@
       }
     }
 
-    function clearChat() {
-      currentSessionId = null;
+    function clearChat() {      currentSessionId = null;
       conversationHistory = [];
       cancelRefineMode();
       window.location.href = 'page.html';
@@ -1096,4 +1138,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
