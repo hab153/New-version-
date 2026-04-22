@@ -47,7 +47,7 @@
       box-sizing: border-box;
     }
 
-    .topbar-left {      display: flex;
+    .topbar-left {            display: flex;
       align-items: center;
       gap: 16px;
     }
@@ -70,33 +70,12 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
-    /* Upgrade Button Style */
-    .upgrade-btn {
-      background: var(--accent);
-      color: #060608;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 0 10px rgba(200, 255, 87, 0.2);
-    }
-
-    .upgrade-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 15px rgba(200, 255, 87, 0.4);
-      background: #d4ff70;
-    }
-
     /* Notification Bell Wrapper */
     .notif-wrapper {
       display: flex;
       align-items: center;
-      gap: 8px;    }
+      gap: 8px;    
+    }
 
     .notif-btn {
       background: none;
@@ -117,8 +96,7 @@
 
     .notif-btn.has-notifs {
       color: var(--danger);
-      animation: pulse-red 2s infinite;
-    }
+      animation: pulse-red 2s infinite;    }
 
     @keyframes pulse-red {
       0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
@@ -145,19 +123,10 @@
       display: none;
     }
 
-    .notif-label {      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--danger);
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      display: none;
-    }
-
     /* Main Container */
     .container {
       width: 100%;
-      max-width: 500px;
+      max-width: 1000px; /* Wider for pricing table */
       padding: 32px 20px;
       flex: 1;
     }
@@ -176,9 +145,9 @@
     .section-title:first-child { margin-top: 0; }
 
     .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr;
+      display: grid;      grid-template-columns: 1fr;
       gap: 12px;
+      margin-bottom: 40px;
     }
 
     .menu-item {
@@ -225,9 +194,173 @@
       color: var(--text-2);
       text-decoration: none;
       font-size: 13px;
-      font-family: var(--font-mono);
-    }
+      font-family: var(--font-mono);    }
     .back-link:hover { color: var(--accent); }
+
+    /* ════════════════════════════════════════════
+       PRICING TABLE STYLES
+       ════════════════════════════════════════════ */
+    
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .pricing-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-1);
+    }
+    .pricing-header p {
+      color: var(--text-2);
+      font-size: 14px;
+    }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .plan-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--text-3);
+    }
+
+    .plan-card.featured {
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 20px rgba(200, 255, 87, 0.1);
+    }
+    .plan-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #060608;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .plan-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    .plan-price {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .plan-price span {
+      font-size: 14px;
+      color: var(--text-3);
+      margin-left: 4px;
+      font-weight: 400;
+    }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 32px 0;
+      flex-grow: 1;
+    }
+
+    .plan-features li {
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: var(--text-2);
+      display: flex;      align-items: center;
+      gap: 8px;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .plan-features li.disabled {
+      color: var(--text-3);
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    .plan-features li.disabled::before {
+      content: '✕';
+      color: var(--text-3);
+    }
+
+    .plan-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-free {
+      background: var(--bg-raised);
+      color: var(--text-3);
+      cursor: default;
+    }
+
+    .btn-go {
+      background: var(--bg-raised);
+      color: var(--text-1);
+      border: 1px solid var(--border);
+    }
+    .btn-go:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-pro {      background: var(--accent);
+      color: #060608;
+      box-shadow: 0 0 15px rgba(200, 255, 87, 0.2);
+    }
+    .btn-pro:hover {
+      background: #d4ff70;
+      transform: scale(1.02);
+    }
+
+    /* Current Plan Indicator */
+    .current-plan-tag {
+      display: inline-block;
+      font-size: 10px;
+      background: rgba(200, 255, 87, 0.1);
+      color: var(--accent);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
 
   </style>
 </head>
@@ -238,12 +371,10 @@
         <span class="dot"></span>
         SKYLINE AA-1
       </div>
-      <!-- Upgrade Button -->
-      <button class="upgrade-btn" onclick="initiateUpgrade()">Upgrade to Pro</button>
     </div>
     
     <!-- Notification Area -->
-    <div class="notif-wrapper">      <span id="notifLabel" class="notif-label">New</span>
+    <div class="notif-wrapper">      
       <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
         🔔
         <span id="notifBadge" class="badge">0</span>
@@ -253,11 +384,62 @@
 
   <div class="container">
     
+    <!-- PRICING SECTION -->
+    <div class="pricing-header">
+      <h2>Choose Your Power Level</h2>
+      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
+    </div>
+
+    <div class="pricing-cards">      
+      <!-- FREE PLAN -->
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>4 Messages / Day</li>
+          <li>Basic Model (GPT-3.5)</li>
+          <li>Short Memory (2 msgs)</li>
+          <li class="disabled">Smart Responses</li>
+          <li class="disabled">Business Plans</li>
+        </ul>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>
+      </div>
+
+      <!-- GO PLAN -->
+      <div class="plan-card">
+        <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
+        <div class="plan-price">$8<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>20 Messages / Day</li>
+          <li>Smart Model (GPT-4o)</li>
+          <li>Long Memory (6 msgs)</li>
+          <li>Helpful Advice</li>
+          <li class="disabled">Full Business Plans</li>
+        </ul>
+        <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
+      </div>
+
+      <!-- PRO PLAN -->
+      <div class="plan-card featured">
+        <div class="plan-badge">Best Value</div>
+        <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
+        <div class="plan-price">$12<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>35 Messages / Day</li>
+          <li>Intelligence Model</li>
+          <li>High Memory (Full Context)</li>
+          <li>Simon Squibb Style Plans</li>
+          <li>Priority Support</li>
+        </ul>
+        <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
+      </div>
+
+    </div>
+
     <!-- Section 1: Profile -->
     <div class="section-title">Profile</div>
     <div class="menu-grid">
-      <a href="profile.html" class="menu-item">
-        <span>Profile Details</span>
+      <a href="profile.html" class="menu-item">        <span>Profile Details</span>
         <span class="arrow">›</span>
       </a>
       <a href="account.html" class="menu-item">
@@ -292,7 +474,8 @@
     </div>
 
     <!-- Section 3: Dangerous Zone -->
-    <div class="section-title">Dangerous Zone</div>    <div class="menu-grid danger-zone">
+    <div class="section-title">Dangerous Zone</div>    
+    <div class="menu-grid danger-zone">
       <a href="#" onclick="handleLogout()" class="menu-item">
         <span class="danger-text">Sign Out</span>
         <span class="arrow">›</span>
@@ -306,26 +489,27 @@
     <a href="page.html" class="back-link">← Return to Dream Architect</a>
 
   </div>
-
   <script>
     const token = localStorage.getItem('token');
     if (!token) window.location.href = "login.html";
 
     // --- UPGRADE LOGIC ---
-    async function initiateUpgrade() {
+    async function initiateUpgrade(planType) {
       try {
-        const btn = document.querySelector('.upgrade-btn');
+        // Find the button clicked to show loading state
+        const btn = event.target;
         const originalText = btn.innerText;
         btn.innerText = "Processing...";
         btn.disabled = true;
 
-        // Call backend to create Flutterwave session
+        // Call backend to create Flutterwave session with specific plan type
         const response = await fetch('https://skylineapp-backend-file.onrender.com/api/create-flutterwave-payment', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-          }
+          },
+          body: JSON.stringify({ planType: planType }) // Sends 'go' or 'pro'
         });
 
         const data = await response.json();
@@ -341,8 +525,42 @@
       } catch (err) {
         console.error(err);
         alert('Network Error. Please try again.');
-        const btn = document.querySelector('.upgrade-btn');        btn.innerText = "Upgrade to Pro";
+        const btn = event.target;
+        btn.innerText = "Upgrade";
         btn.disabled = false;
+      }
+    }
+
+    // --- CHECK CURRENT PLAN TO HIGHLIGHT BUTTONS ---
+    async function checkCurrentPlan() {
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+                if(res.ok) {
+          const user = await res.json();
+          const plan = user.subscriptionPlan || 'free';
+          
+          // Hide/Show Active Tags and Disable Current Plan Button
+          if (plan === 'go') {
+            document.getElementById('goTag').style.display = 'inline-block';
+            const goBtn = document.querySelector('.btn-go');
+            goBtn.innerText = "Current Plan";
+            goBtn.disabled = true;
+            goBtn.classList.add('btn-free');
+            goBtn.classList.remove('btn-go');
+          } else if (plan === 'pro') {
+            document.getElementById('proTag').style.display = 'inline-block';
+            const proBtn = document.querySelector('.btn-pro');
+            proBtn.innerText = "Current Plan";
+            proBtn.disabled = true;
+            proBtn.style.background = '#333';
+            proBtn.style.color = '#888';
+            proBtn.style.boxShadow = 'none';
+          }
+        }
+      } catch(err) {
+        console.error("Failed to check plan");
       }
     }
 
@@ -362,15 +580,13 @@
           const data = await res.json();
           const badge = document.getElementById('notifBadge');
           const btn = document.getElementById('notifBtn');
-          const label = document.getElementById('notifLabel');
 
           const hasServerMessages = data.count > 0;
           const lastViewTime = localStorage.getItem('lastNotifViewTime');
           
           let shouldShowBadge = false;
 
-          if (hasServerMessages) {
-             if (!lastViewTime) {
+          if (hasServerMessages) {             if (!lastViewTime) {
                  shouldShowBadge = true;
              } else {
                  shouldShowBadge = false; 
@@ -381,16 +597,15 @@
             badge.style.display = 'flex';
             badge.textContent = data.count > 9 ? '9+' : data.count;
             btn.classList.add('has-notifs');
-            label.style.display = 'block';
           } else {
             badge.style.display = 'none';
             btn.classList.remove('has-notifs');
-            label.style.display = 'none';
           }
         }
       } catch(err) {
         console.error("Failed to load notifications");
-      }    }
+      }    
+    }
 
     function handleLogout() {
       if(confirm("Are you sure you want to sign out?")) {
@@ -400,8 +615,10 @@
       }
     }
 
+    // Initialize
     loadNotifCount();
+    checkCurrentPlan();
   </script>
 
 </body>
-</html>
+  </html>
