@@ -646,6 +646,7 @@
       filePreviewContainer = document.getElementById('filePreviewContainer');
       fileNameDisplay = document.getElementById('fileNameDisplay');
 
+      // FORCE FRESH DATA ON LOAD
       checkPlanStatus();
 
       menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
@@ -659,25 +660,38 @@
 
     async function checkPlanStatus() {
       try {
-        const response = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        console.log("🔄 Fetching latest user plan...");
+        const response = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {          headers: { 'Authorization': `Bearer ${token}` },
+          cache: 'no-cache' // Prevents browser from using old data
         });
+        
         if (response.ok) {
           const user = await response.json();
           const plan = user.subscriptionTier || 'free';
-          planBadge.className = 'plan-badge';
-          if (plan === 'go') { planBadge.innerText = "GO MEMBER"; planBadge.classList.add('go'); }
-          else if (plan === 'pro') { planBadge.innerText = "PRO MEMBER"; planBadge.classList.add('pro'); }
-          else { planBadge.innerText = "FREE PLAN"; planBadge.classList.add('free'); }
+          
+          console.log(`✅ User Plan Detected: ${plan.toUpperCase()}`);
+          
+          // Update UI immediately
+          planBadge.className = 'plan-badge ' + plan; // e.g., "plan-badge go"
+          
+          if (plan === 'go') { 
+            planBadge.innerText = "GO MEMBER"; 
+          } else if (plan === 'pro') { 
+            planBadge.innerText = "PRO MEMBER"; 
+          } else { 
+            planBadge.innerText = "FREE PLAN"; 
+          }
+        } else {
+          console.error("❌ Failed to fetch user profile:", response.status);
         }
-      } catch (err) { console.error("Error checking plan status:", err); }
+      } catch (err) { 
+        console.error("Error checking plan status:", err); 
+      }
     }
 
     // --- IMAGE HANDLING ---
     function handleImageSelect(input) {
       if (input.files && input.files[0]) {
-        // If a file doc is already selected, remove it to avoid conflict (or allow both if backend supports)
-        // For simplicity, we prioritize one attachment type at a time in this UI flow
         removeFile(); 
         
         selectedImageFile = input.files[0];
@@ -696,9 +710,7 @@
     }
 
     // --- FILE DOCUMENT HANDLING ---
-    function handleFileSelect(input) {
-      if (input.files && input.files[0]) {
-        // Remove image if present
+    function handleFileSelect(input) {      if (input.files && input.files[0]) {
         removeImage();
 
         selectedFileDoc = input.files[0];
@@ -747,8 +759,7 @@
     }
 
     async function sendImageMessage(text) {
-        const file = selectedImageFile;
-        const imageUrl = URL.createObjectURL(file);
+        const file = selectedImageFile;        const imageUrl = URL.createObjectURL(file);
         
         appendMessage('user', text || "Analyzing image...", false, imageUrl);
         
@@ -763,8 +774,6 @@
 
         const formData = new FormData();
         formData.append('image', file);
-        // If there was text, we might need to send it depending on backend. 
-        // Current backend image route ignores text body for simplicity, but lets assume standard flow.
 
         try {
             const response = await fetch('https://skylineapp-backend-file.onrender.com/api/upload-image', {
@@ -792,22 +801,19 @@
     async function sendFileMessage(text) {
         const file = selectedFileDoc;
         
-        // Show user message
         appendMessage('user', text || `Uploaded file: ${file.name}`);
         
-        // Clear inputs
         msgInput.value = '';
         msgInput.style.height = 'auto';
         removeFile();
         sendBtn.disabled = true;
         charCount.textContent = '';
-        
-        isTyping = true;
+                isTyping = true;
         showTyping();
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('message', text); // Send text along with file
+        formData.append('message', text);
 
         try {
             const response = await fetch('https://skylineapp-backend-file.onrender.com/api/upload-file', {
@@ -832,6 +838,7 @@
             isTyping = false;
         }
     }
+
     function classifyMessage(text) {
       const t = text.toLowerCase().trim();
       if (t.length < 20) return 'chat';
@@ -850,8 +857,7 @@
         /\b(i want to|i'd like to|i plan to|i'm planning to|my goal is|i need to)\b/,
         /\b(learn|study|master|understand|practice|prepare for|pass|score|get certified in|revise)\b/,
         /\b(exam|test|course|subject|topic|module|certificate|degree|skill|language|programming|framework)\b/,
-        /\b(ielts|toefl|waec|jamb|sat|gmat|gre|aws|gcp|azure|comptia|cisco|pmp)\b/,
-        /\b(python|javascript|math|biology|chemistry|physics|history|english|design|react|sql|data)\b/,
+        /\b(ielts|toefl|waec|jamb|sat|gmat|gre|aws|gcp|azure|comptia|cisco|pmp)\b/,        /\b(python|javascript|math|biology|chemistry|physics|history|english|design|react|sql|data)\b/,
         /\b(become a|become an)\b.{0,30}\b(developer|designer|engineer|analyst|doctor|accountant|nurse)\b/,
       ];
       for (const p of studyPatterns) { if (p.test(t)) return 'plan'; }
@@ -900,8 +906,7 @@
 
     async function loadHistory() {
       if (!currentSessionId) return;
-      try {
-        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/history/${currentSessionId}`, {
+      try {        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/history/${currentSessionId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -950,8 +955,7 @@
         const dreamEncoded = encodeURIComponent(dreamDescription || data.title || '');
         html += `<div class="plan-question"
           onclick="activateRefineMode(decodeURIComponent('${planEncoded}'), decodeURIComponent('${dreamEncoded}'), this)"
-          title="Click to answer — your study plan will be refined">
-          💬 "${escapeHTML(question)}"
+          title="Click to answer — your study plan will be refined">          💬 "${escapeHTML(question)}"
           <span class="plan-question-hint">Click to answer · plan will be refined</span>
         </div>`;
       }
@@ -987,7 +991,6 @@
       }
     }
 
-    // UPDATED: appendMessage now accepts an optional imageUrl
     function appendMessage(role, content, isHTML = false, imageUrl = null) {
       const row = document.createElement('div');
       row.className = `msg-row ${role}`;
@@ -1001,8 +1004,7 @@
       row.innerHTML = `
         <div class="avatar">${role === 'ai' ? 'AI' : 'ME'}</div>
         <div class="bubble-wrap">
-          <div class="bubble">
-            ${imageHtml}
+          <div class="bubble">            ${imageHtml}
             ${isHTML ? content : escapeHTML(content)}
           </div>
           <div class="msg-time">${timeStr}</div>
@@ -1051,8 +1053,7 @@
     }
 
     function fillPrompt(text) {
-      msgInput.value = text; msgInput.focus();
-      msgInput.dispatchEvent(new Event('input'));
+      msgInput.value = text; msgInput.focus();      msgInput.dispatchEvent(new Event('input'));
     }
   </script>
 </body>
