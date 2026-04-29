@@ -487,39 +487,50 @@
 
     // --- UPGRADE LOGIC ---
     async function initiateUpgrade(planType) {
+      const btn = event.target;
+      const originalText = btn.innerText;
+      
       try {
-        // Find the button clicked to show loading state        const btn = event.target;
-        const originalText = btn.innerText;
-        btn.innerText = "Processing...";
+        btn.innerText = "Connecting...";
         btn.disabled = true;
 
-        // Call backend to create Flutterwave session with specific plan type
+        console.log(`Initiating upgrade for plan: ${planType}`);
+
         const response = await fetch('https://skylineapp-backend-file.onrender.com/api/create-flutterwave-payment', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ planType: planType }) // Sends 'go' or 'pro'
+          body: JSON.stringify({ planType: planType })
         });
 
+        // Check if response is OK (status 200-299)
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Server Error: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("Payment Response:", data);
 
         if (data.link) {
+          btn.innerText = "Redirecting...";
           // Redirect user to Flutterwave Checkout Page
           window.location.href = data.link;
         } else {
-          alert('Failed to initialize payment: ' + (data.message || 'Unknown error'));
-          btn.innerText = originalText;
-          btn.disabled = false;
+          throw new Error('No payment link received from server.');
         }
+
       } catch (err) {
-        console.error(err);
-        alert('Network Error. Please try again.');
-        const btn = event.target;
-        btn.innerText = "Upgrade";
-        btn.disabled = false;
-      }
+        console.error("Upgrade Error:", err);
+        alert(`Error: ${err.message}. Please check your connection or try again.`);
+        
+        // Reset button state
+        if(btn) {
+            btn.innerText = originalText.includes('GO') ? "Upgrade to GO" : "Upgrade to PRO";
+            btn.disabled = false;
+        }      }
     }
 
     // --- CHECK CURRENT PLAN TO HIGHLIGHT BUTTONS ---
@@ -536,21 +547,26 @@
           if (plan === 'go') {
             document.getElementById('goTag').style.display = 'inline-block';
             const goBtn = document.querySelector('.btn-go');
-            goBtn.innerText = "Current Plan";
-            goBtn.disabled = true;            goBtn.classList.add('btn-free');
-            goBtn.classList.remove('btn-go');
+            if(goBtn) {
+                goBtn.innerText = "Current Plan";
+                goBtn.disabled = true;            
+                goBtn.classList.add('btn-free');
+                goBtn.classList.remove('btn-go');
+            }
           } else if (plan === 'pro') {
             document.getElementById('proTag').style.display = 'inline-block';
             const proBtn = document.querySelector('.btn-pro');
-            proBtn.innerText = "Current Plan";
-            proBtn.disabled = true;
-            proBtn.style.background = '#333';
-            proBtn.style.color = '#888';
-            proBtn.style.boxShadow = 'none';
+            if(proBtn) {
+                proBtn.innerText = "Current Plan";
+                proBtn.disabled = true;
+                proBtn.style.background = '#333';
+                proBtn.style.color = '#888';
+                proBtn.style.boxShadow = 'none';
+            }
           }
         }
       } catch(err) {
-        console.error("Failed to check plan");
+        console.error("Failed to check plan", err);
       }
     }
 
@@ -563,8 +579,7 @@
     async function loadNotifCount() {
       try {
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/notifications/count', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+          headers: { 'Authorization': `Bearer ${token}` }        });
         
         if(res.ok) {
           const data = await res.json();
@@ -586,7 +601,8 @@
           if (shouldShowBadge) {
             badge.style.display = 'flex';
             badge.textContent = data.count > 9 ? '9+' : data.count;
-            btn.classList.add('has-notifs');          } else {
+            btn.classList.add('has-notifs');
+          } else {
             badge.style.display = 'none';
             btn.classList.remove('has-notifs');
           }
@@ -607,7 +623,6 @@
     // Initialize
     loadNotifCount();
     checkCurrentPlan();
-  </script>
-
+  </script> 
 </body>
   </html>
