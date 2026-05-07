@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skyline Business Agent | Skyline AA-1</title>
+  <title>Study Architect | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -47,9 +47,7 @@
     body {
       background: var(--bg-void);
       color: var(--text-1);
-      font-family: var(--font-sans);      font-size: 14px;
-      line-height: 1.6;
-      display: flex;
+      font-family: var(--font-sans);      font-size: 14px;      line-height: 1.6;      display: flex;
       flex-direction: column;
       height: 100vh;
       position: relative;
@@ -72,7 +70,7 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
     }
@@ -96,10 +94,9 @@
       font-size: 11px; font-weight: 500;
       letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--text-3);
-    }    .topbar-brand .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent-glow), 0 0 20px rgba(245,166,35,0.15);
+    }
+    .topbar-brand .dot {      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);      box-shadow: 0 0 10px var(--accent-glow), 0 0 20px rgba(245,166,35,0.15);
       animation: pulse 2.8s ease-in-out infinite;
       flex-shrink: 0;
     }
@@ -144,13 +141,11 @@
       width: 34px; height: 34px; border-radius: var(--radius-sm);
       border: 1px solid var(--border); background: var(--bg-surface);
       cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 3px; flex-direction: column;
-      transition: background 0.2s, border-color 0.2s; outline: none;    }
-    .menu-btn:hover { background: var(--bg-hover); border-color: var(--border-hi); }
-    .menu-btn span {
-      width: 3.5px; height: 3.5px; border-radius: 50%;
-      background: var(--text-2); display: block; transition: background 0.2s;
+      justify-content: center; gap: 3px; flex-direction: column;      transition: background 0.2s, border-color 0.2s; outline: none;
     }
+    .menu-btn:hover { background: var(--bg-hover); border-color: var(--border-hi); }    .menu-btn span {
+      width: 3.5px; height: 3.5px; border-radius: 50%;
+      background: var(--text-2); display: block; transition: background 0.2s;    }
     .menu-btn:hover span { background: var(--text-1); }
 
     .dropdown {
@@ -189,19 +184,17 @@
     .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
     .chat-area::-webkit-scrollbar-thumb:hover { background: #2a2a2a; }
 
-    /* Welcome / Onboarding Screen */
+    /* Welcome */
     .welcome {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 18px; padding: 40px 20px;
-      text-align: center; animation: fadeIn 0.7s ease;    }
+      gap: 18px; padding: 40px 20px;      text-align: center; animation: fadeIn 0.7s ease;
+    }
 
-    .welcome-logo {
-      width: 60px; height: 60px; border-radius: 18px;
+    .welcome-logo {      width: 60px; height: 60px; border-radius: 18px;
       border: 1px solid rgba(245,166,35,0.25);
       background: linear-gradient(135deg, #111, #0a0a0a);
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 4px;
+      display: flex; align-items: center; justify-content: center;      margin-bottom: 4px;
       box-shadow: 0 0 30px rgba(245,166,35,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
@@ -223,83 +216,34 @@
       opacity: 0.5;
     }
 
-    /* ONBOARDING FORM STYLES */
-    .onboarding-form {
-      width: 100%;
-      max-width: 500px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-md);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      text-align: left;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
+    .welcome-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
-    .form-group {
-      margin-bottom: 16px;
+    .welcome-tag {
+      padding: 6px 14px; border: 1px solid var(--border);
+      border-radius: 100px; font-family: var(--font-mono);
+      font-size: 10px; letter-spacing: 0.06em;
+      color: var(--text-2); cursor: pointer;
+      background: var(--bg-surface); transition: all 0.2s ease;
     }
-
-    .form-label {
-      display: block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;      color: var(--text-2);
-      margin-bottom: 6px;
-      letter-spacing: 0.05em;
-    }
-
-    .form-input {
-      width: 100%;
-      background: var(--bg-base);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      color: var(--text-1);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .form-input:focus {
-      border-color: var(--accent);
-    }
-
-    .form-submit-btn {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border: none;
-      border-radius: var(--radius-sm);
-      color: #000;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-
-    .form-submit-btn:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 15px rgba(245,166,35,0.3);
+    .welcome-tag:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: 0 0 12px rgba(245,166,35,0.12);
     }
 
     /* Message rows */
     .msg-row {
       display: flex; padding: 4px 24px;
       animation: msgIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    @keyframes msgIn {
+    }    @keyframes msgIn {
       from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }    }
-    .msg-row.user { justify-content: flex-end; }
-    .msg-row.ai   { justify-content: flex-start; }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.user { justify-content: flex-end; }    .msg-row.ai   { justify-content: flex-start; }
     .msg-row.ai   { gap: 10px; }
     .msg-row.user { gap: 10px; flex-direction: row-reverse; }
 
-    .bubble {
-      max-width: 75%; padding: 14px 18px;
+    .bubble {      max-width: 75%; padding: 14px 18px;
       border-radius: var(--radius-lg);
       line-height: 1.65; font-size: 13.5px; position: relative;
     }
@@ -315,6 +259,16 @@
       font-family: var(--font-mono); font-size: 13px; line-height: 1.8;
     }
 
+    /* IMAGE STYLES FOR CHAT (Claude/ChatGPT Style) */
+    .chat-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
     /* Plan styles */
     .plan-title {
       font-family: var(--font-sans); font-weight: 800; font-size: 15px;
@@ -328,20 +282,18 @@
       margin-bottom: 12px; padding: 8px 12px;
       background: rgba(245,166,35,0.06); border-left: 2px solid var(--accent);
       border-radius: 4px; font-size: 11px; color: var(--text-2);
-    }
-    .plan-blocker strong { color: var(--accent); }
+    }    .plan-blocker strong { color: var(--accent); }
     .plan-push {
       margin: 12px 0; padding: 12px 16px;
       border: 1px solid rgba(245,166,35,0.14); border-radius: 8px;
       color: var(--text-2); font-size: 12.5px; line-height: 1.7;
-      background: rgba(245,166,35,0.04);
-    }
+      background: rgba(245,166,35,0.04);    }
     .plan-phase { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
     .plan-phase-title {
       color: var(--accent); font-weight: 600; margin-bottom: 8px;
       display: block; font-size: 10px; letter-spacing: 0.14em;
-      text-transform: uppercase; font-family: var(--font-mono);
-    }    .plan-step {
+      text-transform: uppercase; font-family: var(--font-mono);    }
+    .plan-step {
       display: block; margin-left: 12px; margin-bottom: 6px;
       color: var(--text-2); font-size: 12px;
     }
@@ -377,15 +329,13 @@
     }
     .refine-banner-cancel:hover { opacity: 1; }
 
-    /* Avatar */
-    .avatar {
+    /* Avatar */    .avatar {
       width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       font-size: 9px; font-weight: 700; letter-spacing: 0.06em; margin-top: 4px;
     }
     .msg-row.ai .avatar {
-      background: var(--bg-surface); border: 1px solid rgba(245,166,35,0.20);
-      color: var(--accent); font-family: var(--font-mono);
+      background: var(--bg-surface); border: 1px solid rgba(245,166,35,0.20);      color: var(--accent); font-family: var(--font-mono);
     }
     .msg-row.user .avatar {
       background: var(--user-bg); border: 1px solid var(--user-border);
@@ -424,6 +374,551 @@
       border-top: 1px solid var(--border); flex-shrink: 0;
     }
 
+    /* PREVIEW CONTAINERS */
+    .preview-container {
+      display: none;
+      margin-bottom: 12px;
+      position: relative;
+      width: fit-content;
+    }
+    .preview-container.active {
+      display: block;
+      animation: fadeIn 0.3s ease;    }
+    
+    /* Image Specific */
+    .preview-thumbnail {
+      height: 80px;
+      border-radius: 12px;
+      border: 1px solid var(--border-md);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);    }
+
+    /* File Specific */
+    .file-preview-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-md);
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-2);
+      max-width: 300px;
+    }
+    .file-icon { font-size: 16px; }
+    .file-name { 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      max-width: 200px; 
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -8px; right: -8px;
+      width: 24px; height: 24px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--text-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      z-index: 5;
+    }
+    .remove-btn:hover {
+      background: var(--danger, #ff4d4d);
+      color: white;
+      border-color: var(--danger, #ff4d4d);
+    }
+    .input-inner {
+      display: flex; align-items: flex-end; gap: 10px;
+      background: var(--bg-surface); border: 1px solid var(--border-md);
+      border-radius: var(--radius-lg); padding: 12px 12px 12px 18px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-inner:focus-within {
+      border-color: rgba(245,166,35,0.40);      box-shadow: 0 0 0 3px rgba(245,166,35,0.07), 0 8px 40px rgba(0,0,0,0.6);
+    }
+    textarea {
+      flex: 1; background: transparent; border: none; outline: none; resize: none;
+      color: var(--text-1); font-family: var(--font-sans);
+      font-size: 13.5px; line-height: 1.6;
+      min-height: 24px; max-height: 160px;
+      overflow-y: auto; caret-color: var(--accent);
+    }    textarea::placeholder { color: var(--text-3); }
+    textarea::-webkit-scrollbar { width: 3px; }
+    textarea::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 2px; }
+
+    .send-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      transition: transform 0.15s, box-shadow 0.15s; outline: none;
+    }
+    .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 22px rgba(245,166,35,0.50); }
+    .send-btn:active { transform: scale(0.94); }
+    .send-btn:disabled {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      cursor: default; transform: none; box-shadow: none; opacity: 0.4;
+    }
+    .send-btn svg { flex-shrink: 0; }
+
+    .input-meta {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-top: 9px; padding: 0 4px;
+    }
+    .input-hint { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
+    .char-count { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); }
+    .char-count.warn { color: #f97316; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+   The issue comes from **`page.html`**.
+
+Your `server.js` is correctly catching errors and sending back a JSON object like `{ message: "Error..." }`. However, your `page.html` assumes every successful response has a `.reply` property. When it receives an error or a different structure, `d.reply` is `undefined`, and that is what gets displayed.
+
+Here is the **complete, corrected `page.html`**. I have upgraded the `fetchAIResponse` function to handle all cases safely so you never see `undefined` again.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Architect | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-void:     #000000;
+      --bg-base:     #050505;
+      --bg-surface:  #0c0c0c;
+      --bg-raised:   #111111;
+      --bg-hover:    #181818;
+      --border:      rgba(255,255,255,0.07);
+      --border-md:   rgba(255,255,255,0.12);
+      --border-hi:   rgba(255,255,255,0.22);
+
+      /* ACCENT: sharp amber-gold — vivid on pure black */
+      --accent:      #f5a623;
+      --accent-2:    #ff6b35;
+      --accent-dim:  rgba(245,166,35,0.10);
+      --accent-glow: rgba(245,166,35,0.30);
+
+      --go-color:    #38bdf8;
+      --pro-color:   #a78bfa;
+
+      --text-1:      #ffffff;
+      --text-2:      #999999;
+      --text-3:      #444444;
+      --user-bg:     #0f0f0f;
+      --user-border: rgba(245,166,35,0.20);
+      --ai-bg:       #080808;
+      --ai-border:   rgba(255,255,255,0.06);
+      --radius-sm:   8px;
+      --radius-md:   14px;
+      --radius-lg:   20px;
+      --font-mono:   'IBM Plex Mono', monospace;
+      --font-sans:   'Syne', sans-serif;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg-void);
+      color: var(--text-1);
+      font-family: var(--font-sans);      font-size: 14px;      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;      position: relative;
+    }
+
+    /* Radial ambient glow top-left */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -150px; left: -150px;
+      width: 550px; height: 550px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 68%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Noise texture */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: relative; z-index: 10;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 24px; height: 56px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+
+    .topbar-brand {
+      display: flex; align-items: center; gap: 9px;
+      font-family: var(--font-mono);
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .topbar-brand .dot {      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow), 0 0 20px rgba(245,166,35,0.15);
+      animation: pulse 2.8s ease-in-out infinite;
+      flex-shrink: 0;    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    .plan-badge {
+      font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+      padding: 3px 9px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .plan-badge.free {
+      background: rgba(255,255,255,0.04); color: var(--text-3);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .plan-badge.go {
+      background: rgba(56,189,248,0.10); color: var(--go-color);
+      border: 1px solid rgba(56,189,248,0.28);
+      box-shadow: 0 0 8px rgba(56,189,248,0.15);
+    }
+    .plan-badge.pro {
+      background: rgba(167,139,250,0.10); color: var(--pro-color);
+      border: 1px solid rgba(167,139,250,0.28);
+      box-shadow: 0 0 8px rgba(167,139,250,0.15);
+    }
+
+    .topbar-title {
+      font-family: var(--font-sans); font-size: 13px; font-weight: 800;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* 3-dot menu */
+    .menu-wrap { position: relative; }
+
+    .menu-btn {
+      width: 34px; height: 34px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--bg-surface);
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 3px; flex-direction: column;      transition: background 0.2s, border-color 0.2s; outline: none;
+    }
+    .menu-btn:hover { background: var(--bg-hover); border-color: var(--border-hi); }    .menu-btn span {
+      width: 3.5px; height: 3.5px; border-radius: 50%;
+      background: var(--text-2); display: block; transition: background 0.2s;
+    }
+    .menu-btn:hover span { background: var(--text-1); }
+    .dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--bg-raised); border: 1px solid var(--border-md);
+      border-radius: var(--radius-md); min-width: 185px; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.03);
+      opacity: 0; transform: translateY(-6px) scale(0.97);
+      pointer-events: none; transition: opacity 0.18s ease, transform 0.18s ease; z-index: 100;
+    }
+    .dropdown.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+    .dropdown-header {
+      padding: 10px 14px 8px; font-family: var(--font-mono);
+      font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text-3); border-bottom: 1px solid var(--border);
+    }
+    .dropdown a {
+      display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+      color: var(--text-2); text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: background 0.15s, color 0.15s; cursor: pointer;
+    }
+    .dropdown a:hover { background: var(--bg-hover); color: var(--text-1); }
+    .dropdown a .ico { width: 15px; height: 15px; opacity: 0.45; flex-shrink: 0; transition: opacity 0.15s; }
+    .dropdown a:hover .ico { opacity: 1; }
+    .dropdown-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* ── CHAT AREA ── */
+    .chat-area {
+      flex: 1; overflow-y: auto; padding: 32px 0;
+      display: flex; flex-direction: column; gap: 6px;
+      scroll-behavior: smooth; position: relative; z-index: 1;
+    }
+    .chat-area::-webkit-scrollbar { width: 3px; }
+    .chat-area::-webkit-scrollbar-track { background: transparent; }
+    .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
+    .chat-area::-webkit-scrollbar-thumb:hover { background: #2a2a2a; }
+
+    /* Welcome */
+    .welcome {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px; padding: 40px 20px;      text-align: center; animation: fadeIn 0.7s ease;
+    }
+
+    .welcome-logo {      width: 60px; height: 60px; border-radius: 18px;
+      border: 1px solid rgba(245,166,35,0.25);
+      background: linear-gradient(135deg, #111, #0a0a0a);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+      box-shadow: 0 0 30px rgba(245,166,35,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .welcome h2 {
+      font-size: 26px; font-weight: 800; letter-spacing: -0.03em;
+      background: linear-gradient(90deg, #ffffff 30%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome p {
+      font-family: var(--font-mono); font-size: 11.5px;
+      color: var(--text-3); max-width: 300px; line-height: 1.9;
+    }
+
+    .welcome-divider {
+      width: 40px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+
+    .welcome-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+    .welcome-tag {
+      padding: 6px 14px; border: 1px solid var(--border);
+      border-radius: 100px; font-family: var(--font-mono);
+      font-size: 10px; letter-spacing: 0.06em;
+      color: var(--text-2); cursor: pointer;
+      background: var(--bg-surface); transition: all 0.2s ease;
+    }
+    .welcome-tag:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: 0 0 12px rgba(245,166,35,0.12);
+    }
+
+    /* Message rows */
+    .msg-row {
+      display: flex; padding: 4px 24px;
+      animation: msgIn 0.28s cubic-bezier(0.22,1,0.36,1) both;
+    }    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.user { justify-content: flex-end; }    .msg-row.ai   { justify-content: flex-start; }
+    .msg-row.ai   { gap: 10px; }
+    .msg-row.user { gap: 10px; flex-direction: row-reverse; }
+
+    .bubble {
+      max-width: 75%; padding: 14px 18px;
+      border-radius: var(--radius-lg);
+      line-height: 1.65; font-size: 13.5px; position: relative;    }
+    .msg-row.user .bubble {
+      background: var(--user-bg); border: 1px solid var(--user-border);
+      border-bottom-right-radius: 5px; color: var(--text-1);
+      font-family: var(--font-sans);
+      box-shadow: 0 0 20px rgba(245,166,35,0.05);
+    }
+    .msg-row.ai .bubble {
+      background: var(--ai-bg); border: 1px solid var(--ai-border);
+      border-bottom-left-radius: 5px; color: var(--text-1);
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.8;
+    }
+
+    /* IMAGE STYLES FOR CHAT (Claude/ChatGPT Style) */
+    .chat-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    /* Plan styles */
+    .plan-title {
+      font-family: var(--font-sans); font-weight: 800; font-size: 15px;
+      margin-bottom: 8px; letter-spacing: -0.01em;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .plan-summary { color: var(--text-2); margin-bottom: 16px; font-style: italic; font-size: 12px; }
+    .plan-blocker {
+      margin-bottom: 12px; padding: 8px 12px;
+      background: rgba(245,166,35,0.06); border-left: 2px solid var(--accent);
+      border-radius: 4px; font-size: 11px; color: var(--text-2);
+    }    .plan-blocker strong { color: var(--accent); }
+    .plan-push {
+      margin: 12px 0; padding: 12px 16px;
+      border: 1px solid rgba(245,166,35,0.14); border-radius: 8px;
+      color: var(--text-2); font-size: 12.5px; line-height: 1.7;
+      background: rgba(245,166,35,0.04);    }
+    .plan-phase { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .plan-phase-title {
+      color: var(--accent); font-weight: 600; margin-bottom: 8px;
+      display: block; font-size: 10px; letter-spacing: 0.14em;
+      text-transform: uppercase; font-family: var(--font-mono);
+    }
+    .plan-step {
+      display: block; margin-left: 12px; margin-bottom: 6px;      color: var(--text-2); font-size: 12px;
+    }
+    .plan-step::before { content: '›'; color: var(--accent); margin-right: 8px; font-size: 14px; }
+    .plan-step-tool { color: var(--text-3); font-size: 10.5px; }
+
+    .plan-question {
+      margin-top: 16px; padding: 12px 16px;
+      background: var(--bg-raised); border: 1px solid rgba(245,166,35,0.18);
+      border-radius: 10px; font-style: italic; color: var(--accent);
+      font-size: 13px; cursor: pointer; transition: all 0.2s ease;
+    }
+    .plan-question:hover {
+      border-color: var(--accent); background: var(--accent-dim);
+      box-shadow: 0 0 16px rgba(245,166,35,0.10);
+    }
+    .plan-question .plan-question-hint {
+      display: block; font-size: 10px; font-style: normal;
+      color: var(--text-3); margin-top: 5px; letter-spacing: 0.05em;
+    }
+
+    /* Refine banner */
+    .refine-banner {
+      display: none; align-items: center; gap: 8px; padding: 7px 14px;
+      background: var(--accent-dim); border: 1px solid rgba(245,166,35,0.22);
+      border-radius: var(--radius-sm); margin-bottom: 10px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+    }
+    .refine-banner.active { display: flex; }
+    .refine-banner-cancel {
+      margin-left: auto; cursor: pointer; opacity: 0.5;
+      font-size: 13px; line-height: 1; transition: opacity 0.15s;
+    }
+    .refine-banner-cancel:hover { opacity: 1; }
+
+    /* Avatar */    .avatar {
+      width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.06em; margin-top: 4px;
+    }
+    .msg-row.ai .avatar {
+      background: var(--bg-surface); border: 1px solid rgba(245,166,35,0.20);      color: var(--accent); font-family: var(--font-mono);
+    }
+    .msg-row.user .avatar {
+      background: var(--user-bg); border: 1px solid var(--user-border);
+      color: var(--text-2); font-family: var(--font-mono);
+    }
+
+    .msg-time {
+      font-family: var(--font-mono); font-size: 9px;
+      color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em;    }
+    .msg-row.user .msg-time { text-align: right; }
+    .bubble-wrap { display: flex; flex-direction: column; }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex; align-items: center; gap: 5px;
+      padding: 13px 16px; background: var(--ai-bg);
+      border: 1px solid var(--ai-border); border-radius: var(--radius-lg);
+      border-bottom-left-radius: 5px; width: fit-content;
+    }
+    .typing-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-3); animation: typingBounce 1.3s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.16s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.32s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0);    background: var(--text-3); }
+      30%            { transform: translateY(-5px); background: var(--accent); }
+    }
+
+    /* INPUT BAR */
+    .input-bar {
+      position: relative; z-index: 10;
+      padding: 16px 24px 20px;
+      background: var(--bg-base);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+
+    /* PREVIEW CONTAINERS */
+    .preview-container {
+      display: none;
+      margin-bottom: 12px;
+      position: relative;
+      width: fit-content;
+    }
+    .preview-container.active {
+      display: block;
+      animation: fadeIn 0.3s ease;    }
+    
+    /* Image Specific */
+    .preview-thumbnail {
+      height: 80px;
+      border-radius: 12px;
+      border: 1px solid var(--border-md);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* File Specific */    .file-preview-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-md);
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-2);
+      max-width: 300px;
+    }
+    .file-icon { font-size: 16px; }
+    .file-name { 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      max-width: 200px; 
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -8px; right: -8px;
+      width: 24px; height: 24px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--text-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      z-index: 5;
+    }
+    .remove-btn:hover {
+      background: var(--danger, #ff4d4d);
+      color: white;
+      border-color: var(--danger, #ff4d4d);
+    }
     .input-inner {
       display: flex; align-items: flex-end; gap: 10px;
       background: var(--bg-surface); border: 1px solid var(--border-md);
@@ -434,13 +929,12 @@
       border-color: rgba(245,166,35,0.40);
       box-shadow: 0 0 0 3px rgba(245,166,35,0.07), 0 8px 40px rgba(0,0,0,0.6);
     }
-    textarea {
-      flex: 1; background: transparent; border: none; outline: none; resize: none;
+    textarea {      flex: 1; background: transparent; border: none; outline: none; resize: none;
       color: var(--text-1); font-family: var(--font-sans);
       font-size: 13.5px; line-height: 1.6;
       min-height: 24px; max-height: 160px;
-      overflow-y: auto; caret-color: var(--accent);    }
-    textarea::placeholder { color: var(--text-3); }
+      overflow-y: auto; caret-color: var(--accent);
+    }    textarea::placeholder { color: var(--text-3); }
     textarea::-webkit-scrollbar { width: 3px; }
     textarea::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 2px; }
 
@@ -484,12 +978,11 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
-      <div class="topbar-brand">
-        <span class="dot"></span>
+      <div class="topbar-brand">        <span class="dot"></span>
         <span>Skyline AA-1</span>
       </div>
       <div id="planBadge" class="plan-badge free">Free Plan</div>    </div>
-    <span class="topbar-title">Business Agent</span>
+    <span class="topbar-title">Study Architect</span>
     <div class="menu-wrap">
       <button class="menu-btn" id="menuBtn" aria-label="Menu" title="Options">
         <span></span><span></span><span></span>
@@ -521,11 +1014,8 @@
     </div>
   </header>
 
-  <!-- CHAT AREA -->
-  <div class="chat-area" id="chatArea">
-    
-    <!-- ONBOARDING FORM (Replaces Welcome Screen) -->
-    <div class="welcome" id="onboardingScreen">
+  <!-- CHAT AREA -->  <div class="chat-area" id="chatArea">
+    <div class="welcome" id="welcomeScreen">
       <div class="welcome-logo">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
           <path d="M4 19V6a2 2 0 012-2h12a2 2 0 012 2v13" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
@@ -533,57 +1023,57 @@
           <path d="M8 8h8M8 12h5" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
         </svg>
       </div>
-      <h2>Configure Your Agent</h2>
-      <p>Tell us about your business so Skyline AA-1 can assist you effectively.</p>
-      
-      <div class="onboarding-form">
-        <div class="form-group">          <label class="form-label">Your Name</label>
-          <input type="text" id="inputName" class="form-input" placeholder="e.g. John Doe">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Target Industry</label>
-          <input type="text" id="inputIndustry" class="form-input" placeholder="e.g. SaaS, Real Estate, Retail">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Target Pain Point</label>
-          <input type="text" id="inputPainPoint" class="form-input" placeholder="e.g. Low lead conversion, High churn">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Location</label>
-          <input type="text" id="inputLocation" class="form-input" placeholder="e.g. New York, USA">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Unique Selling Proposition (USP)</label>
-          <input type="text" id="inputUSP" class="form-input" placeholder="e.g. 24/7 Support, Lowest Price">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Primary Goal</label>
-          <input type="text" id="inputGoal" class="form-input" placeholder="e.g. Increase revenue by 20%">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Outreach Method</label>
-          <input type="text" id="inputOutreach" class="form-input" placeholder="e.g. Cold Email, LinkedIn, Cold Call">
-        </div>
-        
-        <button class="form-submit-btn" onclick="submitOnboarding()">Initialize Agent</button>
+      <h2>What do you want to study?</h2>
+      <p>Describe your learning goal and Skyline AA-1 will build your personal study roadmap.</p>
+      <div class="welcome-divider"></div>
+      <div class="welcome-tags">
+        <span class="welcome-tag" onclick="fillPrompt('I want to master Python programming in 3 months')">Python</span>        <span class="welcome-tag" onclick="fillPrompt('I want to study for my IELTS exam and score 7.5')">IELTS</span>
+        <span class="welcome-tag" onclick="fillPrompt('I want to learn UI/UX design from scratch')">UI/UX Design</span>        <span class="welcome-tag" onclick="fillPrompt('I want to pass my WAEC/JAMB exams')">WAEC / JAMB</span>
       </div>
     </div>
-
-    <!-- CHAT MESSAGES CONTAINER -->
-    <div id="messagesContainer" style="display: none;"></div>
-
   </div>
 
   <!-- INPUT BAR -->
-  <div class="input-bar" id="inputBar" style="display: none;">
+  <div class="input-bar">
     
+    <!-- IMAGE PREVIEW -->
+    <div class="preview-container" id="imagePreviewContainer">
+      <img id="previewThumbnail" class="preview-thumbnail" src="" alt="Preview">
+      <div class="remove-btn" onclick="removeImage()">✕</div>
+    </div>
+
+    <!-- FILE PREVIEW -->
+    <div class="preview-container" id="filePreviewContainer">
+      <div class="file-preview-card">
+        <span class="file-icon">📄</span>
+        <span class="file-name" id="fileNameDisplay">document.pdf</span>
+      </div>
+      <div class="remove-btn" onclick="removeFile()">✕</div>
+    </div>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(this)">
+    <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.csv" style="display: none;" onchange="handleFileSelect(this)">
+
     <div class="refine-banner" id="refineBanner">
-      <span>📖 Refining previous task...</span>
+      <span>📖 Answering follow-up — your study plan will be refined</span>
       <span class="refine-banner-cancel" onclick="cancelRefineMode()" title="Cancel">✕</span>
     </div>
     
     <div class="input-inner">
-      <textarea id="msgInput" placeholder="Describe your task or ask anything..."
+      <!-- Upload Buttons Group -->
+      <div style="display: flex; gap: 4px; margin-right: 4px;">        <!-- Image Upload Button -->
+        <button onclick="document.getElementById('imageInput').click()" style="background: transparent; border: none; color: var(--text-2); cursor: pointer; padding: 8px;" title="Upload Image">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        
+        <!-- File Upload Button (Paperclip) -->
+        <button onclick="document.getElementById('fileInput').click()" style="background: transparent; border: none; color: var(--text-2); cursor: pointer; padding: 8px;" title="Upload Document">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+      </div>
+
+      <textarea id="msgInput" placeholder="Describe what you want to study or ask anything..."
         rows="1" autocomplete="off" spellcheck="false"></textarea>
       <button class="send-btn" id="sendBtn" disabled title="Send (Enter)">
         <svg width="14" height="14" viewBox="0 0 15 15" fill="none">          <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5"
@@ -605,92 +1095,58 @@
     let currentSessionId = urlParams.get('session');
     let conversationHistory = [];
     let isTyping = false;
-    let refineState = null;
+    let welcomeScr;    let refineState = null;
     
-    // Business Context State
-    let businessProfile = JSON.parse(localStorage.getItem('skyline_business_profile')) || null;
+    // State for uploads
+    let selectedImageFile = null; 
+    let selectedFileDoc = null;
 
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner, planBadge;
-    let onboardingScreen, messagesContainer, inputBar;
+    let imagePreviewContainer, previewThumbnail;
+    let filePreviewContainer, fileNameDisplay;
 
     document.addEventListener('DOMContentLoaded', () => {
-      chatArea         = document.getElementById('chatArea');
-      msgInput         = document.getElementById('msgInput');
-      sendBtn          = document.getElementById('sendBtn');
-      menuBtn          = document.getElementById('menuBtn');
-      dropdown         = document.getElementById('dropdown');
-      charCount        = document.getElementById('charCount');
-      refineBanner     = document.getElementById('refineBanner');
-      planBadge        = document.getElementById('planBadge');
+      chatArea     = document.getElementById('chatArea');
+      msgInput     = document.getElementById('msgInput');
+      sendBtn      = document.getElementById('sendBtn');
+      welcomeScr   = document.getElementById('welcomeScreen');
+      menuBtn      = document.getElementById('menuBtn');      dropdown     = document.getElementById('dropdown');
+      charCount    = document.getElementById('charCount');
+      refineBanner = document.getElementById('refineBanner');
+      planBadge    = document.getElementById('planBadge');
       
-      // New UI Elements
-      onboardingScreen = document.getElementById('onboardingScreen');
-      messagesContainer = document.getElementById('messagesContainer');
-      inputBar         = document.getElementById('inputBar');
+      // UI Elements
+      imagePreviewContainer = document.getElementById('imagePreviewContainer');
+      previewThumbnail = document.getElementById('previewThumbnail');
+      filePreviewContainer = document.getElementById('filePreviewContainer');
+      fileNameDisplay = document.getElementById('fileNameDisplay');
 
+      // FORCE FRESH DATA ON LOAD
       checkPlanStatus();
 
       menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
-      document.addEventListener('click', () => dropdown.classList.remove('open'));
-      msgInput.addEventListener('input', handleInput);
+      document.addEventListener('click', () => dropdown.classList.remove('open'));      msgInput.addEventListener('input', handleInput);
       msgInput.addEventListener('keydown', handleKeydown);
       sendBtn.addEventListener('click', sendMessage);
-      // Check if user has already onboarded
-      if (businessProfile) {
-        showChatInterface();
-        loadHistory();
-      } else {
-        // Show Onboarding Form
-        onboardingScreen.style.display = 'flex';
-      }
+
+      loadHistory();
     });
-
-    // --- ONBOARDING LOGIC ---
-    function submitOnboarding() {
-      const profile = {
-        name: document.getElementById('inputName').value.trim(),
-        targetIndustry: document.getElementById('inputIndustry').value.trim(),
-        targetPainPoint: document.getElementById('inputPainPoint').value.trim(),
-        location: document.getElementById('inputLocation').value.trim(),
-        usp: document.getElementById('inputUSP').value.trim(),
-        goal: document.getElementById('inputGoal').value.trim(),
-        outreachMethod: document.getElementById('inputOutreach').value.trim()
-      };
-
-      // Simple validation
-      if (!profile.name || !profile.targetIndustry) {
-        alert("Please fill in at least your Name and Target Industry.");
-        return;
-      }
-
-      // Save to LocalStorage
-      localStorage.setItem('skyline_business_profile', JSON.stringify(profile));
-      businessProfile = profile;
-
-      // Transition UI
-      showChatInterface();
-      
-      // Optional: Send an initial system message or just wait for user
-      appendMessage('ai', `Hello ${profile.name}. I am ready to assist you in the ${profile.targetIndustry} industry. How can I help you achieve your goal of "${profile.goal}" today?`);
-    }
-
-    function showChatInterface() {
-      onboardingScreen.style.display = 'none';
-      messagesContainer.style.display = 'block';
-      inputBar.style.display = 'block';
-    }
 
     async function checkPlanStatus() {
       try {
-        const response = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
-          headers: { 'Authorization': `Bearer ${token}` },
-          cache: 'no-cache'        });
+        console.log("🔄 Fetching latest user plan...");
+        const response = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {          headers: { 'Authorization': `Bearer ${token}` },
+          cache: 'no-cache' // Prevents browser from using old data
+        });
         
         if (response.ok) {
           const user = await response.json();
           const plan = user.subscriptionTier || 'free';
           
-          planBadge.className = 'plan-badge ' + plan;
+          console.log(`✅ User Plan Detected: ${plan.toUpperCase()}`);
+          
+          // Update UI immediately
+          planBadge.className = 'plan-badge ' + plan; // e.g., "plan-badge go"
           
           if (plan === 'go') { 
             planBadge.innerText = "GO MEMBER"; 
@@ -699,55 +1155,198 @@
           } else { 
             planBadge.innerText = "FREE PLAN"; 
           }
+        } else {
+          console.error("❌ Failed to fetch user profile:", response.status);
         }
       } catch (err) { 
         console.error("Error checking plan status:", err); 
       }
     }
 
+    // --- IMAGE HANDLING ---
+    function handleImageSelect(input) {
+      if (input.files && input.files[0]) {
+        removeFile(); 
+        
+        selectedImageFile = input.files[0];
+        const imageUrl = URL.createObjectURL(selectedImageFile);
+        previewThumbnail.src = imageUrl;
+        imagePreviewContainer.classList.add('active');
+        updateSendButton();      }
+    }
+    function removeImage() {
+      selectedImageFile = null;
+      imagePreviewContainer.classList.remove('active');
+      previewThumbnail.src = "";
+      document.getElementById('imageInput').value = "";
+      updateSendButton();
+    }
+
+    // --- FILE DOCUMENT HANDLING ---
+    function handleFileSelect(input) {      if (input.files && input.files[0]) {
+        removeImage();
+
+        selectedFileDoc = input.files[0];
+        fileNameDisplay.innerText = selectedFileDoc.name;
+        filePreviewContainer.classList.add('active');
+        updateSendButton();
+      }
+    }
+
+    function removeFile() {
+      selectedFileDoc = null;
+      filePreviewContainer.classList.remove('active');
+      fileNameDisplay.innerText = "";
+      document.getElementById('fileInput').value = "";
+      updateSendButton();
+    }
+
     function updateSendButton() {
       const hasText = msgInput.value.trim().length > 0;
-      sendBtn.disabled = !hasText || isTyping;
+      const hasAttachment = selectedImageFile || selectedFileDoc;
+      sendBtn.disabled = !(hasText || hasAttachment) || isTyping;
     }
 
     // --- SENDING MESSAGES ---
     async function sendMessage() {
       const text = msgInput.value.trim();
-      if (!text || isTyping) return;
+      if ((!text && !selectedImageFile && !selectedFileDoc) || isTyping) return;
 
-      appendMessage('user', text);
-      msgInput.value = ''; msgInput.style.height = 'auto';
-      sendBtn.disabled = true; charCount.textContent = '';
+      hideWelcome(); 
       
-      if (refineState) {
-        const { originalPlan, dreamDescription } = refineState;
-        cancelRefineMode();
-        await fetchAIResponse(text, 'refine', originalPlan, dreamDescription);
-      } else {
-        await fetchAIResponse(text, 'chat', null, text);
+      if (selectedFileDoc) {
+          await sendFileMessage(text);
+      } else if (selectedImageFile) {
+          await sendImageMessage(text);
+      } else {          // Standard text flow
+          appendMessage('user', text);
+          msgInput.value = ''; msgInput.style.height = 'auto';
+          sendBtn.disabled = true; charCount.textContent = '';
+          if (refineState) {
+            const { originalPlan, dreamDescription } = refineState;            cancelRefineMode();
+            await fetchAIResponse(text, 'refine', originalPlan, dreamDescription);          } else {
+            await fetchAIResponse(text, classifyMessage(text), null, text);
+          }
       }
     }
 
-    // --- UPGRADED FETCH AI RESPONSE ---
+    async function sendImageMessage(text) {
+        const file = selectedImageFile;        const imageUrl = URL.createObjectURL(file);
+        
+        appendMessage('user', text || "Analyzing image...", false, imageUrl);
+        
+        msgInput.value = ''; 
+        msgInput.style.height = 'auto';
+        removeImage(); 
+        sendBtn.disabled = true; 
+        charCount.textContent = '';
+        
+        isTyping = true; 
+        showTyping();
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('https://skylineapp-backend-file.onrender.com/api/upload-image', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await response.json();
+            hideTyping();
+
+            if (response.ok) {
+                appendMessage('ai', data.reply);
+                if(data.sessionId) currentSessionId = data.sessionId;
+            } else {
+                appendMessage('ai', `❌ Error: ${data.message}`);
+            }
+        } catch (err) {            hideTyping();
+            appendMessage('ai', 'Network error during image upload.');
+        } finally {
+            isTyping = false;
+        }
+    }
+
+    async function sendFileMessage(text) {
+        const file = selectedFileDoc;
+                appendMessage('user', text || `Uploaded file: ${file.name}`);
+        
+        msgInput.value = '';
+        msgInput.style.height = 'auto';
+        removeFile();
+        sendBtn.disabled = true;
+        charCount.textContent = '';
+                isTyping = true;
+        showTyping();
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('message', text);
+
+        try {
+            const response = await fetch('https://skylineapp-backend-file.onrender.com/api/upload-file', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await response.json();
+            hideTyping();
+
+            if (response.ok) {
+                appendMessage('ai', data.reply);
+                if(data.sessionId) currentSessionId = data.sessionId;
+            } else {
+                appendMessage('ai', `❌ Error: ${data.message}`);
+            }
+        } catch (err) {
+            hideTyping();
+            appendMessage('ai', 'Network error during file upload.');
+        } finally {
+            isTyping = false;
+        }
+    }
+
+    function classifyMessage(text) {
+      const t = text.toLowerCase().trim();
+      if (t.length < 20) return 'chat';
+      const chatPatterns = [
+        /^(hi|hello|hey|sup|yo|hiya)\b/,/^how (are|r) (you|u)\b/,/^what('?s| is) up\b/,
+        /^(thanks|thank you|thx|cheers|ok|okay|cool|got it|alright|nice|great|sounds good|makes sense)\b/,
+        /^(who are you|what are you|tell me about yourself|what can you do)\b/,
+        /^(yes|no|maybe|sure|nope|yep|yup|agreed|correct|exactly)\b/,
+        /^(can you|could you|do you|would you|will you) (help|explain|tell|show|give)\b/,
+        /^(what do you (think|mean)|i (don't|dont) (understand|get it)|can you clarify)\b/,
+        /^(that('?s| is) (great|good|amazing|helpful|interesting|cool|bad|wrong))\b/,
+        /^(i('?m| am) (not sure|confused|stuck|scared|worried|thinking))\b/,      ];
+      for (const p of chatPatterns) { if (p.test(t)) return 'chat'; }
+      const studyPatterns = [
+        /\b(i want to|i'd like to|i plan to|i'm planning to|my goal is|i need to)\b/,
+        /\b(learn|study|master|understand|practice|prepare for|pass|score|get certified in|revise)\b/,
+        /\b(exam|test|course|subject|topic|module|certificate|degree|skill|language|programming|framework)\b/,
+        /\b(ielts|toefl|waec|jamb|sat|gmat|gre|aws|gcp|azure|comptia|cisco|pmp)\b/,        /\b(python|javascript|math|biology|chemistry|physics|history|english|design|react|sql|data)\b/,
+        /\b(become a|become an)\b.{0,30}\b(developer|designer|engineer|analyst|doctor|accountant|nurse)\b/,
+      ];
+      for (const p of studyPatterns) { if (p.test(t)) return 'plan'; }
+      return 'chat';
+    }
+
+    // --- UPGRADED FETCH AI RESPONSE (FIXES UNDEFINED) ---
     async function fetchAIResponse(userText, mode, originalPlan, dreamDescription) {
       isTyping = true; 
       showTyping();
       
-      try {        let url = '';
+      try {
+        let url = '';
         let body = {};
 
+        // Determine URL and Body based on mode
         if (mode === 'chat') {
           url = 'https://skylineapp-backend-file.onrender.com/api/chat';
-          // Inject Business Profile into History context if available
-          let contextHistory = conversationHistory;
-          if (businessProfile && conversationHistory.length === 0) {
-             // Prepend a invisible system context for the first message
-             contextHistory = [{
-               role: 'system',
-               content: `User Business Profile: Name: ${businessProfile.name}, Industry: ${businessProfile.targetIndustry}, Pain Point: ${businessProfile.targetPainPoint}, Location: ${businessProfile.location}, USP: ${businessProfile.usp}, Goal: ${businessProfile.goal}, Outreach: ${businessProfile.outreachMethod}. Keep this context in mind.`
-             }];
-          }
-          body = { message: userText, history: contextHistory, sessionId: currentSessionId };
+          body = { message: userText, history: conversationHistory, sessionId: currentSessionId };
         } else if (mode === 'plan') {
           url = 'https://skylineapp-backend-file.onrender.com/api/dreams/analyze';
           body = { dream: userText, sessionId: currentSessionId };
@@ -766,23 +1365,27 @@
         hideTyping();
 
         if (r.ok) {
+          // SUCCESS: Use the reply
           if (!currentSessionId && d.sessionId) { 
             currentSessionId = d.sessionId; 
             pushSessionToURL(currentSessionId); 
           }
-          
+                    // Update History if available
           if (d.history) conversationHistory = d.history;
           
+          // Display Message (Safe Check)
           appendMessage('ai', d.reply || d.plan || "⚠️ Received empty response");
 
         } else {
+          // ERROR: Display the error message from backend
           console.error("Backend Error:", d);
           appendMessage('ai', `❌ Error: ${d.message || 'Unknown server error'}`);
         }
 
       } catch (err) { 
         hideTyping(); 
-        console.error("Network Error:", err);        appendMessage('ai', '🔌 Network error. Please check your connection and try again.'); 
+        console.error("Network Error:", err);
+        appendMessage('ai', '🔌 Network error. Please check your connection and try again.'); 
       }
       finally { 
         isTyping = false; 
@@ -792,28 +1395,23 @@
 
     async function loadHistory() {
       if (!currentSessionId) return;
-      try {
-        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/history/${currentSessionId}`, {
+      try {        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/history/${currentSessionId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
           const messages = await res.json();
           if (messages.length > 0) {
+            hideWelcome();
             messages.forEach(msg => {
               if (msg.role === 'ai') {
                 try {
                   const pd = JSON.parse(msg.content);
                   if (pd.title && pd.phases) {
                     appendMessage('ai', formatPlanToHTML(pd, pd.title), true);
-                  } else { 
-                    appendMessage('ai', msg.content); 
-                  }
-                } catch(e) { 
-                  appendMessage('ai', msg.content); 
-                }
-              } else { 
-                appendMessage('user', msg.content); 
-              }
+                    conversationHistory.push({role:'assistant',content:`Plan: "${pd.title}". ${pd.summary}`});
+                  } else { appendMessage('ai', msg.content); conversationHistory.push({role:'assistant',content:msg.content}); }
+                } catch(e) { appendMessage('ai', msg.content); conversationHistory.push({role:'assistant',content:msg.content}); }
+              } else { appendMessage('user', msg.content); conversationHistory.push({role:'user',content:msg.content}); }
             });
             scrollToBottom();
           }
@@ -821,17 +1419,15 @@
       } catch(err) { console.error('Failed to load session:', err); }
     }
 
-    function formatPlanToHTML(data, dreamDescription) {
-      let html = '';
+    function formatPlanToHTML(data, dreamDescription) {      let html = '';
       if (data.blocker_diagnosis) {
-        const b = data.blocker_diagnosis;
-        html += `<div class="plan-blocker"><strong>${escapeHTML(b.identified_blocker)}</strong> — ${escapeHTML(b.how_addressed)}</div>`;
-      }
-      html += `<div class="plan-title">${escapeHTML(data.title)}</div>`;
+        const b = data.blocker_diagnosis;        html += `<div class="plan-blocker"><strong>${escapeHTML(b.identified_blocker)}</strong> — ${escapeHTML(b.how_addressed)}</div>`;
+      }      html += `<div class="plan-title">${escapeHTML(data.title)}</div>`;
       html += `<div class="plan-summary">${escapeHTML(data.summary)}</div>`;
       if (data.the_push) html += `<div class="plan-push">${escapeHTML(data.the_push)}</div>`;
       if (Array.isArray(data.phases)) {
-        data.phases.forEach(phase => {          html += `<div class="plan-phase"><span class="plan-phase-title">${escapeHTML(phase.phaseName)}</span>`;
+        data.phases.forEach(phase => {
+          html += `<div class="plan-phase"><span class="plan-phase-title">${escapeHTML(phase.phaseName)}</span>`;
           if (Array.isArray(phase.steps)) {
             phase.steps.forEach(step => {
               const tool = step.tool ? ` <span class="plan-step-tool">· ${escapeHTML(step.tool)}</span>` : '';
@@ -847,8 +1443,7 @@
         const dreamEncoded = encodeURIComponent(dreamDescription || data.title || '');
         html += `<div class="plan-question"
           onclick="activateRefineMode(decodeURIComponent('${planEncoded}'), decodeURIComponent('${dreamEncoded}'), this)"
-          title="Click to answer — your plan will be refined">
-          💬 "${escapeHTML(question)}"
+          title="Click to answer — your study plan will be refined">          💬 "${escapeHTML(question)}"
           <span class="plan-question-hint">Click to answer · plan will be refined</span>
         </div>`;
       }
@@ -863,35 +1458,45 @@
         document.querySelectorAll('.plan-question').forEach(q => { q.style.borderColor=''; q.style.background=''; });
         el.style.borderColor = 'var(--accent)';
         el.style.background = 'var(--accent-dim)';
-        msgInput.placeholder = 'Answer the follow-up to refine your plan...';
+        msgInput.placeholder = 'Answer the follow-up to refine your study plan...';
         msgInput.focus(); scrollToBottom();
       } catch(e) { console.error('Refine mode error:', e); }
     }
 
     function cancelRefineMode() {
       refineState = null; refineBanner.classList.remove('active');
-      msgInput.placeholder = 'Describe your task or ask anything...';
+      msgInput.placeholder = 'Describe what you want to study or ask anything...';
       document.querySelectorAll('.plan-question').forEach(q => { q.style.borderColor=''; q.style.background=''; });
     }
+    function pushSessionToURL(sid) {      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?session=${sid}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);    }
 
-    function pushSessionToURL(sid) {
-      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?session=${sid}`;
-      window.history.pushState({ path: newUrl }, '', newUrl);
+    function hideWelcome() {
+      if (welcomeScr) {
+        welcomeScr.style.opacity = '0'; welcomeScr.style.transition = 'opacity 0.25s';
+        setTimeout(() => { if (welcomeScr) { welcomeScr.remove(); welcomeScr = null; } }, 250);
+      }
     }
 
     function appendMessage(role, content, isHTML = false, imageUrl = null) {
-      const row = document.createElement('div');      row.className = `msg-row ${role}`;
+      const row = document.createElement('div');
+      row.className = `msg-row ${role}`;
       const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
       
+      let imageHtml = '';
+      if (imageUrl) {
+          imageHtml = `<img src="${imageUrl}" class="chat-image" alt="Uploaded content">`;
+      }
+
       row.innerHTML = `
         <div class="avatar">${role === 'ai' ? 'AI' : 'ME'}</div>
         <div class="bubble-wrap">
-          <div class="bubble">
+          <div class="bubble">            ${imageHtml}
             ${isHTML ? content : escapeHTML(content)}
           </div>
           <div class="msg-time">${timeStr}</div>
         </div>`;
-      messagesContainer.appendChild(row); scrollToBottom();
+      chatArea.appendChild(row); scrollToBottom();
     }
 
     function showTyping() {
@@ -906,14 +1511,13 @@
             <div class="typing-dot"></div>
           </div>
         </div>`;
-      messagesContainer.appendChild(row); scrollToBottom();
+      chatArea.appendChild(row); scrollToBottom();
     }
     function hideTyping() { const el = document.getElementById('typingRow'); if (el) el.remove(); }
 
     function escapeHTML(str) {
-      return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\n/g,'<br>');
+      return String(str)        .replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\n/g,'<br>');
     }
-
     function scrollToBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
 
     function handleInput() {
@@ -929,8 +1533,13 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
     }
 
-    function clearChat() {      currentSessionId = null; conversationHistory = [];
+    function clearChat() {
+      currentSessionId = null; conversationHistory = [];
       cancelRefineMode(); window.location.href = 'page.html';
+    }
+
+    function fillPrompt(text) {
+      msgInput.value = text; msgInput.focus();      msgInput.dispatchEvent(new Event('input'));
     }
   </script>
 </body>
