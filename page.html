@@ -192,6 +192,7 @@
       margin-top: 8px; transition: transform 0.15s, box-shadow 0.15s;
     }
     .form-submit-btn:hover { transform: scale(1.02); box-shadow: 0 0 18px rgba(245,166,35,0.4); }
+    .form-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }
     @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -257,6 +258,13 @@
     .typing-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); background: var(--accent); } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .error-message {
+      color: #ff6b6b;
+      font-size: 12px;
+      margin-top: 5px;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -319,7 +327,7 @@
     let refineState = null;
 
     // DOM elements
-    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner, planBadge, onboardingScreen, messagesContainer, inputBar;
+    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner, planBadge, onboardingScreen, messagesContainer, inputBar, initBtn;
 
     document.addEventListener('DOMContentLoaded', async () => {
       chatArea = document.getElementById('chatArea');
@@ -333,9 +341,9 @@
       onboardingScreen = document.getElementById('onboardingScreen');
       messagesContainer = document.getElementById('messagesContainer');
       inputBar = document.getElementById('inputBar');
+      initBtn = document.getElementById('initializeAgentBtn');
 
       // Initialize Agent Button - FIXED EVENT LISTENER
-      const initBtn = document.getElementById('initializeAgentBtn');
       if (initBtn) {
         initBtn.addEventListener('click', submitOnboarding);
       } else {
@@ -365,6 +373,12 @@
     });
 
     async function submitOnboarding() {
+      // Disable button to prevent multiple submissions
+      if (initBtn) {
+        initBtn.disabled = true;
+        initBtn.textContent = 'Initializing...';
+      }
+
       const name = document.getElementById('inputName')?.value.trim() || "User";
       const industry = document.getElementById('inputIndustry')?.value.trim();
       const painPoint = document.getElementById('inputPainPoint')?.value.trim();
@@ -375,10 +389,24 @@
 
       if (!industry || !painPoint) {
         alert("Please fill at least Industry and Pain Point.");
+        if (initBtn) {
+          initBtn.disabled = false;
+          initBtn.textContent = 'Initialize Agent';
+        }
         return;
       }
 
-      const dreamText = `I am ${name} operating in ${industry}. Pain point: ${painPoint}. Location: ${location}. USP: ${usp}. Goal: ${goal}. Outreach: ${outreach}. Please generate a strategic business plan.`;
+      // Create a structured dream description
+      const dreamText = `Business Context:
+- Name: ${name}
+- Industry: ${industry}
+- Primary Pain Point: ${painPoint}
+- Location: ${location || 'Not specified'}
+- USP: ${usp || 'Not specified'}
+- Primary Goal: ${goal || 'Not specified'}
+- Preferred Outreach: ${outreach || 'Not specified'}
+
+Please analyze this business context and provide a comprehensive strategic business plan with actionable phases.`;
       
       // Hide onboarding screen and show chat UI
       if (onboardingScreen) onboardingScreen.style.display = 'none';
@@ -390,39 +418,62 @@
       
       // Call AI for initial plan
       await fetchAIPlan(dreamText);
+      
+      // Re-enable button if needed (though screen is hidden)
+      if (initBtn) {
+        initBtn.disabled = false;
+        initBtn.textContent = 'Initialize Agent';
+      }
     }
 
     async function fetchAIPlan(dreamDescription) {
       isTyping = true;
       showTyping();
       try {
+        // First attempt: Use dreams/analyze endpoint
         const response = await fetch('https://skylineapp-backend-file.onrender.com/api/dreams/analyze', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ dream: dreamDescription, sessionId: currentSessionId || null })
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            dream: dreamDescription, 
+            sessionId: currentSessionId || null 
+          })
         });
+        
         const data = await response.json();
         hideTyping();
+        
         if (response.ok) {
           if (data.sessionId && !currentSessionId) {
             currentSessionId = data.sessionId;
             pushSessionToURL(currentSessionId);
           }
           if (data.history) conversationHistory = data.history;
-          const replyText = data.reply || data.plan || "Plan generated.";
-          let formattedContent = replyText;
-          if (typeof replyText === 'object' && replyText.title) {
-            formattedContent = formatPlanToHTML(replyText, dreamDescription);
+          
+          const replyText = data.reply || data.plan || "I've analyzed your business context. How would you like to proceed?";
+          
+          // Check if the response is a plan object or plain text
+          if (typeof replyText === 'object' && replyText !== null && replyText.title) {
+            const formattedContent = formatPlanToHTML(replyText, dreamDescription);
             appendMessage('ai', formattedContent, true);
           } else {
             appendMessage('ai', replyText);
           }
         } else {
-          appendMessage('ai', `❌ Error: ${data.message || 'Failed to generate plan'}`);
+          // If dreams/analyze fails, fallback to regular chat endpoint
+          console.warn('Dreams analyze failed, falling back to chat endpoint:', data);
+          appendMessage('ai', '🔄 Using alternative analysis method...');
+          await fetchChatResponse(dreamDescription);
         }
       } catch (err) {
+        console.error('Network error in fetchAIPlan:', err);
         hideTyping();
-        appendMessage('ai', '🔌 Network error. Please try again.');
+        // Fallback to chat endpoint on network error
+        appendMessage('ai', '🔄 Connection issue, trying alternative method...');
+        await fetchChatResponse(dreamDescription);
       } finally {
         isTyping = false;
         updateSendButton();
@@ -453,20 +504,37 @@
       try {
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            message, 
+            history: conversationHistory, 
+            sessionId: currentSessionId 
+          })
         });
+        
         const data = await res.json();
         hideTyping();
+        
         if (res.ok) {
-          if (data.sessionId && !currentSessionId) { currentSessionId = data.sessionId; pushSessionToURL(currentSessionId); }
+          if (data.sessionId && !currentSessionId) { 
+            currentSessionId = data.sessionId; 
+            pushSessionToURL(currentSessionId); 
+          }
           if (data.history) conversationHistory = data.history;
-          appendMessage('ai', data.reply || "No response");
+          appendMessage('ai', data.reply || "I've received your message. How can I assist further?");
         } else {
-          appendMessage('ai', `⚠️ ${data.message || 'Backend error'}`);
+          appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
         }
-      } catch (err) { hideTyping(); appendMessage('ai', 'Connection error.'); }
-      finally { isTyping = false; updateSendButton(); }
+      } catch (err) { 
+        hideTyping(); 
+        appendMessage('ai', '🔌 Connection error. Please check your network and try again.'); 
+      } finally { 
+        isTyping = false; 
+        updateSendButton(); 
+      }
     }
 
     async function fetchRefineResponse(followUp, originalPlan, dreamDescription) {
@@ -475,24 +543,39 @@
       try {
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/dreams/refine', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ originalPlan, followUpAnswer: followUp, dreamDescription, sessionId: currentSessionId })
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            originalPlan, 
+            followUpAnswer: followUp, 
+            dreamDescription, 
+            sessionId: currentSessionId 
+          })
         });
+        
         const data = await res.json();
         hideTyping();
+        
         if (res.ok) {
           if (data.history) conversationHistory = data.history;
           const refinedPlan = data.refinedPlan || data.reply;
-          if (typeof refinedPlan === 'object') {
+          if (typeof refinedPlan === 'object' && refinedPlan !== null) {
             appendMessage('ai', formatPlanToHTML(refinedPlan, dreamDescription), true);
           } else {
-            appendMessage('ai', refinedPlan || 'Plan refined.');
+            appendMessage('ai', refinedPlan || 'Plan has been refined based on your feedback.');
           }
         } else {
-          appendMessage('ai', `Refine error: ${data.message}`);
+          appendMessage('ai', `Refine error: ${data.message || 'Could not refine plan. Please try again.'}`);
         }
-      } catch (e) { hideTyping(); appendMessage('ai', 'Refine network error'); }
-      finally { isTyping = false; updateSendButton(); }
+      } catch (e) { 
+        hideTyping(); 
+        appendMessage('ai', 'Network error during refinement. Please try again.'); 
+      } finally { 
+        isTyping = false; 
+        updateSendButton(); 
+      }
     }
 
     async function loadHistoryFromSession() {
@@ -502,7 +585,7 @@
         });
         if (res.ok) {
           const msgs = await res.json();
-          if (msgs.length) {
+          if (msgs && msgs.length) {
             if (onboardingScreen) onboardingScreen.style.display = 'none';
             if (messagesContainer) messagesContainer.style.display = 'block';
             if (inputBar) inputBar.style.display = 'block';
@@ -541,7 +624,7 @@
           planBadge.className = `plan-badge ${plan}`;
           planBadge.innerText = plan === 'go' ? 'GO MEMBER' : (plan === 'pro' ? 'PRO MEMBER' : 'FREE PLAN');
         }
-      } catch(e) {}
+      } catch(e) { console.warn('Plan status check failed:', e); }
     }
 
     function formatPlanToHTML(plan, dreamDesc) {
@@ -584,7 +667,7 @@
         element.style.background = 'var(--accent-dim)';
         msgInput.placeholder = 'Answer the follow-up to refine your plan...';
         msgInput.focus();
-      } catch(e) { console.error(e); }
+      } catch(e) { console.error('Refine activation error:', e); }
     }
 
     function cancelRefineMode() {
@@ -601,9 +684,8 @@
       row.innerHTML = `<div class="avatar">${role === 'ai' ? 'AI' : 'ME'}</div>
         <div class="bubble-wrap"><div class="bubble">${isHTML ? content : escapeHTML(content)}</div><div class="msg-time">${timeStr}</div></div>`;
       chatArea.appendChild(row);
-      if (!isHTML && role === 'ai' && content.includes('follow') && content.includes('?')) {
-        // auto detect plan-question binding later but dynamic
-      }
+      
+      // Attach event listeners to any plan questions in the new message
       row.querySelectorAll('.plan-question').forEach(el => {
         el.removeEventListener('click', questionHandler);
         el.addEventListener('click', () => activateRefineModeFromQuestion(el));
@@ -619,14 +701,41 @@
       row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
       chatArea.appendChild(row); scrollToBottom();
     }
+    
     function hideTyping() { const el = document.getElementById('typingRow'); if (el) el.remove(); }
-    function escapeHTML(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+    
+    function escapeHTML(str) { 
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); 
+    }
+    
     function scrollToBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
+    
     function updateSendButton() { if(sendBtn) sendBtn.disabled = !msgInput.value.trim() || isTyping; }
-    function handleInput() { msgInput.style.height = 'auto'; msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px'; updateSendButton(); charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; }
-    function handleKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); } }
-    function pushSessionToURL(sid) { const url = new URL(window.location); url.searchParams.set('session', sid); window.history.pushState({}, '', url); }
-    function clearChat() { window.location.href = window.location.pathname; }
+    
+    function handleInput() { 
+      msgInput.style.height = 'auto'; 
+      msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px'; 
+      updateSendButton(); 
+      charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; 
+    }
+    
+    function handleKeydown(e) { 
+      if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault(); 
+        if (!sendBtn.disabled) sendMessage(); 
+      } 
+    }
+    
+    function pushSessionToURL(sid) { 
+      const url = new URL(window.location); 
+      url.searchParams.set('session', sid); 
+      window.history.pushState({}, '', url); 
+    }
+    
+    function clearChat() { 
+      window.location.href = window.location.pathname; 
+    }
   </script>
 </body>
-          </html>
+        </html>
