@@ -605,23 +605,29 @@
     let currentSessionId = urlParams.get('session');
     let conversationHistory = [];
     let isTyping = false;
-    let welcomeScr;
     let refineState = null;
+    
+    // Business Context State
+    let businessProfile = JSON.parse(localStorage.getItem('skyline_business_profile')) || null;
 
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner, planBadge;
+    let onboardingScreen, messagesContainer, inputBar;
 
     document.addEventListener('DOMContentLoaded', () => {
-      chatArea     = document.getElementById('chatArea');
-      msgInput     = document.getElementById('msgInput');
-      sendBtn      = document.getElementById('sendBtn');
-      welcomeScr   = document.getElementById('welcomeScreen');
-      menuBtn      = document.getElementById('menuBtn');
-      dropdown     = document.getElementById('dropdown');
-      charCount    = document.getElementById('charCount');
-      refineBanner = document.getElementById('refineBanner');
-      planBadge    = document.getElementById('planBadge');
+      chatArea         = document.getElementById('chatArea');
+      msgInput         = document.getElementById('msgInput');
+      sendBtn          = document.getElementById('sendBtn');
+      menuBtn          = document.getElementById('menuBtn');
+      dropdown         = document.getElementById('dropdown');
+      charCount        = document.getElementById('charCount');
+      refineBanner     = document.getElementById('refineBanner');
+      planBadge        = document.getElementById('planBadge');
+      
+      // New UI Elements
+      onboardingScreen = document.getElementById('onboardingScreen');
+      messagesContainer = document.getElementById('messagesContainer');
+      inputBar         = document.getElementById('inputBar');
 
-      // FORCE FRESH DATA ON LOAD
       checkPlanStatus();
 
       menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
@@ -629,26 +635,77 @@
       msgInput.addEventListener('input', handleInput);
       msgInput.addEventListener('keydown', handleKeydown);
       sendBtn.addEventListener('click', sendMessage);
-
-      loadHistory();
+      // Check if user has already onboarded
+      if (businessProfile) {
+        showChatInterface();
+        loadHistory();
+      } else {
+        // Show Onboarding Form
+        onboardingScreen.style.display = 'flex';
+      }
     });
+
+    // --- ONBOARDING LOGIC ---
+    function submitOnboarding() {
+      const profile = {
+        name: document.getElementById('inputName').value.trim(),
+        targetIndustry: document.getElementById('inputIndustry').value.trim(),
+        targetPainPoint: document.getElementById('inputPainPoint').value.trim(),
+        location: document.getElementById('inputLocation').value.trim(),
+        usp: document.getElementById('inputUSP').value.trim(),
+        goal: document.getElementById('inputGoal').value.trim(),
+        outreachMethod: document.getElementById('inputOutreach').value.trim()
+      };
+
+      // Simple validation
+      if (!profile.name || !profile.targetIndustry) {
+        alert("Please fill in at least your Name and Target Industry.");
+        return;
+      }
+
+      // Save to LocalStorage
+      localStorage.setItem('skyline_business_profile', JSON.stringify(profile));
+      businessProfile = profile;
+
+      // Transition UI
+      showChatInterface();
+      
+      // Construct the initial message to send to AI
+      const initialMessage = `
+I am a new user. Here is my business profile:
+- Name: ${profile.name}
+- Industry: ${profile.targetIndustry}
+- Pain Point: ${profile.targetPainPoint}
+- Location: ${profile.location}
+- USP: ${profile.usp}
+- Goal: ${profile.goal}
+- Outreach: ${profile.outreachMethod}
+
+Please analyze this profile and provide a brief strategic overview of how I can achieve my goal using my USP in this industry.
+`;
+
+      // Send to AI immediately      appendMessage('user', "Initializing Business Profile...");
+      fetchAIResponse(initialMessage, 'chat', null, null);
+    }
+
+    function showChatInterface() {
+      onboardingScreen.style.display = 'none';
+      messagesContainer.style.display = 'block';
+      inputBar.style.display = 'block';
+    }
 
     async function checkPlanStatus() {
       try {
-        console.log("🔄 Fetching latest user plan...");
-        // Added cache: 'no-cache' to ensure we get fresh data from DB
         const response = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
           headers: { 'Authorization': `Bearer ${token}` },
-          cache: 'no-cache' 
+          cache: 'no-cache'
         });
         
         if (response.ok) {
           const user = await response.json();
           const plan = user.subscriptionTier || 'free';
           
-          console.log(`✅ User Plan Detected: ${plan.toUpperCase()}`);          
-          // Update UI immediately
-          planBadge.className = 'plan-badge ' + plan; // e.g., "plan-badge go"
+          planBadge.className = 'plan-badge ' + plan;
           
           if (plan === 'go') { 
             planBadge.innerText = "GO MEMBER"; 
@@ -657,8 +714,6 @@
           } else { 
             planBadge.innerText = "FREE PLAN"; 
           }
-        } else {
-          console.error("❌ Failed to fetch user profile:", response.status);
         }
       } catch (err) { 
         console.error("Error checking plan status:", err); 
@@ -675,13 +730,10 @@
       const text = msgInput.value.trim();
       if (!text || isTyping) return;
 
-      hideWelcome(); 
-      
       appendMessage('user', text);
       msgInput.value = ''; msgInput.style.height = 'auto';
       sendBtn.disabled = true; charCount.textContent = '';
-      
-      if (refineState) {
+            if (refineState) {
         const { originalPlan, dreamDescription } = refineState;
         cancelRefineMode();
         await fetchAIResponse(text, 'refine', originalPlan, dreamDescription);
@@ -690,12 +742,13 @@
       }
     }
 
-    // --- FETCH AI RESPONSE ---
+    // --- UPGRADED FETCH AI RESPONSE ---
     async function fetchAIResponse(userText, mode, originalPlan, dreamDescription) {
       isTyping = true; 
       showTyping();
       
-      try {        let url = '';
+      try {
+        let url = '';
         let body = {};
 
         if (mode === 'chat') {
@@ -726,12 +779,10 @@
           
           if (d.history) conversationHistory = d.history;
           
-          // Display Message (Safe Check)
           appendMessage('ai', d.reply || d.plan || "⚠️ Received empty response");
 
         } else {
-          console.error("Backend Error:", d);
-          appendMessage('ai', `❌ Error: ${d.message || 'Unknown server error'}`);
+          console.error("Backend Error:", d);          appendMessage('ai', `❌ Error: ${d.message || 'Unknown server error'}`);
         }
 
       } catch (err) { 
@@ -744,6 +795,7 @@
         if (msgInput.value.trim()) sendBtn.disabled = false; 
       }
     }
+
     async function loadHistory() {
       if (!currentSessionId) return;
       try {
@@ -753,25 +805,20 @@
         if (res.ok) {
           const messages = await res.json();
           if (messages.length > 0) {
-            hideWelcome();
             messages.forEach(msg => {
               if (msg.role === 'ai') {
                 try {
                   const pd = JSON.parse(msg.content);
                   if (pd.title && pd.phases) {
                     appendMessage('ai', formatPlanToHTML(pd, pd.title), true);
-                    conversationHistory.push({role:'assistant',content:`Plan: "${pd.title}". ${pd.summary}`});
                   } else { 
                     appendMessage('ai', msg.content); 
-                    conversationHistory.push({role:'assistant',content:msg.content}); 
                   }
                 } catch(e) { 
                   appendMessage('ai', msg.content); 
-                  conversationHistory.push({role:'assistant',content:msg.content}); 
                 }
               } else { 
                 appendMessage('user', msg.content); 
-                conversationHistory.push({role:'user',content:msg.content}); 
               }
             });
             scrollToBottom();
@@ -784,8 +831,7 @@
       let html = '';
       if (data.blocker_diagnosis) {
         const b = data.blocker_diagnosis;
-        html += `<div class="plan-blocker"><strong>${escapeHTML(b.identified_blocker)}</strong> — ${escapeHTML(b.how_addressed)}</div>`;
-      }
+        html += `<div class="plan-blocker"><strong>${escapeHTML(b.identified_blocker)}</strong> — ${escapeHTML(b.how_addressed)}</div>`;      }
       html += `<div class="plan-title">${escapeHTML(data.title)}</div>`;
       html += `<div class="plan-summary">${escapeHTML(data.summary)}</div>`;
       if (data.the_push) html += `<div class="plan-push">${escapeHTML(data.the_push)}</div>`;
@@ -793,7 +839,8 @@
         data.phases.forEach(phase => {
           html += `<div class="plan-phase"><span class="plan-phase-title">${escapeHTML(phase.phaseName)}</span>`;
           if (Array.isArray(phase.steps)) {
-            phase.steps.forEach(step => {              const tool = step.tool ? ` <span class="plan-step-tool">· ${escapeHTML(step.tool)}</span>` : '';
+            phase.steps.forEach(step => {
+              const tool = step.tool ? ` <span class="plan-step-tool">· ${escapeHTML(step.tool)}</span>` : '';
               html += `<span class="plan-step">${escapeHTML(step.action)} <em style="color:var(--text-3)">(${escapeHTML(step.timeline)})</em>${tool}</span>`;
             });
           }
@@ -833,16 +880,9 @@
       document.querySelectorAll('.plan-question').forEach(q => { q.style.borderColor=''; q.style.background=''; });
     }
 
-    function pushSessionToURL(sid) {
-      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?session=${sid}`;
+    function pushSessionToURL(sid) {      const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?session=${sid}`;
       window.history.pushState({ path: newUrl }, '', newUrl);
     }
-
-    function hideWelcome() {
-      if (welcomeScr) {
-        welcomeScr.style.opacity = '0'; welcomeScr.style.transition = 'opacity 0.25s';
-        setTimeout(() => { if (welcomeScr) { welcomeScr.remove(); welcomeScr = null; } }, 250);
-      }    }
 
     function appendMessage(role, content, isHTML = false, imageUrl = null) {
       const row = document.createElement('div');
@@ -857,7 +897,7 @@
           </div>
           <div class="msg-time">${timeStr}</div>
         </div>`;
-      chatArea.appendChild(row); scrollToBottom();
+      messagesContainer.appendChild(row); scrollToBottom();
     }
 
     function showTyping() {
@@ -872,7 +912,7 @@
             <div class="typing-dot"></div>
           </div>
         </div>`;
-      chatArea.appendChild(row); scrollToBottom();
+      messagesContainer.appendChild(row); scrollToBottom();
     }
     function hideTyping() { const el = document.getElementById('typingRow'); if (el) el.remove(); }
 
@@ -890,18 +930,13 @@
       charCount.textContent = len > 0 ? len : '';
       charCount.className = 'char-count' + (len > 800 ? ' warn' : '');
     }
-
-    function handleKeydown(e) {      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
+    function handleKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
     }
 
     function clearChat() {
       currentSessionId = null; conversationHistory = [];
       cancelRefineMode(); window.location.href = 'page.html';
-    }
-
-    function fillPrompt(text) {
-      msgInput.value = text; msgInput.focus();
-      msgInput.dispatchEvent(new Event('input'));
     }
   </script>
 </body>
