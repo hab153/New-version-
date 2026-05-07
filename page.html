@@ -150,50 +150,6 @@
     .chat-area::-webkit-scrollbar-track { background: transparent; }
     .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
 
-    .welcome {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 18px; padding: 40px 20px;
-      text-align: center; animation: fadeIn 0.7s ease;
-    }
-    .welcome-logo {
-      width: 60px; height: 60px; border-radius: 18px;
-      border: 1px solid rgba(245,166,35,0.25);
-      background: linear-gradient(135deg, #111, #0a0a0a);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .welcome h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(90deg, #ffffff 30%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .welcome p { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3); max-width: 300px; line-height: 1.9; }
-
-    .onboarding-form {
-      width: 100%; max-width: 520px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-md);
-      border-radius: var(--radius-lg);
-      padding: 28px 26px;
-      text-align: left;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-    .form-group { margin-bottom: 18px; }
-    .form-label { display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-2); margin-bottom: 6px; letter-spacing: 0.05em; font-weight: 500; }
-    .form-input {
-      width: 100%; background: var(--bg-base); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 10px 12px;
-      color: var(--text-1); font-family: var(--font-sans); font-size: 13px;
-      outline: none; transition: border-color 0.2s;
-    }
-    .form-input:focus { border-color: var(--accent); }
-    .form-submit-btn {
-      width: 100%; padding: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border: none; border-radius: var(--radius-sm);
-      color: #000; font-weight: 800; font-family: var(--font-mono);
-      text-transform: uppercase; cursor: pointer;
-      margin-top: 8px; transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .form-submit-btn:hover { transform: scale(1.02); box-shadow: 0 0 18px rgba(245,166,35,0.4); }
-    .form-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
     .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }
     @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg-row.user { justify-content: flex-end; }
@@ -210,11 +166,6 @@
       font-size: 9px; font-weight: 700; background: var(--bg-surface); margin-top: 4px;
     }
     .msg-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em; }
-
-    .refine-banner { display: none; align-items: center; gap: 8px; padding: 7px 14px; background: var(--accent-dim); border: 1px solid rgba(245,166,35,0.22); border-radius: var(--radius-sm); margin-bottom: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
-    .refine-banner.active { display: flex; }
-    .refine-banner-cancel { margin-left: auto; cursor: pointer; opacity: 0.6; }
-    .refine-banner-cancel:hover { opacity: 1; }
 
     .input-bar {
       padding: 16px 24px 20px; background: var(--bg-base);
@@ -245,7 +196,6 @@
     .typing-dot:nth-child(2) { animation-delay: 0.16s; }
     .typing-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); background: var(--accent); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -268,47 +218,35 @@
   </header>
 
   <div class="chat-area" id="chatArea">
-    <div class="welcome" id="onboardingScreen">
-      <div class="welcome-logo">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 19V6a2 2 0 012-2h12a2 2 0 012 2v13" stroke="var(--accent)" stroke-width="1.5"/><path d="M4 19a2 2 0 002 2h12a2 2 0 002-2" stroke="var(--accent)" stroke-width="1.5" opacity="0.45"/><path d="M8 8h8M8 12h5" stroke="var(--accent)" stroke-width="1.5" opacity="0.8"/></svg>
-      </div>
-      <h2>Configure Your Agent</h2>
-      <p>Tell us about your business so Skyline AA-1 can assist you effectively.</p>
-      <div class="onboarding-form">
-        <div class="form-group"><label class="form-label">Your Name</label><input type="text" id="inputName" class="form-input" placeholder="e.g. John Doe"></div>
-        <div class="form-group"><label class="form-label">Target Industry</label><input type="text" id="inputIndustry" class="form-input" placeholder="e.g. SaaS, Real Estate, Retail"></div>
-        <div class="form-group"><label class="form-label">Target Pain Point</label><input type="text" id="inputPainPoint" class="form-input" placeholder="e.g. Low lead conversion, High churn"></div>
-        <div class="form-group"><label class="form-label">Location</label><input type="text" id="inputLocation" class="form-input" placeholder="e.g. New York, USA"></div>
-        <div class="form-group"><label class="form-label">Unique Selling Proposition (USP)</label><input type="text" id="inputUSP" class="form-input" placeholder="e.g. 24/7 Support, Lowest Price"></div>
-        <div class="form-group"><label class="form-label">Primary Goal</label><input type="text" id="inputGoal" class="form-input" placeholder="e.g. Increase revenue by 20%"></div>
-        <div class="form-group"><label class="form-label">Outreach Method</label><input type="text" id="inputOutreach" class="form-input" placeholder="e.g. Cold Email, LinkedIn"></div>
-        <button class="form-submit-btn" id="initializeAgentBtn">Initialize Agent</button>
-      </div>
-    </div>
-    <div id="messagesContainer" style="display: none;"></div>
+    <div id="messagesContainer"></div>
   </div>
 
-  <div class="input-bar" id="inputBar" style="display: none;">
-    <div class="refine-banner" id="refineBanner"><span>📖 Refining previous task...</span><span class="refine-banner-cancel" id="cancelRefineBtn">✕</span></div>
+  <div class="input-bar" id="inputBar">
     <div class="input-inner">
-      <textarea id="msgInput" placeholder="Describe your task or ask anything..." rows="1"></textarea>
-      <button class="send-btn" id="sendBtn" disabled><svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" disabled>
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
+          <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
-    <div class="input-meta" style="display: flex; justify-content: space-between; margin-top: 8px;"><span class="input-hint">Enter ↵ to send  ·  Shift+Enter for newline</span><span class="char-count" id="charCount"></span></div>
+    <div class="input-meta" style="display: flex; justify-content: space-between; margin-top: 8px;">
+      <span class="input-hint">Enter ↵ to send  ·  Shift+Enter for newline</span>
+      <span class="char-count" id="charCount"></span>
+    </div>
   </div>
 
   <script>
-    // ========== UNIFIED: BOTH MESSAGE TYPES USE SAME CHAT ENDPOINT ==========
+    // ========== SIMPLE CHAT ONLY - NO ONBOARDING, NO REFINE ==========
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
     let currentSessionId = new URLSearchParams(window.location.search).get('session');
     let conversationHistory = [];
     let isTyping = false;
-    let refineState = null;
 
     // DOM elements
-    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, refineBanner, planBadge, onboardingScreen, messagesContainer, inputBar, initBtn;
+    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
 
     document.addEventListener('DOMContentLoaded', async () => {
       chatArea = document.getElementById('chatArea');
@@ -317,17 +255,7 @@
       menuBtn = document.getElementById('menuBtn');
       dropdown = document.getElementById('dropdown');
       charCount = document.getElementById('charCount');
-      refineBanner = document.getElementById('refineBanner');
       planBadge = document.getElementById('planBadge');
-      onboardingScreen = document.getElementById('onboardingScreen');
-      messagesContainer = document.getElementById('messagesContainer');
-      inputBar = document.getElementById('inputBar');
-      initBtn = document.getElementById('initializeAgentBtn');
-
-      // Initialize Agent Button - NOW USES SAME CHAT ENDPOINT
-      if (initBtn) {
-        initBtn.addEventListener('click', submitOnboarding);
-      }
 
       // Menu & dropdown
       if (menuBtn) menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
@@ -340,69 +268,17 @@
         msgInput.addEventListener('keydown', handleKeydown);
       }
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
-      const cancelRefine = document.getElementById('cancelRefineBtn');
-      if (cancelRefine) cancelRefine.addEventListener('click', cancelRefineMode);
 
       await checkPlanStatus();
+
+      // Add welcome message
+      appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
 
       // Load existing session if any
       if (currentSessionId) {
         await loadHistoryFromSession();
       }
     });
-
-    async function submitOnboarding() {
-      if (initBtn) {
-        initBtn.disabled = true;
-        initBtn.textContent = 'Initializing...';
-      }
-
-      const name = document.getElementById('inputName')?.value.trim() || "User";
-      const industry = document.getElementById('inputIndustry')?.value.trim();
-      const painPoint = document.getElementById('inputPainPoint')?.value.trim();
-      const location = document.getElementById('inputLocation')?.value.trim();
-      const usp = document.getElementById('inputUSP')?.value.trim();
-      const goal = document.getElementById('inputGoal')?.value.trim();
-      const outreach = document.getElementById('inputOutreach')?.value.trim();
-
-      if (!industry || !painPoint) {
-        alert("Please fill at least Industry and Pain Point.");
-        if (initBtn) {
-          initBtn.disabled = false;
-          initBtn.textContent = 'Initialize Agent';
-        }
-        return;
-      }
-
-      // Create a natural language message (same format as normal chat messages)
-      const chatMessage = `Hi! I need help with my business. Here's my information:
-
-Name: ${name}
-Industry: ${industry}
-Main challenge: ${painPoint}
-Location: ${location || 'Not specified'}
-What makes us unique: ${usp || 'Not specified'}
-Goal: ${goal || 'Not specified'}
-How we reach customers: ${outreach || 'Not specified'}
-
-Can you help me create a strategic business plan based on this information?`;
-      
-      // Hide onboarding screen and show chat UI
-      if (onboardingScreen) onboardingScreen.style.display = 'none';
-      if (messagesContainer) messagesContainer.style.display = 'block';
-      if (inputBar) inputBar.style.display = 'block';
-      
-      // Add user message to UI
-      appendMessage('user', chatMessage);
-      
-      // Send through the SAME chat endpoint as normal messages
-      await fetchChatResponse(chatMessage);
-      
-      if (initBtn) {
-        initBtn.disabled = false;
-        initBtn.textContent = 'Initialize Agent';
-      }
-    }
 
     async function sendMessage() {
       const text = msgInput.value.trim();
@@ -413,19 +289,9 @@ Can you help me create a strategic business plan based on this information?`;
       msgInput.style.height = 'auto';
       updateSendButton();
       
-      // Both refine and normal messages use the same chat endpoint
-      if (refineState) {
-        const { originalPlan, dreamDescription } = refineState;
-        cancelRefineMode();
-        // For refine, we'll use chat with context
-        const refineMessage = `Based on my previous business plan, here's my answer to your follow-up question: "${text}". Please refine the plan accordingly.`;
-        await fetchChatResponse(refineMessage);
-      } else {
-        await fetchChatResponse(text);
-      }
+      await fetchChatResponse(text);
     }
 
-    // UNIFIED: Single function for ALL messages (onboarding + normal chat)
     async function fetchChatResponse(message) {
       isTyping = true;
       showTyping();
@@ -476,9 +342,10 @@ Can you help me create a strategic business plan based on this information?`;
         if (res.ok) {
           const msgs = await res.json();
           if (msgs && msgs.length) {
-            if (onboardingScreen) onboardingScreen.style.display = 'none';
-            if (messagesContainer) messagesContainer.style.display = 'block';
-            if (inputBar) inputBar.style.display = 'block';
+            // Clear the welcome message first
+            const messagesContainer = document.getElementById('messagesContainer');
+            if (messagesContainer) messagesContainer.innerHTML = '';
+            
             for (let msg of msgs) {
               if (msg.role === 'ai') {
                 appendMessage('ai', msg.content);
@@ -509,47 +376,49 @@ Can you help me create a strategic business plan based on this information?`;
       } catch(e) { console.warn('Plan status check failed:', e); }
     }
 
-    function activateRefineModeFromQuestion(element) {
-      // Simplified refine mode - just stores context
-      refineState = { originalPlan: { title: "Business Plan" }, dreamDescription: "Previous context" };
-      refineBanner.classList.add('active');
-      msgInput.placeholder = 'Answer the follow-up to refine your plan...';
-      msgInput.focus();
-    }
-
-    function cancelRefineMode() {
-      refineState = null;
-      refineBanner.classList.remove('active');
-      msgInput.placeholder = 'Describe your task or ask anything...';
-    }
-
-    function appendMessage(role, content, isHTML = false) {
+    function appendMessage(role, content) {
+      const messagesContainer = document.getElementById('messagesContainer');
+      if (!messagesContainer) return;
+      
       const row = document.createElement('div');
       row.className = `msg-row ${role}`;
       const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
       row.innerHTML = `<div class="avatar">${role === 'ai' ? 'AI' : 'ME'}</div>
         <div class="bubble-wrap"><div class="bubble">${escapeHTML(content)}</div><div class="msg-time">${timeStr}</div></div>`;
-      chatArea.appendChild(row);
+      messagesContainer.appendChild(row);
       scrollToBottom();
     }
 
     function showTyping() {
       if (document.getElementById('typingRow')) return;
-      const row = document.createElement('div'); row.className = 'msg-row ai'; row.id = 'typingRow';
+      const messagesContainer = document.getElementById('messagesContainer');
+      if (!messagesContainer) return;
+      
+      const row = document.createElement('div'); 
+      row.className = 'msg-row ai'; 
+      row.id = 'typingRow';
       row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
-      chatArea.appendChild(row); scrollToBottom();
+      messagesContainer.appendChild(row); 
+      scrollToBottom();
     }
     
-    function hideTyping() { const el = document.getElementById('typingRow'); if (el) el.remove(); }
+    function hideTyping() { 
+      const el = document.getElementById('typingRow'); 
+      if (el) el.remove(); 
+    }
     
     function escapeHTML(str) { 
       if (!str) return '';
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); 
     }
     
-    function scrollToBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
+    function scrollToBottom() { 
+      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); 
+    }
     
-    function updateSendButton() { if(sendBtn) sendBtn.disabled = !msgInput.value.trim() || isTyping; }
+    function updateSendButton() { 
+      if(sendBtn) sendBtn.disabled = !msgInput.value.trim() || isTyping; 
+    }
     
     function handleInput() { 
       msgInput.style.height = 'auto'; 
@@ -576,4 +445,4 @@ Can you help me create a strategic business plan based on this information?`;
     }
   </script>
 </body>
-      </html>
+</html>
