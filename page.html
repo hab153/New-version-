@@ -47,8 +47,7 @@
       font-size: 14px;
       line-height: 1.6;
       display: flex;
-      flex-direction: column;      height: 100vh;
-      position: relative;
+      flex-direction: column;      height: 100vh;      position: relative;
     }
 
     body::before {
@@ -97,8 +96,7 @@
       flex-shrink: 0;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
-    .plan-badge {
-      font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    .plan-badge {      font-family: var(--font-mono); font-size: 9px; font-weight: 700;
       padding: 3px 9px; border-radius: 4px;
       text-transform: uppercase; letter-spacing: 0.1em;
     }
@@ -147,8 +145,7 @@
     .chat-area::-webkit-scrollbar { width: 3px; }
     .chat-area::-webkit-scrollbar-track { background: transparent; }    .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
 
-    .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }
-    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg-row.user { justify-content: flex-end; }
     .msg-row.ai { justify-content: flex-start; gap: 10px; }
     .bubble {
@@ -197,8 +194,7 @@
     }    
     /* MONTH 2: LAUNCH BUTTON */
     .launch-seq-btn {
-      background: transparent;
-      border: 1px solid var(--border-hi);
+      background: transparent;      border: 1px solid var(--border-hi);
       color: var(--text-2);
       padding: 0 12px;
       height: 36px;
@@ -248,7 +244,6 @@
       </div>
     </div>
   </header>
-
   <!-- MONTH 2: REPLY NOTIFICATION -->
   <div id="replyNotification" class="reply-notification" onclick="window.location.href='dashboard.html'">
     🔔 New Reply Detected! Click to view Dashboard.
@@ -298,7 +293,6 @@
       dropdown = document.getElementById('dropdown');
       charCount = document.getElementById('charCount');
       planBadge = document.getElementById('planBadge');
-
       // Menu & dropdown
       if (menuBtn) menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
       document.addEventListener('click', () => dropdown.classList.remove('open'));
@@ -330,9 +324,9 @@
         return;
       }
       
-      // In a real app, you'd parse the name/company from the last message or a selected lead
-      // For now, we'll simulate sending a command to the backend to start the sequence
+      // Construct the specific command for the backend
       const command = `START_SEQUENCE for: ${lastUserMsg.content}`;
+      
       appendMessage('user', "🚀 Launching Outreach Sequence...");
       
       try {
@@ -341,19 +335,21 @@
           headers: { 
             'Content-Type': 'application/json', 
             'Authorization': `Bearer ${token}`
-          },          body: JSON.stringify({ 
+          },
+          body: JSON.stringify({ 
             message: command, 
-            history: conversationHistory, 
+            history: [], // Send empty history so AI doesn't get confused
             sessionId: currentSessionId 
           })
-        });
-        const data = await res.json();
+        });        const data = await res.json();
         if (res.ok) {
           appendMessage('ai', data.reply || "✅ Sequence initiated. Check your Dashboard for status.");
+        } else {
+          appendMessage('ai', "❌ Failed to launch sequence.");
         }
       } catch (err) {
         console.error(err);
-        appendMessage('ai', "❌ Failed to launch sequence.");
+        appendMessage('ai', "❌ Connection error.");
       }
     }
 
@@ -394,8 +390,7 @@
             pushSessionToURL(currentSessionId); 
           }
           if (data.history) conversationHistory = data.history;
-          
-          const reply = data.reply || "I've received your message. How can I assist further?";
+                    const reply = data.reply || "I've received your message. How can I assist further?";
           appendMessage('ai', reply);
         } else {
           appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
@@ -444,8 +439,7 @@
         });
         if (res.ok) {
           const user = await res.json();
-          const plan = user.subscriptionTier || 'free';
-          planBadge.className = `plan-badge ${plan}`;
+          const plan = user.subscriptionTier || 'free';          planBadge.className = `plan-badge ${plan}`;
           planBadge.innerText = plan === 'go' ? 'GO MEMBER' : (plan === 'pro' ? 'PRO MEMBER' : 'FREE PLAN');
         }
       } catch(e) { console.warn('Plan status check failed:', e); }
@@ -494,8 +488,7 @@
       if(sendBtn) sendBtn.disabled = !msgInput.value.trim() || isTyping; 
     }
     
-    function handleInput() { 
-      msgInput.style.height = 'auto'; 
+    function handleInput() {       msgInput.style.height = 'auto'; 
       msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px'; 
       updateSendButton(); 
       charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; 
@@ -519,4 +512,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
