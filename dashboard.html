@@ -14,11 +14,12 @@
       --bg-raised: #181b22;
       --border: rgba(255,255,255,0.06);
       --accent: #c8ff57;
-      --accent-go: #00d2ff; /* GO Plan Blue */
+      --accent-go: #00d2ff;
       --text-1: #e8eaf0;
       --text-2: #8c909e;
       --text-3: #52566a;
       --danger: #ff4d4d;
+      --success: #00e676;
       --font-mono: 'IBM Plex Mono', monospace;
       --font-sans: 'Syne', sans-serif;
     }
@@ -35,6 +36,36 @@
       align-items: center;
     }
 
+    /* ── Toast Banner ── */
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+    .toast.success {
+      background: rgba(0, 230, 118, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    .toast.error {
+      background: rgba(255, 77, 77, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
     /* Topbar */
     .topbar {
       width: 100%;
@@ -47,11 +78,12 @@
       padding: 0 24px;
       box-sizing: border-box;
     }
-    .topbar-left {            display: flex;      align-items: center;
+    .topbar-left {
+      display: flex;
+      align-items: center;
       gap: 16px;
     }
-
-    .brand {      
+    .brand {
       font-family: var(--font-mono);
       font-size: 12px;
       letter-spacing: 0.12em;
@@ -60,7 +92,6 @@
       align-items: center;
       gap: 8px;
     }
-
     .brand .dot {
       width: 6px;
       height: 6px;
@@ -69,13 +100,12 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
-    /* Notification Bell Wrapper */
+    /* Notification Bell */
     .notif-wrapper {
       display: flex;
       align-items: center;
-      gap: 8px;    
+      gap: 8px;
     }
-
     .notif-btn {
       background: none;
       border: none;
@@ -87,20 +117,19 @@
       padding: 8px;
       border-radius: 50%;
     }
-
     .notif-btn:hover {
       background: rgba(255,255,255,0.05);
       color: var(--text-1);
     }
-
     .notif-btn.has-notifs {
-      color: var(--danger);      animation: pulse-red 2s infinite;
+      color: var(--danger);
+      animation: pulse-red 2s infinite;
     }
-    @keyframes pulse-red {      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+    @keyframes pulse-red {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+      70%  { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
       100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
     }
-
     .badge {
       position: absolute;
       top: 2px;
@@ -113,17 +142,16 @@
       height: 16px;
       padding: 0 4px;
       border-radius: 8px;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       border: 2px solid var(--bg-base);
-      display: none;
     }
 
     /* Main Container */
     .container {
       width: 100%;
-      max-width: 1000px; /* Wider for pricing table */
+      max-width: 1000px;
       padding: 32px 20px;
       flex: 1;
     }
@@ -138,12 +166,13 @@
       margin-top: 32px;
       padding-left: 4px;
     }
-
     .section-title:first-child { margin-top: 0; }
 
-    .menu-grid {      display: grid;
+    .menu-grid {
+      display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;      margin-bottom: 40px;
+      gap: 12px;
+      margin-bottom: 40px;
     }
     .menu-item {
       background: var(--bg-surface);
@@ -163,19 +192,15 @@
       border-color: var(--accent);
       transform: translateX(4px);
     }
-
     .menu-item span { font-size: 14px; }
-    
     .arrow {
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 12px;
     }
-
     .danger-zone .menu-item {
       border-color: rgba(255, 77, 77, 0.1);
     }
-    
     .danger-zone .menu-item:hover {
       border-color: var(--danger);
       background: rgba(255, 77, 77, 0.05);
@@ -188,13 +213,14 @@
       margin-top: 40px;
       color: var(--text-2);
       text-decoration: none;
-      font-size: 13px;      font-family: var(--font-mono);
+      font-size: 13px;
+      font-family: var(--font-mono);
     }
     .back-link:hover { color: var(--accent); }
 
     /* ════════════════════════════════════════════
-       MONTH 2: COMMAND CENTER STYLES
-       ════════════════════════════════════════════ */    
+       COMMAND CENTER
+       ════════════════════════════════════════════ */
     .command-center {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -202,20 +228,17 @@
       padding: 24px;
       margin-bottom: 40px;
     }
-
     .cc-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
     }
-
     .cc-title {
       font-size: 18px;
       font-weight: 700;
       color: var(--text-1);
     }
-
     .connect-btn {
       background: var(--accent-go);
       color: #000;
@@ -236,6 +259,11 @@
       color: var(--accent);
       border: 1px solid var(--accent);
       cursor: default;
+      pointer-events: none;
+    }
+    .connect-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .analytics-grid {
@@ -251,14 +279,12 @@
       text-align: center;
       border: 1px solid var(--border);
     }
-
     .stat-value {
       font-size: 24px;
       font-weight: 700;
       color: var(--text-1);
       margin-bottom: 4px;
     }
-
     .stat-label {
       font-size: 10px;
       text-transform: uppercase;
@@ -271,7 +297,6 @@
       border-collapse: collapse;
       font-size: 13px;
     }
-
     .lead-table th {
       text-align: left;
       padding: 12px;
@@ -281,27 +306,30 @@
       font-size: 10px;
       text-transform: uppercase;
     }
-
     .lead-table td {
       padding: 12px;
       border-bottom: 1px solid var(--border);
       color: var(--text-2);
     }
 
+    /* Status Badges — FIX: added queued and replied */
     .status-badge {
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 10px;
-      font-weight: 600;      text-transform: uppercase;
+      font-weight: 600;
+      text-transform: uppercase;
     }
-    .status-new { background: rgba(255,255,255,0.05); color: var(--text-2); }
-    .status-contacted { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
+    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
+    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
     .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
+    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
+    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
 
     /* ════════════════════════════════════════════
-       PRICING TABLE STYLES (Existing)
+       PRICING TABLE
        ════════════════════════════════════════════ */
-    
     .pricing-header {
       text-align: center;
       margin-bottom: 40px;
@@ -316,14 +344,12 @@
       color: var(--text-2);
       font-size: 14px;
     }
-
     .pricing-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 24px;
       margin-bottom: 40px;
     }
-
     .plan-card {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -334,19 +360,19 @@
       position: relative;
       transition: transform 0.2s, border-color 0.2s;
     }
-
     .plan-card:hover {
       transform: translateY(-5px);
       border-color: var(--text-3);
     }
-
     .plan-card.featured {
-      border: 1px solid var(--accent);      box-shadow: 0 0 20px rgba(200, 255, 87, 0.1);
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 20px rgba(200, 255, 87, 0.1);
     }
     .plan-badge {
       position: absolute;
       top: -12px;
-      left: 50%;      transform: translateX(-50%);
+      left: 50%;
+      transform: translateX(-50%);
       background: var(--accent);
       color: #060608;
       font-size: 10px;
@@ -356,14 +382,12 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-
     .plan-name {
       font-size: 18px;
       font-weight: 600;
       color: var(--text-2);
       margin-bottom: 8px;
     }
-
     .plan-price {
       font-size: 36px;
       font-weight: 700;
@@ -372,33 +396,31 @@
       display: flex;
       align-items: baseline;
     }
-
     .plan-price span {
       font-size: 14px;
       color: var(--text-3);
       margin-left: 4px;
       font-weight: 400;
     }
-
     .plan-features {
       list-style: none;
       padding: 0;
       margin: 0 0 32px 0;
       flex-grow: 1;
     }
-
     .plan-features li {
       margin-bottom: 12px;
       font-size: 13px;
-      color: var(--text-2);      display: flex;      align-items: center;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
-
-    .plan-features li::before {      content: '✓';
+    .plan-features li::before {
+      content: '✓';
       color: var(--accent);
       font-weight: bold;
     }
-
     .plan-features li.disabled {
       color: var(--text-3);
       text-decoration: line-through;
@@ -408,7 +430,6 @@
       content: '✕';
       color: var(--text-3);
     }
-
     .plan-btn {
       width: 100%;
       padding: 14px;
@@ -421,13 +442,11 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-
     .btn-free {
       background: var(--bg-raised);
       color: var(--text-3);
       cursor: default;
     }
-
     .btn-go {
       background: var(--bg-raised);
       color: var(--text-1);
@@ -439,13 +458,13 @@
     }
     .btn-pro {
       background: var(--accent);
-      color: #060608;      box-shadow: 0 0 15px rgba(200, 255, 87, 0.2);
+      color: #060608;
+      box-shadow: 0 0 15px rgba(200, 255, 87, 0.2);
     }
     .btn-pro:hover {
-      background: #d4ff70;      transform: scale(1.02);
+      background: #d4ff70;
+      transform: scale(1.02);
     }
-
-    /* Current Plan Indicator */
     .current-plan-tag {
       display: inline-block;
       font-size: 10px;
@@ -456,10 +475,13 @@
       margin-left: 8px;
       vertical-align: middle;
     }
-
   </style>
 </head>
 <body>
+
+  <!-- Toast Banner -->
+  <div class="toast" id="toast"></div>
+
   <header class="topbar">
     <div class="topbar-left">
       <div class="brand">
@@ -467,9 +489,7 @@
         SKYLINE AA-1
       </div>
     </div>
-    
-    <!-- Notification Area -->
-    <div class="notif-wrapper">      
+    <div class="notif-wrapper">
       <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
         🔔
         <span id="notifBadge" class="badge">0</span>
@@ -478,25 +498,28 @@
   </header>
 
   <div class="container">
-    
-    <!-- MONTH 2: COMMAND CENTER (NEW) -->
+
+    <!-- COMMAND CENTER -->
     <div class="section-title">Month 2: Command Center</div>
     <div class="command-center">
       <div class="cc-header">
         <div class="cc-title">Email Infrastructure</div>
-        <button id="connectEmailBtn" class="connect-btn" onclick="connectEmail()">Connect Gmail/Outlook</button>
+        <button id="connectEmailBtn" class="connect-btn" onclick="connectEmail()">
+          Connect Gmail/Outlook
+        </button>
       </div>
 
       <div class="analytics-grid">
-        <div class="stat-card">          <div class="stat-value" id="totalLeads">0</div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalLeads">—</div>
           <div class="stat-label">Total Leads</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="replyRate">0%</div>
+          <div class="stat-value" id="replyRate">—</div>
           <div class="stat-label">Reply Rate</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="interestedCount">0</div>
+          <div class="stat-value" id="interestedCount">—</div>
           <div class="stat-label">Interested</div>
         </div>
       </div>
@@ -511,33 +534,36 @@
           </tr>
         </thead>
         <tbody id="leadList">
-          <!-- Leads will be populated here by JS -->
           <tr>
-            <td colspan="4" style="text-align:center; color: var(--text-3);">Loading leads...</td>
+            <td colspan="4" style="text-align:center; color: var(--text-3); padding: 24px;">
+              Loading leads...
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- PRICING SECTION (Existing) -->
+    <!-- PRICING SECTION -->
     <div class="section-title">Subscription</div>
     <div class="pricing-header">
       <h2>Choose Your Power Level</h2>
       <p>Select the plan that fits your ambition. Upgrade anytime.</p>
     </div>
     <div class="pricing-cards">
-      
+
       <!-- FREE PLAN -->
       <div class="plan-card">
         <div class="plan-name">Free</div>
         <div class="plan-price">$0<span>/mo</span></div>
         <ul class="plan-features">
-          <li>30 Requests / Day</li>          <li>Basic Model (Skyline AA-1a)</li>
+          <li>30 Requests / Day</li>
+          <li>Basic Model (Skyline AA-1a)</li>
           <li>Short Memory</li>
           <li class="disabled">Powerful Reasoning</li>
           <li class="disabled">Early Access</li>
         </ul>
-        <button class="plan-btn btn-free" disabled>Current Plan</button>      </div>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>
+      </div>
 
       <!-- GO PLAN -->
       <div class="plan-card">
@@ -570,9 +596,10 @@
 
     </div>
 
-    <!-- Section 1: Profile -->
+    <!-- Profile -->
     <div class="section-title">Profile</div>
-    <div class="menu-grid">      <a href="profile.html" class="menu-item">
+    <div class="menu-grid">
+      <a href="profile.html" class="menu-item">
         <span>Profile Details</span>
         <span class="arrow">›</span>
       </a>
@@ -581,12 +608,14 @@
         <span class="arrow">›</span>
       </a>
     </div>
-    <!-- Section 2: Skyline Info -->
+
+    <!-- Skyline Info -->
     <div class="section-title">Skyline System</div>
     <div class="menu-grid">
       <a href="Privacy.html" class="menu-item">
         <span>Privacy Policy</span>
-        <span class="arrow">›</span>      </a>
+        <span class="arrow">›</span>
+      </a>
       <a href="age-verification.html" class="menu-item">
         <span>Age Verification</span>
         <span class="arrow">›</span>
@@ -605,8 +634,8 @@
       </a>
     </div>
 
-    <!-- Section 3: Dangerous Zone -->
-    <div class="section-title">Dangerous Zone</div>    
+    <!-- Dangerous Zone -->
+    <div class="section-title">Dangerous Zone</div>
     <div class="menu-grid danger-zone">
       <a href="#" onclick="handleLogout()" class="menu-item">
         <span class="danger-text">Sign Out</span>
@@ -622,213 +651,275 @@
   </div>
 
   <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = "login.html";
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token   = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
 
-    // --- MONTH 2: EMAIL CONNECTION ---
-    async function connectEmail() {
-      try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/nylas/url', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } catch (err) {        console.error("Error getting Nylas URL", err);
+    // ── Toast helper ────────────────────────────────────────────────────────
+    function showToast(message, type = 'success', duration = 4000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className   = `toast ${type}`;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, duration);
+    }
+
+    // ── FIX: Detect ?connected=true redirect from Nylas callback ────────────
+    // When Nylas sends user back after OAuth, server redirects to:
+    // dashboard.html?connected=true  OR  dashboard.html?connected=false&error=...
+    function handleOAuthRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get('connected');
+      const error     = params.get('error');
+
+      if (connected === 'true') {
+        showToast('✅ Gmail/Outlook connected successfully! Your sequences are ready to fire.', 'success', 6000);
+        // Update button immediately without waiting for API call
+        setConnectedState();
+        // Clean the URL so refresh doesn't re-trigger
+        window.history.replaceState({}, document.title, '/dashboard.html');
+      } else if (connected === 'false') {
+        const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
+        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
+        window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
 
-    // --- CHECK EMAIL STATUS ---
+    // ── Set button to connected state ────────────────────────────────────────
+    function setConnectedState() {
+      const btn = document.getElementById('connectEmailBtn');
+      if (btn) {
+        btn.innerText = '✅ Connected';
+        btn.classList.add('connected');
+        btn.onclick = null;
+      }
+    }
+
+    // ── Connect Email ────────────────────────────────────────────────────────
+    async function connectEmail() {
+      const btn = document.getElementById('connectEmailBtn');
+      btn.innerText = 'Connecting...';
+      btn.disabled  = true;
+
+      try {
+        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Server error ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (data.url) {
+          // Redirect user to Nylas OAuth page
+          window.location.href = data.url;
+        } else {
+          throw new Error('No URL returned from server');
+        }
+      } catch (err) {
+        console.error('Error getting Nylas URL:', err);
+        showToast(`❌ Could not start connection: ${err.message}`, 'error');
+        btn.innerText = 'Connect Gmail/Outlook';
+        btn.disabled  = false;
+      }
+    }
+
+    // ── Check Email Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
           const user = await res.json();
-          const btn = document.getElementById('connectEmailBtn');
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
-            btn.innerText = "✅ Connected";
-            btn.classList.add('connected');
-            btn.onclick = null;
+            setConnectedState();
           }
         }
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error('Error checking email status:', err);
+      }
     }
 
-    // --- MONTH 2: LOAD LEADS ---
+    // ── Load Leads ───────────────────────────────────────────────────────────
     async function loadLeads() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/leads', {
+        const res = await fetch(`${BACKEND}/api/leads`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (res.ok) {
-          const leads = await res.json();
-          const tbody = document.getElementById('leadList');
-          
-          // Update Stats
-          document.getElementById('totalLeads').innerText = leads.length;
-          const interested = leads.filter(l => l.status === 'Interested').length;
-          document.getElementById('interestedCount').innerText = interested;
-          const replied = leads.filter(l => l.status === 'Replied' || l.status === 'Interested').length;
-          const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
-          document.getElementById('replyRate').innerText = rate + '%';
 
-          // Populate Table
-          if (leads.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3);">No leads yet. Start researching in the Architect.</td></tr>';
-          } else {
-            tbody.innerHTML = leads.map(lead => `
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+
+        const leads = await res.json();
+        const tbody = document.getElementById('leadList');
+
+        // Update stats
+        document.getElementById('totalLeads').innerText      = leads.length;
+        const interested = leads.filter(l => l.status === 'Interested').length;
+        document.getElementById('interestedCount').innerText = interested;
+        const replied    = leads.filter(l => ['Replied','Interested'].includes(l.status)).length;
+        const rate       = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
+        document.getElementById('replyRate').innerText       = rate + '%';
+
+        if (leads.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
+        } else {
+          tbody.innerHTML = leads.map(lead => {
+            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
+            const lastDate    = lead.lastContactDate
+              ? new Date(lead.lastContactDate).toLocaleDateString()
+              : '—';
+            return `
               <tr>
-                <td>${lead.name}</td>
-                <td>${lead.company}</td>
-                <td><span class="status-badge status-${lead.status.toLowerCase()}">${lead.status}</span></td>
-                <td>${lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '-'}</td>              </tr>
-            `).join('');
-          }
+                <td>${escapeHtml(lead.name || '—')}</td>
+                <td>${escapeHtml(lead.company || '—')}</td>
+                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
+                <td>${lastDate}</td>
+              </tr>
+            `;
+          }).join('');
         }
-      } catch (err) { console.error("Error loading leads", err); }
+      } catch (err) {
+        console.error('Error loading leads:', err);
+        document.getElementById('leadList').innerHTML =
+          '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
+      }
     }
 
-    // --- UPGRADE LOGIC ---
+    // ── Safe HTML escape to prevent XSS ─────────────────────────────────────
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    // ── Upgrade Logic ────────────────────────────────────────────────────────
     async function initiateUpgrade(planType) {
       const btn = event.target;
       const originalText = btn.innerText;
-      
+
       try {
-        btn.innerText = "Connecting...";
-        btn.disabled = true;
+        btn.innerText = 'Connecting...';
+        btn.disabled  = true;
 
-        console.log(`Initiating upgrade for plan: ${planType}`);
-
-        const response = await fetch('https://skylineapp-backend-file.onrender.com/api/create-flutterwave-payment', {
+        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type':  'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ planType: planType })
+          body: JSON.stringify({ planType })
         });
 
-        // Check if response is OK (status 200-299)
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || `Server Error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Payment Response:", data);
-
         if (data.link) {
-          btn.innerText = "Redirecting...";
-          // Redirect user to Flutterwave Checkout Page
+          btn.innerText = 'Redirecting...';
           window.location.href = data.link;
         } else {
           throw new Error('No payment link received from server.');
         }
-
       } catch (err) {
-        console.error("Upgrade Error:", err);
-        alert(`Error: ${err.message}. Please check your connection or try again.`);
-        
-        // Reset button state
-        if(btn) {            btn.innerText = originalText.includes('GO') ? "Upgrade to GO" : "Upgrade to PRO";
-            btn.disabled = false;
-        }      }
+        console.error('Upgrade Error:', err);
+        showToast(`❌ ${err.message}`, 'error');
+        if (btn) {
+          btn.innerText = originalText;
+          btn.disabled  = false;
+        }
+      }
     }
 
-    // --- CHECK CURRENT PLAN TO HIGHLIGHT BUTTONS ---
+    // ── Check Current Plan ───────────────────────────────────────────────────
     async function checkCurrentPlan() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        });        
-        if(res.ok) {
+        });
+        if (res.ok) {
           const user = await res.json();
           const plan = user.subscriptionTier || 'free';
-          
-          // Hide/Show Active Tags and Disable Current Plan Button
+
           if (plan === 'go') {
             document.getElementById('goTag').style.display = 'inline-block';
             const goBtn = document.querySelector('.btn-go');
-            if(goBtn) {
-                goBtn.innerText = "Current Plan";
-                goBtn.disabled = true;            
-                goBtn.classList.add('btn-free');
-                goBtn.classList.remove('btn-go');
+            if (goBtn) {
+              goBtn.innerText = 'Current Plan';
+              goBtn.disabled  = true;
+              goBtn.classList.add('btn-free');
+              goBtn.classList.remove('btn-go');
             }
           } else if (plan === 'pro') {
             document.getElementById('proTag').style.display = 'inline-block';
             const proBtn = document.querySelector('.btn-pro');
-            if(proBtn) {
-                proBtn.innerText = "Current Plan";
-                proBtn.disabled = true;
-                proBtn.style.background = '#333';
-                proBtn.style.color = '#888';
-                proBtn.style.boxShadow = 'none';
+            if (proBtn) {
+              proBtn.innerText = 'Current Plan';
+              proBtn.disabled  = true;
+              proBtn.style.background = '#333';
+              proBtn.style.color      = '#888';
+              proBtn.style.boxShadow  = 'none';
             }
           }
         }
-      } catch(err) {
-        console.error("Failed to check plan", err);
+      } catch (err) {
+        console.error('Failed to check plan:', err);
       }
     }
 
-    // --- NOTIFICATION LOGIC ---
+    // ── Notifications ────────────────────────────────────────────────────────
     function handleNotifClick() {
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       window.location.href = 'notifications.html';
     }
 
     async function loadNotifCount() {
-      try {        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/notifications/count', {
-          headers: { 'Authorization': `Bearer ${token}` }        });
-        
-        if(res.ok) {
-          const data = await res.json();
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data  = await res.json();
           const badge = document.getElementById('notifBadge');
-          const btn = document.getElementById('notifBtn');
+          const btn   = document.getElementById('notifBtn');
 
           const hasServerMessages = data.count > 0;
-          const lastViewTime = localStorage.getItem('lastNotifViewTime');
-          
-          let shouldShowBadge = false;
-          if (hasServerMessages) {
-             if (!lastViewTime) {
-                 shouldShowBadge = true;
-             } else {
-                 shouldShowBadge = false; 
-             }
-          }
+          const lastViewTime      = localStorage.getItem('lastNotifViewTime');
+          const shouldShowBadge   = hasServerMessages && !lastViewTime;
 
           if (shouldShowBadge) {
             badge.style.display = 'flex';
-            badge.textContent = data.count > 9 ? '9+' : data.count;
+            badge.textContent   = data.count > 9 ? '9+' : data.count;
             btn.classList.add('has-notifs');
           } else {
             badge.style.display = 'none';
             btn.classList.remove('has-notifs');
           }
         }
-      } catch(err) {
-        console.error("Failed to load notifications");
-      }    
-    }
-
-    function handleLogout() {
-      if(confirm("Are you sure you want to sign out?")) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('lastNotifViewTime');
-        window.location.href = "login.html";
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
       }
     }
 
-    // Initialize
+    // ── Logout ───────────────────────────────────────────────────────────────
+    function handleLogout() {
+      if (confirm('Are you sure you want to sign out?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('lastNotifViewTime');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // ── Initialize ───────────────────────────────────────────────────────────
+    handleOAuthRedirect();   // FIX: Check for ?connected=true first
     loadNotifCount();
     checkCurrentPlan();
     checkEmailStatus();
-    loadLeads(); // Load leads on start
-  </script> 
+    loadLeads();
+  </script>
 </body>
-        </html>
+</html>
