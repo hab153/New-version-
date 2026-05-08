@@ -47,8 +47,7 @@
       padding: 0 24px;
       box-sizing: border-box;
     }
-    .topbar-left {            display: flex;
-      align-items: center;
+    .topbar-left {            display: flex;      align-items: center;
       gap: 16px;
     }
 
@@ -97,8 +96,7 @@
     .notif-btn.has-notifs {
       color: var(--danger);      animation: pulse-red 2s infinite;
     }
-    @keyframes pulse-red {
-      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+    @keyframes pulse-red {      0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
       70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
       100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
     }
@@ -147,7 +145,6 @@
       grid-template-columns: 1fr;
       gap: 12px;      margin-bottom: 40px;
     }
-
     .menu-item {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -194,8 +191,115 @@
       font-size: 13px;      font-family: var(--font-mono);
     }
     .back-link:hover { color: var(--accent); }
+
     /* ════════════════════════════════════════════
-       PRICING TABLE STYLES
+       MONTH 2: COMMAND CENTER STYLES
+       ════════════════════════════════════════════ */    
+    .command-center {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+
+    .cc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .cc-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-1);
+    }
+
+    .connect-btn {
+      background: var(--accent-go);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .connect-btn:hover {
+      box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+    }
+    .connect-btn.connected {
+      background: var(--bg-raised);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      cursor: default;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-base);
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+    }
+
+    .lead-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .lead-table th {
+      text-align: left;
+      padding: 12px;
+      color: var(--text-3);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .lead-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-2);
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;      text-transform: uppercase;
+    }
+    .status-new { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-contacted { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
+    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
+
+    /* ════════════════════════════════════════════
+       PRICING TABLE STYLES (Existing)
        ════════════════════════════════════════════ */
     
     .pricing-header {
@@ -237,8 +341,7 @@
     }
 
     .plan-card.featured {
-      border: 1px solid var(--accent);
-      box-shadow: 0 0 20px rgba(200, 255, 87, 0.1);
+      border: 1px solid var(--accent);      box-shadow: 0 0 20px rgba(200, 255, 87, 0.1);
     }
     .plan-badge {
       position: absolute;
@@ -287,8 +390,7 @@
     .plan-features li {
       margin-bottom: 12px;
       font-size: 13px;
-      color: var(--text-2);      display: flex;
-      align-items: center;
+      color: var(--text-2);      display: flex;      align-items: center;
       gap: 8px;
     }
 
@@ -337,8 +439,7 @@
     }
     .btn-pro {
       background: var(--accent);
-      color: #060608;
-      box-shadow: 0 0 15px rgba(200, 255, 87, 0.2);
+      color: #060608;      box-shadow: 0 0 15px rgba(200, 255, 87, 0.2);
     }
     .btn-pro:hover {
       background: #d4ff70;      transform: scale(1.02);
@@ -378,7 +479,48 @@
 
   <div class="container">
     
-    <!-- PRICING SECTION -->
+    <!-- MONTH 2: COMMAND CENTER (NEW) -->
+    <div class="section-title">Month 2: Command Center</div>
+    <div class="command-center">
+      <div class="cc-header">
+        <div class="cc-title">Email Infrastructure</div>
+        <button id="connectEmailBtn" class="connect-btn" onclick="connectEmail()">Connect Gmail/Outlook</button>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="stat-card">          <div class="stat-value" id="totalLeads">0</div>
+          <div class="stat-label">Total Leads</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="replyRate">0%</div>
+          <div class="stat-label">Reply Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="interestedCount">0</div>
+          <div class="stat-label">Interested</div>
+        </div>
+      </div>
+
+      <table class="lead-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Status</th>
+            <th>Last Action</th>
+          </tr>
+        </thead>
+        <tbody id="leadList">
+          <!-- Leads will be populated here by JS -->
+          <tr>
+            <td colspan="4" style="text-align:center; color: var(--text-3);">No leads yet. Start researching in the Architect.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PRICING SECTION (Existing) -->
+    <div class="section-title">Subscription</div>
     <div class="pricing-header">
       <h2>Choose Your Power Level</h2>
       <p>Select the plan that fits your ambition. Upgrade anytime.</p>
@@ -390,13 +532,12 @@
         <div class="plan-name">Free</div>
         <div class="plan-price">$0<span>/mo</span></div>
         <ul class="plan-features">
-          <li>4 Requests / Day</li>          <li>Basic Model (Skyline AA-1a)</li>
+          <li>30 Requests / Day</li>          <li>Basic Model (Skyline AA-1a)</li>
           <li>Short Memory</li>
           <li class="disabled">Powerful Reasoning</li>
           <li class="disabled">Early Access</li>
         </ul>
-        <button class="plan-btn btn-free" disabled>Current Plan</button>
-      </div>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>      </div>
 
       <!-- GO PLAN -->
       <div class="plan-card">
@@ -445,8 +586,7 @@
     <div class="menu-grid">
       <a href="Privacy.html" class="menu-item">
         <span>Privacy Policy</span>
-        <span class="arrow">›</span>
-      </a>
+        <span class="arrow">›</span>      </a>
       <a href="age-verification.html" class="menu-item">
         <span>Age Verification</span>
         <span class="arrow">›</span>
@@ -485,6 +625,38 @@
     const token = localStorage.getItem('token');
     if (!token) window.location.href = "login.html";
 
+    // --- MONTH 2: EMAIL CONNECTION ---
+    async function connectEmail() {
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/nylas/url', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch (err) {        console.error("Error getting Nylas URL", err);
+      }
+    }
+
+    // --- CHECK EMAIL STATUS ---
+    async function checkEmailStatus() {
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          const btn = document.getElementById('connectEmailBtn');
+          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
+            btn.innerText = "✅ Connected";
+            btn.classList.add('connected');
+            btn.onclick = null;
+          }
+        }
+      } catch (err) { console.error(err); }
+    }
+
     // --- UPGRADE LOGIC ---
     async function initiateUpgrade(planType) {
       const btn = event.target;
@@ -513,7 +685,6 @@
 
         const data = await response.json();
         console.log("Payment Response:", data);
-
         if (data.link) {
           btn.innerText = "Redirecting...";
           // Redirect user to Flutterwave Checkout Page
@@ -562,8 +733,7 @@
                 proBtn.style.background = '#333';
                 proBtn.style.color = '#888';
                 proBtn.style.boxShadow = 'none';
-            }
-          }
+            }          }
         }
       } catch(err) {
         console.error("Failed to check plan", err);
@@ -612,8 +782,7 @@
       }    
     }
 
-    function handleLogout() {
-      if(confirm("Are you sure you want to sign out?")) {
+    function handleLogout() {      if(confirm("Are you sure you want to sign out?")) {
         localStorage.removeItem('token');
         localStorage.removeItem('lastNotifViewTime');
         window.location.href = "login.html";
@@ -623,6 +792,7 @@
     // Initialize
     loadNotifCount();
     checkCurrentPlan();
+    checkEmailStatus();
   </script> 
 </body>
-  </html>
+          </html>
