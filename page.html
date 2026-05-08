@@ -47,8 +47,7 @@
       font-size: 14px;
       line-height: 1.6;
       display: flex;
-      flex-direction: column;
-      height: 100vh;
+      flex-direction: column;      height: 100vh;
       position: relative;
     }
 
@@ -98,7 +97,6 @@
       flex-shrink: 0;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
-
     .plan-badge {
       font-family: var(--font-mono); font-size: 9px; font-weight: 700;
       padding: 3px 9px; border-radius: 4px;
@@ -147,8 +145,7 @@
       scroll-behavior: smooth; position: relative; z-index: 1;
     }
     .chat-area::-webkit-scrollbar { width: 3px; }
-    .chat-area::-webkit-scrollbar-track { background: transparent; }
-    .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
+    .chat-area::-webkit-scrollbar-track { background: transparent; }    .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
 
     .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }
     @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -167,6 +164,22 @@
     }
     .msg-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em; }
 
+    /* MONTH 2: NOTIFICATION BANNER */
+    .reply-notification {
+      display: none;
+      background: rgba(200, 255, 87, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 10px 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-align: center;
+      cursor: pointer;
+      animation: slideDown 0.3s ease;
+    }
+    .reply-notification.active { display: block; }
+    @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
     .input-bar {
       padding: 16px 24px 20px; background: var(--bg-base);
       border-top: 1px solid var(--border); flex-shrink: 0;
@@ -181,7 +194,27 @@
       flex: 1; background: transparent; border: none; outline: none; resize: none;
       color: var(--text-1); font-family: var(--font-sans); font-size: 13.5px;
       min-height: 24px; max-height: 160px; caret-color: var(--accent);
+    }    
+    /* MONTH 2: LAUNCH BUTTON */
+    .launch-seq-btn {
+      background: transparent;
+      border: 1px solid var(--border-hi);
+      color: var(--text-2);
+      padding: 0 12px;
+      height: 36px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
     }
+    .launch-seq-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
     .send-btn {
       width: 36px; height: 36px; border-radius: 10px; border: none;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
@@ -210,12 +243,16 @@
       <div class="dropdown" id="dropdown">
         <div class="dropdown-header">Navigation</div>
         <a href="dashboard.html">📊 Dashboard</a>
-        <a href="history.html">📜 History</a>
-        <div class="dropdown-sep"></div>
+        <a href="history.html">📜 History</a>        <div class="dropdown-sep"></div>
         <a href="#" id="clearSessionBtn">🗑️ Clear Session</a>
       </div>
     </div>
   </header>
+
+  <!-- MONTH 2: REPLY NOTIFICATION -->
+  <div id="replyNotification" class="reply-notification" onclick="window.location.href='dashboard.html'">
+    🔔 New Reply Detected! Click to view Dashboard.
+  </div>
 
   <div class="chat-area" id="chatArea">
     <div id="messagesContainer"></div>
@@ -224,6 +261,12 @@
   <div class="input-bar" id="inputBar">
     <div class="input-inner">
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
+      
+      <!-- MONTH 2: LAUNCH SEQUENCE BUTTON -->
+      <button class="launch-seq-btn" onclick="launchSequence()" title="Start automated outreach for current lead">
+        🚀 Launch Sequence
+      </button>
+
       <button class="send-btn" id="sendBtn" disabled>
         <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
           <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#000" stroke-width="2" stroke-linecap="round"/>
@@ -249,8 +292,7 @@
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      chatArea = document.getElementById('chatArea');
-      msgInput = document.getElementById('msgInput');
+      chatArea = document.getElementById('chatArea');      msgInput = document.getElementById('msgInput');
       sendBtn = document.getElementById('sendBtn');
       menuBtn = document.getElementById('menuBtn');
       dropdown = document.getElementById('dropdown');
@@ -279,6 +321,41 @@
         await loadHistoryFromSession();
       }
     });
+
+    // MONTH 2: LAUNCH SEQUENCE LOGIC
+    async function launchSequence() {
+      const lastUserMsg = conversationHistory.filter(m => m.role === 'user').pop();
+      if (!lastUserMsg) {
+        alert("Please mention a lead or company name in the chat first.");
+        return;
+      }
+      
+      // In a real app, you'd parse the name/company from the last message or a selected lead
+      // For now, we'll simulate sending a command to the backend to start the sequence
+      const command = `START_SEQUENCE for: ${lastUserMsg.content}`;
+      appendMessage('user', "🚀 Launching Outreach Sequence...");
+      
+      try {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/chat', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}`
+          },          body: JSON.stringify({ 
+            message: command, 
+            history: conversationHistory, 
+            sessionId: currentSessionId 
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          appendMessage('ai', data.reply || "✅ Sequence initiated. Check your Dashboard for status.");
+        }
+      } catch (err) {
+        console.error(err);
+        appendMessage('ai', "❌ Failed to launch sequence.");
+      }
+    }
 
     async function sendMessage() {
       const text = msgInput.value.trim();
@@ -313,8 +390,7 @@
         hideTyping();
         
         if (res.ok) {
-          if (data.sessionId && !currentSessionId) { 
-            currentSessionId = data.sessionId; 
+          if (data.sessionId && !currentSessionId) {             currentSessionId = data.sessionId; 
             pushSessionToURL(currentSessionId); 
           }
           if (data.history) conversationHistory = data.history;
@@ -363,8 +439,7 @@
 
     async function checkPlanStatus() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
-          headers: { 'Authorization': `Bearer ${token}` },
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {          headers: { 'Authorization': `Bearer ${token}` },
           cache: 'no-cache'
         });
         if (res.ok) {
@@ -409,12 +484,11 @@
     
     function escapeHTML(str) { 
       if (!str) return '';
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); 
+      return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\n/g,'<br>'); 
     }
     
     function scrollToBottom() { 
-      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); 
-    }
+      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });     }
     
     function updateSendButton() { 
       if(sendBtn) sendBtn.disabled = !msgInput.value.trim() || isTyping; 
