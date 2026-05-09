@@ -66,7 +66,7 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
     }
@@ -556,9 +556,12 @@
       document.getElementById('reviewPanel').style.display = 'none';
     }
 
+    // UPDATED SUBMIT BATCH SEND WITH REDIRECT
     async function submitBatchSend() {
-      // 1. Check Connection
       const btn = document.getElementById('sendAllBtn');
+      const originalText = btn.innerText;
+      
+      // 1. Check Connection
       btn.innerText = "Checking Connection...";
       btn.disabled = true;
 
@@ -583,11 +586,11 @@
                     name: lead.name,
                     email: lead.email,
                     company: lead.company,
-                    messages: [{ subject, body }]
-                };
+                    messages: [{ subject, body }]                };
             })
         };
-        btn.innerText = "Sending...";
+
+        btn.innerText = "Sending Emails...";
 
         // 3. Send to Backend
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/leads/batch-send', {
@@ -600,19 +603,28 @@
         });
 
         const data = await res.json();
+        
         if (data.success) {
-            alert(data.message);
+            alert(data.message + (data.errors.length > 0 ? ` Errors: ${JSON.stringify(data.errors)}` : ''));
+            
+            // Add success message to chat
+            appendMessage('ai', `✅ Successfully sent ${data.message.match(/\d+/)[0]} emails! You can track replies in the Dashboard.`);
+            
+            // Close Panel
             closeReviewPanel();
-            // Add a success message to chat
-            appendMessage('ai', `✅ Successfully sent emails!`);
+            
+            // Redirect to Dashboard after 3 seconds
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 3000);
         } else {
-            alert('Error sending emails: ' + JSON.stringify(data.errors));
+            alert('Error sending emails.');
         }
       } catch (err) {
         console.error(err);
         alert('Connection error.');
       } finally {
-        btn.innerText = "✅ Connect & Send All";
+        btn.innerText = originalText;
         btn.disabled = false;
       }
     }
@@ -623,8 +635,7 @@
       if (!messagesContainer) return;
       
       const row = document.createElement('div'); 
-      row.className = 'msg-row ai'; 
-      row.id = 'typingRow';
+      row.className = 'msg-row ai';       row.id = 'typingRow';
       row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
       messagesContainer.appendChild(row); 
       scrollToBottom();
@@ -635,7 +646,8 @@
       if (el) el.remove(); 
     }
     
-    function escapeHTML(str) {       if (!str) return '';
+    function escapeHTML(str) { 
+      if (!str) return '';
       return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\n/g,'<br>'); 
     }
     
