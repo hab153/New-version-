@@ -219,10 +219,12 @@
       color: var(--accent);
       margin-bottom: 5px;
     }
-    .lead-email {
+    .lead-email-display {
       font-size: 12px;
       color: var(--text-3);
       margin-bottom: 10px;
+      text-decoration: line-through; /* Visual cue that this is the old one */
+      opacity: 0.7;
     }
     .input-group {
       margin-bottom: 10px;
@@ -241,9 +243,14 @@
       color: var(--text-1);
       padding: 8px;
       border-radius: 4px;
-      font-family: var(--font-sans);
-      font-size: 13px;
-    }    .input-group textarea {
+      font-family: var(--font-sans);      font-size: 13px;
+    }
+    /* Highlight the editable email field */
+    #reviewPanel .input-group input[type="email"] {
+      border-color: var(--accent);
+      background: rgba(245, 166, 35, 0.05);
+    }
+    .input-group textarea {
       resize: vertical;
       min-height: 80px;
     }
@@ -285,14 +292,14 @@
 
     .send-btn {
       width: 36px; height: 36px; border-radius: 10px; border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));      cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: transform 0.15s;
     }
     .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 22px rgba(245,166,35,0.50); }
     .send-btn:disabled { background: var(--bg-surface); border: 1px solid var(--border); opacity: 0.4; cursor: default; transform: none; }
 
-    .typing-indicator { display: flex; align-items: center; gap: 5px; padding: 13px 16px; background: var(--ai-bg); border: 1px solid var(--ai-border); border-radius: var(--radius-lg); width: fit-content; }    .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
+    .typing-indicator { display: flex; align-items: center; gap: 5px; padding: 13px 16px; background: var(--ai-bg); border: 1px solid var(--ai-border); border-radius: var(--radius-lg); width: fit-content; }
+    .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
     .typing-dot:nth-child(2) { animation-delay: 0.16s; }
     .typing-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); background: var(--accent); } }
@@ -335,13 +342,13 @@
     <div id="emailList"></div>
     <button id="sendAllBtn" class="send-all-btn" onclick="submitBatchSend()">✅ Connect & Send All</button>
   </div>
-
   <div class="input-bar" id="inputBar">
     <div class="input-inner">
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
       
       <!-- SINGLE SEND BUTTON -->
-      <button class="send-btn" id="sendBtn" disabled>        <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
+      <button class="send-btn" id="sendBtn" disabled>
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
           <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#000" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
@@ -383,13 +390,13 @@
       if (msgInput) {
         msgInput.addEventListener('input', handleInput);
         msgInput.addEventListener('keydown', handleKeydown);
-      }
-      if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+      }      if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
       await checkPlanStatus();
 
       // Add welcome message
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
+
       // Load existing session if any
       if (currentSessionId) {
         await loadHistoryFromSession();
@@ -432,14 +439,14 @@
           if (data.sessionId && !currentSessionId) {
              currentSessionId = data.sessionId; 
              pushSessionToURL(currentSessionId); 
-          }
-          if (data.history) conversationHistory = data.history;
+          }          if (data.history) conversationHistory = data.history;
           
           const reply = data.reply || "I've received your message. How can I assist further?";
           appendMessage('ai', reply);
         } else {
           appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
-        }      } catch (err) { 
+        }
+      } catch (err) { 
         hideTyping(); 
         console.error('Chat error:', err);
         appendMessage('ai', '🔌 Connection error. Please check your network and try again.'); 
@@ -481,14 +488,14 @@
           headers: { 'Authorization': `Bearer ${token}` },
           cache: 'no-cache'
         });
-        if (res.ok) {
-          const user = await res.json();
+        if (res.ok) {          const user = await res.json();
           const plan = user.subscriptionTier || 'free';
           planBadge.className = `plan-badge ${plan}`;
           planBadge.innerText = plan === 'go' ? 'GO MEMBER' : (plan === 'pro' ? 'PRO MEMBER' : 'FREE PLAN');
         }
       } catch(e) { console.warn('Plan status check failed:', e); }
     }
+
     // UPDATED APPEND MESSAGE TO HANDLE JSON LEADS
     function appendMessage(role, content) {
       const messagesContainer = document.getElementById('messagesContainer');
@@ -523,21 +530,30 @@
       scrollToBottom();
     }
 
+    // UPDATED RENDER PANEL WITH EDITABLE EMAIL FIELD
     function renderReviewPanel(leads) {
       const panel = document.getElementById('reviewPanel');
       const list = document.getElementById('emailList');
       list.innerHTML = '';
 
       leads.forEach((lead, index) => {
-        const leadDiv = document.createElement('div');
-        leadDiv.className = 'lead-card';
+        const leadDiv = document.createElement('div');        leadDiv.className = 'lead-card';
         
         leadDiv.innerHTML = `
             <div class="lead-info">${lead.name} @ ${lead.company}</div>
-            <div class="lead-email">${lead.email}</div>
             
+            <!-- Show original AI guess (crossed out) -->
+            <div class="lead-email-display">AI Guess: ${lead.email}</div>
+
+            <!-- EDITABLE EMAIL ADDRESS FIELD -->
             <div class="input-group">
-                <label>Subject:</label>                <input type="text" id="subject-${index}" value="${lead.messages[0].subject}">
+                <label>To (Edit Email Address):</label>
+                <input type="email" id="email-${index}" value="${lead.email}">
+            </div>
+
+            <div class="input-group">
+                <label>Subject:</label>
+                <input type="text" id="subject-${index}" value="${lead.messages[0].subject}">
             </div>
             
             <div class="input-group">
@@ -556,7 +572,7 @@
       document.getElementById('reviewPanel').style.display = 'none';
     }
 
-    // UPDATED SUBMIT BATCH SEND WITH REDIRECT
+    // UPDATED SUBMIT BATCH SEND TO USE EDITED EMAIL
     async function submitBatchSend() {
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
@@ -570,23 +586,26 @@
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const user = await userRes.json();
-
         if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
             alert("Please connect your Gmail account first.");
             window.location.href = 'dashboard.html?connect=true';
             return;
         }
 
-        // 2. Gather Data
+        // 2. Gather Data (INCLUDING THE EDITED EMAIL ADDRESS)
         const payload = {
             leads: currentGeneratedLeads.map((lead, index) => {
+                // GRAB THE VALUE FROM THE NEW EMAIL INPUT FIELD
+                const editedEmail = document.getElementById(`email-${index}`).value;
                 const subject = document.getElementById(`subject-${index}`).value;
                 const body = document.getElementById(`body-${index}`).value;
+                
                 return {
                     name: lead.name,
-                    email: lead.email,
+                    email: editedEmail, // USE THE EDITED EMAIL HERE
                     company: lead.company,
-                    messages: [{ subject, body }]                };
+                    messages: [{ subject, body }]
+                };
             })
         };
 
@@ -616,8 +635,7 @@
             // Redirect to Dashboard after 3 seconds
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
-            }, 3000);
-        } else {
+            }, 3000);        } else {
             alert('Error sending emails.');
         }
       } catch (err) {
@@ -635,7 +653,8 @@
       if (!messagesContainer) return;
       
       const row = document.createElement('div'); 
-      row.className = 'msg-row ai';       row.id = 'typingRow';
+      row.className = 'msg-row ai'; 
+      row.id = 'typingRow';
       row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
       messagesContainer.appendChild(row); 
       scrollToBottom();
@@ -665,8 +684,7 @@
       updateSendButton(); 
       charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; 
     }
-    
-    function handleKeydown(e) { 
+        function handleKeydown(e) { 
       if (e.key === 'Enter' && !e.shiftKey) { 
         e.preventDefault(); 
         if (!sendBtn.disabled) sendMessage(); 
