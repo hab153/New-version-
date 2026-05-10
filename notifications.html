@@ -96,7 +96,7 @@
       
       try {
         // Use the /api/notifications endpoint that returns BOTH types
-        const res = await fetch(`${BACKEND}/api/notifications`, {
+        const res = await fetch(`${BACKEND}/api/my-notifications`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
