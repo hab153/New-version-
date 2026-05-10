@@ -47,7 +47,8 @@
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 600;
-      z-index: 9999;      display: none;
+      z-index: 9999;
+      display: none;
       animation: slideDown 0.3s ease;
     }
     .toast.success {
@@ -59,6 +60,11 @@
       background: rgba(255, 77, 77, 0.15);
       border: 1px solid var(--danger);
       color: var(--danger);
+    }
+    .toast.info {
+      background: rgba(0, 210, 255, 0.15);
+      border: 1px solid var(--accent-go);
+      color: var(--accent-go);
     }
     @keyframes slideDown {
       from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
@@ -96,7 +102,8 @@
       height: 6px;
       background: var(--accent);
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);    }
+      box-shadow: 0 0 8px var(--accent);
+    }
 
     /* Notification Bell */
     .notif-wrapper {
@@ -145,6 +152,7 @@
       justify-content: center;
       border: 2px solid var(--bg-base);
     }
+
     /* Main Container */
     .container {
       width: 100%;
@@ -194,7 +202,8 @@
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 12px;
-    }    .danger-zone .menu-item {
+    }
+    .danger-zone .menu-item {
       border-color: rgba(255, 77, 77, 0.1);
     }
     .danger-zone .menu-item:hover {
@@ -214,9 +223,7 @@
     }
     .back-link:hover { color: var(--accent); }
 
-    /* ════════════════════════════════════════════
-       COMMAND CENTER
-       ════════════════════════════════════════════ */
+    /* Command Center */
     .command-center {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -243,7 +250,8 @@
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
-      font-family: var(--font-mono);      font-size: 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
       transition: all 0.2s;
     }
     .connect-btn:hover {
@@ -292,7 +300,8 @@
       border-collapse: collapse;
       font-size: 13px;
     }
-    .lead-table th {      text-align: left;
+    .lead-table th {
+      text-align: left;
       padding: 12px;
       color: var(--text-3);
       border-bottom: 1px solid var(--border);
@@ -321,9 +330,7 @@
     .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
     .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
 
-    /* ════════════════════════════════════════════
-       REPLY MODAL STYLES
-       ════════════════════════════════════════════ */
+    /* Reply Modal Styles */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -335,13 +342,14 @@
     }
     .modal-content {
       background: var(--bg-surface);
-      border: 1px solid var(--border-md);
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 24px;
       width: 90%;
       max-width: 600px;
       max-height: 90vh;
-      overflow-y: auto;      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
     .modal-header {
       display: flex;
@@ -362,9 +370,27 @@
       border-radius: 8px;
       margin-bottom: 20px;
       border-left: 3px solid var(--accent);
+      max-height: 300px;
+      overflow-y: auto;
     }
     .reply-history h4 { margin-top: 0; color: var(--text-2); font-size: 12px; text-transform: uppercase; }
-    .reply-history p { margin: 0; white-space: pre-wrap; line-height: 1.5; font-size: 14px; }
+    .reply-history p { margin: 10px 0; white-space: pre-wrap; line-height: 1.5; font-size: 14px; }
+    .reply-history .reply-item {
+      background: var(--bg-raised);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .reply-history .reply-meta {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+    }
+    .reply-history .reply-content {
+      color: var(--text-1);
+      font-size: 13px;
+    }
     
     .reply-input-area textarea {
       width: 100%;
@@ -390,11 +416,19 @@
       cursor: pointer;
       font-family: var(--font-mono);
     }
-    .send-reply-btn:hover { background: #d4ff70; }    .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
+    .send-reply-btn:hover { background: #d4ff70; }
+    .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
 
-    /* ════════════════════════════════════════════
-       PRICING TABLE
-       ════════════════════════════════════════════ */
+    /* Refresh Indicator */
+    .refresh-indicator {
+      font-size: 10px;
+      color: var(--text-3);
+      text-align: right;
+      margin-top: 8px;
+      font-family: var(--font-mono);
+    }
+
+    /* Pricing Section */
     .pricing-header {
       text-align: center;
       margin-bottom: 40px;
@@ -439,7 +473,8 @@
       left: 50%;
       transform: translateX(-50%);
       background: var(--accent);
-      color: #060608;      font-size: 10px;
+      color: #060608;
+      font-size: 10px;
       font-weight: 700;
       padding: 4px 12px;
       border-radius: 20px;
@@ -488,7 +523,8 @@
     .plan-features li.disabled {
       color: var(--text-3);
       text-decoration: line-through;
-      opacity: 0.6;    }
+      opacity: 0.6;
+    }
     .plan-features li.disabled::before {
       content: '✕';
       color: var(--text-3);
@@ -537,7 +573,8 @@
       border-radius: 4px;
       margin-left: 8px;
       vertical-align: middle;
-    }  </style>
+    }
+  </style>
 </head>
 <body>
 
@@ -586,7 +623,8 @@
         </div>
       </div>
 
-      <table class="lead-table">        <thead>
+      <table class="lead-table">
+        <thead>
           <tr>
             <th>Name</th>
             <th>Company</th>
@@ -603,6 +641,7 @@
           </tr>
         </tbody>
       </table>
+      <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
     </div>
 
     <!-- PRICING SECTION -->
@@ -635,7 +674,8 @@
           <li>18 Requests / Day</li>
           <li>Powerful Model (Skyline AA-1mini)</li>
           <li>Long Memory</li>
-          <li>Great Features</li>          <li class="disabled">Skyline AA-1a Model</li>
+          <li>Great Features</li>
+          <li class="disabled">Skyline AA-1a Model</li>
         </ul>
         <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
       </div>
@@ -684,7 +724,8 @@
       <a href="email-settings.html" class="menu-item">
         <span>Email Preferences</span>
         <span class="arrow">›</span>
-      </a>      <a href="about.html" class="menu-item">
+      </a>
+      <a href="about.html" class="menu-item">
         <span>About Skyline AA-1</span>
         <span class="arrow">›</span>
       </a>
@@ -718,9 +759,9 @@
         <button class="close-modal" onclick="closeReplyModal()">×</button>
       </div>
       
-      <div class="reply-history">
-        <h4>Last Message from Lead:</h4>
-        <p id="modalLeadMessage">Loading...</p>
+      <div class="reply-history" id="replyHistoryContainer">
+        <h4>Conversation History:</h4>
+        <div id="conversationHistory">Loading...</div>
       </div>
 
       <div class="reply-input-area">
@@ -733,10 +774,13 @@
 
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token   = localStorage.getItem('token');    if (!token) window.location.href = 'login.html';
+    const token   = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
 
     let currentReplyLeadId = null;
     let currentReplyEmail = null;
+    let autoRefreshInterval = null;
+    let lastReplyCount = 0;
 
     // ── Toast helper ────────────────────────────────────────────────────────
     function showToast(message, type = 'success', duration = 4000) {
@@ -747,7 +791,42 @@
       setTimeout(() => { toast.style.display = 'none'; }, duration);
     }
 
-    // ── FIX: Detect ?connected=true redirect from Nylas callback ────────────
+    // ── Check for new replies (Real-time notification) ───────────────────────
+    async function checkForNewReplies() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/replies`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const newReplyCount = data.count;
+          
+          // Update refresh indicator
+          document.getElementById('refreshIndicator').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
+          
+          // Show notification for new replies
+          if (newReplyCount > lastReplyCount && lastReplyCount !== 0) {
+            const newCount = newReplyCount - lastReplyCount;
+            showToast(`📬 ${newCount} new repl${newCount === 1 ? 'y' : 'ies'} received!`, 'info', 5000);
+            
+            // Update notification bell
+            const notifBtn = document.getElementById('notifBtn');
+            notifBtn.classList.add('has-notifs');
+            const badge = document.getElementById('notifBadge');
+            badge.style.display = 'flex';
+            badge.textContent = newReplyCount > 9 ? '9+' : newReplyCount;
+            
+            // Refresh the leads table
+            loadLeads();
+          }
+          lastReplyCount = newReplyCount;
+        }
+      } catch (err) {
+        console.error('Error checking replies:', err);
+      }
+    }
+
+    // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
       const connected = params.get('connected');
@@ -782,7 +861,8 @@
 
       try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
-          headers: { 'Authorization': `Bearer ${token}` }        });
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -831,26 +911,25 @@
 
         const leads = await res.json();
         const tbody = document.getElementById('leadList');
+        
         // Update stats
-        document.getElementById('totalLeads').innerText      = leads.length;
+        document.getElementById('totalLeads').innerText = leads.length;
         const interested = leads.filter(l => l.status === 'Interested').length;
         document.getElementById('interestedCount').innerText = interested;
-        const replied    = leads.filter(l => ['Replied','Interested'].includes(l.status)).length;
-        const rate       = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
-        document.getElementById('replyRate').innerText       = rate + '%';
+        const replied = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
+        const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
+        document.getElementById('replyRate').innerText = rate + '%';
 
         if (leads.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
         } else {
           tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
-            const lastDate    = lead.lastContactDate
-              ? new Date(lead.lastContactDate).toLocaleDateString()
-              : '—';
+            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             
-            // Add View Reply Button if status is Replied
-            const actionBtn = lead.status === 'Replied' 
-              ? `<button onclick="openReplyModal('${lead._id}', '${lead.name}', '${lead.email}')" style="color:var(--accent); background:none; border:1px solid var(--accent); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">View & Reply</button>`
+            // Show View Reply button for Replied OR Interested status
+            const actionBtn = (lead.status === 'Replied' || lead.status === 'Interested')
+              ? `<button onclick="openReplyModal('${lead._id}', '${escapeHtml(lead.name)}', '${lead.email}')" style="color:var(--accent); background:none; border:1px solid var(--accent); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">View & Reply</button>`
               : '-';
 
             return `
@@ -866,70 +945,96 @@
         }
       } catch (err) {
         console.error('Error loading leads:', err);
-        document.getElementById('leadList').innerHTML =
-          '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
+        document.getElementById('leadList').innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
       }
     }
 
-    // ── Safe HTML escape to prevent XSS ─────────────────────────────────────
+    // ── Safe HTML escape ─────────────────────────────────────────────────────
     function escapeHtml(str) {
+      if (!str) return '';
       const div = document.createElement('div');
       div.appendChild(document.createTextNode(str));
       return div.innerHTML;
     }
 
-    // ── REPLY MODAL FUNCTIONS ────────────────────────────────────────────────
-    function openReplyModal(leadId, name, email) {
-      currentReplyLeadId = leadId;      currentReplyEmail = email;
+    // ── Open Reply Modal with Full Conversation History ──────────────────────
+    async function openReplyModal(leadId, name, email) {
+      currentReplyLeadId = leadId;
+      currentReplyEmail = email;
       
       document.getElementById('modalLeadName').innerText = name;
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
+      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
       
-      // Fetch the specific lead to get the last message
-      fetch(`${BACKEND}/api/leads`)
-        .then(res => res.json())
-        .then(leads => {
-          const lead = leads.find(l => l._id === leadId);
-          if (lead && lead.replies && lead.replies.length > 0) {
-            // Find the last message from the 'lead'
-            const lastReply = lead.replies.filter(r => r.from === 'lead').pop();
-            document.getElementById('modalLeadMessage').innerText = lastReply ? lastReply.content : 'No message content available.';
-          } else {
-            document.getElementById('modalLeadMessage').innerText = 'No reply history found.';
-          }
+      try {
+        const res = await fetch(`${BACKEND}/api/leads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
+        const leads = await res.json();
+        const lead = leads.find(l => l._id === leadId);
+        
+        if (lead && lead.replies && lead.replies.length > 0) {
+          const conversationHtml = lead.replies.slice().reverse().map(reply => {
+            const isLead = reply.from === 'lead';
+            const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
+            return `
+              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
+                <div class="reply-meta">
+                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
+                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
+                </div>
+                <div class="reply-content">${escapeHtml(reply.content)}</div>
+              </div>
+            `;
+          }).join('');
+          document.getElementById('conversationHistory').innerHTML = conversationHtml;
+        } else {
+          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
+        }
+      } catch (err) {
+        console.error('Error loading conversation:', err);
+        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
+      }
     }
 
+    // ── Close Reply Modal ────────────────────────────────────────────────────
     function closeReplyModal() {
       document.getElementById('replyModal').style.display = 'none';
       currentReplyLeadId = null;
       currentReplyEmail = null;
     }
 
+    // ── Send Direct Reply ────────────────────────────────────────────────────
     async function sendDirectReply() {
       const btn = document.getElementById('sendReplyBtn');
       const text = document.getElementById('replyTextArea').value.trim();
       
-      if (!text) return alert("Please type a reply.");
-      if (!currentReplyEmail) return alert("Error: No email address found.");
+      if (!text) {
+        showToast("Please type a reply.", "error");
+        return;
+      }
+      if (!currentReplyEmail) {
+        showToast("Error: No email address found.", "error");
+        return;
+      }
 
       btn.disabled = true;
       btn.innerText = "Sending...";
 
       try {
-        // We use the same batch-send endpoint but with a single lead
         const payload = {
           leads: [{
             name: document.getElementById('modalLeadName').innerText,
             email: currentReplyEmail,
-            company: '', // Not needed for reply
+            company: '',
             messages: [{ 
-              subject: "Re: Previous Conversation", 
+              subject: "Re: Your inquiry about Skyline AA-1", 
               body: text 
             }]
           }]
         };
+        
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
           headers: {
@@ -1027,7 +1132,8 @@
             }
           }
         }
-      } catch (err) {        console.error('Failed to check plan:', err);
+      } catch (err) {
+        console.error('Failed to check plan:', err);
       }
     }
 
@@ -1076,9 +1182,14 @@
 
     // ── Initialize ───────────────────────────────────────────────────────────
     handleOAuthRedirect();
-    loadNotifCount();    checkCurrentPlan();
+    loadNotifCount();
+    checkCurrentPlan();
     checkEmailStatus();
     loadLeads();
+    
+    // Start auto-refresh for new replies every 15 seconds
+    checkForNewReplies();
+    autoRefreshInterval = setInterval(checkForNewReplies, 15000);
   </script>
 </body>
-        </html>
+  </html>
