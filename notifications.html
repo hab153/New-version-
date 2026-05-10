@@ -7,93 +7,260 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318; --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e; --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif; }
+    :root { 
+      --bg-void: #060608; 
+      --bg-base: #0b0c0f; 
+      --bg-surface: #111318; 
+      --accent: #c8ff57; 
+      --accent-go: #00d2ff;
+      --text-1: #e8eaf0; 
+      --text-2: #8c909e; 
+      --text-3: #52566a;
+      --danger: #ff4d4d;
+      --font-mono: 'IBM Plex Mono', monospace; 
+      --font-sans: 'Syne', sans-serif; 
+    }
     body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
     
-    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; }
+    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
     .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
     .back-btn:hover { color: var(--accent); }
+    .mark-read-btn { background: none; border: 1px solid var(--text-3); color: var(--text-2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: all 0.2s; }
+    .mark-read-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
     h1 { font-size: 24px; margin-bottom: 10px; }
     p.subtitle { color: var(--text-2); margin-bottom: 30px; font-size: 14px; }
 
+    .tabs { display: flex; gap: 12px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; }
+    .tab-btn { background: none; border: none; color: var(--text-3); padding: 8px 16px; cursor: pointer; font-family: var(--font-mono); font-size: 12px; transition: all 0.2s; border-radius: 20px; }
+    .tab-btn.active { background: var(--accent); color: #000; }
+    .tab-btn:hover:not(.active) { color: var(--text-1); }
+
     .notif-list { display: flex; flex-direction: column; gap: 15px; }
     
-    .notif-item { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: transform 0.2s; }
+    .notif-item { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: transform 0.2s; position: relative; }
     .notif-item:hover { border-color: var(--accent); transform: translateX(5px); }
+    .notif-item.unread { border-left: 3px solid var(--accent); background: rgba(200, 255, 87, 0.03); }
     
-    .notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .notif-title { font-weight: 600; color: var(--accent); font-size: 16px; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+    .notif-title { font-weight: 600; font-size: 14px; }
+    .notif-title.reply { color: var(--accent); }
+    .notif-title.admin { color: var(--accent-go); }
     .notif-date { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
     
     .notif-body { color: var(--text-1); line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
+    .notif-body a { color: var(--accent); text-decoration: none; }
+    .notif-body a:hover { text-decoration: underline; }
+    
+    .action-link { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 12px; text-decoration: none; font-family: var(--font-mono); }
+    .action-link:hover { text-decoration: underline; }
     
     .empty-state { text-align: center; color: var(--text-2); padding: 40px; font-style: italic; }
+    .badge { display: inline-block; background: var(--danger); color: white; font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; }
   </style>
 </head>
 <body>
 
   <header class="topbar">
     <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    <button class="mark-read-btn" onclick="markAllAsRead()">Mark All as Read</button>
   </header>
 
   <div class="container">
-    <h1>Messages from Skyline AA-1 platform</h1>
-    <p class="subtitle">Important updates, warnings, or support messages from the Skyline Team.</p>
+    <h1>Messages & Notifications</h1>
+    <p class="subtitle">Admin messages and lead replies will appear here.</p>
+    
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('all')">All</button>
+      <button class="tab-btn" onclick="switchTab('replies')">Lead Replies</button>
+      <button class="tab-btn" onclick="switchTab('admin')">Admin Messages</button>
+    </div>
     
     <div id="notifList" class="notif-list">
       <div class="empty-state">Loading messages...</div>
     </div>
   </div>
 
-  <script>    const token = localStorage.getItem('token');
+  <script>
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token = localStorage.getItem('token');
     if (!token) window.location.href = "login.html";
+
+    let currentTab = 'all';
+    let allNotifications = [];
 
     async function loadNotifications() {
       const list = document.getElementById('notifList');
+      list.innerHTML = '<div class="empty-state">Loading messages...</div>';
       
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/notifications', {
+        // Get admin messages from /api/notifications
+        const adminRes = await fetch(`${BACKEND}/api/notifications`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        if (!res.ok) throw new Error('Failed to load');
-        
-        const notifs = await res.json();
-        list.innerHTML = '';
-
-        if (notifs.length === 0) {
-          list.innerHTML = '<div class="empty-state">No message from Skyline AA-1 yet.</div>';
-          return;
-        }
-
-        notifs.forEach(n => {
-          // Clean up the content if it has the prefix
-          let content = n.content;
-          if(content.startsWith('[ADMIN MESSAGE]:')) {
-            content = content.replace('[ADMIN MESSAGE]:', '').trim();
-          }
-
-          const date = new Date(n.createdAt).toLocaleDateString() + ' at ' + new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-          const div = document.createElement('div');
-          div.className = 'notif-item';
-          div.innerHTML = `
-            <div class="notif-header">
-              <span class="notif-title">Admin Message</span>
-              <span class="notif-date">${date}</span>
-            </div>
-            <div class="notif-body">${content}</div>
-          `;
-          list.appendChild(div);
+        // Get leads with replies
+        const leadsRes = await fetch(`${BACKEND}/api/leads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-
+        
+        if (!adminRes.ok || !leadsRes.ok) throw new Error('Failed to load');
+        
+        const adminMessages = await adminRes.json();
+        const leads = await leadsRes.json();
+        
+        // Create notification objects from leads with replies
+        const replyNotifications = [];
+        leads.forEach(lead => {
+          if (lead.replies && lead.replies.length > 0) {
+            // Get only replies from leads (not from AI)
+            const leadReplies = lead.replies.filter(r => r.from === 'lead');
+            leadReplies.forEach(reply => {
+              replyNotifications.push({
+                _id: `reply_${lead._id}_${reply.date}`,
+                type: 'reply',
+                title: `📬 New Reply from ${lead.name}`,
+                content: `**${lead.email}** wrote:\n\n"${reply.content.substring(0, 300)}${reply.content.length > 300 ? '...' : ''}"`,
+                createdAt: reply.date,
+                leadId: lead._id,
+                leadName: lead.name,
+                leadEmail: lead.email,
+                isRead: false
+              });
+            });
+          }
+        });
+        
+        // Format admin messages
+        const formattedAdmin = adminMessages.map(msg => ({
+          _id: msg._id,
+          type: 'admin',
+          title: '📢 Admin Message',
+          content: msg.content.replace('[ADMIN MESSAGE]:', '').trim(),
+          createdAt: msg.createdAt,
+          isRead: msg.isRead || false
+        }));
+        
+        // Combine and sort by date (newest first)
+        allNotifications = [...replyNotifications, ...formattedAdmin];
+        allNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        renderNotifications();
+        
       } catch (err) {
-        list.innerHTML = '<div class="empty-state" style="color:#ff4d4d">Error loading messages.</div>';
+        console.error('Error loading notifications:', err);
+        list.innerHTML = '<div class="empty-state" style="color:#ff4d4d">Error loading messages. Please try again.</div>';
       }
     }
 
+    function renderNotifications() {
+      const list = document.getElementById('notifList');
+      
+      let filtered = allNotifications;
+      if (currentTab === 'replies') {
+        filtered = allNotifications.filter(n => n.type === 'reply');
+      } else if (currentTab === 'admin') {
+        filtered = allNotifications.filter(n => n.type === 'admin');
+      }
+      
+      if (filtered.length === 0) {
+        let message = '';
+        if (currentTab === 'replies') message = 'No lead replies yet. When leads reply to your emails, they will appear here.';
+        else if (currentTab === 'admin') message = 'No admin messages yet.';
+        else message = 'No messages yet.';
+        list.innerHTML = `<div class="empty-state">${message}</div>`;
+        return;
+      }
+      
+      list.innerHTML = filtered.map(notif => {
+        const date = new Date(notif.createdAt).toLocaleDateString() + ' at ' + new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const isUnread = !notif.isRead;
+        
+        if (notif.type === 'reply') {
+          return `
+            <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${notif._id}">
+              <div class="notif-header">
+                <span class="notif-title reply">📬 ${notif.title}</span>
+                <span class="notif-date">${date}</span>
+              </div>
+              <div class="notif-body">${escapeHtml(notif.content).replace(/\n/g, '<br>')}</div>
+              <a href="dashboard.html" class="action-link" onclick="markAsRead('${notif._id}')">→ View in Dashboard & Reply</a>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${notif._id}">
+              <div class="notif-header">
+                <span class="notif-title admin">📢 ${notif.title}</span>
+                <span class="notif-date">${date}</span>
+              </div>
+              <div class="notif-body">${escapeHtml(notif.content)}</div>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderNotifications();
+    }
+
+    async function markAsRead(notificationId) {
+      // For demo purposes, just mark as read locally
+      const notif = allNotifications.find(n => n._id === notificationId);
+      if (notif) {
+        notif.isRead = true;
+        renderNotifications();
+      }
+      
+      // If it's an admin message, call the backend
+      if (!notificationId.startsWith('reply_')) {
+        try {
+          await fetch(`${BACKEND}/api/notifications/${notificationId}/read`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (err) {
+          console.error('Error marking as read:', err);
+        }
+      }
+    }
+
+    async function markAllAsRead() {
+      allNotifications.forEach(n => n.isRead = true);
+      renderNotifications();
+      
+      // Show toast
+      const toast = document.createElement('div');
+      toast.textContent = '✅ All messages marked as read';
+      toast.style.position = 'fixed';
+      toast.style.bottom = '20px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.background = 'rgba(0,230,118,0.9)';
+      toast.style.color = '#000';
+      toast.style.padding = '10px 20px';
+      toast.style.borderRadius = '8px';
+      toast.style.fontSize = '12px';
+      toast.style.zIndex = '9999';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Auto-refresh every 30 seconds
     loadNotifications();
+    setInterval(loadNotifications, 30000);
   </script>
-</body></html>
+</body>
+  </html>
