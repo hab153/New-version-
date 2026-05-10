@@ -25,8 +25,8 @@
     .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
     .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
     .back-btn:hover { color: var(--accent); }
-    .mark-read-btn { background: none; border: 1px solid var(--text-3); color: var(--text-2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: all 0.2s; }
-    .mark-read-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .refresh-btn { background: none; border: 1px solid var(--text-3); color: var(--text-2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: all 0.2s; }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
     h1 { font-size: 24px; margin-bottom: 10px; }
@@ -39,7 +39,7 @@
 
     .notif-list { display: flex; flex-direction: column; gap: 15px; }
     
-    .notif-item { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: transform 0.2s; position: relative; }
+    .notif-item { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: transform 0.2s; position: relative; cursor: pointer; }
     .notif-item:hover { border-color: var(--accent); transform: translateX(5px); }
     .notif-item.unread { border-left: 3px solid var(--accent); background: rgba(200, 255, 87, 0.03); }
     
@@ -56,7 +56,7 @@
     .action-link { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 12px; text-decoration: none; font-family: var(--font-mono); }
     .action-link:hover { text-decoration: underline; }
     
-    .empty-state { text-align: center; color: var(--text-2); padding: 40px; font-style: italic; }
+    .empty-state { text-align: center; color: var(--text-2); padding: 60px 40px; font-style: italic; background: var(--bg-surface); border-radius: 16px; }
     .badge { display: inline-block; background: var(--danger); color: white; font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; }
   </style>
 </head>
@@ -64,7 +64,7 @@
 
   <header class="topbar">
     <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
-    <button class="mark-read-btn" onclick="markAllAsRead()">Mark All as Read</button>
+    <button class="refresh-btn" onclick="loadNotifications()">⟳ Refresh</button>
   </header>
 
   <div class="container">
@@ -95,56 +95,15 @@
       list.innerHTML = '<div class="empty-state">Loading messages...</div>';
       
       try {
-        // Get admin messages from /api/notifications
-        const adminRes = await fetch(`${BACKEND}/api/notifications`, {
+        // Use the /api/notifications endpoint that returns BOTH types
+        const res = await fetch(`${BACKEND}/api/notifications`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        // Get leads with replies
-        const leadsRes = await fetch(`${BACKEND}/api/leads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        if (!res.ok) throw new Error('Failed to load');
         
-        if (!adminRes.ok || !leadsRes.ok) throw new Error('Failed to load');
-        
-        const adminMessages = await adminRes.json();
-        const leads = await leadsRes.json();
-        
-        // Create notification objects from leads with replies
-        const replyNotifications = [];
-        leads.forEach(lead => {
-          if (lead.replies && lead.replies.length > 0) {
-            // Get only replies from leads (not from AI)
-            const leadReplies = lead.replies.filter(r => r.from === 'lead');
-            leadReplies.forEach(reply => {
-              replyNotifications.push({
-                _id: `reply_${lead._id}_${reply.date}`,
-                type: 'reply',
-                title: `📬 New Reply from ${lead.name}`,
-                content: `**${lead.email}** wrote:\n\n"${reply.content.substring(0, 300)}${reply.content.length > 300 ? '...' : ''}"`,
-                createdAt: reply.date,
-                leadId: lead._id,
-                leadName: lead.name,
-                leadEmail: lead.email,
-                isRead: false
-              });
-            });
-          }
-        });
-        
-        // Format admin messages
-        const formattedAdmin = adminMessages.map(msg => ({
-          _id: msg._id,
-          type: 'admin',
-          title: '📢 Admin Message',
-          content: msg.content.replace('[ADMIN MESSAGE]:', '').trim(),
-          createdAt: msg.createdAt,
-          isRead: msg.isRead || false
-        }));
-        
-        // Combine and sort by date (newest first)
-        allNotifications = [...replyNotifications, ...formattedAdmin];
-        allNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        allNotifications = await res.json();
+        console.log('Loaded notifications:', allNotifications);
         
         renderNotifications();
         
@@ -159,9 +118,9 @@
       
       let filtered = allNotifications;
       if (currentTab === 'replies') {
-        filtered = allNotifications.filter(n => n.type === 'reply');
+        filtered = allNotifications.filter(n => n.sessionId === 'reply-notification');
       } else if (currentTab === 'admin') {
-        filtered = allNotifications.filter(n => n.type === 'admin');
+        filtered = allNotifications.filter(n => n.sessionId === 'admin-direct-message');
       }
       
       if (filtered.length === 0) {
@@ -176,23 +135,29 @@
       list.innerHTML = filtered.map(notif => {
         const date = new Date(notif.createdAt).toLocaleDateString() + ' at ' + new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         const isUnread = !notif.isRead;
+        const isReply = notif.sessionId === 'reply-notification';
         
-        if (notif.type === 'reply') {
+        if (isReply) {
+          // Extract lead name from content
+          let leadName = 'Lead';
+          const nameMatch = notif.content.match(/^(.*?) \(/);
+          if (nameMatch) leadName = nameMatch[1];
+          
           return `
-            <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${notif._id}">
+            <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="window.location.href='dashboard.html'">
               <div class="notif-header">
-                <span class="notif-title reply">📬 ${notif.title}</span>
+                <span class="notif-title reply">📬 New Reply from ${escapeHtml(leadName)}</span>
                 <span class="notif-date">${date}</span>
               </div>
-              <div class="notif-body">${escapeHtml(notif.content).replace(/\n/g, '<br>')}</div>
-              <a href="dashboard.html" class="action-link" onclick="markAsRead('${notif._id}')">→ View in Dashboard & Reply</a>
+              <div class="notif-body">${escapeHtml(notif.content).substring(0, 200)}${notif.content.length > 200 ? '...' : ''}</div>
+              <a href="dashboard.html" class="action-link">→ Go to Dashboard to Reply</a>
             </div>
           `;
         } else {
           return `
-            <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${notif._id}">
+            <div class="notif-item ${isUnread ? 'unread' : ''}">
               <div class="notif-header">
-                <span class="notif-title admin">📢 ${notif.title}</span>
+                <span class="notif-title admin">📢 Admin Message</span>
                 <span class="notif-date">${date}</span>
               </div>
               <div class="notif-body">${escapeHtml(notif.content)}</div>
@@ -216,51 +181,9 @@
       renderNotifications();
     }
 
-    async function markAsRead(notificationId) {
-      // For demo purposes, just mark as read locally
-      const notif = allNotifications.find(n => n._id === notificationId);
-      if (notif) {
-        notif.isRead = true;
-        renderNotifications();
-      }
-      
-      // If it's an admin message, call the backend
-      if (!notificationId.startsWith('reply_')) {
-        try {
-          await fetch(`${BACKEND}/api/notifications/${notificationId}/read`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-        } catch (err) {
-          console.error('Error marking as read:', err);
-        }
-      }
-    }
-
-    async function markAllAsRead() {
-      allNotifications.forEach(n => n.isRead = true);
-      renderNotifications();
-      
-      // Show toast
-      const toast = document.createElement('div');
-      toast.textContent = '✅ All messages marked as read';
-      toast.style.position = 'fixed';
-      toast.style.bottom = '20px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.background = 'rgba(0,230,118,0.9)';
-      toast.style.color = '#000';
-      toast.style.padding = '10px 20px';
-      toast.style.borderRadius = '8px';
-      toast.style.fontSize = '12px';
-      toast.style.zIndex = '9999';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
     // Auto-refresh every 30 seconds
     loadNotifications();
     setInterval(loadNotifications, 30000);
   </script>
 </body>
-  </html>
+</html>
