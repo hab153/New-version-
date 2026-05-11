@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inbox | Skyline AA-1</title>
+  <title>Dashboard | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -18,497 +18,754 @@
       --text-1: #e8eaf0;
       --text-2: #8c909e;
       --text-3: #52566a;
+      --danger: #ff4d4d;
+      --success: #00e676;
+      --warning: #ffaa00;
       --font-mono: 'IBM Plex Mono', monospace;
       --font-sans: 'Syne', sans-serif;
     }
+
     body {
       background: var(--bg-void);
       color: var(--text-1);
       font-family: var(--font-sans);
       margin: 0;
-      height: 100vh;
+      padding: 0;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      align-items: center;
     }
 
-    /* Top Navigation */
-    .top-nav {
+    /* ── Toast Banner ── */
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+    .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
+    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--danger);  color: var(--danger); }
+    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--accent-go); color: var(--accent-go); }
+    .toast.warning { background: rgba(255, 170, 0, 0.15);  border: 1px solid var(--warning); color: var(--warning); }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* Topbar */
+    .topbar {
+      width: 100%;
       height: 58px;
       background: var(--bg-base);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 24px;
       justify-content: space-between;
-      flex-shrink: 0;
+      padding: 0 24px;
+      box-sizing: border-box;
     }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
     .brand {
       font-family: var(--font-mono);
       font-size: 12px;
       letter-spacing: 0.12em;
-      color: var(--text-2);      display: flex;
+      color: var(--text-2);
+      display: flex;
       align-items: center;
       gap: 8px;
     }
     .brand .dot {
-      width: 6px; height: 6px; background: var(--accent);
-      border-radius: 50%; box-shadow: 0 0 8px var(--accent);
-    }
-    .nav-tabs {
-      display: flex;
-      gap: 20px;
-    }
-    .nav-tab {
-      background: none;
-      border: none;
-      color: var(--text-3);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-    .nav-tab.active {
-      background: var(--bg-raised);
-      color: var(--accent);
-      border: 1px solid var(--border);
-    }
-    .nav-tab:hover:not(.active) {
-      color: var(--text-1);
-    }
-
-    /* Main Container */
-    .main-container {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* VIEW 1: Lead List (Full Screen) */
-    .view-list {
-      position: absolute;
-      inset: 0;
-      background: var(--bg-void);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s ease;
-      z-index: 10;
-    }
-    .view-list.hidden {      transform: translateX(-100%);
-      pointer-events: none;
-    }
-    .list-header {
-      padding: 20px 24px;
-      font-weight: 600;
-      font-size: 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-base);
-    }
-    .contact-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-    .contact-item {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .contact-item:hover {
-      background: var(--bg-surface);
-    }
-    .contact-name {
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--text-1);
-    }
-    .contact-preview {
-      font-size: 12px;
-      color: var(--text-3);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .contact-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: var(--text-3);
-      font-family: var(--font-mono);
-      margin-top: 4px;
-    }
-
-    /* VIEW 2: Chat Interface (Full Screen) */
-    .view-chat {
-      position: absolute;      inset: 0;
-      background: var(--bg-void);
-      display: flex;
-      flex-direction: column;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      z-index: 20;
-    }
-    .view-chat.active {
-      transform: translateX(0);
-    }
-    .chat-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-base);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .back-btn {
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-    }
-    .chat-info h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-    .chat-info p {
-      margin: 4px 0 0;
-      font-size: 12px;
-      color: var(--text-3);
-    }
-    .chat-actions {
-      margin-left: auto;
-      display: flex;
-      gap: 10px;
-    }
-    .action-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text-2);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;      font-size: 11px;
-      font-family: var(--font-mono);
-    }
-    .action-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .messages-container {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .message-bubble {
-      max-width: 75%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 14px;
-      line-height: 1.5;
-      position: relative;
-      word-wrap: break-word;
-    }
-    .message-bubble.lead {
-      align-self: flex-start;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 2px;
-    }
-    .message-bubble.ai {
-      align-self: flex-end;
-      background: rgba(200, 255, 87, 0.1);
-      border: 1px solid rgba(200, 255, 87, 0.2);
-      border-bottom-right-radius: 2px;
-    }
-    .message-time {
-      font-size: 9px;
-      color: var(--text-3);
-      margin-top: 4px;
-      text-align: right;
-      font-family: var(--font-mono);
-    }
-
-    .reply-input-area {
-      padding: 20px;
-      background: var(--bg-base);
-      border-top: 1px solid var(--border);
-      display: flex;      gap: 12px;
-    }
-    .reply-input-area textarea {
-      flex: 1;
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      color: var(--text-1);
-      padding: 12px;
-      border-radius: 8px;
-      resize: none;
-      height: 50px;
-      font-family: var(--font-sans);
-    }
-    .send-btn {
+      width: 6px; height: 6px;
       background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 0 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: var(--font-mono);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
     }
-    .send-btn:hover { background: #d4ff70; }
-    .send-btn:disabled { background: var(--text-3); cursor: not-allowed; }
 
-    /* Admin/Team View Placeholder */
-    .view-admin {
+    /* Timer Display - HIDDEN */
+    .connection-timer { display: none !important; }
+
+    /* ── Notification Bell (SVG-based) ── */
+    .notif-wrapper { display: flex; align-items: center; gap: 8px; }
+
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      color: var(--text-2);
+    }
+    .notif-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-1);
+    }
+    .notif-btn svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+      transition: color 0.2s;
+    }
+    .notif-btn.has-notifs {
+      color: var(--danger);
+      animation: pulse-red 2s infinite;
+    }
+    @keyframes pulse-red {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+      70%  { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+    }
+    .badge {
       position: absolute;
-      inset: 0;
-      background: var(--bg-void);
+      top: 1px;
+      right: 1px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 15px;
+      height: 15px;
+      padding: 0 3px;
+      border-radius: 8px;
       display: none;
       align-items: center;
       justify-content: center;
-      color: var(--text-3);
-      z-index: 5;
-    }
-    .view-admin.active {
-      display: flex;
+      border: 2px solid var(--bg-base);
+      font-family: var(--font-mono);
+      line-height: 1;
     }
 
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
+    /* Main Container */
+    .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
+
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
       color: var(--text-3);
-      text-align: center;
-    }  </style>
+      margin-bottom: 16px;
+      margin-top: 32px;
+      padding-left: 4px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
+    .menu-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-1);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .menu-item:hover { background: var(--bg-raised); border-color: var(--accent); transform: translateX(4px); }
+    .menu-item span { font-size: 14px; }
+    .arrow { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; }
+    .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.1); }
+    .danger-zone .menu-item:hover { border-color: var(--danger); background: rgba(255, 77, 77, 0.05); }
+    .danger-text { color: var(--danger); }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 40px;
+      color: var(--text-2); text-decoration: none;
+      font-size: 13px; font-family: var(--font-mono);
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* ===== COMMAND CENTER ===== */
+    .command-center {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 40px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cc-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+      transition: background 0.2s ease;
+    }
+    .cc-header:hover { background: #1e2229; }
+    .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--accent); }
+    .cc-title-group { display: flex; align-items: center; gap: 12px; }
+    .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
+    .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
+    .toggle-button-circle {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toggle-icon-svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .toggle-icon-svg path { stroke: var(--text-2); stroke-width: 2; transition: stroke 0.2s ease; }
+    .toggle-button:hover .toggle-icon-svg path { stroke: var(--accent); }
+    .command-center.collapsed .toggle-icon-svg { transform: rotate(-90deg); }
+    .cc-content-wrapper { max-height: 2000px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .command-center.collapsed .cc-content-wrapper { max-height: 0; }
+    .cc-content { padding: 24px; opacity: 1; transition: opacity 0.2s ease; }
+    .command-center.collapsed .cc-content { opacity: 0; }
+
+    .connect-btn {
+      background: var(--accent-go); color: #000;
+      border: none; padding: 8px 16px; border-radius: 6px;
+      font-weight: 600; cursor: pointer; font-family: var(--font-mono);
+      font-size: 12px; transition: all 0.2s; z-index: 2; position: relative;
+    }
+    .connect-btn:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); transform: translateY(-1px); }
+    .connect-btn.connected { background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent); }
+    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--bg-base); padding: 16px; border-radius: 8px;
+      text-align: center; border: 1px solid var(--border);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover { border-color: var(--text-3); transform: translateY(-2px); }
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
+
+    .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .lead-table th {
+      text-align: left; padding: 12px; color: var(--text-3);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+    }
+    .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+
+    .status-badge {
+      padding: 4px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
+    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
+    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
+    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
+    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
+
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); z-index: 1000;
+      justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; width: 90%; max-width: 650px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+    }
+    .modal-header h3 { color: var(--accent); margin: 0; font-size: 18px; }
+    .close-modal { background: none; border: none; color: var(--text-3); font-size: 24px; cursor: pointer; }
+    .reply-history {
+      background: var(--bg-base); padding: 15px; border-radius: 8px;
+      margin-bottom: 20px; border-left: 3px solid var(--accent);
+      max-height: 300px; overflow-y: auto;
+    }
+    .reply-history h4 { margin-top: 0; color: var(--text-2); font-size: 12px; text-transform: uppercase; }
+    .reply-history .reply-item {
+      background: var(--bg-raised); padding: 12px; border-radius: 8px; margin-bottom: 12px;
+    }
+    .reply-history .reply-meta { font-size: 10px; color: var(--text-3); margin-bottom: 6px; font-family: var(--font-mono); }
+    .reply-history .reply-content { color: var(--text-1); font-size: 13px; }
+    .reply-input-area textarea {
+      width: 100%; background: var(--bg-raised); border: 1px solid var(--border);
+      color: var(--text-1); padding: 12px; border-radius: 8px;
+      min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
+    }
+    .send-reply-btn {
+      margin-top: 15px; width: 100%; padding: 12px;
+      background: var(--accent); color: #000; border: none;
+      border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
+    }
+    .send-reply-btn:hover { background: #d4ff70; }
+    .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
+
+    .refresh-indicator { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 8px; font-family: var(--font-mono); }
+
+    .pricing-header { text-align: center; margin-bottom: 40px; }
+    .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
+    .pricing-header p { color: var(--text-2); font-size: 14px; }
+    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
+    .plan-card {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px 24px;
+      display: flex; flex-direction: column; position: relative;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .plan-card:hover { transform: translateY(-5px); border-color: var(--text-3); }
+    .plan-card.featured { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(200, 255, 87, 0.1); }
+    .plan-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #060608; font-size: 10px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .plan-name { font-size: 18px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+    .plan-price {
+      font-size: 36px; font-weight: 700; color: var(--text-1); margin-bottom: 24px;
+      display: flex; align-items: baseline;
+    }
+    .plan-price span { font-size: 14px; color: var(--text-3); margin-left: 4px; font-weight: 400; }
+    .plan-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex-grow: 1; }
+    .plan-features li {
+      margin-bottom: 12px; font-size: 13px; color: var(--text-2);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: bold; }
+    .plan-features li.disabled { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
+    .plan-features li.disabled::before { content: '✕'; color: var(--text-3); }
+    .plan-btn {
+      width: 100%; padding: 14px; border-radius: 8px; border: none;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-free { background: var(--bg-raised); color: var(--text-3); cursor: default; }
+    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
+    .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
+    .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
+    .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
+    .current-plan-tag {
+      display: inline-block; font-size: 10px;
+      background: rgba(200, 255, 87, 0.1); color: var(--accent);
+      padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
+    }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .command-center:not(.collapsed) .analytics-grid,
+    .command-center:not(.collapsed) .lead-table,
+    .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
+  </style>
 </head>
 <body>
 
-  <!-- Top Navigation -->
-  <header class="top-nav">
-    <div class="brand"><span class="dot"></span> SKYLINE AA-1</div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('leads')">Leads</button>
-      <button class="nav-tab" onclick="switchTab('team')">Skyline AA-1 Team</button>
+  <div class="toast" id="toast"></div>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="dot"></span>
+        SKYLINE AA-1
+      </div>
     </div>
-    <div style="width: 100px;"></div> <!-- Spacer for balance -->
+    <div class="notif-wrapper">
+      <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
+        <!-- Production SVG Bell Icon -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="notifBadge" class="badge">0</span>
+      </button>
+    </div>
   </header>
 
-  <div class="main-container">
-    
-    <!-- VIEW 1: Lead List (Full Screen) -->
-    <div id="viewList" class="view-list">
-      <div class="list-header">Conversations</div>
-      <div class="contact-list" id="contactList">
-        <div style="padding:20px; text-align:center; color:var(--text-3);">Loading...</div>
+  <div class="container">
+
+    <div class="section-title">Month 2: Command Center</div>
+    <div class="command-center" id="commandCenter">
+      <div class="cc-header" onclick="toggleCommandCenter()">
+        <div class="cc-title-group">
+          <span class="cc-title">Email Infrastructure</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <div id="connectButtonContainer" style="display:flex; align-items:center; gap:8px;">
+            <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
+              Connect Gmail/Outlook
+            </button>
+            <div id="connectionTimer" class="connection-timer">
+              ⏱️ <span></span> remaining
+            </div>
+          </div>
+          <div class="toggle-button">
+            <div class="toggle-button-circle">
+              <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cc-content-wrapper">
+        <div class="cc-content">
+          <div class="analytics-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="totalLeads">—</div>
+              <div class="stat-label">Total Leads</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="replyRate">—</div>
+              <div class="stat-label">Reply Rate</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="interestedCount">—</div>
+              <div class="stat-label">Interested</div>
+            </div>
+          </div>
+
+          <table class="lead-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Last Action</th>
+              </tr>
+            </thead>
+            <tbody id="leadList">
+              <tr>
+                <td colspan="4" style="text-align:center; color: var(--text-3); padding: 24px;">
+                  Loading leads...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
+        </div>
       </div>
     </div>
 
-    <!-- VIEW 2: Chat Interface (Full Screen) -->
-    <div id="viewChat" class="view-chat">
-      <div class="chat-header">
-        <button class="back-btn" onclick="closeChat()">←</button>
-        <div class="chat-info">
-          <h3 id="chatName">Customer Name</h3>
-          <p id="chatEmail">email@example.com</p>
-        </div>
-        <div class="chat-actions">
-          <button class="action-btn" onclick="renameCustomer()">✎ Rename</button>
-        </div>
+    <div class="section-title">Subscription</div>
+    <div class="pricing-header">
+      <h2>Choose Your Power Level</h2>
+      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
+    </div>
+    <div class="pricing-cards">
+
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>30 Requests / Day</li>
+          <li>Basic Model (Skyline AA-1a)</li>
+          <li>Short Memory</li>
+          <li class="disabled">Powerful Reasoning</li>
+          <li class="disabled">Early Access</li>
+        </ul>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>
       </div>
 
-      <div id="messagesContainer" class="messages-container">
-        <div class="empty-state">
-          <h3>Select a conversation</h3>
-        </div>
+      <div class="plan-card">
+        <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
+        <div class="plan-price">$9<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>18 Requests / Day</li>
+          <li>Powerful Model (Skyline AA-1mini)</li>
+          <li>Long Memory</li>
+          <li>Great Features</li>
+          <li class="disabled">Skyline AA-1a Model</li>
+        </ul>
+        <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
       </div>
 
+      <div class="plan-card featured">
+        <div class="plan-badge">Best Value</div>
+        <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
+        <div class="plan-price">$20<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>40 Requests / Day</li>
+          <li>Skyline AA-1aa Model</li>
+          <li>Advance Reasoning</li>
+          <li>Early Access to Features</li>
+          <li>Priority Support</li>
+        </ul>
+        <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
+      </div>
+
+    </div>
+
+    <div class="section-title">Profile</div>
+    <div class="menu-grid">
+      <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
+      <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
+    </div>
+
+    <div class="section-title">Skyline System</div>
+    <div class="menu-grid">
+      <a href="Privacy.html" class="menu-item"><span>Privacy Policy</span><span class="arrow">›</span></a>
+      <a href="age-verification.html" class="menu-item"><span>Age Verification</span><span class="arrow">›</span></a>
+      <a href="email-settings.html" class="menu-item"><span>Email Preferences</span><span class="arrow">›</span></a>
+      <a href="about.html" class="menu-item"><span>About Skyline AA-1</span><span class="arrow">›</span></a>
+      <a href="report.html" class="menu-item"><span>Report an Issue</span><span class="arrow">›</span></a>
+    </div>
+
+    <div class="section-title">Dangerous Zone</div>
+    <div class="menu-grid danger-zone">
+      <a href="#" onclick="handleLogout()" class="menu-item"><span class="danger-text">Sign Out</span><span class="arrow">›</span></a>
+      <a href="delete-account.html" class="menu-item"><span class="danger-text">Delete Account</span><span class="arrow">›</span></a>
+    </div>
+
+    <a href="page.html" class="back-link">← Return to Dream Architect</a>
+  </div>
+
+  <div id="replyModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reply to <span id="modalLeadName">Lead</span></h3>
+        <button class="close-modal" onclick="closeReplyModal()">×</button>
+      </div>
+      <div class="reply-history" id="replyHistoryContainer">
+        <h4>Conversation History:</h4>
+        <div id="conversationHistory">Loading...</div>
+      </div>
       <div class="reply-input-area">
-        <textarea id="replyText" placeholder="Type a reply..."></textarea>
-        <button class="send-btn" onclick="sendReply()">Send</button>
+        <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-3);">Your Reply:</label>
+        <textarea id="replyTextArea" placeholder="Type your reply here..."></textarea>
+        <button id="sendReplyBtn" class="send-reply-btn" onclick="sendDirectReply()">🚀 Send Reply</button>
       </div>
     </div>
-
-    <!-- VIEW 3: Admin/Team (Placeholder) -->    <div id="viewAdmin" class="view-admin">
-      <div class="empty-state">
-        <h3>Skyline AA-1 Team</h3>
-        <p>Admin notifications and team messages will appear here.</p>
-      </div>
-    </div>
-
   </div>
 
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = "login.html";
+    const token   = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
 
-    let currentLeadId = null;
-    let currentLeadName = "";
-    let currentLeadEmail = "";
+    let currentReplyLeadId = null;
+    let currentReplyEmail = null;
+    let autoRefreshInterval = null;
+    let lastReplyCount = 0;
+    let disconnectTimer = null;
+    let timerInterval = null;
+    let remainingTime = 0;
+    const CONNECTION_DURATION_MINUTES = 20;
 
-    // Load Contact List on Startup
-    document.addEventListener('DOMContentLoaded', loadContacts);
+    // ── Toggle Command Center ────────────────────────────────────────────────
+    function toggleCommandCenter() {
+      const cc = document.getElementById('commandCenter');
+      cc.classList.toggle('collapsed');
+      localStorage.setItem('commandCenterCollapsed', cc.classList.contains('collapsed'));
+    }
 
-    function switchTab(tab) {
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-
-      if (tab === 'leads') {
-        document.getElementById('viewList').classList.remove('hidden');
-        document.getElementById('viewAdmin').classList.remove('active');
-        closeChat(); // Ensure chat is closed when switching tabs
+    function loadCollapseState() {
+      const savedState = localStorage.getItem('commandCenterCollapsed');
+      const cc = document.getElementById('commandCenter');
+      if (savedState === 'true') {
+        cc.classList.add('collapsed');
       } else {
-        document.getElementById('viewList').classList.add('hidden');
-        document.getElementById('viewAdmin').classList.add('active');
-        closeChat();
+        cc.classList.remove('collapsed');
+        if (savedState === null) localStorage.setItem('commandCenterCollapsed', 'false');
       }
     }
 
-    async function loadContacts() {
-      try {
-        const res = await fetch(`${BACKEND}/api/conversations`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const contacts = await res.json();
-        
-        const list = document.getElementById('contactList');
-        if (contacts.length === 0) {
-          list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-3);">No conversations yet.</div>';
-          return;
+    function showToast(message, type = 'success', duration = 4000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className   = `toast ${type}`;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, duration);
+    }
+
+    // ── Timer Functions ──────────────────────────────────────────────────────
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const timerElement = document.getElementById('connectionTimer');
+      if (timerElement && remainingTime > 0) {
+        const timeSpan = timerElement.querySelector('span');
+        if (timeSpan) timeSpan.textContent = formatTime(remainingTime);
+      }
+    }
+
+    function startDisconnectTimer(minutes) {
+      if (timerInterval) clearInterval(timerInterval);
+      if (disconnectTimer) clearTimeout(disconnectTimer);
+      remainingTime = minutes * 60;
+      updateTimerDisplay();
+      const expiryTime = Date.now() + (minutes * 60 * 1000);
+      localStorage.setItem('emailExpiryTime', expiryTime.toString());
+      localStorage.setItem('emailConnected', 'true');
+      timerInterval = setInterval(() => {
+        if (remainingTime > 0) {
+          remainingTime--;
+          updateTimerDisplay();
+          localStorage.setItem('emailExpiryTime', (Date.now() + remainingTime * 1000).toString());
         }
-
-        list.innerHTML = contacts.map(c => `          <div class="contact-item" onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
-            <div class="contact-name">${escapeHtml(c.name)}</div>
-            <div class="contact-preview">${escapeHtml(c.lastMessage)}</div>
-            <div class="contact-meta">
-              <span>${c.company || 'Unknown Company'}</span>
-              <span>${new Date(c.lastDate).toLocaleDateString()}</span>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        console.error(err);
-      }
+      }, 1000);
+      disconnectTimer = setTimeout(() => { autoDisconnectEmail(); }, minutes * 60 * 1000);
     }
 
-    async function openChat(leadId, name, email) {
-      currentLeadId = leadId;
-      currentLeadName = name;
-      currentLeadEmail = email;
+    function stopDisconnectTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      if (disconnectTimer) { clearTimeout(disconnectTimer); disconnectTimer = null; }
+    }
 
-      // Update UI
-      document.getElementById('chatName').innerText = name;
-      document.getElementById('chatEmail').innerText = email;
-      document.getElementById('replyText').value = '';
-
-      // Show Chat View
-      document.getElementById('viewChat').classList.add('active');
-
-      // Fetch Messages
+    async function autoDisconnectEmail() {
       try {
-        const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        
-        const container = document.getElementById('messagesContainer');
-        container.innerHTML = data.messages.map(msg => `
-          <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
-            ${escapeHtml(msg.content)}
-            <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-          </div>
-        `).join('');
-        
-        // Scroll to bottom
-        container.scrollTop = container.scrollHeight;
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function closeChat() {      document.getElementById('viewChat').classList.remove('active');
-      currentLeadId = null;
-    }
-
-    async function sendReply() {
-      const text = document.getElementById('replyText').value.trim();
-      if (!text || !currentLeadId) return;
-
-      const btn = document.querySelector('.send-btn');
-      btn.disabled = true;
-      btn.innerText = "Sending...";
-
-      try {
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        stopDisconnectTimer();
+        await fetch(`${BACKEND}/api/auth/disconnect`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            leads: [{
-              name: currentLeadName,
-              email: currentLeadEmail,
-              company: '',
-              messages: [{ subject: "Re: Conversation", body: text }]
-            }]
-          })
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-        
-        const data = await res.json();
-        
-        if (res.status === 401 && data.error === 'NYLAS_DISCONNECTED') {
-          alert("Your email session has expired. Redirecting to reconnect...");
-          window.location.href = 'dashboard.html?connect=true';
-          return;
-        }
+      } catch (err) { console.error('Auto-disconnect error:', err); }
+      const btn = document.getElementById('connectEmailBtn');
+      if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
+      localStorage.removeItem('emailConnectedAt');
+      localStorage.removeItem('emailExpiryTime');
+      localStorage.removeItem('emailConnected');
+      showToast('🔌 Email connection expired after 20 minutes. Please reconnect to continue.', 'warning', 8000);
+      await checkEmailStatus();
+    }
 
-        if (data.success) {
-          document.getElementById('replyText').value = '';
-          openChat(currentLeadId, currentLeadName, currentLeadEmail); // Refresh chat
-        } else {
-          alert("Failed to send: " + JSON.stringify(data.errors));
-        }
-      } catch (err) {
-        alert("Connection error");
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Send";
+    function handleOAuthRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get('connected');
+      const error     = params.get('error');
+      if (connected === 'true') {
+        showToast('✅ Gmail/Outlook connected successfully! Connection will auto-disconnect after 20 minutes.', 'success', 8000);
+        setConnectedState();
+        startDisconnectTimer(CONNECTION_DURATION_MINUTES);
+        localStorage.setItem('emailConnectedAt', Date.now().toString());
+        window.history.replaceState({}, document.title, '/dashboard.html');
+      } else if (connected === 'false') {
+        const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
+        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
+        window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
-    async function renameCustomer() {
-      const newName = prompt("Enter new name for this customer:", currentLeadName);
-      if (newName && newName !== currentLeadName) {
-        try {
-          await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ newName })
-          });
-          
-          // Update UI locally
-          currentLeadName = newName;
-          document.getElementById('chatName').innerText = newName;
-          loadContacts(); // Refresh sidebar
-        } catch (err) {
-          alert("Failed to rename");
+
+    function setConnectedState() {
+      const btn = document.getElementById('connectEmailBtn');
+      if (btn) { btn.innerText = '✅ Connected'; btn.classList.add('connected'); }
+    }
+
+    async function connectEmail() {
+      const btn = document.getElementById('connectEmailBtn');
+      btn.innerText = 'Connecting...';
+      btn.disabled  = true;
+      try {
+        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Server error ${res.status}`);
         }
+        const data = await res.json();
+        if (data.url) { window.location.href = data.url; }
+        else throw new Error('No URL returned from server');
+      } catch (err) {
+        console.error('Error getting Nylas URL:', err);
+        showToast(`❌ Could not start connection: ${err.message}`, 'error');
+        btn.innerText = 'Connect Gmail/Outlook';
+        btn.disabled  = false;
+      }
+    }
+
+    async function checkEmailStatus() {
+      try {
+        const expiryTime = localStorage.getItem('emailExpiryTime');
+        const isConnected = localStorage.getItem('emailConnected') === 'true';
+        if (isConnected && expiryTime) {
+          const remaining = parseInt(expiryTime) - Date.now();
+          if (remaining > 0) {
+            setConnectedState();
+            startDisconnectTimer(remaining / 1000 / 60);
+            return;
+          } else {
+            const btn = document.getElementById('connectEmailBtn');
+            if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
+            localStorage.removeItem('emailConnectedAt');
+            localStorage.removeItem('emailExpiryTime');
+            localStorage.removeItem('emailConnected');
+          }
+        }
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
+            setConnectedState();
+            const connectedAt = localStorage.getItem('emailConnectedAt');
+            if (connectedAt) {
+              const elapsedMinutes = (Date.now() - parseInt(connectedAt)) / 1000 / 60;
+              if (elapsedMinutes < CONNECTION_DURATION_MINUTES) {
+                startDisconnectTimer(CONNECTION_DURATION_MINUTES - elapsedMinutes);
+              } else {
+                await autoDisconnectEmail();
+              }
+            } else {
+              startDisconnectTimer(CONNECTION_DURATION_MINUTES);
+              localStorage.setItem('emailConnectedAt', Date.now().toString());
+            }
+          } else {
+            const btn = document.getElementById('connectEmailBtn');
+            if (btn && btn.classList.contains('connected')) {
+              btn.innerText = 'Connect Gmail/Outlook';
+              btn.classList.remove('connected');
+            }
+          }
+        }
+      } catch (err) { console.error('Error checking email status:', err); }
+    }
+
+    // ── Load Leads (no Action column) ────────────────────────────────────────
+    async function loadLeads() {
+      try {
+        const res = await fetch(`${BACKEND}/api/leads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const leads = await res.json();
+        const tbody = document.getElementById('leadList');
+
+        document.getElementById('totalLeads').innerText = leads.length;
+        const interested = leads.filter(l => l.status === 'Interested').length;
+        document.getElementById('interestedCount').innerText = interested;
+        const replied = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
+        const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
+        document.getElementById('replyRate').innerText = rate + '%';
+
+        if (leads.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
+        } else {
+          tbody.innerHTML = leads.map(lead => {
+            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
+            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
+            return `
+              <tr>
+                <td>${escapeHtml(lead.name || '—')}</td>
+                <td>${escapeHtml(lead.company || '—')}</td>
+                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
+                <td>${lastDate}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error loading leads:', err);
+        document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
       }
     }
 
@@ -518,6 +775,197 @@
       div.appendChild(document.createTextNode(str));
       return div.innerHTML;
     }
+
+    async function openReplyModal(leadId, name, email) {
+      currentReplyLeadId = leadId;
+      currentReplyEmail = email;
+      document.getElementById('modalLeadName').innerText = name;
+      document.getElementById('replyModal').style.display = 'flex';
+      document.getElementById('replyTextArea').value = '';
+      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
+      try {
+        const res = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const leads = await res.json();
+        const lead = leads.find(l => l._id === leadId);
+        if (lead && lead.replies && lead.replies.length > 0) {
+          document.getElementById('conversationHistory').innerHTML = lead.replies.slice().reverse().map(reply => {
+            const isLead = reply.from === 'lead';
+            const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
+            return `
+              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
+                <div class="reply-meta">
+                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
+                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
+                </div>
+                <div class="reply-content">${escapeHtml(reply.content)}</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
+        }
+      } catch (err) {
+        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
+      }
+    }
+
+    function closeReplyModal() {
+      document.getElementById('replyModal').style.display = 'none';
+      currentReplyLeadId = null;
+      currentReplyEmail = null;
+    }
+
+    async function sendDirectReply() {
+      const btn = document.getElementById('sendReplyBtn');
+      const text = document.getElementById('replyTextArea').value.trim();
+      if (!text) { showToast("Please type a reply.", "error"); return; }
+      if (!currentReplyEmail) { showToast("Error: No email address found.", "error"); return; }
+      btn.disabled = true;
+      btn.innerText = "Sending...";
+      try {
+        const payload = {
+          leads: [{ name: document.getElementById('modalLeadName').innerText, email: currentReplyEmail, company: '',
+            messages: [{ subject: "Re: Your inquiry about Skyline AA-1", body: text }] }]
+        };
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) { showToast("✅ Reply sent successfully!", "success"); closeReplyModal(); loadLeads(); }
+        else showToast("❌ Failed to send reply.", "error");
+      } catch (err) {
+        showToast("❌ Connection error.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 Send Reply";
+      }
+    }
+
+    async function initiateUpgrade(planType) {
+      const btn = event.target;
+      const originalText = btn.innerText;
+      try {
+        btn.innerText = 'Connecting...';
+        btn.disabled  = true;
+        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ planType })
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Server Error: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.link) { btn.innerText = 'Redirecting...'; window.location.href = data.link; }
+        else throw new Error('No payment link received from server.');
+      } catch (err) {
+        showToast(`❌ ${err.message}`, 'error');
+        if (btn) { btn.innerText = originalText; btn.disabled = false; }
+      }
+    }
+
+    async function checkCurrentPlan() {
+      try {
+        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const user = await res.json();
+          const plan = user.subscriptionTier || 'free';
+          if (plan === 'go') {
+            document.getElementById('goTag').style.display = 'inline-block';
+            const goBtn = document.querySelector('.btn-go');
+            if (goBtn) { goBtn.innerText = 'Current Plan'; goBtn.disabled = true; goBtn.classList.add('btn-free'); goBtn.classList.remove('btn-go'); }
+          } else if (plan === 'pro') {
+            document.getElementById('proTag').style.display = 'inline-block';
+            const proBtn = document.querySelector('.btn-pro');
+            if (proBtn) { proBtn.innerText = 'Current Plan'; proBtn.disabled = true; proBtn.style.background = '#333'; proBtn.style.color = '#888'; proBtn.style.boxShadow = 'none'; }
+          }
+        }
+      } catch (err) { console.error('Failed to check plan:', err); }
+    }
+
+    function handleNotifClick() {
+      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+      window.location.href = 'notifications.html';
+    }
+
+    // ── Notification Badge (capped at 10+) ───────────────────────────────────
+    async function loadNotifCount() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data  = await res.json();
+          const badge = document.getElementById('notifBadge');
+          const btn   = document.getElementById('notifBtn');
+          const hasServerMessages = data.count > 0;
+          const lastViewTime      = localStorage.getItem('lastNotifViewTime');
+          const shouldShowBadge   = hasServerMessages && !lastViewTime;
+
+          if (shouldShowBadge) {
+            badge.style.display = 'flex';
+            // Cap display at 10+
+            badge.textContent = data.count > 10 ? '10+' : data.count;
+            btn.classList.add('has-notifs');
+          } else {
+            badge.style.display = 'none';
+            btn.classList.remove('has-notifs');
+          }
+        }
+      } catch (err) { console.error('Failed to load notifications:', err); }
+    }
+
+    function handleLogout() {
+      if (confirm('Are you sure you want to sign out?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('lastNotifViewTime');
+        localStorage.removeItem('emailConnectedAt');
+        localStorage.removeItem('emailExpiryTime');
+        localStorage.removeItem('emailConnected');
+        window.location.href = 'login.html';
+      }
+    }
+
+    async function checkForNewReplies() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/replies`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const newReplyCount = data.count;
+          document.getElementById('refreshIndicator').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+          if (newReplyCount > lastReplyCount && lastReplyCount !== 0) {
+            const newCount = newReplyCount - lastReplyCount;
+            showToast(`📬 ${newCount} new repl${newCount === 1 ? 'y' : 'ies'} received!`, 'info', 5000);
+
+            const notifBtn = document.getElementById('notifBtn');
+            notifBtn.classList.add('has-notifs');
+            const badge = document.getElementById('notifBadge');
+            badge.style.display = 'flex';
+            // Cap display at 10+
+            badge.textContent = newReplyCount > 10 ? '10+' : newReplyCount;
+
+            loadLeads();
+          }
+          lastReplyCount = newReplyCount;
+        }
+      } catch (err) { console.error('Error checking replies:', err); }
+    }
+
+    // ── Initialize ───────────────────────────────────────────────────────────
+    handleOAuthRedirect();
+    loadCollapseState();
+    loadNotifCount();
+    checkCurrentPlan();
+    checkEmailStatus();
+    loadLeads();
+    checkForNewReplies();
+    autoRefreshInterval = setInterval(checkForNewReplies, 15000);
   </script>
 </body>
   </html>
