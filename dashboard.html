@@ -1005,29 +1005,46 @@
       updateTimerDisplay();
     }
 
-    // ── Auto Disconnect Email ────────────────────────────────────────────────
+    // ── Auto Disconnect Email (FIXED - ALWAYS resets UI) ─────────────────────
     async function autoDisconnectEmail() {
       try {
+        // Stop timers first
+        stopDisconnectTimer();
+        
         // Call backend to disconnect
         const res = await fetch(`${BACKEND}/api/auth/disconnect`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        if (res.ok) {
-          const btn = document.getElementById('connectEmailBtn');
+        // ALWAYS reset UI, even if backend call fails
+        const btn = document.getElementById('connectEmailBtn');
+        if (btn) {
           btn.innerText = 'Connect Gmail/Outlook';
           btn.classList.remove('connected');
-          stopDisconnectTimer();
-          showToast('🔌 Email connection expired after 20 minutes. Please reconnect to continue.', 'warning', 8000);
-          
-          // Clear connected state from localStorage
-          localStorage.removeItem('emailConnectedAt');
-          localStorage.removeItem('emailExpiryTime');
-          localStorage.removeItem('emailConnected');
         }
+        
+        // Clear connected state from localStorage
+        localStorage.removeItem('emailConnectedAt');
+        localStorage.removeItem('emailExpiryTime');
+        localStorage.removeItem('emailConnected');
+        
+        showToast('🔌 Email connection expired after 20 minutes. Please reconnect to continue.', 'warning', 8000);
+        
+        // Force a re-check of status
+        await checkEmailStatus();
+        
       } catch (err) {
         console.error('Auto-disconnect error:', err);
+        // Still reset UI even if backend fails
+        const btn = document.getElementById('connectEmailBtn');
+        if (btn) {
+          btn.innerText = 'Connect Gmail/Outlook';
+          btn.classList.remove('connected');
+        }
+        localStorage.removeItem('emailConnectedAt');
+        localStorage.removeItem('emailExpiryTime');
+        localStorage.removeItem('emailConnected');
       }
     }
 
@@ -1093,7 +1110,7 @@
       }
     }
 
-    // ── Check Email Connection Status (with localStorage sync) ────────────────
+    // ── Check Email Connection Status (FIXED - properly detects expiration) ───
     async function checkEmailStatus() {
       try {
         // First check localStorage for existing connection
@@ -1111,8 +1128,16 @@
             console.log(`Connection restored: ${Math.floor(remaining / 1000 / 60)} minutes remaining`);
             return;
           } else {
-            // Expired, clean up
-            await autoDisconnectEmail();
+            // Expired - force disconnect UI reset
+            console.log('Connection expired from localStorage check');
+            const btn = document.getElementById('connectEmailBtn');
+            if (btn) {
+              btn.innerText = 'Connect Gmail/Outlook';
+              btn.classList.remove('connected');
+            }
+            localStorage.removeItem('emailConnectedAt');
+            localStorage.removeItem('emailExpiryTime');
+            localStorage.removeItem('emailConnected');
           }
         }
         
@@ -1133,11 +1158,19 @@
                 const remainingMinutes = CONNECTION_DURATION_MINUTES - elapsedMinutes;
                 startDisconnectTimer(remainingMinutes);
               } else {
-                autoDisconnectEmail();
+                // Connection exists in backend but should be expired - reset
+                await autoDisconnectEmail();
               }
             } else {
               startDisconnectTimer(CONNECTION_DURATION_MINUTES);
               localStorage.setItem('emailConnectedAt', Date.now().toString());
+            }
+          } else {
+            // Backend says not connected - ensure UI is reset
+            const btn = document.getElementById('connectEmailBtn');
+            if (btn && btn.classList.contains('connected')) {
+              btn.innerText = 'Connect Gmail/Outlook';
+              btn.classList.remove('connected');
             }
           }
         }
@@ -1166,7 +1199,7 @@
         document.getElementById('replyRate').innerText = rate + '%';
 
         if (leads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start. </div>';
         } else {
           tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
@@ -1189,7 +1222,7 @@
         }
       } catch (err) {
         console.error('Error loading leads:', err);
-        document.getElementById('leadList').innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
+        document.getElementById('leadList').innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again. </div>';
       }
     }
 
