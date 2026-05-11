@@ -111,23 +111,9 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
-    /* Timer Display */
+    /* Timer Display - HIDDEN */
     .connection-timer {
-      font-size: 11px;
-      font-family: var(--font-mono);
-      color: var(--warning);
-      background: rgba(255, 170, 0, 0.1);
-      padding: 4px 8px;
-      border-radius: 6px;
-      margin-left: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .connection-timer span {
-      font-weight: bold;
-      color: var(--warning);
+      display: none !important;
     }
 
     /* Notification Bell */
@@ -741,7 +727,7 @@
             <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
               Connect Gmail/Outlook
             </button>
-            <div id="connectionTimer" class="connection-timer" style="display:none;">
+            <div id="connectionTimer" class="connection-timer">
               ⏱️ <span></span> remaining
             </div>
           </div>
@@ -971,9 +957,7 @@
         if (remainingTime > 0) {
           const timeSpan = timerElement.querySelector('span');
           if (timeSpan) timeSpan.textContent = formatTime(remainingTime);
-          timerElement.style.display = 'inline-flex';
-        } else {
-          timerElement.style.display = 'none';
+          // Timer element is hidden by CSS (display: none !important)
         }
       }
     }
@@ -991,7 +975,7 @@
       localStorage.setItem('emailExpiryTime', expiryTime.toString());
       localStorage.setItem('emailConnected', 'true');
       
-      // Update every second
+      // Update every second (timer runs but is hidden)
       timerInterval = setInterval(() => {
         if (remainingTime > 0) {
           remainingTime--;
@@ -1057,7 +1041,7 @@
         showToast('✅ Gmail/Outlook connected successfully! Connection will auto-disconnect after 20 minutes.', 'success', 8000);
         setConnectedState();
         
-        // Start the 20-minute timer
+        // Start the 20-minute timer (hidden)
         startDisconnectTimer(CONNECTION_DURATION_MINUTES);
         
         // Save connection time
@@ -1074,7 +1058,7 @@
     function setConnectedState() {
       const btn = document.getElementById('connectEmailBtn');
       if (btn) {
-        btn.innerText = '✅ Connected (20 min)';
+        btn.innerText = '✅ Connected';
         btn.classList.add('connected');
       }
     }
@@ -1120,7 +1104,7 @@
           const remaining = parseInt(expiryTime) - Date.now();
           
           if (remaining > 0) {
-            // Connection still valid, restore timer
+            // Connection still valid, restore timer (hidden)
             const remainingMinutes = remaining / 1000 / 60;
             setConnectedState();
             startDisconnectTimer(remainingMinutes);
