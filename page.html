@@ -620,7 +620,7 @@
 
         const data = await res.json();
         
-        // 4. Handle Token Expiration (401 Unauthorized from Nylas)
+        // 4. Handle Token Expiration or Auth Errors
         if (res.status === 401 || (data.message && data.message.toLowerCase().includes('token'))) {
              alert("Your email session has expired. Please reconnect your Gmail account.");
              window.location.href = 'dashboard.html?connect=true';
@@ -705,4 +705,4 @@
     }
   </script>
 </body>
-  </html>
+                                   </html>
