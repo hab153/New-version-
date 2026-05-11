@@ -27,6 +27,7 @@
       --text-1:      #ffffff;
       --text-2:      #999999;
       --text-3:      #444444;
+      --warning:     #ffaa00;
       --user-bg:     #0f0f0f;
       --user-border: rgba(245,166,35,0.20);
       --ai-bg:       #080808;
@@ -70,6 +71,31 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
+    }
+
+    /* Connection Status Banner */
+    .connection-status {
+      background: rgba(255, 170, 0, 0.1);
+      border-bottom: 1px solid var(--warning);
+      padding: 8px 24px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    .connection-status.connected {
+      color: var(--warning);
+    }
+    .connection-status.disconnected {
+      color: var(--text-3);
+    }
+    .connection-status a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .connection-status a:hover {
+      text-decoration: underline;
     }
 
     .topbar {
@@ -344,6 +370,11 @@
     </div>
   </header>
 
+  <!-- Connection Status Banner -->
+  <div id="connectionStatus" class="connection-status disconnected">
+    ⚡ Checking email connection...
+  </div>
+
   <div id="replyNotification" class="reply-notification" onclick="window.location.href='dashboard.html'">
     🔔 New Reply Detected! Click to view Dashboard.
   </div>
@@ -378,6 +409,7 @@
   </div>
 
   <script>
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
@@ -385,9 +417,71 @@
     let conversationHistory = [];
     let isTyping = false;
     let currentGeneratedLeads = [];
+    
+    // Connection timer variables (shared with dashboard)
+    let disconnectTimer = null;
+    let timerInterval = null;
+    let remainingTime = 0;
+    const CONNECTION_DURATION_MINUTES = 20;
 
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
 
+    // ── Connection Timer Functions (Shared with Dashboard) ───────────────────
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateConnectionStatusDisplay() {
+      const statusDiv = document.getElementById('connectionStatus');
+      const expiryTime = localStorage.getItem('emailExpiryTime');
+      const isConnected = localStorage.getItem('emailConnected') === 'true';
+      
+      if (isConnected && expiryTime) {
+        const remaining = parseInt(expiryTime) - Date.now();
+        if (remaining > 0) {
+          const remainingMins = Math.floor(remaining / 1000 / 60);
+          const remainingSecs = Math.floor((remaining % 60000) / 1000);
+          statusDiv.className = 'connection-status connected';
+          statusDiv.innerHTML = `🔌 Email Connected • Expires in ${remainingMins}:${remainingSecs.toString().padStart(2, '0')} • <a href="dashboard.html">Manage Connection →</a>`;
+          return true;
+        }
+      }
+      
+      statusDiv.className = 'connection-status disconnected';
+      statusDiv.innerHTML = `⚠️ No active email connection • <a href="dashboard.html">Connect Gmail/Outlook</a> to send emails`;
+      return false;
+    }
+
+    function startConnectionMonitor() {
+      // Update every second
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        updateConnectionStatusDisplay();
+      }, 1000);
+    }
+
+    function stopConnectionMonitor() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    // Check if email is connected (from localStorage)
+    function isEmailConnected() {
+      const expiryTime = localStorage.getItem('emailExpiryTime');
+      const isConnected = localStorage.getItem('emailConnected') === 'true';
+      
+      if (isConnected && expiryTime) {
+        const remaining = parseInt(expiryTime) - Date.now();
+        return remaining > 0;
+      }
+      return false;
+    }
+
+    // ── DOM Elements ─────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', async () => {
       chatArea = document.getElementById('chatArea');
       msgInput = document.getElementById('msgInput');
@@ -408,6 +502,10 @@
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
       await checkPlanStatus();
+      
+      // Start connection monitor
+      startConnectionMonitor();
+      updateConnectionStatusDisplay();
 
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
 
@@ -432,7 +530,7 @@
       isTyping = true;
       showTyping();
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/chat', {
+        const res = await fetch(`${BACKEND}/api/chat`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json', 
@@ -472,7 +570,7 @@
 
     async function loadHistoryFromSession() {
       try {
-        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/history/${currentSessionId}`, {
+        const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -498,7 +596,7 @@
 
     async function checkPlanStatus() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` },
           cache: 'no-cache'
         });
@@ -551,19 +649,19 @@
         leadDiv.className = 'lead-card';
         
         leadDiv.innerHTML = `
-            <div class="lead-info">${lead.name} @ ${lead.company}</div>
-            <div class="lead-email-display">AI Guess: ${lead.email}</div>
+            <div class="lead-info">${escapeHTML(lead.name)} @ ${escapeHTML(lead.company)}</div>
+            <div class="lead-email-display">AI Guess: ${escapeHTML(lead.email)}</div>
             <div class="input-group">
                 <label>To (Edit Email Address):</label>
-                <input type="email" id="email-${index}" value="${lead.email}">
+                <input type="email" id="email-${index}" value="${escapeHTML(lead.email)}">
             </div>
             <div class="input-group">
                 <label>Subject:</label>
-                <input type="text" id="subject-${index}" value="${lead.messages[0].subject}">
+                <input type="text" id="subject-${index}" value="${escapeHTML(lead.messages[0].subject)}">
             </div>
             <div class="input-group">
                 <label>Email Body:</label>
-                <textarea id="body-${index}">${lead.messages[0].body}</textarea>
+                <textarea id="body-${index}">${escapeHTML(lead.messages[0].body)}</textarea>
             </div>
         `;
         list.appendChild(leadDiv);
@@ -581,11 +679,18 @@
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
       
+      // Check localStorage connection FIRST
+      if (!isEmailConnected()) {
+        alert("⚠️ Email connection expired or not connected.\n\nPlease reconnect your email in the Dashboard (valid for 20 minutes).");
+        window.location.href = 'dashboard.html?connect=true';
+        return;
+      }
+      
       btn.innerText = "Verifying Connection...";
       btn.disabled = true;
 
       try {
-        const userRes = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+        const userRes = await fetch(`${BACKEND}/api/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -598,7 +703,9 @@
         const user = await userRes.json();
 
         if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
-            alert("Please connect your Gmail account first.");
+            alert("⚠️ Your email connection has expired (20 minute limit). Please reconnect.");
+            localStorage.removeItem('emailExpiryTime');
+            localStorage.removeItem('emailConnected');
             window.location.href = 'dashboard.html?connect=true';
             return;
         }
@@ -620,7 +727,7 @@
             })
         };
 
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/leads/batch-send', {
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -632,24 +739,26 @@
         const data = await res.json();
         
         if (res.status === 401 || (data.message && data.message.toLowerCase().includes('token'))) {
-             alert("Your email session has expired. Please reconnect your Gmail account.");
+             alert("⚠️ Your email session has expired (20 minute limit). Please reconnect.");
+             localStorage.removeItem('emailExpiryTime');
+             localStorage.removeItem('emailConnected');
              window.location.href = 'dashboard.html?connect=true';
              return;
         }
 
         if (data.success) {
-            alert(data.message + (data.errors.length > 0 ? ` Errors: ${JSON.stringify(data.errors)}` : ''));
-            appendMessage('ai', `✅ Successfully sent ${data.message.match(/\d+/)[0]} emails! You can track replies in the Dashboard.`);
+            alert(data.message + (data.errors.length > 0 ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
+            appendMessage('ai', `✅ Successfully sent emails! You can track replies in the Dashboard.`);
             closeReviewPanel();
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
-            }, 3000);
+            }, 2000);
         } else {
             alert('Error sending emails: ' + JSON.stringify(data.errors));
         }
       } catch (err) {
         console.error(err);
-        alert("Connection error. If your email session expired, please reconnect.");
+        alert("Connection error. If your email session expired (20 minutes), please reconnect in Dashboard.");
       } finally {
         btn.innerText = originalText;
         btn.disabled = false;
@@ -676,11 +785,11 @@
     
     function escapeHTML(str) { 
       if (!str) return '';
-      return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\n/g,'<br>'); 
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'); 
     }
     
     function scrollToBottom() { 
-      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); 
+      if (chatArea) chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); 
     }
     
     function updateSendButton() { 
@@ -691,7 +800,7 @@
       msgInput.style.height = 'auto'; 
       msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px';
       updateSendButton(); 
-      charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; 
+      if (charCount) charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; 
     }
     
     function handleKeydown(e) { 
