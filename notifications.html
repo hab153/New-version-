@@ -31,9 +31,9 @@
       flex-direction: column;
       overflow: hidden;
     }
-    
-    /* Topbar */
-    .topbar {
+
+    /* Top Navigation */
+    .top-nav {
       height: 58px;
       background: var(--bg-base);
       border-bottom: 1px solid var(--border);
@@ -41,52 +41,77 @@
       align-items: center;
       padding: 0 24px;
       justify-content: space-between;
+      flex-shrink: 0;
     }
     .brand {
       font-family: var(--font-mono);
       font-size: 12px;
       letter-spacing: 0.12em;
-      color: var(--text-2);
-      display: flex;      align-items: center;
+      color: var(--text-2);      display: flex;
+      align-items: center;
       gap: 8px;
     }
     .brand .dot {
       width: 6px; height: 6px; background: var(--accent);
       border-radius: 50%; box-shadow: 0 0 8px var(--accent);
     }
-    .back-btn {
-      color: var(--text-2); text-decoration: none; font-size: 13px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .back-btn:hover { color: var(--accent); }
-
-    /* Main Layout */
-    .inbox-container {
+    .nav-tabs {
       display: flex;
+      gap: 20px;
+    }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-tab.active {
+      background: var(--bg-raised);
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+    .nav-tab:hover:not(.active) {
+      color: var(--text-1);
+    }
+
+    /* Main Container */
+    .main-container {
       flex: 1;
+      position: relative;
       overflow: hidden;
     }
 
-    /* Sidebar (Contact List) */
-    .sidebar {
-      width: 320px;
-      background: var(--bg-base);
-      border-right: 1px solid var(--border);
+    /* VIEW 1: Lead List (Full Screen) */
+    .view-list {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-void);
       display: flex;
       flex-direction: column;
+      transition: transform 0.3s ease;
+      z-index: 10;
     }
-    .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
+    .view-list.hidden {      transform: translateX(-100%);
+      pointer-events: none;
+    }
+    .list-header {
+      padding: 20px 24px;
       font-weight: 600;
       font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-base);
     }
     .contact-list {
       flex: 1;
       overflow-y: auto;
     }
     .contact-item {
-      padding: 16px 20px;
+      padding: 16px 24px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background 0.2s;
@@ -96,9 +121,6 @@
     }
     .contact-item:hover {
       background: var(--bg-surface);
-    }    .contact-item.active {
-      background: var(--bg-raised);
-      border-left: 3px solid var(--accent);
     }
     .contact-name {
       font-weight: 600;
@@ -118,43 +140,64 @@
       font-size: 10px;
       color: var(--text-3);
       font-family: var(--font-mono);
+      margin-top: 4px;
     }
 
-    /* Chat Area */
-    .chat-area {
-      flex: 1;
+    /* VIEW 2: Chat Interface (Full Screen) */
+    .view-chat {
+      position: absolute;      inset: 0;
+      background: var(--bg-void);
       display: flex;
       flex-direction: column;
-      background: var(--bg-void);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 20;
+    }
+    .view-chat.active {
+      transform: translateX(0);
     }
     .chat-header {
       padding: 16px 24px;
       border-bottom: 1px solid var(--border);
       background: var(--bg-base);
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
       align-items: center;
     }
-    .chat-header-info h3 {
+    .chat-info h3 {
       margin: 0;
       font-size: 16px;
       font-weight: 600;
     }
-    .chat-header-info p {
+    .chat-info p {
       margin: 4px 0 0;
       font-size: 12px;
       color: var(--text-3);
     }
-    .rename-btn {      background: none;
+    .chat-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+    }
+    .action-btn {
+      background: none;
       border: 1px solid var(--border);
       color: var(--text-2);
       padding: 6px 12px;
       border-radius: 6px;
-      cursor: pointer;
-      font-size: 11px;
+      cursor: pointer;      font-size: 11px;
       font-family: var(--font-mono);
     }
-    .rename-btn:hover {
+    .action-btn:hover {
       border-color: var(--accent);
       color: var(--accent);
     }
@@ -168,12 +211,13 @@
       gap: 12px;
     }
     .message-bubble {
-      max-width: 70%;
+      max-width: 75%;
       padding: 12px 16px;
       border-radius: 12px;
       font-size: 14px;
       line-height: 1.5;
       position: relative;
+      word-wrap: break-word;
     }
     .message-bubble.lead {
       align-self: flex-start;
@@ -194,12 +238,12 @@
       text-align: right;
       font-family: var(--font-mono);
     }
-        .reply-input-area {
+
+    .reply-input-area {
       padding: 20px;
       background: var(--bg-base);
       border-top: 1px solid var(--border);
-      display: flex;
-      gap: 12px;
+      display: flex;      gap: 12px;
     }
     .reply-input-area textarea {
       flex: 1;
@@ -225,6 +269,21 @@
     .send-btn:hover { background: #d4ff70; }
     .send-btn:disabled { background: var(--text-3); cursor: not-allowed; }
 
+    /* Admin/Team View Placeholder */
+    .view-admin {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-void);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      z-index: 5;
+    }
+    .view-admin.active {
+      display: flex;
+    }
+
     .empty-state {
       display: flex;
       flex-direction: column;
@@ -233,46 +292,62 @@
       height: 100%;
       color: var(--text-3);
       text-align: center;
-    }
-  </style>
+    }  </style>
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="brand"><span class="dot"></span> SKYLINE AA-1 INBOX</div>
-    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="brand"><span class="dot"></span> SKYLINE AA-1</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('leads')">Leads</button>
+      <button class="nav-tab" onclick="switchTab('team')">Skyline AA-1 Team</button>
+    </div>
+    <div style="width: 100px;"></div> <!-- Spacer for balance -->
   </header>
 
-  <div class="inbox-container">    <!-- Sidebar: Contact List -->
-    <div class="sidebar">
-      <div class="sidebar-header">Conversations</div>
+  <div class="main-container">
+    
+    <!-- VIEW 1: Lead List (Full Screen) -->
+    <div id="viewList" class="view-list">
+      <div class="list-header">Conversations</div>
       <div class="contact-list" id="contactList">
         <div style="padding:20px; text-align:center; color:var(--text-3);">Loading...</div>
       </div>
     </div>
 
-    <!-- Main: Chat Area -->
-    <div class="chat-area">
-      <div id="chatHeader" class="chat-header" style="display:none;">
-        <div class="chat-header-info">
+    <!-- VIEW 2: Chat Interface (Full Screen) -->
+    <div id="viewChat" class="view-chat">
+      <div class="chat-header">
+        <button class="back-btn" onclick="closeChat()">←</button>
+        <div class="chat-info">
           <h3 id="chatName">Customer Name</h3>
           <p id="chatEmail">email@example.com</p>
         </div>
-        <button class="rename-btn" onclick="renameCustomer()">✎ Rename</button>
+        <div class="chat-actions">
+          <button class="action-btn" onclick="renameCustomer()">✎ Rename</button>
+        </div>
       </div>
 
       <div id="messagesContainer" class="messages-container">
         <div class="empty-state">
           <h3>Select a conversation</h3>
-          <p>Choose a customer from the left to view messages.</p>
         </div>
       </div>
 
-      <div id="inputArea" class="reply-input-area" style="display:none;">
+      <div class="reply-input-area">
         <textarea id="replyText" placeholder="Type a reply..."></textarea>
         <button class="send-btn" onclick="sendReply()">Send</button>
       </div>
     </div>
+
+    <!-- VIEW 3: Admin/Team (Placeholder) -->    <div id="viewAdmin" class="view-admin">
+      <div class="empty-state">
+        <h3>Skyline AA-1 Team</h3>
+        <p>Admin notifications and team messages will appear here.</p>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -282,9 +357,25 @@
 
     let currentLeadId = null;
     let currentLeadName = "";
+    let currentLeadEmail = "";
 
     // Load Contact List on Startup
     document.addEventListener('DOMContentLoaded', loadContacts);
+
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (tab === 'leads') {
+        document.getElementById('viewList').classList.remove('hidden');
+        document.getElementById('viewAdmin').classList.remove('active');
+        closeChat(); // Ensure chat is closed when switching tabs
+      } else {
+        document.getElementById('viewList').classList.add('hidden');
+        document.getElementById('viewAdmin').classList.add('active');
+        closeChat();
+      }
+    }
 
     async function loadContacts() {
       try {
@@ -292,14 +383,14 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const contacts = await res.json();
-                const list = document.getElementById('contactList');
+        
+        const list = document.getElementById('contactList');
         if (contacts.length === 0) {
           list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-3);">No conversations yet.</div>';
           return;
         }
 
-        list.innerHTML = contacts.map(c => `
-          <div class="contact-item" onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
+        list.innerHTML = contacts.map(c => `          <div class="contact-item" onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
             <div class="contact-name">${escapeHtml(c.name)}</div>
             <div class="contact-preview">${escapeHtml(c.lastMessage)}</div>
             <div class="contact-meta">
@@ -316,15 +407,15 @@
     async function openChat(leadId, name, email) {
       currentLeadId = leadId;
       currentLeadName = name;
+      currentLeadEmail = email;
 
       // Update UI
-      document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-
-      document.getElementById('chatHeader').style.display = 'flex';
-      document.getElementById('inputArea').style.display = 'flex';
       document.getElementById('chatName').innerText = name;
       document.getElementById('chatEmail').innerText = email;
+      document.getElementById('replyText').value = '';
+
+      // Show Chat View
+      document.getElementById('viewChat').classList.add('active');
 
       // Fetch Messages
       try {
@@ -341,10 +432,15 @@
           </div>
         `).join('');
         
-        // Scroll to bottom        container.scrollTop = container.scrollHeight;
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
       } catch (err) {
         console.error(err);
       }
+    }
+
+    function closeChat() {      document.getElementById('viewChat').classList.remove('active');
+      currentLeadId = null;
     }
 
     async function sendReply() {
@@ -365,7 +461,7 @@
           body: JSON.stringify({
             leads: [{
               name: currentLeadName,
-              email: document.getElementById('chatEmail').innerText,
+              email: currentLeadEmail,
               company: '',
               messages: [{ subject: "Re: Conversation", body: text }]
             }]
@@ -373,11 +469,18 @@
         });
         
         const data = await res.json();
+        
+        if (res.status === 401 && data.error === 'NYLAS_DISCONNECTED') {
+          alert("Your email session has expired. Redirecting to reconnect...");
+          window.location.href = 'dashboard.html?connect=true';
+          return;
+        }
+
         if (data.success) {
           document.getElementById('replyText').value = '';
-          openChat(currentLeadId, currentLeadName, document.getElementById('chatEmail').innerText); // Refresh chat
+          openChat(currentLeadId, currentLeadName, currentLeadEmail); // Refresh chat
         } else {
-          alert("Failed to send");
+          alert("Failed to send: " + JSON.stringify(data.errors));
         }
       } catch (err) {
         alert("Connection error");
@@ -386,11 +489,11 @@
         btn.innerText = "Send";
       }
     }
-
     async function renameCustomer() {
       const newName = prompt("Enter new name for this customer:", currentLeadName);
       if (newName && newName !== currentLeadName) {
-        try {          await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
+        try {
+          await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -417,4 +520,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
