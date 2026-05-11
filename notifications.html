@@ -3,82 +3,275 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notifications | Skyline AA-1</title>
+  <title>Inbox | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    :root { 
-      --bg-void: #060608; 
-      --bg-base: #0b0c0f; 
-      --bg-surface: #111318; 
-      --accent: #c8ff57; 
+    :root {
+      --bg-void: #060608;
+      --bg-base: #0b0c0f;
+      --bg-surface: #111318;
+      --bg-raised: #181b22;
+      --border: rgba(255,255,255,0.06);
+      --accent: #c8ff57;
       --accent-go: #00d2ff;
-      --text-1: #e8eaf0; 
-      --text-2: #8c909e; 
+      --text-1: #e8eaf0;
+      --text-2: #8c909e;
       --text-3: #52566a;
-      --danger: #ff4d4d;
-      --font-mono: 'IBM Plex Mono', monospace; 
-      --font-sans: 'Syne', sans-serif; 
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
     }
-    body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
+    body {
+      background: var(--bg-void);
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     
-    .topbar { height: 58px; background: var(--bg-base); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
-    .back-btn { color: var(--text-2); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    /* Topbar */
+    .topbar {
+      height: 58px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+    }
+    .brand {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--text-2);
+      display: flex;      align-items: center;
+      gap: 8px;
+    }
+    .brand .dot {
+      width: 6px; height: 6px; background: var(--accent);
+      border-radius: 50%; box-shadow: 0 0 8px var(--accent);
+    }
+    .back-btn {
+      color: var(--text-2); text-decoration: none; font-size: 13px;
+      display: flex; align-items: center; gap: 8px;
+    }
     .back-btn:hover { color: var(--accent); }
-    .refresh-btn { background: none; border: 1px solid var(--text-3); color: var(--text-2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-family: var(--font-mono); transition: all 0.2s; }
-    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-    h1 { font-size: 24px; margin-bottom: 10px; }
-    p.subtitle { color: var(--text-2); margin-bottom: 30px; font-size: 14px; }
+    /* Main Layout */
+    .inbox-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
 
-    .tabs { display: flex; gap: 12px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; }
-    .tab-btn { background: none; border: none; color: var(--text-3); padding: 8px 16px; cursor: pointer; font-family: var(--font-mono); font-size: 12px; transition: all 0.2s; border-radius: 20px; }
-    .tab-btn.active { background: var(--accent); color: #000; }
-    .tab-btn:hover:not(.active) { color: var(--text-1); }
+    /* Sidebar (Contact List) */
+    .sidebar {
+      width: 320px;
+      background: var(--bg-base);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .contact-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .contact-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .contact-item:hover {
+      background: var(--bg-surface);
+    }    .contact-item.active {
+      background: var(--bg-raised);
+      border-left: 3px solid var(--accent);
+    }
+    .contact-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-1);
+    }
+    .contact-preview {
+      font-size: 12px;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .contact-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+    }
 
-    .notif-list { display: flex; flex-direction: column; gap: 15px; }
-    
-    .notif-item { background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; transition: transform 0.2s; position: relative; cursor: pointer; }
-    .notif-item:hover { border-color: var(--accent); transform: translateX(5px); }
-    .notif-item.unread { border-left: 3px solid var(--accent); background: rgba(200, 255, 87, 0.03); }
-    
-    .notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
-    .notif-title { font-weight: 600; font-size: 14px; }
-    .notif-title.reply { color: var(--accent); }
-    .notif-title.admin { color: var(--accent-go); }
-    .notif-date { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
-    
-    .notif-body { color: var(--text-1); line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
-    .notif-body a { color: var(--accent); text-decoration: none; }
-    .notif-body a:hover { text-decoration: underline; }
-    
-    .action-link { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 12px; text-decoration: none; font-family: var(--font-mono); }
-    .action-link:hover { text-decoration: underline; }
-    
-    .empty-state { text-align: center; color: var(--text-2); padding: 60px 40px; font-style: italic; background: var(--bg-surface); border-radius: 16px; }
-    .badge { display: inline-block; background: var(--danger); color: white; font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; }
+    /* Chat Area */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-void);
+    }
+    .chat-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-base);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-header-info h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .chat-header-info p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .rename-btn {      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .rename-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .messages-container {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .message-bubble {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+    }
+    .message-bubble.lead {
+      align-self: flex-start;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 2px;
+    }
+    .message-bubble.ai {
+      align-self: flex-end;
+      background: rgba(200, 255, 87, 0.1);
+      border: 1px solid rgba(200, 255, 87, 0.2);
+      border-bottom-right-radius: 2px;
+    }
+    .message-time {
+      font-size: 9px;
+      color: var(--text-3);
+      margin-top: 4px;
+      text-align: right;
+      font-family: var(--font-mono);
+    }
+        .reply-input-area {
+      padding: 20px;
+      background: var(--bg-base);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+    .reply-input-area textarea {
+      flex: 1;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-1);
+      padding: 12px;
+      border-radius: 8px;
+      resize: none;
+      height: 50px;
+      font-family: var(--font-sans);
+    }
+    .send-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 0 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-mono);
+    }
+    .send-btn:hover { background: #d4ff70; }
+    .send-btn:disabled { background: var(--text-3); cursor: not-allowed; }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-3);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
   <header class="topbar">
+    <div class="brand"><span class="dot"></span> SKYLINE AA-1 INBOX</div>
     <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
-    <button class="refresh-btn" onclick="loadNotifications()">⟳ Refresh</button>
   </header>
 
-  <div class="container">
-    <h1>Messages & Notifications</h1>
-    <p class="subtitle">Admin messages and lead replies will appear here.</p>
-    
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('all')">All</button>
-      <button class="tab-btn" onclick="switchTab('replies')">Lead Replies</button>
-      <button class="tab-btn" onclick="switchTab('admin')">Admin Messages</button>
+  <div class="inbox-container">    <!-- Sidebar: Contact List -->
+    <div class="sidebar">
+      <div class="sidebar-header">Conversations</div>
+      <div class="contact-list" id="contactList">
+        <div style="padding:20px; text-align:center; color:var(--text-3);">Loading...</div>
+      </div>
     </div>
-    
-    <div id="notifList" class="notif-list">
-      <div class="empty-state">Loading messages...</div>
+
+    <!-- Main: Chat Area -->
+    <div class="chat-area">
+      <div id="chatHeader" class="chat-header" style="display:none;">
+        <div class="chat-header-info">
+          <h3 id="chatName">Customer Name</h3>
+          <p id="chatEmail">email@example.com</p>
+        </div>
+        <button class="rename-btn" onclick="renameCustomer()">✎ Rename</button>
+      </div>
+
+      <div id="messagesContainer" class="messages-container">
+        <div class="empty-state">
+          <h3>Select a conversation</h3>
+          <p>Choose a customer from the left to view messages.</p>
+        </div>
+      </div>
+
+      <div id="inputArea" class="reply-input-area" style="display:none;">
+        <textarea id="replyText" placeholder="Type a reply..."></textarea>
+        <button class="send-btn" onclick="sendReply()">Send</button>
+      </div>
     </div>
   </div>
 
@@ -87,84 +280,133 @@
     const token = localStorage.getItem('token');
     if (!token) window.location.href = "login.html";
 
-    let currentTab = 'all';
-    let allNotifications = [];
+    let currentLeadId = null;
+    let currentLeadName = "";
 
-    async function loadNotifications() {
-      const list = document.getElementById('notifList');
-      list.innerHTML = '<div class="empty-state">Loading messages...</div>';
-      
+    // Load Contact List on Startup
+    document.addEventListener('DOMContentLoaded', loadContacts);
+
+    async function loadContacts() {
       try {
-        // Use the /api/notifications endpoint that returns BOTH types
-        const res = await fetch(`${BACKEND}/api/my-notifications`, {
+        const res = await fetch(`${BACKEND}/api/conversations`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
-        if (!res.ok) throw new Error('Failed to load');
-        
-        allNotifications = await res.json();
-        console.log('Loaded notifications:', allNotifications);
-        
-        renderNotifications();
-        
+        const contacts = await res.json();
+                const list = document.getElementById('contactList');
+        if (contacts.length === 0) {
+          list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-3);">No conversations yet.</div>';
+          return;
+        }
+
+        list.innerHTML = contacts.map(c => `
+          <div class="contact-item" onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
+            <div class="contact-name">${escapeHtml(c.name)}</div>
+            <div class="contact-preview">${escapeHtml(c.lastMessage)}</div>
+            <div class="contact-meta">
+              <span>${c.company || 'Unknown Company'}</span>
+              <span>${new Date(c.lastDate).toLocaleDateString()}</span>
+            </div>
+          </div>
+        `).join('');
       } catch (err) {
-        console.error('Error loading notifications:', err);
-        list.innerHTML = '<div class="empty-state" style="color:#ff4d4d">Error loading messages. Please try again.</div>';
+        console.error(err);
       }
     }
 
-    function renderNotifications() {
-      const list = document.getElementById('notifList');
-      
-      let filtered = allNotifications;
-      if (currentTab === 'replies') {
-        filtered = allNotifications.filter(n => n.sessionId === 'reply-notification');
-      } else if (currentTab === 'admin') {
-        filtered = allNotifications.filter(n => n.sessionId === 'admin-direct-message');
-      }
-      
-      if (filtered.length === 0) {
-        let message = '';
-        if (currentTab === 'replies') message = 'No lead replies yet. When leads reply to your emails, they will appear here.';
-        else if (currentTab === 'admin') message = 'No admin messages yet.';
-        else message = 'No messages yet.';
-        list.innerHTML = `<div class="empty-state">${message}</div>`;
-        return;
-      }
-      
-      list.innerHTML = filtered.map(notif => {
-        const date = new Date(notif.createdAt).toLocaleDateString() + ' at ' + new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const isUnread = !notif.isRead;
-        const isReply = notif.sessionId === 'reply-notification';
+    async function openChat(leadId, name, email) {
+      currentLeadId = leadId;
+      currentLeadName = name;
+
+      // Update UI
+      document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      document.getElementById('chatHeader').style.display = 'flex';
+      document.getElementById('inputArea').style.display = 'flex';
+      document.getElementById('chatName').innerText = name;
+      document.getElementById('chatEmail').innerText = email;
+
+      // Fetch Messages
+      try {
+        const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
         
-        if (isReply) {
-          // Extract lead name from content
-          let leadName = 'Lead';
-          const nameMatch = notif.content.match(/^(.*?) \(/);
-          if (nameMatch) leadName = nameMatch[1];
-          
-          return `
-            <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="window.location.href='dashboard.html'">
-              <div class="notif-header">
-                <span class="notif-title reply">📬 New Reply from ${escapeHtml(leadName)}</span>
-                <span class="notif-date">${date}</span>
-              </div>
-              <div class="notif-body">${escapeHtml(notif.content).substring(0, 200)}${notif.content.length > 200 ? '...' : ''}</div>
-              <a href="dashboard.html" class="action-link">→ Go to Dashboard to Reply</a>
-            </div>
-          `;
+        const container = document.getElementById('messagesContainer');
+        container.innerHTML = data.messages.map(msg => `
+          <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
+            ${escapeHtml(msg.content)}
+            <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+          </div>
+        `).join('');
+        
+        // Scroll to bottom        container.scrollTop = container.scrollHeight;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function sendReply() {
+      const text = document.getElementById('replyText').value.trim();
+      if (!text || !currentLeadId) return;
+
+      const btn = document.querySelector('.send-btn');
+      btn.disabled = true;
+      btn.innerText = "Sending...";
+
+      try {
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            leads: [{
+              name: currentLeadName,
+              email: document.getElementById('chatEmail').innerText,
+              company: '',
+              messages: [{ subject: "Re: Conversation", body: text }]
+            }]
+          })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('replyText').value = '';
+          openChat(currentLeadId, currentLeadName, document.getElementById('chatEmail').innerText); // Refresh chat
         } else {
-          return `
-            <div class="notif-item ${isUnread ? 'unread' : ''}">
-              <div class="notif-header">
-                <span class="notif-title admin">📢 Admin Message</span>
-                <span class="notif-date">${date}</span>
-              </div>
-              <div class="notif-body">${escapeHtml(notif.content)}</div>
-            </div>
-          `;
+          alert("Failed to send");
         }
-      }).join('');
+      } catch (err) {
+        alert("Connection error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Send";
+      }
+    }
+
+    async function renameCustomer() {
+      const newName = prompt("Enter new name for this customer:", currentLeadName);
+      if (newName && newName !== currentLeadName) {
+        try {          await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ newName })
+          });
+          
+          // Update UI locally
+          currentLeadName = newName;
+          document.getElementById('chatName').innerText = newName;
+          loadContacts(); // Refresh sidebar
+        } catch (err) {
+          alert("Failed to rename");
+        }
+      }
     }
 
     function escapeHtml(str) {
@@ -173,17 +415,6 @@
       div.appendChild(document.createTextNode(str));
       return div.innerHTML;
     }
-
-    function switchTab(tab) {
-      currentTab = tab;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      renderNotifications();
-    }
-
-    // Auto-refresh every 30 seconds
-    loadNotifications();
-    setInterval(loadNotifications, 30000);
   </script>
 </body>
 </html>
