@@ -47,8 +47,7 @@
       font-size: 14px;
       line-height: 1.6;
       display: flex;
-      flex-direction: column;      height: 100vh;
-      position: relative;
+      flex-direction: column;      height: 100vh;      position: relative;
     }
 
     body::before {
@@ -97,8 +96,7 @@
       flex-shrink: 0;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }    
-    .plan-badge {
-      font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    .plan-badge {      font-family: var(--font-mono); font-size: 9px; font-weight: 700;
       padding: 3px 9px; border-radius: 4px;
       text-transform: uppercase; letter-spacing: 0.1em;
     }
@@ -147,8 +145,7 @@
     .chat-area::-webkit-scrollbar { width: 3px; }
     .chat-area::-webkit-scrollbar-track { background: transparent; }    .chat-area::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 2px; }
 
-    .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }
-    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-row { display: flex; padding: 4px 24px; animation: msgIn 0.28s ease both; }    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg-row.user { justify-content: flex-end; }
     .msg-row.ai { justify-content: flex-start; gap: 10px; }
     .bubble {
@@ -197,8 +194,7 @@
       margin-bottom: 15px;    }
     .review-header h3 {
       color: var(--accent);
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 16px;      font-weight: 600;
     }
     .close-review {
       background: none;
@@ -247,8 +243,7 @@
     }
     /* Highlight the editable email field */
     #reviewPanel .input-group input[type="email"] {
-      border-color: var(--accent);
-      background: rgba(245, 166, 35, 0.05);
+      border-color: var(--accent);      background: rgba(245, 166, 35, 0.05);
     }
     .input-group textarea {
       resize: vertical;
@@ -297,7 +292,6 @@
     }
     .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 22px rgba(245,166,35,0.50); }
     .send-btn:disabled { background: var(--bg-surface); border: 1px solid var(--border); opacity: 0.4; cursor: default; transform: none; }
-
     .typing-indicator { display: flex; align-items: center; gap: 5px; padding: 13px 16px; background: var(--ai-bg); border: 1px solid var(--ai-border); border-radius: var(--radius-lg); width: fit-content; }
     .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
     .typing-dot:nth-child(2) { animation-delay: 0.16s; }
@@ -347,8 +341,7 @@
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
       
       <!-- SINGLE SEND BUTTON -->
-      <button class="send-btn" id="sendBtn" disabled>
-        <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
+      <button class="send-btn" id="sendBtn" disabled>        <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
           <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#000" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
@@ -397,8 +390,7 @@
       // Add welcome message
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
 
-      // Load existing session if any
-      if (currentSessionId) {
+      // Load existing session if any      if (currentSessionId) {
         await loadHistoryFromSession();
       }
     });
@@ -447,8 +439,7 @@
           appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
         }
       } catch (err) { 
-        hideTyping(); 
-        console.error('Chat error:', err);
+        hideTyping();         console.error('Chat error:', err);
         appendMessage('ai', '🔌 Connection error. Please check your network and try again.'); 
       } finally { 
         isTyping = false; 
@@ -497,8 +488,7 @@
     }
 
     // UPDATED APPEND MESSAGE TO HANDLE JSON LEADS
-    function appendMessage(role, content) {
-      const messagesContainer = document.getElementById('messagesContainer');
+    function appendMessage(role, content) {      const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
 
       // CHECK IF CONTENT IS JSON (Lead Generation)
@@ -547,8 +537,7 @@
 
             <!-- EDITABLE EMAIL ADDRESS FIELD -->
             <div class="input-group">
-                <label>To (Edit Email Address):</label>
-                <input type="email" id="email-${index}" value="${lead.email}">
+                <label>To (Edit Email Address):</label>                <input type="email" id="email-${index}" value="${lead.email}">
             </div>
 
             <div class="input-group">
@@ -572,44 +561,52 @@
       document.getElementById('reviewPanel').style.display = 'none';
     }
 
-    // UPDATED SUBMIT BATCH SEND TO USE EDITED EMAIL
+    // UPDATED SUBMIT BATCH SEND WITH TOKEN VALIDATION
     async function submitBatchSend() {
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
       
-      // 1. Check Connection
-      btn.innerText = "Checking Connection...";
+      // 1. Check Connection & Token Validity
+      btn.innerText = "Verifying Connection...";
       btn.disabled = true;
 
       try {
+        // First, get user details to check basic connection status
         const userRes = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!userRes.ok) {
+             // If the backend itself rejects the token, logout
+             localStorage.removeItem('token');
+             window.location.href = 'login.html';
+             return;
+        }
+
         const user = await userRes.json();
+
         if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
-            alert("Please connect your Gmail account first.");
-            window.location.href = 'dashboard.html?connect=true';
+            alert("Please connect your Gmail account first.");            window.location.href = 'dashboard.html?connect=true';
             return;
         }
 
-        // 2. Gather Data (INCLUDING THE EDITED EMAIL ADDRESS)
+        btn.innerText = "Sending Emails...";
+
+        // 2. Gather Data
         const payload = {
             leads: currentGeneratedLeads.map((lead, index) => {
-                // GRAB THE VALUE FROM THE NEW EMAIL INPUT FIELD
                 const editedEmail = document.getElementById(`email-${index}`).value;
                 const subject = document.getElementById(`subject-${index}`).value;
                 const body = document.getElementById(`body-${index}`).value;
                 
                 return {
                     name: lead.name,
-                    email: editedEmail, // USE THE EDITED EMAIL HERE
+                    email: editedEmail,
                     company: lead.company,
                     messages: [{ subject, body }]
                 };
             })
         };
-
-        btn.innerText = "Sending Emails...";
 
         // 3. Send to Backend
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/leads/batch-send', {
@@ -623,6 +620,13 @@
 
         const data = await res.json();
         
+        // 4. Handle Token Expiration (401 Unauthorized from Nylas)
+        if (res.status === 401 || (data.message && data.message.toLowerCase().includes('token'))) {
+             alert("Your email session has expired. Please reconnect your Gmail account.");
+             window.location.href = 'dashboard.html?connect=true';
+             return;
+        }
+
         if (data.success) {
             alert(data.message + (data.errors.length > 0 ? ` Errors: ${JSON.stringify(data.errors)}` : ''));
             
@@ -631,16 +635,16 @@
             
             // Close Panel
             closeReviewPanel();
-            
-            // Redirect to Dashboard after 3 seconds
+                        // Redirect to Dashboard after 3 seconds
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
-            }, 3000);        } else {
-            alert('Error sending emails.');
+            }, 3000);
+        } else {
+            alert('Error sending emails: ' + JSON.stringify(data.errors));
         }
       } catch (err) {
         console.error(err);
-        alert('Connection error.');
+        alert("Connection error. If your email session expired, please reconnect.");
       } finally {
         btn.innerText = originalText;
         btn.disabled = false;
@@ -680,8 +684,7 @@
     
     function handleInput() { 
       msgInput.style.height = 'auto'; 
-      msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px'; 
-      updateSendButton(); 
+      msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px';       updateSendButton(); 
       charCount.textContent = msgInput.value.length ? msgInput.value.length : ''; 
     }
         function handleKeydown(e) { 
