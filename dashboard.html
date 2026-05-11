@@ -47,29 +47,13 @@
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 600;
-      z-index: 9999;
-      display: none;
+      z-index: 9999;      display: none;
       animation: slideDown 0.3s ease;
     }
-    .toast.success {
-      background: rgba(0, 230, 118, 0.15);
-      border: 1px solid var(--success);
-      color: var(--success);
-    }
-    .toast.error {
-      background: rgba(255, 77, 77, 0.15);
-      border: 1px solid var(--danger);
-      color: var(--danger);
-    }
-    .toast.info {
-      background: rgba(0, 210, 255, 0.15);
-      border: 1px solid var(--accent-go);
-      color: var(--accent-go);
-    }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
+    .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
+    .toast.error { background: rgba(255, 77, 77, 0.15); border: 1px solid var(--danger); color: var(--danger); }
+    .toast.info { background: rgba(0, 210, 255, 0.15); border: 1px solid var(--accent-go); color: var(--accent-go); }
+    @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to   { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
     /* Topbar */
     .topbar {
@@ -83,11 +67,7 @@
       padding: 0 24px;
       box-sizing: border-box;
     }
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
     .brand {
       font-family: var(--font-mono);
       font-size: 12px;
@@ -97,675 +77,277 @@
       align-items: center;
       gap: 8px;
     }
-    .brand .dot {
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
-    }
+    .brand .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
 
     /* Notification Bell */
-    .notif-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .notif-wrapper { display: flex; align-items: center; gap: 8px; }
     .notif-btn {
-      background: none;
-      border: none;
-      color: var(--text-2);
-      font-size: 22px;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.2s;
-      padding: 8px;
-      border-radius: 50%;
+      background: none; border: none; color: var(--text-2); font-size: 22px; cursor: pointer;
+      position: relative; transition: all 0.2s; padding: 8px; border-radius: 50%;
     }
-    .notif-btn:hover {
-      background: rgba(255,255,255,0.05);
-      color: var(--text-1);
-    }
-    .notif-btn.has-notifs {
-      color: var(--danger);
-      animation: pulse-red 2s infinite;
-    }
-    @keyframes pulse-red {
-      0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
-      70%  { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
-    }
+    .notif-btn:hover { background: rgba(255,255,255,0.05); color: var(--text-1); }
+    .notif-btn.has-notifs { color: var(--danger); animation: pulse-red 2s infinite; }
+    @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); } }
     .badge {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: var(--danger);
-      color: white;
-      font-size: 10px;
-      font-weight: bold;
-      min-width: 16px;
-      height: 16px;
-      padding: 0 4px;
-      border-radius: 8px;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--bg-base);
+      position: absolute; top: 2px; right: 2px; background: var(--danger); color: white;
+      font-size: 10px; font-weight: bold; min-width: 16px; height: 16px; padding: 0 4px;
+      border-radius: 8px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg-base);
     }
 
     /* Main Container */
-    .container {
-      width: 100%;
-      max-width: 1000px;
-      padding: 32px 20px;
-      flex: 1;
-    }
-
-    .section-title {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--text-3);
-      margin-bottom: 16px;
-      margin-top: 32px;
-      padding-left: 4px;
+    .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
+    .section-title {      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.15em; color: var(--text-3); margin-bottom: 16px; margin-top: 32px; padding-left: 4px;
     }
     .section-title:first-child { margin-top: 0; }
 
-    .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-bottom: 40px;
-    }
-    .menu-item {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 16px 20px;
-      border-radius: 12px;
-      text-decoration: none;
-      color: var(--text-1);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.2s ease;
-    }
-    .menu-item:hover {
-      background: var(--bg-raised);
-      border-color: var(--accent);
-      transform: translateX(4px);
-    }
-    .menu-item span { font-size: 14px; }
-    .arrow {
-      color: var(--text-3);
-      font-family: var(--font-mono);
-      font-size: 12px;
-    }
-    .danger-zone .menu-item {
-      border-color: rgba(255, 77, 77, 0.1);
-    }
-    .danger-zone .menu-item:hover {
-      border-color: var(--danger);
-      background: rgba(255, 77, 77, 0.05);
-    }
-    .danger-text { color: var(--danger); }
-
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 40px;
-      color: var(--text-2);
-      text-decoration: none;
-      font-size: 13px;
-      font-family: var(--font-mono);
-    }
-    .back-link:hover { color: var(--accent); }
-
-    /* Command Center */
+    /* Command Center & Collapsible Logic */
     .command-center {
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 24px;
       margin-bottom: 40px;
+      overflow: hidden;
+      transition: all 0.3s ease;
     }
     .cc-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-    }
-    .cc-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-1);
-    }
-    .connect-btn {
-      background: var(--accent-go);
-      color: #000;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-    .connect-btn:hover {
-      box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
-    }
-    .connect-btn.connected {
+      padding: 24px;
       background: var(--bg-raised);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      cursor: default;
-      pointer-events: none;
-    }
-    .connect-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .analytics-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .stat-card {
-      background: var(--bg-base);
-      padding: 16px;
-      border-radius: 8px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-1);
-      margin-bottom: 4px;
-    }
-    .stat-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      color: var(--text-3);
-      font-family: var(--font-mono);
-    }
-
-    .lead-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    .lead-table th {
-      text-align: left;
-      padding: 12px;
-      color: var(--text-3);
       border-bottom: 1px solid var(--border);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
     }
-    .lead-table td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-2);
+    .cc-title-group { display: flex; align-items: center; gap: 12px; }
+    .cc-title { font-size: 18px; font-weight: 700; color: var(--text-1); }
+    
+    .toggle-btn {
+      background: none; border: none; color: var(--text-2); cursor: pointer;
+      font-size: 16px; padding: 4px; transition: transform 0.3s ease;
+    }
+    .toggle-btn:hover { color: var(--accent); }
+    .toggle-btn.rotated { transform: rotate(180deg); }
+
+    .cc-content {
+      padding: 24px;
+      max-height: 1000px; /* Arbitrary large height for transition */
+      opacity: 1;
+      transition: all 0.3s ease-in-out;
+    }
+    .cc-content.hidden {
+      max-height: 0;
+      padding: 0 24px;
+      opacity: 0;
+      overflow: hidden;
     }
 
-    /* Status Badges */
-    .status-badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
+    .connect-btn {
+      background: var(--accent-go); color: #000; border: none; padding: 8px 16px;
+      border-radius: 6px; font-weight: 600; cursor: pointer; font-family: var(--font-mono);
+      font-size: 12px; transition: all 0.2s;
+    }    .connect-btn:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
+    .connect-btn.connected {
+      background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent);
+      cursor: default; pointer-events: none;
     }
-    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
-    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
+    .connect-btn.reconnect {
+      background: var(--danger); color: white; border: none;
+    }
+    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-base); padding: 16px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
+
+    .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .lead-table th { text-align: left; padding: 12px; color: var(--text-3); border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; }
+    .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .status-queued { background: rgba(255,255,255,0.05); color: var(--text-3); }
+    .status-new { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-contacted { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
     .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
-    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
-    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
+    .status-replied { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
+    .status-closed { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
 
     /* Reply Modal Styles */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
     }
     .modal-content {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
       box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
-    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     .modal-header h3 { color: var(--accent); margin: 0; font-size: 18px; }
-    .close-modal {
-      background: none; border: none; color: var(--text-3);
-      font-size: 24px; cursor: pointer;
-    }
+    .close-modal { background: none; border: none; color: var(--text-3); font-size: 24px; cursor: pointer; }
     .reply-history {
-      background: var(--bg-base);
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 3px solid var(--accent);
-      max-height: 300px;
-      overflow-y: auto;
+      background: var(--bg-base); padding: 15px; border-radius: 8px; margin-bottom: 20px;
+      border-left: 3px solid var(--accent); max-height: 300px; overflow-y: auto;
     }
-    .reply-history h4 { margin-top: 0; color: var(--text-2); font-size: 12px; text-transform: uppercase; }
-    .reply-history p { margin: 10px 0; white-space: pre-wrap; line-height: 1.5; font-size: 14px; }
-    .reply-history .reply-item {
-      background: var(--bg-raised);
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    .reply-history .reply-meta {
-      font-size: 10px;
-      color: var(--text-3);
-      margin-bottom: 6px;
-      font-family: var(--font-mono);
-    }
-    .reply-history .reply-content {
-      color: var(--text-1);
-      font-size: 13px;
-    }
-    
+    .reply-item { background: var(--bg-raised); padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    .reply-meta { font-size: 10px; color: var(--text-3); margin-bottom: 6px; font-family: var(--font-mono); }
     .reply-input-area textarea {
-      width: 100%;
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      color: var(--text-1);
-      padding: 12px;
-      border-radius: 8px;
-      min-height: 100px;
-      resize: vertical;
-      font-family: var(--font-sans);
-      font-size: 14px;
+      width: 100%; background: var(--bg-raised); border: 1px solid var(--border); color: var(--text-1);
+      padding: 12px; border-radius: 8px; min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
     }
-    .send-reply-btn {
-      margin-top: 15px;
-      width: 100%;
-      padding: 12px;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: var(--font-mono);
+    .send-reply-btn {      margin-top: 15px; width: 100%; padding: 12px; background: var(--accent); color: #000;
+      border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
     }
     .send-reply-btn:hover { background: #d4ff70; }
     .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
 
-    /* Refresh Indicator */
-    .refresh-indicator {
-      font-size: 10px;
-      color: var(--text-3);
-      text-align: right;
-      margin-top: 8px;
-      font-family: var(--font-mono);
+    /* Menu Grid & Pricing */
+    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
+    .menu-item {
+      background: var(--bg-surface); border: 1px solid var(--border); padding: 16px 20px;
+      border-radius: 12px; text-decoration: none; color: var(--text-1); font-weight: 500;
+      display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;
     }
+    .menu-item:hover { background: var(--bg-raised); border-color: var(--accent); transform: translateX(4px); }
+    .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.1); }
+    .danger-zone .menu-item:hover { border-color: var(--danger); background: rgba(255, 77, 77, 0.05); }
+    .danger-text { color: var(--danger); }
+    .back-link { display: block; text-align: center; margin-top: 40px; color: var(--text-2); text-decoration: none; font-size: 13px; font-family: var(--font-mono); }
+    .back-link:hover { color: var(--accent); }
 
-    /* Pricing Section */
-    .pricing-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .pricing-header h2 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: var(--text-1);
-    }
-    .pricing-header p {
-      color: var(--text-2);
-      font-size: 14px;
-    }
-    .pricing-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
-    }
+    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
     .plan-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px 24px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      transition: transform 0.2s, border-color 0.2s;
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px 24px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s;
     }
-    .plan-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--text-3);
-    }
-    .plan-card.featured {
-      border: 1px solid var(--accent);
-      box-shadow: 0 0 20px rgba(200, 255, 87, 0.1);
-    }
+    .plan-card.featured { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(200, 255, 87, 0.1); }
     .plan-badge {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--accent);
-      color: #060608;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent);
+      color: #060608; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
     }
-    .plan-name {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text-2);
-      margin-bottom: 8px;
-    }
-    .plan-price {
-      font-size: 36px;
-      font-weight: 700;
-      color: var(--text-1);
-      margin-bottom: 24px;
-      display: flex;
-      align-items: baseline;
-    }
-    .plan-price span {
-      font-size: 14px;
-      color: var(--text-3);
-      margin-left: 4px;
-      font-weight: 400;
-    }
-    .plan-features {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 32px 0;
-      flex-grow: 1;
-    }
-    .plan-features li {
-      margin-bottom: 12px;
-      font-size: 13px;
-      color: var(--text-2);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .plan-features li::before {
-      content: '✓';
-      color: var(--accent);
-      font-weight: bold;
-    }
-    .plan-features li.disabled {
-      color: var(--text-3);
-      text-decoration: line-through;
-      opacity: 0.6;
-    }
-    .plan-features li.disabled::before {
-      content: '✕';
-      color: var(--text-3);
-    }
-    .plan-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 8px;
-      border: none;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-free {
-      background: var(--bg-raised);
-      color: var(--text-3);
-      cursor: default;
-    }
-    .btn-go {
-      background: var(--bg-raised);
-      color: var(--text-1);
-      border: 1px solid var(--border);
-    }
-    .btn-go:hover {
-      border-color: var(--accent-go);
-      color: var(--accent-go);
-    }
-    .btn-pro {
-      background: var(--accent);
-      color: #060608;
-      box-shadow: 0 0 15px rgba(200, 255, 87, 0.2);
-    }
-    .btn-pro:hover {
-      background: #d4ff70;
-      transform: scale(1.02);
-    }
-    .current-plan-tag {
-      display: inline-block;
-      font-size: 10px;
-      background: rgba(200, 255, 87, 0.1);
-      color: var(--accent);
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
+    .plan-btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-family: var(--font-mono); font-weight: 700; cursor: pointer; }
+    .btn-free { background: var(--bg-raised); color: var(--text-3); }
+    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
+    .btn-pro { background: var(--accent); color: #060608; }
+    .current-plan-tag { font-size: 10px; background: rgba(200, 255, 87, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
   </style>
 </head>
 <body>
 
-  <!-- Toast Banner -->
   <div class="toast" id="toast"></div>
 
   <header class="topbar">
     <div class="topbar-left">
-      <div class="brand">
-        <span class="dot"></span>
-        SKYLINE AA-1
-      </div>
+      <div class="brand"><span class="dot"></span> SKYLINE AA-1</div>
     </div>
     <div class="notif-wrapper">
       <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
-        🔔
-        <span id="notifBadge" class="badge">0</span>
+        🔔 <span id="notifBadge" class="badge">0</span>
       </button>
-    </div>
-  </header>
+    </div>  </header>
 
   <div class="container">
 
-    <!-- COMMAND CENTER -->
+    <!-- COMMAND CENTER (COLLAPSIBLE) -->
     <div class="section-title">Month 2: Command Center</div>
     <div class="command-center">
       <div class="cc-header">
-        <div class="cc-title">Email Infrastructure</div>
+        <div class="cc-title-group">
+          <div class="cc-title">Email Infrastructure</div>
+          <button class="toggle-btn" id="toggleCcBtn" onclick="toggleCommandCenter()">^</button>
+        </div>
         <button id="connectEmailBtn" class="connect-btn" onclick="connectEmail()">
           Connect Gmail/Outlook
         </button>
       </div>
 
-      <div class="analytics-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="totalLeads">—</div>
-          <div class="stat-label">Total Leads</div>
+      <div class="cc-content" id="ccContent">
+        <div class="analytics-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalLeads">—</div>
+            <div class="stat-label">Total Leads</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="replyRate">—</div>
+            <div class="stat-label">Reply Rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="interestedCount">—</div>
+            <div class="stat-label">Interested</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value" id="replyRate">—</div>
-          <div class="stat-label">Reply Rate</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="interestedCount">—</div>
-          <div class="stat-label">Interested</div>
-        </div>
-      </div>
 
-      <table class="lead-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Company</th>
-            <th>Status</th>
-            <th>Last Action</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="leadList">
-          <tr>
-            <td colspan="5" style="text-align:center; color: var(--text-3); padding: 24px;">
-              Loading leads...
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
+        <table class="lead-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>Company</th><th>Status</th><th>Last Action</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="leadList">
+            <tr><td colspan="5" style="text-align:center; color: var(--text-3); padding: 24px;">Loading leads...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- PRICING SECTION -->
     <div class="section-title">Subscription</div>
-    <div class="pricing-header">
-      <h2>Choose Your Power Level</h2>
-      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
-    </div>
     <div class="pricing-cards">
-
-      <!-- FREE PLAN -->
-      <div class="plan-card">
+      <!-- FREE PLAN -->      <div class="plan-card">
         <div class="plan-name">Free</div>
         <div class="plan-price">$0<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>30 Requests / Day</li>
-          <li>Basic Model (Skyline AA-1a)</li>
-          <li>Short Memory</li>
-          <li class="disabled">Powerful Reasoning</li>
-          <li class="disabled">Early Access</li>
+        <ul class="plan-features" style="list-style:none; padding:0; color:var(--text-2);">
+          <li>✓ 30 Requests / Day</li>
+          <li class="disabled" style="opacity:0.5; text-decoration:line-through;">✕ Powerful Reasoning</li>
         </ul>
         <button class="plan-btn btn-free" disabled>Current Plan</button>
       </div>
-
       <!-- GO PLAN -->
       <div class="plan-card">
         <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
         <div class="plan-price">$9<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>18 Requests / Day</li>
-          <li>Powerful Model (Skyline AA-1mini)</li>
-          <li>Long Memory</li>
-          <li>Great Features</li>
-          <li class="disabled">Skyline AA-1a Model</li>
+        <ul class="plan-features" style="list-style:none; padding:0; color:var(--text-2);">
+          <li>✓ 18 Requests / Day</li>
+          <li>✓ Long Memory</li>
         </ul>
         <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
       </div>
-
       <!-- PRO PLAN -->
       <div class="plan-card featured">
         <div class="plan-badge">Best Value</div>
         <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
         <div class="plan-price">$20<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>40 Requests / Day</li>
-          <li>Skyline AA-1aa Model</li>
-          <li>Advance Reasoning</li>
-          <li>Early Access to Features</li>
-          <li>Priority Support</li>
+        <ul class="plan-features" style="list-style:none; padding:0; color:var(--text-2);">
+          <li>✓ 40 Requests / Day</li>
+          <li>✓ Advance Reasoning</li>
         </ul>
         <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
       </div>
-
     </div>
 
-    <!-- Profile -->
+    <!-- Profile & Settings -->
     <div class="section-title">Profile</div>
     <div class="menu-grid">
-      <a href="profile.html" class="menu-item">
-        <span>Profile Details</span>
-        <span class="arrow">›</span>
-      </a>
-      <a href="account.html" class="menu-item">
-        <span>Account Settings</span>
-        <span class="arrow">›</span>
-      </a>
-    </div>
-
-    <!-- Skyline Info -->
-    <div class="section-title">Skyline System</div>
-    <div class="menu-grid">
-      <a href="Privacy.html" class="menu-item">
-        <span>Privacy Policy</span>
-        <span class="arrow">›</span>
-      </a>
-      <a href="age-verification.html" class="menu-item">
-        <span>Age Verification</span>
-        <span class="arrow">›</span>
-      </a>
-      <a href="email-settings.html" class="menu-item">
-        <span>Email Preferences</span>
-        <span class="arrow">›</span>
-      </a>
-      <a href="about.html" class="menu-item">
-        <span>About Skyline AA-1</span>
-        <span class="arrow">›</span>
-      </a>
-      <a href="report.html" class="menu-item">
-        <span>Report an Issue</span>
-        <span class="arrow">›</span>
-      </a>
+      <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
+      <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
     </div>
 
     <!-- Dangerous Zone -->
     <div class="section-title">Dangerous Zone</div>
     <div class="menu-grid danger-zone">
-      <a href="#" onclick="handleLogout()" class="menu-item">
-        <span class="danger-text">Sign Out</span>
-        <span class="arrow">›</span>
-      </a>
-      <a href="delete-account.html" class="menu-item">
-        <span class="danger-text">Delete Account</span>
-        <span class="arrow">›</span>
-      </a>
+      <a href="#" onclick="handleLogout()" class="menu-item"><span class="danger-text">Sign Out</span><span class="arrow">›</span></a>
     </div>
 
     <a href="page.html" class="back-link">← Return to Dream Architect</a>
   </div>
 
   <!-- REPLY MODAL -->
-  <div id="replyModal" class="modal-overlay">
-    <div class="modal-content">
+  <div id="replyModal" class="modal-overlay">    <div class="modal-content">
       <div class="modal-header">
         <h3>Reply to <span id="modalLeadName">Lead</span></h3>
         <button class="close-modal" onclick="closeReplyModal()">×</button>
       </div>
-      
-      <div class="reply-history" id="replyHistoryContainer">
-        <h4>Conversation History:</h4>
-        <div id="conversationHistory">Loading...</div>
-      </div>
-
+      <div class="reply-history" id="conversationHistory">Loading...</div>
       <div class="reply-input-area">
-        <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-3);">Your Reply:</label>
         <textarea id="replyTextArea" placeholder="Type your reply here..."></textarea>
         <button id="sendReplyBtn" class="send-reply-btn" onclick="sendDirectReply()">🚀 Send Reply</button>
       </div>
@@ -779,8 +361,14 @@
 
     let currentReplyLeadId = null;
     let currentReplyEmail = null;
-    let autoRefreshInterval = null;
-    let lastReplyCount = 0;
+
+    // ── Toggle Command Center ───────────────────────────────────────────────
+    function toggleCommandCenter() {
+      const content = document.getElementById('ccContent');
+      const btn = document.getElementById('toggleCcBtn');
+      content.classList.toggle('hidden');
+      btn.classList.toggle('rotated');
+    }
 
     // ── Toast helper ────────────────────────────────────────────────────────
     function showToast(message, type = 'success', duration = 4000) {
@@ -791,405 +379,146 @@
       setTimeout(() => { toast.style.display = 'none'; }, duration);
     }
 
-    // ── Check for new replies (Real-time notification) ───────────────────────
-    async function checkForNewReplies() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/replies`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const newReplyCount = data.count;
-          
-          // Update refresh indicator
-          document.getElementById('refreshIndicator').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
-          
-          // Show notification for new replies
-          if (newReplyCount > lastReplyCount && lastReplyCount !== 0) {
-            const newCount = newReplyCount - lastReplyCount;
-            showToast(`📬 ${newCount} new repl${newCount === 1 ? 'y' : 'ies'} received!`, 'info', 5000);
-            
-            // Update notification bell
-            const notifBtn = document.getElementById('notifBtn');
-            notifBtn.classList.add('has-notifs');
-            const badge = document.getElementById('notifBadge');
-            badge.style.display = 'flex';
-            badge.textContent = newReplyCount > 9 ? '9+' : newReplyCount;
-            
-            // Refresh the leads table
-            loadLeads();
-          }
-          lastReplyCount = newReplyCount;
-        }
-      } catch (err) {
-        console.error('Error checking replies:', err);
-      }
-    }
-
     // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
       const connected = params.get('connected');
-      const error     = params.get('error');
-
       if (connected === 'true') {
-        showToast('✅ Gmail/Outlook connected successfully! Your sequences are ready to fire.', 'success', 6000);
-        setConnectedState();
-        window.history.replaceState({}, document.title, '/dashboard.html');
-      } else if (connected === 'false') {
-        const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
-        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
+        showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000);
+        checkEmailStatus(); // Re-check to update button
         window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
 
-    // ── Set button to connected state ────────────────────────────────────────
-    function setConnectedState() {
-      const btn = document.getElementById('connectEmailBtn');
-      if (btn) {
-        btn.innerText = '✅ Connected';
-        btn.classList.add('connected');
-        btn.onclick = null;
-      }
-    }
-
-    // ── Connect Email ────────────────────────────────────────────────────────
-    async function connectEmail() {
+    // ── Connect Email ────────────────────────────────────────────────────────    async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
       btn.innerText = 'Connecting...';
       btn.disabled  = true;
-
       try {
-        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || `Server error ${res.status}`);
-        }
-
+        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error('No URL returned from server');
-        }
+        if (data.url) window.location.href = data.url;
       } catch (err) {
-        console.error('Error getting Nylas URL:', err);
-        showToast(`❌ Could not start connection: ${err.message}`, 'error');
+        showToast(`❌ Connection error`, 'error');
         btn.innerText = 'Connect Gmail/Outlook';
         btn.disabled  = false;
       }
     }
 
-    // ── Check Email Connection Status ────────────────────────────────────────
+    // ── Check Email Status & Token Expiry ────────────────────────────────────
     async function checkEmailStatus() {
+      const btn = document.getElementById('connectEmailBtn');
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           const user = await res.json();
-          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
-            setConnectedState();
+          const isConnected = user.nylasIntegration && user.nylasIntegration.isConnected;
+          const lastConnected = user.nylasIntegration ? new Date(user.nylasIntegration.connectedAt) : null;
+          
+          // Check if token is older than 20 minutes (1200000 ms)
+          const isExpired = lastConnected && (Date.now() - lastConnected.getTime() > 1200000);
+
+          if (isConnected && !isExpired) {
+            btn.innerText = '✅ Connected';
+            btn.className = 'connect-btn connected';
+            btn.onclick = null;
+          } else {
+            // Force Reconnect if expired or not connected
+            btn.innerText = isExpired ? '⚠️ Session Expired (Reconnect)' : 'Connect Gmail/Outlook';
+            btn.className = isExpired ? 'connect-btn reconnect' : 'connect-btn';
+            btn.onclick = connectEmail;
+            btn.disabled = false;
           }
         }
-      } catch (err) {
-        console.error('Error checking email status:', err);
-      }
+      } catch (err) { console.error('Status check failed', err); }
     }
 
     // ── Load Leads ───────────────────────────────────────────────────────────
     async function loadLeads() {
       try {
-        const res = await fetch(`${BACKEND}/api/leads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-
+        const res = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
         const leads = await res.json();
         const tbody = document.getElementById('leadList');
-        
-        // Update stats
-        document.getElementById('totalLeads').innerText = leads.length;
-        const interested = leads.filter(l => l.status === 'Interested').length;
-        document.getElementById('interestedCount').innerText = interested;
+                document.getElementById('totalLeads').innerText = leads.length;
         const replied = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
-        const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
-        document.getElementById('replyRate').innerText = rate + '%';
+        document.getElementById('replyRate').innerText = leads.length ? Math.round((replied / leads.length) * 100) + '%' : '0%';
+        document.getElementById('interestedCount').innerText = leads.filter(l => l.status === 'Interested').length;
 
-        if (leads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
-        } else {
-          tbody.innerHTML = leads.map(lead => {
-            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
-            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
-            
-            // Show View Reply button for Replied OR Interested status
-            const actionBtn = (lead.status === 'Replied' || lead.status === 'Interested')
-              ? `<button onclick="openReplyModal('${lead._id}', '${escapeHtml(lead.name)}', '${lead.email}')" style="color:var(--accent); background:none; border:1px solid var(--accent); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">View & Reply</button>`
-              : '-';
-
-            return `
-              <tr>
-                <td>${escapeHtml(lead.name || '—')}</td>
-                <td>${escapeHtml(lead.company || '—')}</td>
-                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
-                <td>${lastDate}</td>
-                <td>${actionBtn}</td>
-              </tr>
-            `;
-          }).join('');
-        }
-      } catch (err) {
-        console.error('Error loading leads:', err);
-        document.getElementById('leadList').innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
-      }
+        tbody.innerHTML = leads.map(lead => {
+          const actionBtn = (lead.status === 'Replied' || lead.status === 'Interested')
+            ? `<button onclick="openReplyModal('${lead._id}', '${lead.name}', '${lead.email}')" style="color:var(--accent); background:none; border:1px solid var(--accent); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">View & Reply</button>`
+            : '-';
+          return `
+            <tr>
+              <td>${lead.name}</td><td>${lead.company}</td>
+              <td><span class="status-badge status-${(lead.status||'new').toLowerCase()}">${lead.status||'New'}</span></td>
+              <td>${lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—'}</td>
+              <td>${actionBtn}</td>
+            </tr>`;
+        }).join('');
+      } catch (err) { console.error('Load leads failed', err); }
     }
 
-    // ── Safe HTML escape ─────────────────────────────────────────────────────
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(str));
-      return div.innerHTML;
-    }
-
-    // ── Open Reply Modal with Full Conversation History ──────────────────────
+    // ── Reply Modal Logic ────────────────────────────────────────────────────
     async function openReplyModal(leadId, name, email) {
       currentReplyLeadId = leadId;
       currentReplyEmail = email;
-      
       document.getElementById('modalLeadName').innerText = name;
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
-      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
       
-      try {
-        const res = await fetch(`${BACKEND}/api/leads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const leads = await res.json();
-        const lead = leads.find(l => l._id === leadId);
-        
-        if (lead && lead.replies && lead.replies.length > 0) {
-          const conversationHtml = lead.replies.slice().reverse().map(reply => {
-            const isLead = reply.from === 'lead';
-            const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
-            return `
-              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
-                <div class="reply-meta">
-                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
-                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
-                </div>
-                <div class="reply-content">${escapeHtml(reply.content)}</div>
-              </div>
-            `;
-          }).join('');
-          document.getElementById('conversationHistory').innerHTML = conversationHtml;
-        } else {
-          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
-        }
-      } catch (err) {
-        console.error('Error loading conversation:', err);
-        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
+      // Fetch history
+      const res = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const leads = await res.json();
+      const lead = leads.find(l => l._id === leadId);
+      
+      const historyContainer = document.getElementById('conversationHistory');
+      if (lead && lead.replies) {
+        historyContainer.innerHTML = lead.replies.slice().reverse().map(r => 
+          `<div class="reply-item" style="border-left:3px solid ${r.from==='lead'?'var(--accent)':'var(--accent-go)'}">
+            <div class="reply-meta">${r.from==='lead'?'📨 Lead':'🤖 You'} • ${new Date(r.date).toLocaleTimeString()}</div>
+            <div>${r.content.substring(0,100)}...</div>
+          </div>`
+        ).join('');
+      } else {
+        historyContainer.innerHTML = '<div style="color:var(--text-3)">No history yet.</div>';
       }
     }
 
-    // ── Close Reply Modal ────────────────────────────────────────────────────
-    function closeReplyModal() {
-      document.getElementById('replyModal').style.display = 'none';
-      currentReplyLeadId = null;
-      currentReplyEmail = null;
-    }
+    function closeReplyModal() { document.getElementById('replyModal').style.display = 'none'; }
 
-    // ── Send Direct Reply ────────────────────────────────────────────────────
     async function sendDirectReply() {
-      const btn = document.getElementById('sendReplyBtn');
-      const text = document.getElementById('replyTextArea').value.trim();
+      const btn = document.getElementById('sendReplyBtn');      const text = document.getElementById('replyTextArea').value.trim();
+      if (!text) return showToast("Type a reply", "error");
       
-      if (!text) {
-        showToast("Please type a reply.", "error");
-        return;
-      }
-      if (!currentReplyEmail) {
-        showToast("Error: No email address found.", "error");
-        return;
-      }
-
       btn.disabled = true;
       btn.innerText = "Sending...";
-
+      
       try {
-        const payload = {
-          leads: [{
-            name: document.getElementById('modalLeadName').innerText,
-            email: currentReplyEmail,
-            company: '',
-            messages: [{ 
-              subject: "Re: Your inquiry about Skyline AA-1", 
-              body: text 
-            }]
-          }]
-        };
-        
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ leads: [{ name: document.getElementById('modalLeadName').innerText, email: currentReplyEmail, messages: [{ subject: "Re:", body: text }] }] })
         });
-
         const data = await res.json();
-        
         if (data.success) {
-          showToast("✅ Reply sent successfully!", "success");
+          showToast("✅ Reply sent!", "success");
           closeReplyModal();
-          loadLeads(); // Refresh table to update status
+          loadLeads();
         } else {
-          showToast("❌ Failed to send reply.", "error");
+          showToast("❌ Failed to send", "error");
         }
-      } catch (err) {
-        console.error(err);
-        showToast("❌ Connection error.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "🚀 Send Reply";
-      }
+      } catch (err) { showToast("❌ Connection error", "error"); }
+      finally { btn.disabled = false; btn.innerText = "🚀 Send Reply"; }
     }
 
-    // ── Upgrade Logic ────────────────────────────────────────────────────────
-    async function initiateUpgrade(planType) {
-      const btn = event.target;
-      const originalText = btn.innerText;
-
-      try {
-        btn.innerText = 'Connecting...';
-        btn.disabled  = true;
-
-        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
-          method: 'POST',
-          headers: {
-            'Content-Type':  'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ planType })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Server Error: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.link) {
-          btn.innerText = 'Redirecting...';
-          window.location.href = data.link;
-        } else {
-          throw new Error('No payment link received from server.');
-        }
-      } catch (err) {
-        console.error('Upgrade Error:', err);
-        showToast(`❌ ${err.message}`, 'error');
-        if (btn) {
-          btn.innerText = originalText;
-          btn.disabled  = false;
-        }
-      }
-    }
-
-    // ── Check Current Plan ───────────────────────────────────────────────────
-    async function checkCurrentPlan() {
-      try {
-        const res = await fetch(`${BACKEND}/api/users/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const user = await res.json();
-          const plan = user.subscriptionTier || 'free';
-
-          if (plan === 'go') {
-            document.getElementById('goTag').style.display = 'inline-block';
-            const goBtn = document.querySelector('.btn-go');
-            if (goBtn) {
-              goBtn.innerText = 'Current Plan';
-              goBtn.disabled  = true;
-              goBtn.classList.add('btn-free');
-              goBtn.classList.remove('btn-go');
-            }
-          } else if (plan === 'pro') {
-            document.getElementById('proTag').style.display = 'inline-block';
-            const proBtn = document.querySelector('.btn-pro');
-            if (proBtn) {
-              proBtn.innerText = 'Current Plan';
-              proBtn.disabled  = true;
-              proBtn.style.background = '#333';
-              proBtn.style.color      = '#888';
-              proBtn.style.boxShadow  = 'none';
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to check plan:', err);
-      }
-    }
-
-    // ── Notifications ────────────────────────────────────────────────────────
-    function handleNotifClick() {
-      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-      window.location.href = 'notifications.html';
-    }
-
-    async function loadNotifCount() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/count`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data  = await res.json();
-          const badge = document.getElementById('notifBadge');
-          const btn   = document.getElementById('notifBtn');
-
-          const hasServerMessages = data.count > 0;
-          const lastViewTime      = localStorage.getItem('lastNotifViewTime');
-          const shouldShowBadge   = hasServerMessages && !lastViewTime;
-
-          if (shouldShowBadge) {
-            badge.style.display = 'flex';
-            badge.textContent   = data.count > 9 ? '9+' : data.count;
-            btn.classList.add('has-notifs');
-          } else {
-            badge.style.display = 'none';
-            btn.classList.remove('has-notifs');
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load notifications:', err);
-      }
-    }
-
-    // ── Logout ───────────────────────────────────────────────────────────────
-    function handleLogout() {
-      if (confirm('Are you sure you want to sign out?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('lastNotifViewTime');
-        window.location.href = 'login.html';
-      }
-    }
-
-    // ── Initialize ───────────────────────────────────────────────────────────
+    // ── Init ─────────────────────────────────────────────────────────────────
     handleOAuthRedirect();
-    loadNotifCount();
-    checkCurrentPlan();
     checkEmailStatus();
     loadLeads();
     
-    // Start auto-refresh for new replies every 15 seconds
-    checkForNewReplies();
-    autoRefreshInterval = setInterval(checkForNewReplies, 15000);
+    // Auto-refresh status every 5 minutes to check for expiry
+    setInterval(checkEmailStatus, 300000); 
   </script>
 </body>
   </html>
