@@ -1,971 +1,992 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | Skyline AA-1</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg-void: #060608;
-      --bg-base: #0b0c0f;
-      --bg-surface: #111318;
-      --bg-raised: #181b22;
-      --border: rgba(255,255,255,0.06);
-      --accent: #c8ff57;
-      --accent-go: #00d2ff;
-      --text-1: #e8eaf0;
-      --text-2: #8c909e;
-      --text-3: #52566a;
-      --danger: #ff4d4d;
-      --success: #00e676;
-      --warning: #ffaa00;
-      --font-mono: 'IBM Plex Mono', monospace;
-      --font-sans: 'Syne', sans-serif;
-    }
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const path = require('path');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
+const crypto = require('crypto');
 
-    body {
-      background: var(--bg-void);
-      color: var(--text-1);
-      font-family: var(--font-sans);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+// IMPORT NEW AI FILES FOR TIERS
+const freeAI = require('./Free');
+const goAI = require('./Go');
+const { generateBusinessResponse } = require('./businessAI'); 
 
-    /* ── Toast Banner ── */
-    .toast {
-      position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 600;
-      z-index: 9999;
-      display: none;
-      animation: slideDown 0.3s ease;
-    }
-    .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
-    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--danger);  color: var(--danger); }
-    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--accent-go); color: var(--accent-go); }
-    .toast.warning { background: rgba(255, 170, 0, 0.15);  border: 1px solid var(--warning); color: var(--warning); }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
+// IMPORT MONTH 2 FILES
+const Lead = require('./Lead');
+const EmailAccount = require('./EmailAccount'); // <--- NEW BRIDGE MODEL
+const { getAuthUrl, exchangeCodeForToken, getUserEmail, sendEmail } = require('./nylasService');
 
-    /* Topbar */
-    .topbar {
-      width: 100%;
-      height: 58px;
-      background: var(--bg-base);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      box-sizing: border-box;
-    }
-    .topbar-left { display: flex; align-items: center; gap: 16px; }
-    .brand {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      letter-spacing: 0.12em;
-      color: var(--text-2);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand .dot {
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
-    }
+const authRoutes = require('./authRoutes');
+const Message = require('./Message');
+const User = require('./User');
+const Report = require('./Report');
+const requestQueue = require('./requestQueue');
+const { verifyAge, changeEmail, verifyLayer2, verifyLayer3, deleteAccount } = require('./authController');
 
-    /* Timer Display - HIDDEN */
-    .connection-timer { display: none !important; }
+// Load environment variables
+dotenv.config();
 
-    /* ── Notification Bell (SVG-based) ── */
-    .notif-wrapper { display: flex; align-items: center; gap: 8px; }
+const app = express();
 
-    .notif-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      position: relative;
-      padding: 8px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      color: var(--text-2);
-    }
-    .notif-btn:hover {
-      background: rgba(255,255,255,0.05);
-      color: var(--text-1);
-    }
-    .notif-btn svg {
-      width: 22px;
-      height: 22px;
-      display: block;
-      transition: color 0.2s;
-    }
-    .notif-btn.has-notifs {
-      color: var(--danger);
-      animation: pulse-red 2s infinite;
-    }
-    @keyframes pulse-red {
-      0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
-      70%  { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
-    }
-    .badge {
-      position: absolute;
-      top: 1px;
-      right: 1px;
-      background: var(--danger);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      min-width: 15px;
-      height: 15px;
-      padding: 0 3px;
-      border-radius: 8px;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--bg-base);
-      font-family: var(--font-mono);
-      line-height: 1;
-    }
+// Middleware
+app.use(cors());
 
-    /* Main Container */
-    .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
+// ════════════════════════════════════════════
+//  IN-MEMORY STATE STORE (For Nylas Auth)
+// ════════════════════════════════════════════
+const stateStore = {};
 
-    .section-title {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--text-3);
-      margin-bottom: 16px;
-      margin-top: 32px;
-      padding-left: 4px;
-    }
-    .section-title:first-child { margin-top: 0; }
-
-    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
-    .menu-item {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 16px 20px;
-      border-radius: 12px;
-      text-decoration: none;
-      color: var(--text-1);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.2s ease;
-    }
-    .menu-item:hover { background: var(--bg-raised); border-color: var(--accent); transform: translateX(4px); }
-    .menu-item span { font-size: 14px; }
-    .arrow { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; }
-    .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.1); }
-    .danger-zone .menu-item:hover { border-color: var(--danger); background: rgba(255, 77, 77, 0.05); }
-    .danger-text { color: var(--danger); }
-
-    .back-link {
-      display: block; text-align: center; margin-top: 40px;
-      color: var(--text-2); text-decoration: none;
-      font-size: 13px; font-family: var(--font-mono);
-    }
-    .back-link:hover { color: var(--accent); }
-
-    /* ===== COMMAND CENTER ===== */
-    .command-center {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      margin-bottom: 40px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .cc-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 24px;
-      background: var(--bg-raised);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer; user-select: none;
-      transition: background 0.2s ease;
-    }
-    .cc-header:hover { background: #1e2229; }
-    .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--accent); }
-    .cc-title-group { display: flex; align-items: center; gap: 12px; }
-    .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
-    .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
-    .toggle-button-circle {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .toggle-icon-svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .toggle-icon-svg path { stroke: var(--text-2); stroke-width: 2; transition: stroke 0.2s ease; }
-    .toggle-button:hover .toggle-icon-svg path { stroke: var(--accent); }
-    .command-center.collapsed .toggle-icon-svg { transform: rotate(-90deg); }
-    .cc-content-wrapper { max-height: 2000px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .command-center.collapsed .cc-content-wrapper { max-height: 0; }
-    .cc-content { padding: 24px; opacity: 1; transition: opacity 0.2s ease; }
-    .command-center.collapsed .cc-content { opacity: 0; }
-
-    .connect-btn {
-      background: var(--accent-go); color: #000;
-      border: none; padding: 8px 16px; border-radius: 6px;
-      font-weight: 600; cursor: pointer; font-family: var(--font-mono);
-      font-size: 12px; transition: all 0.2s; z-index: 2; position: relative;
-    }
-    .connect-btn:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); transform: translateY(-1px); }
-    .connect-btn.connected { background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent); }
-    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--bg-base); padding: 16px; border-radius: 8px;
-      text-align: center; border: 1px solid var(--border);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .stat-card:hover { border-color: var(--text-3); transform: translateY(-2px); }
-    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
-    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
-
-    .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .lead-table th {
-      text-align: left; padding: 12px; color: var(--text-3);
-      border-bottom: 1px solid var(--border);
-      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
-    }
-    .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
-
-    .status-badge {
-      padding: 4px 8px; border-radius: 4px;
-      font-size: 10px; font-weight: 600; text-transform: uppercase;
-    }
-    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
-    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
-    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
-    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
-    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
-
-    .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); z-index: 1000;
-      justify-content: center; align-items: center;
-    }
-    .modal-content {
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px; width: 90%; max-width: 650px;
-      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
-    }
-    .modal-header h3 { color: var(--accent); margin: 0; font-size: 18px; }
-    .close-modal { background: none; border: none; color: var(--text-3); font-size: 24px; cursor: pointer; }
-    .reply-history {
-      background: var(--bg-base); padding: 15px; border-radius: 8px;
-      margin-bottom: 20px; border-left: 3px solid var(--accent);
-      max-height: 300px; overflow-y: auto;
-    }
-    .reply-history h4 { margin-top: 0; color: var(--text-2); font-size: 12px; text-transform: uppercase; }
-    .reply-history .reply-item {
-      background: var(--bg-raised); padding: 12px; border-radius: 8px; margin-bottom: 12px;
-    }
-    .reply-history .reply-meta { font-size: 10px; color: var(--text-3); margin-bottom: 6px; font-family: var(--font-mono); }
-    .reply-history .reply-content { color: var(--text-1); font-size: 13px; }
-    .reply-input-area textarea {
-      width: 100%; background: var(--bg-raised); border: 1px solid var(--border);
-      color: var(--text-1); padding: 12px; border-radius: 8px;
-      min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
-    }
-    .send-reply-btn {
-      margin-top: 15px; width: 100%; padding: 12px;
-      background: var(--accent); color: #000; border: none;
-      border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
-    }
-    .send-reply-btn:hover { background: #d4ff70; }
-    .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
-
-    .refresh-indicator { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 8px; font-family: var(--font-mono); }
-
-    .pricing-header { text-align: center; margin-bottom: 40px; }
-    .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
-    .pricing-header p { color: var(--text-2); font-size: 14px; }
-    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
-    .plan-card {
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 32px 24px;
-      display: flex; flex-direction: column; position: relative;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .plan-card:hover { transform: translateY(-5px); border-color: var(--text-3); }
-    .plan-card.featured { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(200, 255, 87, 0.1); }
-    .plan-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--accent); color: #060608; font-size: 10px; font-weight: 700;
-      padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .plan-name { font-size: 18px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
-    .plan-price {
-      font-size: 36px; font-weight: 700; color: var(--text-1); margin-bottom: 24px;
-      display: flex; align-items: baseline;
-    }
-    .plan-price span { font-size: 14px; color: var(--text-3); margin-left: 4px; font-weight: 400; }
-    .plan-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex-grow: 1; }
-    .plan-features li {
-      margin-bottom: 12px; font-size: 13px; color: var(--text-2);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: bold; }
-    .plan-features li.disabled { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
-    .plan-features li.disabled::before { content: '✕'; color: var(--text-3); }
-    .plan-btn {
-      width: 100%; padding: 14px; border-radius: 8px; border: none;
-      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-free { background: var(--bg-raised); color: var(--text-3); cursor: default; }
-    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
-    .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
-    .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
-    .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
-    .current-plan-tag {
-      display: inline-block; font-size: 10px;
-      background: rgba(200, 255, 87, 0.1); color: var(--accent);
-      padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
-    }
-
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .command-center:not(.collapsed) .analytics-grid,
-    .command-center:not(.collapsed) .lead-table,
-    .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
-  </style>
-</head>
-<body>
-
-  <div class="toast" id="toast"></div>
-
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="brand">
-        <span class="dot"></span>
-        SKYLINE AA-1
-      </div>
-    </div>
-    <div class="notif-wrapper">
-      <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
-        <!-- Production SVG Bell Icon -->
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span id="notifBadge" class="badge">0</span>
-      </button>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <div class="section-title">Month 2: Command Center</div>
-    <div class="command-center" id="commandCenter">
-      <div class="cc-header" onclick="toggleCommandCenter()">
-        <div class="cc-title-group">
-          <span class="cc-title">Email Infrastructure</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:16px;">
-          <div id="connectButtonContainer" style="display:flex; align-items:center; gap:8px;">
-            <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
-              Connect Gmail/Outlook
-            </button>
-            <div id="connectionTimer" class="connection-timer">
-              ⏱️ <span></span> remaining
-            </div>
-          </div>
-          <div class="toggle-button">
-            <div class="toggle-button-circle">
-              <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cc-content-wrapper">
-        <div class="cc-content">
-          <div class="analytics-grid">
-            <div class="stat-card">
-              <div class="stat-value" id="totalLeads">—</div>
-              <div class="stat-label">Total Leads</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="replyRate">—</div>
-              <div class="stat-label">Reply Rate</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="interestedCount">—</div>
-              <div class="stat-label">Interested</div>
-            </div>
-          </div>
-
-          <table class="lead-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Status</th>
-                <th>Last Action</th>
-              </tr>
-            </thead>
-            <tbody id="leadList">
-              <tr>
-                <td colspan="4" style="text-align:center; color: var(--text-3); padding: 24px;">
-                  Loading leads...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-title">Subscription</div>
-    <div class="pricing-header">
-      <h2>Choose Your Power Level</h2>
-      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
-    </div>
-    <div class="pricing-cards">
-
-      <div class="plan-card">
-        <div class="plan-name">Free</div>
-        <div class="plan-price">$0<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>30 Requests / Day</li>
-          <li>Basic Model (Skyline AA-1a)</li>
-          <li>Short Memory</li>
-          <li class="disabled">Powerful Reasoning</li>
-          <li class="disabled">Early Access</li>
-        </ul>
-        <button class="plan-btn btn-free" disabled>Current Plan</button>
-      </div>
-
-      <div class="plan-card">
-        <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price">$9<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>18 Requests / Day</li>
-          <li>Powerful Model (Skyline AA-1mini)</li>
-          <li>Long Memory</li>
-          <li>Great Features</li>
-          <li class="disabled">Skyline AA-1a Model</li>
-        </ul>
-        <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
-      </div>
-
-      <div class="plan-card featured">
-        <div class="plan-badge">Best Value</div>
-        <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price">$20<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>40 Requests / Day</li>
-          <li>Skyline AA-1aa Model</li>
-          <li>Advance Reasoning</li>
-          <li>Early Access to Features</li>
-          <li>Priority Support</li>
-        </ul>
-        <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
-      </div>
-
-    </div>
-
-    <div class="section-title">Profile</div>
-    <div class="menu-grid">
-      <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
-      <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
-    </div>
-
-    <div class="section-title">Skyline System</div>
-    <div class="menu-grid">
-      <a href="Privacy.html" class="menu-item"><span>Privacy Policy</span><span class="arrow">›</span></a>
-      <a href="age-verification.html" class="menu-item"><span>Age Verification</span><span class="arrow">›</span></a>
-      <a href="email-settings.html" class="menu-item"><span>Email Preferences</span><span class="arrow">›</span></a>
-      <a href="about.html" class="menu-item"><span>About Skyline AA-1</span><span class="arrow">›</span></a>
-      <a href="report.html" class="menu-item"><span>Report an Issue</span><span class="arrow">›</span></a>
-    </div>
-
-    <div class="section-title">Dangerous Zone</div>
-    <div class="menu-grid danger-zone">
-      <a href="#" onclick="handleLogout()" class="menu-item"><span class="danger-text">Sign Out</span><span class="arrow">›</span></a>
-      <a href="delete-account.html" class="menu-item"><span class="danger-text">Delete Account</span><span class="arrow">›</span></a>
-    </div>
-
-    <a href="page.html" class="back-link">← Return to Dream Architect</a>
-  </div>
-
-  <div id="replyModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Reply to <span id="modalLeadName">Lead</span></h3>
-        <button class="close-modal" onclick="closeReplyModal()">×</button>
-      </div>
-      <div class="reply-history" id="replyHistoryContainer">
-        <h4>Conversation History:</h4>
-        <div id="conversationHistory">Loading...</div>
-      </div>
-      <div class="reply-input-area">
-        <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-3);">Your Reply:</label>
-        <textarea id="replyTextArea" placeholder="Type your reply here..."></textarea>
-        <button id="sendReplyBtn" class="send-reply-btn" onclick="sendDirectReply()">🚀 Send Reply</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token   = localStorage.getItem('token');
-    if (!token) window.location.href = 'login.html';
-
-    let currentReplyLeadId = null;
-    let currentReplyEmail = null;
-    let autoRefreshInterval = null;
-    let lastReplyCount = 0;
-    let disconnectTimer = null;
-    let timerInterval = null;
-    let remainingTime = 0;
-    const CONNECTION_DURATION_MINUTES = 20;
-
-    // ── Toggle Command Center ────────────────────────────────────────────────
-    function toggleCommandCenter() {
-      const cc = document.getElementById('commandCenter');
-      cc.classList.toggle('collapsed');
-      localStorage.setItem('commandCenterCollapsed', cc.classList.contains('collapsed'));
-    }
-
-    function loadCollapseState() {
-      const savedState = localStorage.getItem('commandCenterCollapsed');
-      const cc = document.getElementById('commandCenter');
-      if (savedState === 'true') {
-        cc.classList.add('collapsed');
-      } else {
-        cc.classList.remove('collapsed');
-        if (savedState === null) localStorage.setItem('commandCenterCollapsed', 'false');
-      }
-    }
-
-    function showToast(message, type = 'success', duration = 4000) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className   = `toast ${type}`;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, duration);
-    }
-
-    // ── Timer Functions ──────────────────────────────────────────────────────
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateTimerDisplay() {
-      const timerElement = document.getElementById('connectionTimer');
-      if (timerElement && remainingTime > 0) {
-        const timeSpan = timerElement.querySelector('span');
-        if (timeSpan) timeSpan.textContent = formatTime(remainingTime);
-      }
-    }
-
-    function startDisconnectTimer(minutes) {
-      if (timerInterval) clearInterval(timerInterval);
-      if (disconnectTimer) clearTimeout(disconnectTimer);
-      remainingTime = minutes * 60;
-      updateTimerDisplay();
-      const expiryTime = Date.now() + (minutes * 60 * 1000);
-      localStorage.setItem('emailExpiryTime', expiryTime.toString());
-      localStorage.setItem('emailConnected', 'true');
-      timerInterval = setInterval(() => {
-        if (remainingTime > 0) {
-          remainingTime--;
-          updateTimerDisplay();
-          localStorage.setItem('emailExpiryTime', (Date.now() + remainingTime * 1000).toString());
-        }
-      }, 1000);
-      disconnectTimer = setTimeout(() => { autoDisconnectEmail(); }, minutes * 60 * 1000);
-    }
-
-    function stopDisconnectTimer() {
-      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-      if (disconnectTimer) { clearTimeout(disconnectTimer); disconnectTimer = null; }
-    }
-
-    async function autoDisconnectEmail() {
-      try {
-        stopDisconnectTimer();
-        await fetch(`${BACKEND}/api/auth/disconnect`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+// ════════════════════════════════════════════
+//  HELPER: REFRESH NYLAS TOKEN
+// ════════════════════════════════════════════
+async function refreshNylasToken(emailAccount) {
+    try {
+        const response = await axios.post(`${process.env.NYLAS_API_URI || 'https://api.us.nylas.com'}/v3/connect/token`, {
+            client_id: process.env.NYLAS_CLIENT_ID,
+            client_secret: process.env.NYLAS_CLIENT_SECRET,
+            grant_type: 'refresh_token',            refresh_token: emailAccount.refreshToken
         });
-      } catch (err) { console.error('Auto-disconnect error:', err); }
-      const btn = document.getElementById('connectEmailBtn');
-      if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
-      localStorage.removeItem('emailConnectedAt');
-      localStorage.removeItem('emailExpiryTime');
-      localStorage.removeItem('emailConnected');
-      showToast('🔌 Email connection expired after 20 minutes. Please reconnect to continue.', 'warning', 8000);
-      await checkEmailStatus();
-    }
 
-    function handleOAuthRedirect() {
-      const params = new URLSearchParams(window.location.search);
-      const connected = params.get('connected');
-      const error     = params.get('error');
-      if (connected === 'true') {
-        showToast('✅ Gmail/Outlook connected successfully! Connection will auto-disconnect after 20 minutes.', 'success', 8000);
-        setConnectedState();
-        startDisconnectTimer(CONNECTION_DURATION_MINUTES);
-        localStorage.setItem('emailConnectedAt', Date.now().toString());
-        window.history.replaceState({}, document.title, '/dashboard.html');
-      } else if (connected === 'false') {
-        const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
-        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
-        window.history.replaceState({}, document.title, '/dashboard.html');
-      }
+        const newAccessToken = response.data.access_token;
+        
+        // Update the database with the new token and new expiry (1 hour from now)
+        emailAccount.accessToken = newAccessToken;
+        emailAccount.tokenExpiry = new Date(Date.now() + 3600 * 1000); 
+        await emailAccount.save();
+        
+        console.log(`🔄 [NYLAS] Token refreshed for User ${emailAccount.userId}`);
+        return newAccessToken;
+    } catch (err) {
+        console.error('❌ [NYLAS] Token Refresh Failed:', err.message);
+        throw err;
     }
+}
 
-    function setConnectedState() {
-      const btn = document.getElementById('connectEmailBtn');
-      if (btn) { btn.innerText = '✅ Connected'; btn.classList.add('connected'); }
-    }
-
-    async function connectEmail() {
-      const btn = document.getElementById('connectEmailBtn');
-      btn.innerText = 'Connecting...';
-      btn.disabled  = true;
-      try {
-        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || `Server error ${res.status}`);
+// ════════════════════════════════════════════
+//  CHECK SUBSCRIPTION EXPIRY MIDDLEWARE
+// ════════════════════════════════════════════
+const checkSubscriptionExpiry = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        
+        if (user.subscriptionTier && user.subscriptionTier !== 'free' && user.subscriptionEndDate) {
+            const now = new Date();
+            const endDate = new Date(user.subscriptionEndDate);
+            if (now > endDate) {
+                user.subscriptionTier = 'free';
+                user.subscriptionEndDate = null;
+                await user.save();
+                console.log(`⚠️ User ${user._id} downgraded to free - subscription expired`);
+            }
         }
-        const data = await res.json();
-        if (data.url) { window.location.href = data.url; }
-        else throw new Error('No URL returned from server');
-      } catch (err) {
-        console.error('Error getting Nylas URL:', err);
-        showToast(`❌ Could not start connection: ${err.message}`, 'error');
-        btn.innerText = 'Connect Gmail/Outlook';
-        btn.disabled  = false;
-      }
+        next();
+    } catch (err) {
+        console.error('Error checking subscription expiry:', err);
+        next();
+    }
+};
+
+// ════════════════════════════════════════════
+//  WEBHOOK ROUTE - MUST BE BEFORE express.json()
+// ════════════════════════════════════════════
+app.post('/api/flutterwave-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    console.log("🔥 Webhook hit!");
+    
+    const sig = req.headers['verif-hash'];    const secretHash = process.env.FLUTTERWAVE_SECRET_HASH;
+    
+    if (secretHash && sig !== secretHash) {
+        console.log("⚠️ Hash mismatch - check your FLUTTERWAVE_SECRET_HASH");
+        return res.status(401).send('Unauthorized');
     }
 
-    async function checkEmailStatus() {
-      try {
-        const expiryTime = localStorage.getItem('emailExpiryTime');
-        const isConnected = localStorage.getItem('emailConnected') === 'true';
-        if (isConnected && expiryTime) {
-          const remaining = parseInt(expiryTime) - Date.now();
-          if (remaining > 0) {
-            setConnectedState();
-            startDisconnectTimer(remaining / 1000 / 60);
-            return;
-          } else {
-            const btn = document.getElementById('connectEmailBtn');
-            if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
-            localStorage.removeItem('emailConnectedAt');
-            localStorage.removeItem('emailExpiryTime');
-            localStorage.removeItem('emailConnected');
-          }
+    let payload;
+    try {
+        const rawBody = req.body.toString('utf-8');
+        payload = JSON.parse(rawBody);
+    } catch (e) {
+        console.error('❌ Failed to parse webhook body:', e.message);
+        return res.status(400).send('Invalid JSON');
+    }
+
+    try {
+        let txRef, status, planType;
+        
+        if (payload.status) {
+            status = payload.status;
+            txRef = payload.txRef || payload.tx_ref;
+            planType = payload.meta?.plan;
+        } else if (payload.event === 'charge.completed') {
+            status = payload.data?.status;
+            txRef = payload.data?.tx_ref;
+            planType = payload.data?.meta?.plan;
         }
-        const res = await fetch(`${BACKEND}/api/users/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const user = await res.json();
-          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
-            setConnectedState();
-            const connectedAt = localStorage.getItem('emailConnectedAt');
-            if (connectedAt) {
-              const elapsedMinutes = (Date.now() - parseInt(connectedAt)) / 1000 / 60;
-              if (elapsedMinutes < CONNECTION_DURATION_MINUTES) {
-                startDisconnectTimer(CONNECTION_DURATION_MINUTES - elapsedMinutes);
-              } else {
-                await autoDisconnectEmail();
-              }
+
+        if (status === 'successful') {
+            console.log(`✅ Payment successful for txRef: ${txRef}`);
+            if (!txRef) return res.status(400).send('Missing txRef');
+            
+            if (!planType) {
+                if (txRef.includes('_go_')) planType = 'go';
+                else if (txRef.includes('_pro_')) planType = 'pro';
+                else planType = 'free';
+            }
+
+            const user = await User.findOne({ lastTxRef: txRef });
+            if (user) {
+                const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                await User.findByIdAndUpdate(user._id, {
+                    subscriptionTier: planType, 
+                    subscriptionEndDate: endDate,
+                    lastTxRef: null
+                });
+                console.log(`🎉 User ${user._id} upgraded to ${planType.toUpperCase()} Plan!`);
             } else {
-              startDisconnectTimer(CONNECTION_DURATION_MINUTES);
-              localStorage.setItem('emailConnectedAt', Date.now().toString());
-            }
-          } else {
-            const btn = document.getElementById('connectEmailBtn');
-            if (btn && btn.classList.contains('connected')) {
-              btn.innerText = 'Connect Gmail/Outlook';
-              btn.classList.remove('connected');
-            }
-          }
-        }
-      } catch (err) { console.error('Error checking email status:', err); }
-    }
-
-    // ── Load Leads (no Action column) ────────────────────────────────────────
-    async function loadLeads() {
-      try {
-        const res = await fetch(`${BACKEND}/api/leads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        const leads = await res.json();
-        const tbody = document.getElementById('leadList');
-
-        document.getElementById('totalLeads').innerText = leads.length;
-        const interested = leads.filter(l => l.status === 'Interested').length;
-        document.getElementById('interestedCount').innerText = interested;
-        const replied = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
-        const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
-        document.getElementById('replyRate').innerText = rate + '%';
-
-        if (leads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
+                console.error(`❌ User not found for txRef: ${txRef}`);            }
         } else {
-          tbody.innerHTML = leads.map(lead => {
-            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
-            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
-            return `
-              <tr>
-                <td>${escapeHtml(lead.name || '—')}</td>
-                <td>${escapeHtml(lead.company || '—')}</td>
-                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
-                <td>${lastDate}</td>
-              </tr>
-            `;
-          }).join('');
+            console.log(`ℹ️ Webhook received but payment not successful. Status: ${status || 'unknown'}`);
         }
-      } catch (err) {
-        console.error('Error loading leads:', err);
-        document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
-      }
+
+        res.status(200).send('Webhook received');
+    } catch (error) {
+        console.error('❌ Webhook Error:', error);
+        res.status(500).send('Webhook failed');
+    }
+});
+
+// ════════════════════════════════════════════
+//  INBOUND EMAIL WEBHOOK - USES EMAIL ACCOUNT BRIDGE
+// ════════════════════════════════════════════
+app.all('/api/webhooks/inbound-email', express.raw({ type: 'application/json' }), async (req, res) => {
+    if (req.method === 'GET') {
+        const challenge = req.query.challenge;
+        if (challenge) return res.status(200).send(challenge); 
+        return res.status(400).send('No challenge provided');
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(str));
-      return div.innerHTML;
-    }
+    if (req.method === 'POST') {
+        try {
+            const payload = JSON.parse(req.body.toString('utf-8'));
+            const messageData = payload.data?.object;
+            
+            if (messageData && (payload.type === 'message.created' || payload.event === 'message.created')) {
+                const fromEmail = messageData.from?.[0]?.email;
+                const toEmail = messageData.to?.[0]?.email;
+                
+                // 1. FIND THE OWNER OF THE INBOX (THE BRIDGE)
+                const grantId = payload.grant_id || messageData.grant_id; 
+                let ownerUserId = null;
 
-    async function openReplyModal(leadId, name, email) {
-      currentReplyLeadId = leadId;
-      currentReplyEmail = email;
-      document.getElementById('modalLeadName').innerText = name;
-      document.getElementById('replyModal').style.display = 'flex';
-      document.getElementById('replyTextArea').value = '';
-      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
-      try {
-        const res = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const leads = await res.json();
-        const lead = leads.find(l => l._id === leadId);
-        if (lead && lead.replies && lead.replies.length > 0) {
-          document.getElementById('conversationHistory').innerHTML = lead.replies.slice().reverse().map(reply => {
-            const isLead = reply.from === 'lead';
-            const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
-            return `
-              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
-                <div class="reply-meta">
-                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
-                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
-                </div>
-                <div class="reply-content">${escapeHtml(reply.content)}</div>
-              </div>
-            `;
-          }).join('');
-        } else {
-          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
+                if (grantId) {
+                    const account = await EmailAccount.findOne({ nylasGrantId: grantId });
+                    if (account) ownerUserId = account.userId;
+                } 
+                
+                // Fallback: Look up by "To" email address
+                if (!ownerUserId && toEmail) {
+                    const account = await EmailAccount.findOne({ emailAddress: toEmail.toLowerCase() });
+                    if (account) ownerUserId = account.userId;
+                }
+
+                if (!ownerUserId) {
+                    console.warn(`⚠️ [WEBHOOK] Could not identify owner for To: ${toEmail}`);
+                    return res.status(200).send('OK');
+                }
+                // 2. FIND THE LEAD (Who sent the reply?)
+                const lead = await Lead.findOne({ email: fromEmail, userId: ownerUserId });
+                
+                if (lead) {
+                    lead.status = 'Replied';
+                    lead.lastContactDate = new Date();
+                    
+                    const bodyText = messageData.body || messageData.snippet || '';
+                    lead.replies = lead.replies || [];
+                    lead.replies.push({
+                        date: new Date(),
+                        content: bodyText,
+                        from: 'lead',
+                        subject: messageData.subject
+                    });
+                    await lead.save();
+
+                    // 3. CREATE NOTIFICATION FOR THE CORRECT USER
+                    const notification = new Message({
+                        userId: ownerUserId,
+                        sessionId: 'reply-notification',
+                        role: 'ai',
+                        title: '📬 New Lead Reply',
+                        content: `${lead.name} replied:\n\n"${bodyText.substring(0, 200)}..."`,
+                        notificationType: 'reply',
+                        leadId: lead._id,
+                        isRead: false
+                    });
+                    await notification.save();
+                    console.log(`🔔 Notification saved for User: ${ownerUserId}`);
+                } else {
+                    console.warn(`⚠️ [WEBHOOK] No lead found for ${fromEmail} under User ${ownerUserId}`);
+                }
+            }
+            return res.status(200).send('OK');
+        } catch (err) {
+            console.error('❌ Webhook Error:', err);
+            return res.status(500).send('Error');
         }
-      } catch (err) {
-        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
-      }
     }
+    res.status(405).send('Method Not Allowed');
+});
 
-    function closeReplyModal() {
-      document.getElementById('replyModal').style.display = 'none';
-      currentReplyLeadId = null;
-      currentReplyEmail = null;
+// ════════════════════════════════════════════
+//  NOW apply express.json() for all other routes
+// ════════════════════════════════════════════
+app.use(express.json());
+app.use(express.static(path.join(__dirname)));
+// Database Connection
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.log('❌ MongoDB Connection Error:', err));
+
+// Auth Routes
+app.use('/api/auth', authRoutes);
+
+// ── Verify Token Middleware ──
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(403).json({ message: 'No token provided' });
+    try {
+        const secret = process.env.JWT_SECRET || 'secretkey';
+        const decoded = jwt.verify(token, secret);
+        req.userId = decoded.user.id;
+        next();
+    } catch (err) {
+        console.error('Token Verification Failed:', err.message);
+        return res.status(401).json({ message: 'Invalid token' });
     }
+};
 
-    async function sendDirectReply() {
-      const btn = document.getElementById('sendReplyBtn');
-      const text = document.getElementById('replyTextArea').value.trim();
-      if (!text) { showToast("Please type a reply.", "error"); return; }
-      if (!currentReplyEmail) { showToast("Error: No email address found.", "error"); return; }
-      btn.disabled = true;
-      btn.innerText = "Sending...";
-      try {
-        const payload = {
-          leads: [{ name: document.getElementById('modalLeadName').innerText, email: currentReplyEmail, company: '',
-            messages: [{ subject: "Re: Your inquiry about Skyline AA-1", body: text }] }]
-        };
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+// ── Daily Usage Limit Middleware ──
+const checkDailyLimit = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        if (!user.usage) {
+            user.usage = { dailyCallCount: 0, lastCallDate: new Date() };
+        }
+
+        let limit = 30;
+        if (user.subscriptionTier === 'go') limit = 18; 
+        if (user.subscriptionTier === 'pro') limit = 40; 
+
+        const now = new Date();
+        const todayStr = now.toDateString();
+        const lastCallDate = user.usage.lastCallDate ? new Date(user.usage.lastCallDate) : null;
+        const lastCallStr = lastCallDate ? lastCallDate.toDateString() : '';
+
+        if (lastCallStr !== todayStr) {
+            user.usage.dailyCallCount = 0;
+            user.usage.lastCallDate = now;
+            await user.save();
+        }
+        if (user.usage.dailyCallCount >= limit) {
+            return res.status(429).json({ message: `Daily limit reached (${limit}/${limit}). Upgrade your plan for more.` });
+        }
+
+        user.usage.dailyCallCount += 1;
+        await user.save();
+        next();
+    } catch (err) {
+        console.error('Error checking daily limit:', err);
+        res.status(500).json({ message: 'Server Error checking usage limits' });
+    }
+};
+
+// ════════════════════════════════════════════
+//  WHATSAPP-STYLE INBOX ROUTES
+// ════════════════════════════════════════════
+
+// 1. GET CONVERSATIONS (Sidebar List)
+app.get('/api/conversations', verifyToken, async (req, res) => {
+    try {
+        const leads = await Lead.find({ userId: req.userId })
+            .sort({ lastContactDate: -1 })
+            .limit(50); 
+
+        const conversations = leads.map(lead => {
+            const lastReply = lead.replies && lead.replies.length > 0 
+                ? lead.replies[lead.replies.length - 1] 
+                : null;
+
+            let preview = "No messages yet";
+            if (lastReply) {
+                // Strip HTML tags for clean preview
+                preview = lastReply.content.replace(/<[^>]*>?/gm, '').substring(0, 50);
+            }
+
+            return {
+                id: lead._id,
+                name: lead.name,
+                company: lead.company,
+                email: lead.email,
+                status: lead.status,
+                lastMessage: preview,
+                lastDate: lead.lastContactDate,
+                unread: !lastReply || lastReply.from === 'lead' 
+            };
         });
-        const data = await res.json();
-        if (data.success) { showToast("✅ Reply sent successfully!", "success"); closeReplyModal(); loadLeads(); }
-        else showToast("❌ Failed to send reply.", "error");
-      } catch (err) {
-        showToast("❌ Connection error.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "🚀 Send Reply";
-      }
-    }
 
-    async function initiateUpgrade(planType) {
-      const btn = event.target;
-      const originalText = btn.innerText;
-      try {
-        btn.innerText = 'Connecting...';
-        btn.disabled  = true;
-        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ planType })
+        res.json(conversations);
+    } catch (err) {
+        console.error('Error fetching conversations:', err);        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// 2. GET SINGLE CONVERSATION (Chat Area)
+app.get('/api/conversations/:leadId', verifyToken, async (req, res) => {
+    try {
+        const lead = await Lead.findOne({ _id: req.params.leadId, userId: req.userId });
+        
+        if (!lead) return res.status(404).json({ message: 'Conversation not found' });
+
+        // Clean up all messages in history (Strip HTML)
+        const cleanHistory = (lead.replies || []).map(msg => ({
+            ...msg.toObject(),
+            content: msg.content.replace(/<[^>]*>?/gm, '') // Strip HTML tags
+        }));
+
+        res.json({
+            lead: {
+                id: lead._id,
+                name: lead.name,
+                email: lead.email,
+                company: lead.company,
+                status: lead.status
+            },
+            messages: cleanHistory
         });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Server Error: ${response.status}`);
+    } catch (err) {
+        console.error('Error fetching conversation details:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// 3. RENAME CUSTOMER
+app.put('/api/leads/:leadId/rename', verifyToken, async (req, res) => {
+    try {
+        const { newName } = req.body;
+        const lead = await Lead.findOne({ _id: req.params.leadId, userId: req.userId });
+        
+        if (!lead) return res.status(404).json({ message: 'Lead not found' });
+
+        lead.name = newName;
+        await lead.save();
+        
+        res.json({ success: true, newName: lead.name });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+// ════════════════════════════════════════════
+//  BATCH SEND ROUTE (WITH AUTO-REFRESH LOGIC)
+// ════════════════════════════════════════════
+app.post('/api/leads/batch-send', verifyToken, async (req, res) => {
+    try {
+        const { leads } = req.body;
+        
+        // 1. Get the Email Account for this user
+        const emailAccount = await EmailAccount.findOne({ userId: req.userId });
+        
+        if (!emailAccount) {
+            return res.status(400).json({ message: 'No email account connected.' });
         }
-        const data = await response.json();
-        if (data.link) { btn.innerText = 'Redirecting...'; window.location.href = data.link; }
-        else throw new Error('No payment link received from server.');
-      } catch (err) {
-        showToast(`❌ ${err.message}`, 'error');
-        if (btn) { btn.innerText = originalText; btn.disabled = false; }
-      }
-    }
 
-    async function checkCurrentPlan() {
-      try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) {
-          const user = await res.json();
-          const plan = user.subscriptionTier || 'free';
-          if (plan === 'go') {
-            document.getElementById('goTag').style.display = 'inline-block';
-            const goBtn = document.querySelector('.btn-go');
-            if (goBtn) { goBtn.innerText = 'Current Plan'; goBtn.disabled = true; goBtn.classList.add('btn-free'); goBtn.classList.remove('btn-go'); }
-          } else if (plan === 'pro') {
-            document.getElementById('proTag').style.display = 'inline-block';
-            const proBtn = document.querySelector('.btn-pro');
-            if (proBtn) { proBtn.innerText = 'Current Plan'; proBtn.disabled = true; proBtn.style.background = '#333'; proBtn.style.color = '#888'; proBtn.style.boxShadow = 'none'; }
-          }
+        // 2. Check if token is expired (or expires in next 5 mins)
+        const isExpired = !emailAccount.tokenExpiry || new Date() > new Date(emailAccount.tokenExpiry.getTime() - 5 * 60 * 1000);
+        
+        let currentAccessToken = emailAccount.accessToken;
+
+        if (isExpired) {
+            console.log('🔄 Access token expired. Refreshing...');
+            try {
+                currentAccessToken = await refreshNylasToken(emailAccount);
+            } catch (refreshErr) {
+                // If refresh fails, the grant is likely invalid. Force reconnect.
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'NYLAS_DISCONNECTED', 
+                    message: 'Session expired. Please reconnect.' 
+                });
+            }
         }
-      } catch (err) { console.error('Failed to check plan:', err); }
-    }
 
-    function handleNotifClick() {
-      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-      window.location.href = 'notifications.html';
-    }
+        let sentCount = 0;
+        let errors = [];
+        const now = new Date();
 
-    // ── Notification Badge (capped at 10+) ───────────────────────────────────
-    async function loadNotifCount() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/count`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        for (const leadData of leads) {
+            try {
+                let lead = await Lead.findOne({ email: leadData.email, userId: req.userId });
+                
+                if (!lead) {
+                    lead = new Lead({
+                        userId: req.userId,
+                        name: leadData.name,
+                        email: leadData.email,
+                        company: leadData.company,
+                        status: 'Contacted',
+                        lastContactDate: now
+                    });                } else {
+                    lead.status = 'Contacted';
+                    lead.lastContactDate = now;
+                }
+                
+                if (leadData.messages && leadData.messages.length > 0) {
+                    if (!lead.replies) lead.replies = [];
+                    lead.replies.push({
+                        date: now,
+                        content: leadData.messages[0].body,
+                        subject: leadData.messages[0].subject,
+                        from: 'ai',
+                        status: 'sent'
+                    });
+                }
+                await lead.save();
+
+                if (leadData.messages && leadData.messages.length > 0) {
+                    const result = await sendEmail(
+                        currentAccessToken, // Use the fresh token
+                        leadData.email, 
+                        leadData.messages[0].subject, 
+                        leadData.messages[0].body
+                    );
+
+                    if (result.success) {
+                        sentCount++;
+                        console.log(`✅ Email sent to ${leadData.email}`);
+                    } else {
+                        // If send fails due to auth, try refreshing one last time
+                        if (result.error && result.error.includes('401')) {
+                             try {
+                                currentAccessToken = await refreshNylasToken(emailAccount);
+                                // Retry send logic could go here, but for now we mark as error
+                             } catch(e) {}
+                        }
+                        lead.status = 'Failed';
+                        await lead.save();
+                        errors.push({ email: leadData.email, error: result.error });
+                        console.error(`❌ Failed to send to ${leadData.email}: ${result.error}`);
+                    }
+                }
+            } catch (err) {
+                console.error(`Failed to send to ${leadData.email}:`, err.message);
+                errors.push({ email: leadData.email, error: err.message });
+            }
+        }
+
+        res.json({ 
+            success: true,             message: `Sent ${sentCount} emails.`, 
+            errors: errors 
         });
-        if (res.ok) {
-          const data  = await res.json();
-          const badge = document.getElementById('notifBadge');
-          const btn   = document.getElementById('notifBtn');
-          const hasServerMessages = data.count > 0;
-          const lastViewTime      = localStorage.getItem('lastNotifViewTime');
-          const shouldShowBadge   = hasServerMessages && !lastViewTime;
 
-          if (shouldShowBadge) {
-            badge.style.display = 'flex';
-            // Cap display at 10+
-            badge.textContent = data.count > 10 ? '10+' : data.count;
-            btn.classList.add('has-notifs');
-          } else {
-            badge.style.display = 'none';
-            btn.classList.remove('has-notifs');
-          }
+    } catch (err) {
+        console.error('Batch Send Error:', err);
+        res.status(500).json({ message: 'Server Error during batch send' });
+    }
+});
+
+// ════════════════════════════════════════════
+//  RECONNECT AND AUTO-SEND PENDING MESSAGES
+// ════════════════════════════════════════════
+app.post('/api/reconnect-and-send', verifyToken, async (req, res) => {
+    try {
+        const emailAccount = await EmailAccount.findOne({ userId: req.userId });
+        if (!emailAccount) {
+            return res.status(400).json({ message: 'Nylas not connected' });
         }
-      } catch (err) { console.error('Failed to load notifications:', err); }
-    }
 
-    function handleLogout() {
-      if (confirm('Are you sure you want to sign out?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('lastNotifViewTime');
-        localStorage.removeItem('emailConnectedAt');
-        localStorage.removeItem('emailExpiryTime');
-        localStorage.removeItem('emailConnected');
-        window.location.href = 'login.html';
-      }
-    }
-
-    async function checkForNewReplies() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/replies`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        // Ensure we have a fresh token
+        let currentAccessToken = emailAccount.accessToken;
+        const isExpired = !emailAccount.tokenExpiry || new Date() > new Date(emailAccount.tokenExpiry.getTime() - 5 * 60 * 1000);
+        
+        if (isExpired) {
+            currentAccessToken = await refreshNylasToken(emailAccount);
+        }
+        
+        // Find all leads with pending messages for this user        
+        const leadsWithPending = await Lead.find({ 
+            userId: req.userId, 
+            'replies.status': 'pending' 
         });
-        if (res.ok) {
-          const data = await res.json();
-          const newReplyCount = data.count;
-          document.getElementById('refreshIndicator').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
 
-          if (newReplyCount > lastReplyCount && lastReplyCount !== 0) {
-            const newCount = newReplyCount - lastReplyCount;
-            showToast(`📬 ${newCount} new repl${newCount === 1 ? 'y' : 'ies'} received!`, 'info', 5000);
+        let sentCount = 0;
 
-            const notifBtn = document.getElementById('notifBtn');
-            notifBtn.classList.add('has-notifs');
-            const badge = document.getElementById('notifBadge');
-            badge.style.display = 'flex';
-            // Cap display at 10+
-            badge.textContent = newReplyCount > 10 ? '10+' : newReplyCount;
+        for (const lead of leadsWithPending) {
+            const pendingMessages = lead.replies.filter(r => r.status === 'pending');
+            
+            for (const msg of pendingMessages) {
+                const result = await sendEmail(
+                    currentAccessToken, 
+                    lead.email, 
+                    msg.subject || 'Re: Conversation', 
+                    msg.content
+                );
 
-            loadLeads();
-          }
-          lastReplyCount = newReplyCount;
+                if (result.success) {
+                    msg.status = 'sent';
+                    sentCount++;                } else {
+                    msg.status = 'failed';
+                }
+            }
+            await lead.save();
         }
-      } catch (err) { console.error('Error checking replies:', err); }
+
+        res.json({ success: true, sentCount });
+    } catch (err) {
+        console.error('Auto-send Error:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// ════════════════════════════════════════════
+//  SIMPLIFIED NOTIFICATIONS ENDPOINT
+// ════════════════════════════════════════════
+app.get('/api/my-notifications', verifyToken, async (req, res) => {
+    try {
+        console.log(`🔍 Fetching notifications for user: ${req.userId}`);
+        
+        const replyNotifications = await Message.find({
+            userId: req.userId,
+            sessionId: 'reply-notification'
+        }).sort({ createdAt: -1 });
+        
+        console.log(`✅ Found ${replyNotifications.length} reply notifications`);
+        const adminMessages = await Message.find({
+            userId: req.userId,
+            sessionId: 'admin-direct-message'
+        }).sort({ createdAt: -1 });
+        
+        console.log(`✅ Found ${adminMessages.length} admin messages`);
+        
+        const allNotifications = [...replyNotifications, ...adminMessages];
+        allNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        res.json(allNotifications);
+    } catch (err) {
+        console.error('❌ Error fetching notifications:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ════════════════════════════════════════════
+//  NYLAS AUTHENTICATION ROUTES (WITH BRIDGE)
+// ════════════════════════════════════════════
+
+app.get('/api/auth/nylas/url', verifyToken, (req, res) => {
+    const userId = req.userId;    const randomState = uuidv4();
+    stateStore[randomState] = userId;
+    
+    setTimeout(() => { delete stateStore[randomState]; }, 10 * 60 * 1000);
+
+    const url = getAuthUrl(randomState);
+    res.json({ url });
+});
+
+app.get('/api/auth/nylas/callback', async (req, res) => {
+    const { code, state, error: oauthError } = req.query;
+
+    if (oauthError) {
+        return res.redirect('https://skylineai-app.vercel.app/dashboard.html?connected=false&error=' + oauthError);
     }
 
-    // ── Initialize ───────────────────────────────────────────────────────────
-    handleOAuthRedirect();
-    loadCollapseState();
-    loadNotifCount();
-    checkCurrentPlan();
-    checkEmailStatus();
-    loadLeads();
-    checkForNewReplies();
-    autoRefreshInterval = setInterval(checkForNewReplies, 15000);
-  </script>
-</body>
-  </html>
+    if (!code || !state) {
+        return res.status(400).send('Missing required parameters.');
+    }
+
+    const userId = stateStore[state];
+    if (!userId) {
+        return res.status(400).send('Session expired. Please try connecting again.');
+    }
+    
+    delete stateStore[state];
+    try {
+        const tokenData = await exchangeCodeForToken(code);
+        const accessToken = tokenData.access_token;
+        const refreshToken = tokenData.refresh_token; // <--- GET REFRESH TOKEN
+        const grantId = tokenData.grant_id; 
+
+        let emailAddress = 'unknown@nylas.com';
+        try {
+            emailAddress = await getUserEmail(accessToken);
+        } catch (emailErr) {
+            console.warn(`⚠️ Could not retrieve email: ${emailErr.message}`);
+        }
+
+        // 1. Update User's primary integration (Legacy support)
+        await User.findByIdAndUpdate(userId, { 
+            'nylasIntegration.accessToken': accessToken,
+            'nylasIntegration.emailAddress': emailAddress,
+            'nylasIntegration.isConnected': true,
+            'nylasIntegration.connectedAt': new Date()
+        });
+
+        // 2. CREATE/UPDATE THE EMAIL ACCOUNT BRIDGE (THE FIX)
+        if (grantId) {
+            await EmailAccount.findOneAndUpdate(                { nylasGrantId: grantId },
+                {
+                    userId: userId,
+                    emailAddress: emailAddress,
+                    isConnected: true,
+                    provider: 'gmail',
+                    accessToken: accessToken,
+                    refreshToken: refreshToken, // <--- SAVE REFRESH TOKEN
+                    tokenExpiry: new Date(Date.now() + 3600 * 1000) // <--- SET EXPIRY
+                },
+                { upsert: true, new: true }
+            );
+            console.log(`✅ [AUTH] Linked Grant ${grantId} to User ${userId}`);
+        }
+
+        res.redirect('https://skylineai-app.vercel.app/dashboard.html?connected=true');
+    } catch (err) {
+        console.error(`❌ Nylas Callback Error: ${err.message}`);
+        res.redirect(`https://skylineai-app.vercel.app/dashboard.html?connected=false&error=token_exchange_failed`);
+    }
+});
+
+// ════════════════════════════════════════════
+//  CHECK FOR NEW REPLIES (For Frontend Notification)
+// ════════════════════════════════════════════
+app.get('/api/notifications/replies', verifyToken, async (req, res) => {
+    try {
+        const repliedLeads = await Lead.find({ 
+            userId: req.userId, 
+            status: 'Replied' 
+        }).sort({ lastContactDate: -1 });
+        res.json({ 
+            count: repliedLeads.length,
+            leads: repliedLeads 
+        });
+    } catch (err) {
+        console.error('Error fetching replies:', err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// ════════════════════════════════════════════
+//  CHAT ROUTE (THE AI ROUTER)
+// ════════════════════════════════════════════
+app.post('/api/chat', verifyToken, checkSubscriptionExpiry, checkDailyLimit, async (req, res) => {
+    const { message, history, sessionId } = req.body;
+    const userId = req.userId;
+    if (!message) return res.status(400).json({ message: 'Message is required' });
+    const currentSessionId = sessionId || uuidv4();
+    const user = await User.findById(userId);    const plan = user.subscriptionTier || 'free';
+    try {
+        await new Message({
+            userId,
+            sessionId: currentSessionId,
+            role: 'user',
+            content: message,
+            title: message.substring(0, 30) + '...'
+        }).save();
+
+        let aiReply, updatedHistory;
+        if (plan === 'free') {
+            const result = await freeAI.generateFreeResponse(message, history || [], user);
+            aiReply = result.reply;
+            updatedHistory = result.updatedHistory;
+        } 
+        else if (plan === 'go') {
+            try {
+                const result = await goAI.generateGoResponse(message, history || [], user);
+                aiReply = result ? result.reply : "⚠️ Go AI Service unavailable.";
+                updatedHistory = result ? (result.updatedHistory || []) : [];
+            } catch (goError) {
+                aiReply = "⚠️ Go AI Service currently unavailable.";
+            }
+        } 
+        else {
+            const userProfile = {
+                fullName: user.fullName, country: user.country, skillLevel: user.skillLevel,
+                primaryGoal: user.primaryGoal, interests: user.interests, bio: user.bio,
+                userId: user._id.toString()
+            };
+            const result = await requestQueue.enqueue(async () => {
+                return await generateBusinessResponse(message, history || [], userProfile);
+            });
+            aiReply = result.reply;
+            updatedHistory = result.updatedHistory;
+        }
+
+        await new Message({
+            userId,
+            sessionId: currentSessionId,
+            role: 'ai',
+            content: aiReply
+        }).save();
+
+        res.json({ reply: aiReply, sessionId: currentSessionId, history: updatedHistory });
+
+    } catch (error) {
+        console.error('Chat route error:', error);
+        res.status(500).json({ message: error.message || 'Server Error' });    }
+});
+
+// ════════════════════════════════════════════
+//  GET LEADS FOR DASHBOARD
+// ════════════════════════════════════════════
+app.get('/api/leads', verifyToken, async (req, res) => {
+    try {
+        const leads = await Lead.find({ userId: req.userId }).sort({ createdAt: -1 });
+        res.json(leads);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// ════════════════════════════════════════════
+//  FEEDBACK ROUTE
+// ════════════════════════════════════════════
+app.post('/api/feedback', verifyToken, async (req, res) => {
+    try {
+        const { messageId, type } = req.body;
+        if (!messageId || !['like', 'dislike'].includes(type)) {
+            return res.status(400).json({ message: 'Invalid feedback data' });
+        }
+        const message = await Message.findById(messageId);
+        if (!message) return res.status(404).json({ message: 'Message not found' });
+        if (message.userId.toString() !== req.userId) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+        message.feedback = message.feedback === type ? null : type;
+        await message.save();
+        res.json({ success: true, feedback: message.feedback });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error saving feedback' });
+    }
+});
+
+// ════════════════════════════════════════════
+//  OTHER PROTECTED API ROUTES
+// ════════════════════════════════════════════
+app.get('/api/sessions', verifyToken, checkSubscriptionExpiry, async (req, res) => {
+    try {
+        const sessions = await Message.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(req.userId) } },
+            { $sort: { createdAt: -1 } },
+            { $group: { _id: '$sessionId', title: { $first: '$title' }, lastUpdated: { $first: '$createdAt' } } },
+            { $sort: { lastUpdated: -1 } }
+        ]);
+        res.json(sessions);
+    } catch (error) {        res.status(500).json({ message: 'Server Error fetching sessions' });
+    }
+});
+
+app.get('/api/history/:sessionId', verifyToken, checkSubscriptionExpiry, async (req, res) => {
+    try {
+        const messages = await Message.find({ userId: req.userId, sessionId: req.params.sessionId }).sort({ createdAt: 1 });
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error fetching history' });
+    }
+});
+
+app.post('/api/dreams/analyze', verifyToken, checkSubscriptionExpiry, checkDailyLimit, async (req, res) => {
+    const { dream, sessionId } = req.body;
+    const userId = req.userId;
+    if (!dream) return res.status(400).json({ message: 'Dream description is required' });
+    const currentSessionId = sessionId || uuidv4();
+    try {
+        await new Message({ userId, sessionId: currentSessionId, role: 'user', content: dream, title: dream.substring(0, 30) + '...' }).save();
+        const user = await User.findById(userId);
+        const userProfile = { fullName: user.fullName, country: user.country, skillLevel: user.skillLevel, primaryGoal: user.primaryGoal, interests: user.interests, bio: user.bio, userId: user._id.toString() };
+        const result = await requestQueue.enqueue(async () => { return await generateBusinessResponse(dream, [], userProfile); });
+        await new Message({ userId, sessionId: currentSessionId, role: 'ai', content: result.reply }).save();
+        res.json({ plan: result.reply, audit: {}, sessionId: currentSessionId });
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Server Error' });
+    }
+});
+
+app.post('/api/dreams/refine', verifyToken, checkSubscriptionExpiry, checkDailyLimit, async (req, res) => {
+    const { originalPlan, followUpAnswer, dreamDescription, sessionId } = req.body;
+    const userId = req.userId;
+    if (!followUpAnswer || !dreamDescription) { return res.status(400).json({ message: 'followUpAnswer and dreamDescription are required' }); }
+    const currentSessionId = sessionId || uuidv4();
+    try {
+        await new Message({ userId, sessionId: currentSessionId, role: 'user', content: followUpAnswer }).save();
+        const user = await User.findById(userId);
+        const userProfile = { fullName: user.fullName, country: user.country, skillLevel: user.skillLevel, primaryGoal: user.primaryGoal, interests: user.interests, bio: user.bio, userId: user._id.toString() };
+        const result = await requestQueue.enqueue(async () => { return await generateBusinessResponse(followUpAnswer, [], userProfile); });
+        await new Message({ userId, sessionId: currentSessionId, role: 'ai', content: result.reply }).save();
+        res.json({ plan: result.reply, audit: {}, sessionId: currentSessionId });
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Server Error' });
+    }
+});
+
+app.get('/api/users/me', verifyToken, checkSubscriptionExpiry, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('-password');        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+app.put('/api/users/me', verifyToken, checkSubscriptionExpiry, async (req, res) => {
+    try {
+        const { fullName, primaryGoal, skillLevel, interests, country, bio, profilePicture } = req.body;
+        let user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (fullName) user.fullName = fullName;
+        if (primaryGoal) user.primaryGoal = primaryGoal;
+        if (skillLevel) user.skillLevel = skillLevel;
+        if (interests) user.interests = interests;
+        if (country) user.country = country;
+        if (bio) user.bio = bio;
+        if (profilePicture) user.profilePicture = profilePicture;
+        await user.save();
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+app.put('/api/auth/change-password', verifyToken, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    try {
+        let user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Current password is incorrect' });
+        if (newPassword.length < 8) return res.status(400).json({ message: 'New password must be at least 8 characters' });
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+app.put('/api/auth/change-email', verifyToken, changeEmail);
+app.put('/api/users/verify-age', verifyToken, verifyAge);
+app.delete('/api/users/me', verifyToken, async (req, res) => { await deleteAccount(req, res); });
+
+// ADMIN ROUTES
+app.post('/api/admin/verify-layer-2', verifyToken, verifyLayer2);
+app.post('/api/admin/verify-layer-3', verifyToken, verifyLayer3);app.get('/api/admin/users', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user || !user.isAdmin) return res.status(403).json({ message: 'Access denied. Admins only.' });
+        const users = await User.find().select('-password');
+        res.json(users);
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+app.put('/api/admin/users/:id/suspend', verifyToken, async (req, res) => {
+    try {
+        const admin = await User.findById(req.userId);
+        if (!admin || !admin.isAdmin) return res.status(403).json({ message: 'Access denied' });
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) return res.status(404).json({ message: 'User not found' });
+        targetUser.isSuspended = !targetUser.isSuspended;
+        targetUser.suspensionEnds = targetUser.isSuspended ? new Date('2099-12-31') : null;
+        await targetUser.save();
+        res.json({ message: 'Status updated' });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+app.delete('/api/admin/users/:id', verifyToken, async (req, res) => {
+    try {
+        const admin = await User.findById(req.userId);
+        if (!admin || !admin.isAdmin) return res.status(403).json({ message: 'Access denied' });
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'User deleted' });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+app.get('/api/admin/users/:id/details', verifyToken, async (req, res) => {
+    try {
+        const admin = await User.findById(req.userId);
+        if (!admin || !admin.isAdmin) return res.status(403).json({ message: 'Access denied' });
+        const targetUser = await User.findById(req.params.id).select('-password');
+        if (!targetUser) return res.status(404).json({ message: 'User not found' });
+        const messages = await Message.find({ userId: req.params.id }).sort({ createdAt: 1 });
+        res.json({ user: targetUser, history: messages });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+app.get('/api/admin/users/:id/chat-view', verifyToken, async (req, res) => {
+    try {
+        const admin = await User.findById(req.userId);
+        if (!admin || !admin.isAdmin) return res.status(403).json({ message: 'Access denied' });
+        const targetUser = await User.findById(req.params.id).select('-password');
+        if (!targetUser) return res.status(404).json({ message: 'User not found' });
+        const chatMessages = await Message.find({ userId: req.params.id }).sort({ createdAt: 1 });
+        res.json({ user: targetUser, messages: chatMessages });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+app.post('/api/admin/users/:id/message', verifyToken, async (req, res) => {
+    try {        const admin = await User.findById(req.userId);
+        if (!admin || !admin.isAdmin) return res.status(403).json({ message: 'Access denied' });
+        const { messageContent } = req.body;
+        if (!messageContent) return res.status(400).json({ message: 'Message content is required' });
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) return res.status(404).json({ message: 'User not found' });
+        const newMessage = new Message({ userId: req.params.id, sessionId: 'admin-direct-message', role: 'ai', content: `[ADMIN MESSAGE]: ${messageContent}`, title: 'Direct Message from Admin' });
+        await newMessage.save();
+        res.json({ message: 'Message sent successfully' });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// REPORTS
+app.post('/api/reports', verifyToken, async (req, res) => {
+    try {
+        const { subject, message } = req.body;
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        const newReport = new Report({ userId: req.userId, username: user.username, subject, message });
+        await newReport.save();
+        res.json({ message: 'Report submitted successfully' });
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+app.get('/api/admin/reports', verifyToken, async (req, res) => {
+    try {
+        const admin = await User.findById(req.userId);
+        if (!admin || !admin.isAdmin) return res.status(403).json({ message: 'Access denied' });
+        const reports = await Report.find().sort({ createdAt: -1 });
+        res.json(reports);
+    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+});
+
+// NOTIFICATIONS COUNT
+app.get('/api/notifications/count', verifyToken, async (req, res) => {
+    try {
+        const adminCount = await Message.countDocuments({ 
+            userId: req.userId, 
+            sessionId: 'admin-direct-message' 
+        });
+        const replyCount = await Message.countDocuments({ 
+            userId: req.userId, 
+            sessionId: 'reply-notification'
+        });
+        res.json({ count: adminCount + replyCount });
+    } catch (err) {
+        console.error('Error counting notifications:', err);
+        res.status(500).json({ message: 'Server Error counting notifications' });
+    }
+});
+// EXPIRY CHECK
+const scheduleExpiryCheck = async () => {
+    try {
+        const now = new Date();
+        const result = await User.updateMany({ subscriptionTier: { $ne: 'free' }, subscriptionEndDate: { $lt: now } }, { subscriptionTier: 'free', subscriptionEndDate: null });
+        if (result.modifiedCount > 0) { console.log(`🔄 Downgraded ${result.modifiedCount} expired users`); }
+    } catch (err) { console.error('Error in expiry check:', err); }
+};
+setTimeout(() => { scheduleExpiryCheck(); setInterval(scheduleExpiryCheck, 24 * 60 * 60 * 1000); }, 5000);
+
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => { console.log(`🚀 Server running on port ${PORT}`); });
