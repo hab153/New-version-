@@ -73,7 +73,7 @@
       z-index: 0;
     }
 
-    /* Connection Status Banner */
+    /* Connection Status Banner - Timer HIDDEN */
     .connection-status {
       background: rgba(255, 170, 0, 0.1);
       border-bottom: 1px solid var(--warning);
@@ -96,6 +96,11 @@
     }
     .connection-status a:hover {
       text-decoration: underline;
+    }
+    
+    /* Hide the timer text inside connection status */
+    .connection-status .timer-text {
+      display: none !important;
     }
 
     .topbar {
@@ -370,7 +375,7 @@
     </div>
   </header>
 
-  <!-- Connection Status Banner -->
+  <!-- Connection Status Banner - Timer Hidden -->
   <div id="connectionStatus" class="connection-status disconnected">
     ⚡ Checking email connection...
   </div>
@@ -418,7 +423,7 @@
     let isTyping = false;
     let currentGeneratedLeads = [];
     
-    // Connection timer variables (shared with dashboard)
+    // Connection timer variables (hidden but still works in background)
     let disconnectTimer = null;
     let timerInterval = null;
     let remainingTime = 0;
@@ -426,7 +431,7 @@
 
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
 
-    // ── Connection Timer Functions (Shared with Dashboard) ───────────────────
+    // ── Connection Timer Functions (Hidden) ───────────────────────────────────
     function formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
@@ -441,10 +446,9 @@
       if (isConnected && expiryTime) {
         const remaining = parseInt(expiryTime) - Date.now();
         if (remaining > 0) {
-          const remainingMins = Math.floor(remaining / 1000 / 60);
-          const remainingSecs = Math.floor((remaining % 60000) / 1000);
+          // Timer is hidden - no time display shown
           statusDiv.className = 'connection-status connected';
-          statusDiv.innerHTML = `🔌 Email Connected • Expires in ${remainingMins}:${remainingSecs.toString().padStart(2, '0')} • <a href="dashboard.html">Manage Connection →</a>`;
+          statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
           return true;
         }
       }
@@ -455,7 +459,7 @@
     }
 
     function startConnectionMonitor() {
-      // Update every second
+      // Update every second (but timer text is hidden)
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         updateConnectionStatusDisplay();
@@ -681,7 +685,7 @@
       
       // Check localStorage connection FIRST
       if (!isEmailConnected()) {
-        alert("⚠️ Email connection expired or not connected.\n\nPlease reconnect your email in the Dashboard (valid for 20 minutes).");
+        alert("⚠️ Email connection expired or not connected.\n\nPlease reconnect your email in the Dashboard.");
         window.location.href = 'dashboard.html?connect=true';
         return;
       }
@@ -703,7 +707,7 @@
         const user = await userRes.json();
 
         if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
-            alert("⚠️ Your email connection has expired (20 minute limit). Please reconnect.");
+            alert("⚠️ Your email connection has expired. Please reconnect.");
             localStorage.removeItem('emailExpiryTime');
             localStorage.removeItem('emailConnected');
             window.location.href = 'dashboard.html?connect=true';
@@ -739,7 +743,7 @@
         const data = await res.json();
         
         if (res.status === 401 || (data.message && data.message.toLowerCase().includes('token'))) {
-             alert("⚠️ Your email session has expired (20 minute limit). Please reconnect.");
+             alert("⚠️ Your email session has expired. Please reconnect.");
              localStorage.removeItem('emailExpiryTime');
              localStorage.removeItem('emailConnected');
              window.location.href = 'dashboard.html?connect=true';
@@ -758,7 +762,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert("Connection error. If your email session expired (20 minutes), please reconnect in Dashboard.");
+        alert("Connection error. If your email session expired, please reconnect in Dashboard.");
       } finally {
         btn.innerText = originalText;
         btn.disabled = false;
