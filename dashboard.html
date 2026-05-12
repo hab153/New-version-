@@ -905,6 +905,44 @@
       }
     }
 
+    // ── Check for Pending Emails After Reconnect ──────────────────────────────
+    async function checkAndSendPendingEmails() {
+        const pendingPayload = localStorage.getItem('pendingEmailPayload');
+        if (!pendingPayload) return;
+
+        // Wait a moment for connection to stabilize
+        setTimeout(async () => {
+            try {
+                const userRes = await fetch(`${BACKEND}/api/users/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const user = await userRes.json();
+
+                if (user.nylasIntegration && user.nylasIntegration.isConnected) {
+                    showToast("📤 Sending your pending message...", "info");
+                    
+                    const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: pendingPayload
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        localStorage.removeItem('pendingEmailPayload');
+                        showToast("✅ Pending message sent successfully!", "success");
+                    } else {
+                        showToast("❌ Failed to send pending message.", "error");
+                    }
+                }
+            } catch (err) {
+                console.error("Error sending pending email:", err);
+            }
+        }, 2000);
+    }
+
     // ── Initialize ───────────────────────────────────────────────────────────
     handleOAuthRedirect();
     loadCollapseState();
@@ -913,6 +951,9 @@
     checkEmailStatus();
     loadLeads();
     
+    // Check for pending emails on load
+    checkAndSendPendingEmails();
+
     // Start auto-refresh for new replies every 15 seconds
     autoRefreshInterval = setInterval(() => {
         loadNotifCount();
