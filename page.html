@@ -47,8 +47,7 @@
       font-family: var(--font-sans);
       font-size: 14px;
       line-height: 1.6;
-      display: flex;
-      flex-direction: column;
+      display: flex;      flex-direction: column;
       height: 100vh;
       position: relative;
     }
@@ -68,12 +67,12 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
     }
 
-    /* Connection Status Banner - Timer HIDDEN */
+    /* Connection Status Banner */
     .connection-status {
       background: rgba(255, 170, 0, 0.1);
       border-bottom: 1px solid var(--warning);
@@ -83,24 +82,24 @@
       text-align: center;
       position: relative;
       z-index: 10;
+      transition: all 0.3s ease;
     }
     .connection-status.connected {
-      color: var(--warning);
+      background: rgba(0, 230, 118, 0.1);
+      border-bottom-color: #00e676;
+      color: #00e676;
     }
     .connection-status.disconnected {
-      color: var(--text-3);
+      background: rgba(255, 77, 77, 0.1);
+      border-bottom-color: #ff4d4d;
+      color: #ff4d4d;
     }
     .connection-status a {
       color: var(--accent);
-      text-decoration: none;
+      text-decoration: none;      font-weight: 600;
     }
     .connection-status a:hover {
       text-decoration: underline;
-    }
-    
-    /* Hide the timer text inside connection status */
-    .connection-status .timer-text {
-      display: none !important;
     }
 
     .topbar {
@@ -146,8 +145,7 @@
       background-clip: text;
     }
 
-    .menu-wrap { position: relative; }
-    .menu-btn {
+    .menu-wrap { position: relative; }    .menu-btn {
       width: 34px; height: 34px; border-radius: var(--radius-sm);
       border: 1px solid var(--border); background: var(--bg-surface);
       cursor: pointer; display: flex; align-items: center;
@@ -196,7 +194,6 @@
       font-size: 9px; font-weight: 700; background: var(--bg-surface); margin-top: 4px;
     }
     .msg-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em; }
-
     /* MONTH 2: NOTIFICATION BANNER */
     .reply-notification {
       display: none;
@@ -246,8 +243,7 @@
       padding: 15px;
       margin-bottom: 15px;
       border-radius: 8px;
-      background: var(--bg-base);
-    }
+      background: var(--bg-base);    }
     .lead-info {
       font-weight: bold;
       color: var(--accent);
@@ -296,8 +292,7 @@
       border: none;
       border-radius: 8px;
       font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
+      cursor: pointer;      margin-top: 10px;
       transition: all 0.2s;
     }
     .send-all-btn:hover {
@@ -346,8 +341,7 @@
       border: 1px solid var(--border);
       opacity: 0.4;
       cursor: default;
-      transform: none;
-      box-shadow: none;
+      transform: none;      box-shadow: none;
     }
     .typing-indicator { display: flex; align-items: center; gap: 5px; padding: 13px 16px; background: var(--ai-bg); border: 1px solid var(--ai-border); border-radius: var(--radius-lg); width: fit-content; }
     .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
@@ -375,7 +369,7 @@
     </div>
   </header>
 
-  <!-- Connection Status Banner - Timer Hidden -->
+  <!-- Connection Status Banner -->
   <div id="connectionStatus" class="connection-status disconnected">
     ⚡ Checking email connection...
   </div>
@@ -396,7 +390,6 @@
     <div id="emailList"></div>
     <button id="sendAllBtn" class="send-all-btn" onclick="submitBatchSend()">✅ Connect & Send All</button>
   </div>
-
   <div class="input-bar" id="inputBar">
     <div class="input-inner">
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
@@ -422,68 +415,8 @@
     let conversationHistory = [];
     let isTyping = false;
     let currentGeneratedLeads = [];
-    
-    // Connection timer variables (hidden but still works in background)
-    let disconnectTimer = null;
-    let timerInterval = null;
-    let remainingTime = 0;
-    const CONNECTION_DURATION_MINUTES = 20;
 
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
-
-    // ── Connection Timer Functions (Hidden) ───────────────────────────────────
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateConnectionStatusDisplay() {
-      const statusDiv = document.getElementById('connectionStatus');
-      const expiryTime = localStorage.getItem('emailExpiryTime');
-      const isConnected = localStorage.getItem('emailConnected') === 'true';
-      
-      if (isConnected && expiryTime) {
-        const remaining = parseInt(expiryTime) - Date.now();
-        if (remaining > 0) {
-          // Timer is hidden - no time display shown
-          statusDiv.className = 'connection-status connected';
-          statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
-          return true;
-        }
-      }
-      
-      statusDiv.className = 'connection-status disconnected';
-      statusDiv.innerHTML = `⚠️ No active email connection • <a href="dashboard.html">Connect Gmail/Outlook</a> to send emails`;
-      return false;
-    }
-
-    function startConnectionMonitor() {
-      // Update every second (but timer text is hidden)
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        updateConnectionStatusDisplay();
-      }, 1000);
-    }
-
-    function stopConnectionMonitor() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-    }
-
-    // Check if email is connected (from localStorage)
-    function isEmailConnected() {
-      const expiryTime = localStorage.getItem('emailExpiryTime');
-      const isConnected = localStorage.getItem('emailConnected') === 'true';
-      
-      if (isConnected && expiryTime) {
-        const remaining = parseInt(expiryTime) - Date.now();
-        return remaining > 0;
-      }
-      return false;
-    }
 
     // ── DOM Elements ─────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', async () => {
@@ -506,9 +439,7 @@
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
       await checkPlanStatus();
-      
-      // Start connection monitor
-      startConnectionMonitor();
+            // Update connection status banner
       updateConnectionStatusDisplay();
 
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
@@ -517,6 +448,28 @@
         await loadHistoryFromSession();
       }
     });
+
+    // ── Connection Status Display (Simplified) ───────────────────────────────
+    async function updateConnectionStatusDisplay() {
+      const statusDiv = document.getElementById('connectionStatus');
+      try {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
+            statusDiv.className = 'connection-status connected';
+            statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
+          } else {
+            statusDiv.className = 'connection-status disconnected';
+            statusDiv.innerHTML = `⚠️ No active email connection • <a href="dashboard.html">Connect Gmail/Outlook</a> to send emails`;
+          }
+        }
+      } catch (err) {
+        console.error('Error checking connection status:', err);
+      }
+    }
 
     async function sendMessage() {
       const text = msgInput.value.trim();
@@ -535,8 +488,7 @@
       showTyping();
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
-          method: 'POST',
-          headers: { 
+          method: 'POST',          headers: { 
             'Content-Type': 'application/json', 
             'Authorization': `Bearer ${token}`
           },
@@ -585,8 +537,7 @@
             
             for (let msg of msgs) {
               if (msg.role === 'ai') {
-                appendMessage('ai', msg.content);
-                conversationHistory.push({ role: 'assistant', content: msg.content });
+                appendMessage('ai', msg.content);                conversationHistory.push({ role: 'assistant', content: msg.content });
               } else {
                 appendMessage('user', msg.content);
                 conversationHistory.push({ role: 'user', content: msg.content });
@@ -635,8 +586,7 @@
       }
 
       const row = document.createElement('div');
-      row.className = `msg-row ${role}`;
-      const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      row.className = `msg-row ${role}`;      const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
       row.innerHTML = `<div class="avatar">${role === 'ai' ? 'AI' : 'ME'}</div>
         <div class="bubble-wrap"><div class="bubble">${escapeHTML(content)}</div><div class="msg-time">${timeStr}</div></div>`;
       messagesContainer.appendChild(row);
@@ -683,16 +633,8 @@
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
       
-      // Check localStorage connection FIRST
-      if (!isEmailConnected()) {
-        alert("⚠️ Email connection expired or not connected.\n\nPlease reconnect your email in the Dashboard.");
-        window.location.href = 'dashboard.html?connect=true';
-        return;
-      }
-      
       btn.innerText = "Verifying Connection...";
       btn.disabled = true;
-
       try {
         const userRes = await fetch(`${BACKEND}/api/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -706,16 +648,7 @@
 
         const user = await userRes.json();
 
-        if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
-            alert("⚠️ Your email connection has expired. Please reconnect.");
-            localStorage.removeItem('emailExpiryTime');
-            localStorage.removeItem('emailConnected');
-            window.location.href = 'dashboard.html?connect=true';
-            return;
-        }
-
-        btn.innerText = "Sending Emails...";
-
+        // Prepare Payload
         const payload = {
             leads: currentGeneratedLeads.map((lead, index) => {
                 const editedEmail = document.getElementById(`email-${index}`).value;
@@ -731,6 +664,16 @@
             })
         };
 
+        // If Not Connected, Save to Pending Queue and Redirect
+        if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
+            localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+            alert("⚠️ Your email connection has expired. Please reconnect. Your message will send automatically once connected.");
+            window.location.href = 'dashboard.html?connect=true';
+            return;
+        }
+
+        btn.innerText = "Sending Emails...";
+
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
             headers: {
@@ -741,11 +684,10 @@
         });
 
         const data = await res.json();
-        
-        if (res.status === 401 || (data.message && data.message.toLowerCase().includes('token'))) {
-             alert("⚠️ Your email session has expired. Please reconnect.");
-             localStorage.removeItem('emailExpiryTime');
-             localStorage.removeItem('emailConnected');
+                // If Token Expired During Send, Save to Pending and Redirect
+        if (res.status === 401 || (data.error === 'NYLAS_DISCONNECTED')) {
+             localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+             alert("⚠️ Your email session expired during send. Please reconnect. Your message will send automatically.");
              window.location.href = 'dashboard.html?connect=true';
              return;
         }
@@ -789,10 +731,9 @@
     
     function escapeHTML(str) { 
       if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'); 
+      return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/\n/g, '<br>'); 
     }
-    
-    function scrollToBottom() { 
+        function scrollToBottom() { 
       if (chatArea) chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); 
     }
     
@@ -825,4 +766,4 @@
     }
   </script>
 </body>
-  </html>
+        </html>
