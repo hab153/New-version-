@@ -47,8 +47,7 @@
       flex: 1;
       height: 54px;
       background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
+      border: none;      border-bottom: 2px solid transparent;
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 12px;
@@ -97,8 +96,7 @@
       inset: 0;
       background: var(--bg-void);
       display: flex;
-      flex-direction: column;
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      flex-direction: column;      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
       z-index: 10;
     }
     .view-list.hidden {
@@ -147,8 +145,7 @@
       transition: background 0.15s;
       display: flex;
       align-items: center;
-      gap: 13px;
-    }
+      gap: 13px;    }
     .contact-item:hover  { background: var(--bg-surface); }
     .contact-item:active { background: var(--bg-raised); }
 
@@ -197,8 +194,7 @@
       gap: 8px;
     }
     .contact-preview {
-      font-size: 12px;
-      color: var(--text-3);
+      font-size: 12px;      color: var(--text-3);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -247,8 +243,7 @@
       background: var(--bg-raised);
       border: 1px solid var(--border);
       border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;      cursor: pointer;
       transition: all 0.2s;
       flex-shrink: 0;
     }
@@ -298,7 +293,6 @@
       transition: all 0.2s;
     }
     .action-btn:hover { border-color: var(--accent); color: var(--accent); }
-
     /* ── Messages ── */
     .messages-container {
       flex: 1;
@@ -347,8 +341,7 @@
       background: var(--bg-base);
       border-top: 1px solid var(--border);
       display: flex;
-      gap: 10px;
-      align-items: flex-end;
+      gap: 10px;      align-items: flex-end;
       flex-shrink: 0;
     }
     .reply-input-area textarea {
@@ -397,7 +390,6 @@
       z-index: 5;
     }
     .view-admin.active { display: flex; }
-
     .empty-state {
       display: flex;
       flex-direction: column;
@@ -447,7 +439,6 @@
         <div style="padding:24px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:12px;">Loading...</div>
       </div>
     </div>
-
     <!-- VIEW 2: Chat -->
     <div id="viewChat" class="view-chat">
       <div class="chat-header">
@@ -497,8 +488,7 @@
           <svg viewBox="0 0 24 24">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="9" cy="7" r="4" stroke-width="1.8"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>          </svg>
         </div>
         <h3>Skyline AA-1 Team</h3>
         <p>Admin notifications and team messages<br>will appear here.</p>
@@ -547,8 +537,7 @@
     // ── Tab Switch ────────────────────────────────────────────────────────────
     function switchTab(tab, btn) {
       document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      if (tab === 'leads') {
+      btn.classList.add('active');      if (tab === 'leads') {
         document.getElementById('viewList').classList.remove('hidden');
         document.getElementById('viewAdmin').classList.remove('active');
         closeChat();
@@ -597,8 +586,7 @@
       `).join('');
     }
 
-    function filterContacts(query) {
-      if (!query.trim()) { renderContacts(allContacts); return; }
+    function filterContacts(query) {      if (!query.trim()) { renderContacts(allContacts); return; }
       const q = query.toLowerCase();
       renderContacts(allContacts.filter(c =>
         (c.name || '').toLowerCase().includes(q) ||
@@ -647,8 +635,7 @@
           <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
             ${escapeHtml(msg.content)}
             <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-          </div>
-        `).join('');
+          </div>        `).join('');
 
         container.scrollTop = container.scrollHeight;
       } catch (err) {
@@ -669,6 +656,7 @@
 
       const btn = document.querySelector('.send-btn');
       btn.disabled = true;
+      btn.innerText = "Sending...";
 
       try {
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
@@ -689,14 +677,14 @@
 
         const data = await res.json();
 
-        if (res.status === 401 && data.error === 'NYLAS_DISCONNECTED') {
-          alert("Your email session has expired. Redirecting to reconnect...");
+        // Handle Disconnection (Server-Side Check)
+        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+          alert("⚠️ Your email session has expired. Please reconnect.");
           window.location.href = 'dashboard.html?connect=true';
           return;
         }
 
-        if (data.success) {
-          document.getElementById('replyText').value = '';
+        if (data.success) {          document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '42px';
           openChat(currentLeadId, currentLeadName, currentLeadEmail);
         } else {
@@ -706,6 +694,7 @@
         alert("Connection error");
       } finally {
         btn.disabled = false;
+        btn.innerText = "Send";
       }
     }
 
