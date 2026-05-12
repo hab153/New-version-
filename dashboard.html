@@ -47,8 +47,7 @@
       border-radius: 8px;
       font-family: var(--font-mono);
       font-size: 13px;
-      font-weight: 600;
-      z-index: 9999;
+      font-weight: 600;      z-index: 9999;
       display: none;
       animation: slideDown 0.3s ease;
     }
@@ -90,9 +89,6 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
-    /* Timer Display - HIDDEN */
-    .connection-timer { display: none !important; }
-
     /* ── Notification Bell (SVG-based) ── */
     .notif-wrapper { display: flex; align-items: center; gap: 8px; }
 
@@ -100,8 +96,7 @@
       background: none;
       border: none;
       cursor: pointer;
-      position: relative;
-      padding: 8px;
+      position: relative;      padding: 8px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -150,7 +145,6 @@
 
     /* Main Container */
     .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
-
     .section-title {
       font-family: var(--font-mono);
       font-size: 10px;
@@ -200,8 +194,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .cc-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 24px;
+      display: flex; justify-content: space-between; align-items: center;      padding: 20px 24px;
       background: var(--bg-raised);
       border-bottom: 1px solid var(--border);
       cursor: pointer; user-select: none;
@@ -250,8 +243,7 @@
 
     .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .lead-table th {
-      text-align: left; padding: 12px; color: var(--text-3);
-      border-bottom: 1px solid var(--border);
+      text-align: left; padding: 12px; color: var(--text-3);      border-bottom: 1px solid var(--border);
       font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
     }
     .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
@@ -300,8 +292,7 @@
       min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
     }
     .send-reply-btn {
-      margin-top: 15px; width: 100%; padding: 12px;
-      background: var(--accent); color: #000; border: none;
+      margin-top: 15px; width: 100%; padding: 12px;      background: var(--accent); color: #000; border: none;
       border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
     }
     .send-reply-btn:hover { background: #d4ff70; }
@@ -350,8 +341,7 @@
     .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
     .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
     .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
-    .current-plan-tag {
-      display: inline-block; font-size: 10px;
+    .current-plan-tag {      display: inline-block; font-size: 10px;
       background: rgba(200, 255, 87, 0.1); color: var(--accent);
       padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
     }
@@ -394,19 +384,13 @@
           <span class="cc-title">Email Infrastructure</span>
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
-          <div id="connectButtonContainer" style="display:flex; align-items:center; gap:8px;">
-            <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
-              Connect Gmail/Outlook
-            </button>
-            <div id="connectionTimer" class="connection-timer">
-              ⏱️ <span></span> remaining
-            </div>
-          </div>
+          <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
+            Connect Gmail/Outlook
+          </button>
           <div class="toggle-button">
             <div class="toggle-button-circle">
               <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>              </svg>
             </div>
           </div>
         </div>
@@ -455,8 +439,7 @@
     <div class="pricing-header">
       <h2>Choose Your Power Level</h2>
       <p>Select the plan that fits your ambition. Upgrade anytime.</p>
-    </div>
-    <div class="pricing-cards">
+    </div>    <div class="pricing-cards">
 
       <div class="plan-card">
         <div class="plan-name">Free</div>
@@ -505,7 +488,6 @@
       <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
       <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
     </div>
-
     <div class="section-title">Skyline System</div>
     <div class="menu-grid">
       <a href="Privacy.html" class="menu-item"><span>Privacy Policy</span><span class="arrow">›</span></a>
@@ -551,16 +533,11 @@
     let currentReplyEmail = null;
     let autoRefreshInterval = null;
     let lastReplyCount = 0;
-    let disconnectTimer = null;
-    let timerInterval = null;
-    let remainingTime = 0;
-    const CONNECTION_DURATION_MINUTES = 20;
 
     // ── Toggle Command Center ────────────────────────────────────────────────
     function toggleCommandCenter() {
       const cc = document.getElementById('commandCenter');
-      cc.classList.toggle('collapsed');
-      localStorage.setItem('commandCenterCollapsed', cc.classList.contains('collapsed'));
+      cc.classList.toggle('collapsed');      localStorage.setItem('commandCenterCollapsed', cc.classList.contains('collapsed'));
     }
 
     function loadCollapseState() {
@@ -582,70 +559,15 @@
       setTimeout(() => { toast.style.display = 'none'; }, duration);
     }
 
-    // ── Timer Functions ──────────────────────────────────────────────────────
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateTimerDisplay() {
-      const timerElement = document.getElementById('connectionTimer');
-      if (timerElement && remainingTime > 0) {
-        const timeSpan = timerElement.querySelector('span');
-        if (timeSpan) timeSpan.textContent = formatTime(remainingTime);
-      }
-    }
-
-    function startDisconnectTimer(minutes) {
-      if (timerInterval) clearInterval(timerInterval);
-      if (disconnectTimer) clearTimeout(disconnectTimer);
-      remainingTime = minutes * 60;
-      updateTimerDisplay();
-      const expiryTime = Date.now() + (minutes * 60 * 1000);
-      localStorage.setItem('emailExpiryTime', expiryTime.toString());
-      localStorage.setItem('emailConnected', 'true');
-      timerInterval = setInterval(() => {
-        if (remainingTime > 0) {
-          remainingTime--;
-          updateTimerDisplay();
-          localStorage.setItem('emailExpiryTime', (Date.now() + remainingTime * 1000).toString());
-        }
-      }, 1000);
-      disconnectTimer = setTimeout(() => { autoDisconnectEmail(); }, minutes * 60 * 1000);
-    }
-
-    function stopDisconnectTimer() {
-      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-      if (disconnectTimer) { clearTimeout(disconnectTimer); disconnectTimer = null; }
-    }
-
-    async function autoDisconnectEmail() {
-      try {
-        stopDisconnectTimer();
-        await fetch(`${BACKEND}/api/auth/disconnect`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      } catch (err) { console.error('Auto-disconnect error:', err); }
-      const btn = document.getElementById('connectEmailBtn');
-      if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
-      localStorage.removeItem('emailConnectedAt');
-      localStorage.removeItem('emailExpiryTime');
-      localStorage.removeItem('emailConnected');
-      showToast('🔌 Email connection expired after 20 minutes. Please reconnect to continue.', 'warning', 8000);
-      await checkEmailStatus();
-    }
-
+    // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
       const connected = params.get('connected');
       const error     = params.get('error');
+
       if (connected === 'true') {
-        showToast('✅ Gmail/Outlook connected successfully! Connection will auto-disconnect after 20 minutes.', 'success', 8000);
+        showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000);
         setConnectedState();
-        startDisconnectTimer(CONNECTION_DURATION_MINUTES);
-        localStorage.setItem('emailConnectedAt', Date.now().toString());
         window.history.replaceState({}, document.title, '/dashboard.html');
       } else if (connected === 'false') {
         const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
@@ -654,26 +576,36 @@
       }
     }
 
+    // ── Set button to connected state ────────────────────────────────────────
     function setConnectedState() {
       const btn = document.getElementById('connectEmailBtn');
-      if (btn) { btn.innerText = '✅ Connected'; btn.classList.add('connected'); }
+      if (btn) {
+        btn.innerText = '✅ Connected';
+        btn.classList.add('connected');
+      }
     }
 
-    async function connectEmail() {
-      const btn = document.getElementById('connectEmailBtn');
+    // ── Connect Email ────────────────────────────────────────────────────────
+    async function connectEmail() {      const btn = document.getElementById('connectEmailBtn');
       btn.innerText = 'Connecting...';
       btn.disabled  = true;
+
       try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.message || `Server error ${res.status}`);
         }
+
         const data = await res.json();
-        if (data.url) { window.location.href = data.url; }
-        else throw new Error('No URL returned from server');
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No URL returned from server');
+        }
       } catch (err) {
         console.error('Error getting Nylas URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
@@ -682,24 +614,9 @@
       }
     }
 
+    // ── Check Email Connection Status (No Timer) ─────────────────────────────
     async function checkEmailStatus() {
       try {
-        const expiryTime = localStorage.getItem('emailExpiryTime');
-        const isConnected = localStorage.getItem('emailConnected') === 'true';
-        if (isConnected && expiryTime) {
-          const remaining = parseInt(expiryTime) - Date.now();
-          if (remaining > 0) {
-            setConnectedState();
-            startDisconnectTimer(remaining / 1000 / 60);
-            return;
-          } else {
-            const btn = document.getElementById('connectEmailBtn');
-            if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
-            localStorage.removeItem('emailConnectedAt');
-            localStorage.removeItem('emailExpiryTime');
-            localStorage.removeItem('emailConnected');
-          }
-        }
         const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -707,39 +624,31 @@
           const user = await res.json();
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
             setConnectedState();
-            const connectedAt = localStorage.getItem('emailConnectedAt');
-            if (connectedAt) {
-              const elapsedMinutes = (Date.now() - parseInt(connectedAt)) / 1000 / 60;
-              if (elapsedMinutes < CONNECTION_DURATION_MINUTES) {
-                startDisconnectTimer(CONNECTION_DURATION_MINUTES - elapsedMinutes);
-              } else {
-                await autoDisconnectEmail();
-              }
-            } else {
-              startDisconnectTimer(CONNECTION_DURATION_MINUTES);
-              localStorage.setItem('emailConnectedAt', Date.now().toString());
-            }
           } else {
             const btn = document.getElementById('connectEmailBtn');
-            if (btn && btn.classList.contains('connected')) {
+            if (btn) {
               btn.innerText = 'Connect Gmail/Outlook';
               btn.classList.remove('connected');
             }
           }
         }
-      } catch (err) { console.error('Error checking email status:', err); }
+      } catch (err) {
+        console.error('Error checking email status:', err);
+      }
     }
-
-    // ── Load Leads (no Action column) ────────────────────────────────────────
+    // ── Load Leads ───────────────────────────────────────────────────────────
     async function loadLeads() {
       try {
         const res = await fetch(`${BACKEND}/api/leads`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (!res.ok) throw new Error(`Status ${res.status}`);
+
         const leads = await res.json();
         const tbody = document.getElementById('leadList');
-
+        
+        // Update stats
         document.getElementById('totalLeads').innerText = leads.length;
         const interested = leads.filter(l => l.status === 'Interested').length;
         document.getElementById('interestedCount').innerText = interested;
@@ -753,6 +662,7 @@
           tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
+            
             return `
               <tr>
                 <td>${escapeHtml(lead.name || '—')}</td>
@@ -769,26 +679,32 @@
       }
     }
 
+    // ── Safe HTML escape ─────────────────────────────────────────────────────
     function escapeHtml(str) {
       if (!str) return '';
       const div = document.createElement('div');
       div.appendChild(document.createTextNode(str));
-      return div.innerHTML;
-    }
+      return div.innerHTML;    }
 
+    // ── Open Reply Modal with Full Conversation History ──────────────────────
     async function openReplyModal(leadId, name, email) {
       currentReplyLeadId = leadId;
       currentReplyEmail = email;
+      
       document.getElementById('modalLeadName').innerText = name;
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
       document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
+      
       try {
-        const res = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${BACKEND}/api/leads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         const leads = await res.json();
         const lead = leads.find(l => l._id === leadId);
+        
         if (lead && lead.replies && lead.replies.length > 0) {
-          document.getElementById('conversationHistory').innerHTML = lead.replies.slice().reverse().map(reply => {
+          const conversationHtml = lead.replies.slice().reverse().map(reply => {
             const isLead = reply.from === 'lead';
             const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
             return `
@@ -801,97 +717,158 @@
               </div>
             `;
           }).join('');
+          document.getElementById('conversationHistory').innerHTML = conversationHtml;
         } else {
           document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
         }
       } catch (err) {
+        console.error('Error loading conversation:', err);
         document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
       }
     }
 
+    // ── Close Reply Modal ────────────────────────────────────────────────────
     function closeReplyModal() {
       document.getElementById('replyModal').style.display = 'none';
       currentReplyLeadId = null;
       currentReplyEmail = null;
     }
-
+    // ── Send Direct Reply ────────────────────────────────────────────────────
     async function sendDirectReply() {
       const btn = document.getElementById('sendReplyBtn');
       const text = document.getElementById('replyTextArea').value.trim();
-      if (!text) { showToast("Please type a reply.", "error"); return; }
-      if (!currentReplyEmail) { showToast("Error: No email address found.", "error"); return; }
+      
+      if (!text) {
+        showToast("Please type a reply.", "error");
+        return;
+      }
+      if (!currentReplyEmail) {
+        showToast("Error: No email address found.", "error");
+        return;
+      }
+
       btn.disabled = true;
       btn.innerText = "Sending...";
+
       try {
         const payload = {
-          leads: [{ name: document.getElementById('modalLeadName').innerText, email: currentReplyEmail, company: '',
-            messages: [{ subject: "Re: Your inquiry about Skyline AA-1", body: text }] }]
+          leads: [{
+            name: document.getElementById('modalLeadName').innerText,
+            email: currentReplyEmail,
+            company: '',
+            messages: [{ 
+              subject: "Re: Your inquiry about Skyline AA-1", 
+              body: text 
+            }]
+          }]
         };
+        
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify(payload)
         });
+
         const data = await res.json();
-        if (data.success) { showToast("✅ Reply sent successfully!", "success"); closeReplyModal(); loadLeads(); }
-        else showToast("❌ Failed to send reply.", "error");
+        
+        if (data.success) {
+          showToast("✅ Reply sent successfully!", "success");
+          closeReplyModal();
+          loadLeads(); // Refresh table to update status
+        } else {
+          showToast("❌ Failed to send reply.", "error");
+        }
       } catch (err) {
-        showToast("❌ Connection error.", "error");
+        console.error(err);        showToast("❌ Connection error.", "error");
       } finally {
         btn.disabled = false;
         btn.innerText = "🚀 Send Reply";
       }
     }
 
+    // ── Upgrade Logic ────────────────────────────────────────────────────────
     async function initiateUpgrade(planType) {
       const btn = event.target;
       const originalText = btn.innerText;
+
       try {
         btn.innerText = 'Connecting...';
         btn.disabled  = true;
+
         const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ planType })
         });
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || `Server Error: ${response.status}`);
         }
         const data = await response.json();
-        if (data.link) { btn.innerText = 'Redirecting...'; window.location.href = data.link; }
-        else throw new Error('No payment link received from server.');
+        if (data.link) {
+          btn.innerText = 'Redirecting...';
+          window.location.href = data.link;
+        } else {
+          throw new Error('No payment link received from server.');
+        }
       } catch (err) {
+        console.error('Upgrade Error:', err);
         showToast(`❌ ${err.message}`, 'error');
-        if (btn) { btn.innerText = originalText; btn.disabled = false; }
+        if (btn) {
+          btn.innerText = originalText;
+          btn.disabled  = false;
+        }
       }
     }
 
+    // ── Check Current Plan ───────────────────────────────────────────────────
     async function checkCurrentPlan() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${BACKEND}/api/users/me`, {          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (res.ok) {
           const user = await res.json();
           const plan = user.subscriptionTier || 'free';
+
           if (plan === 'go') {
             document.getElementById('goTag').style.display = 'inline-block';
             const goBtn = document.querySelector('.btn-go');
-            if (goBtn) { goBtn.innerText = 'Current Plan'; goBtn.disabled = true; goBtn.classList.add('btn-free'); goBtn.classList.remove('btn-go'); }
+            if (goBtn) {
+              goBtn.innerText = 'Current Plan';
+              goBtn.disabled  = true;
+              goBtn.classList.add('btn-free');
+              goBtn.classList.remove('btn-go');
+            }
           } else if (plan === 'pro') {
             document.getElementById('proTag').style.display = 'inline-block';
             const proBtn = document.querySelector('.btn-pro');
-            if (proBtn) { proBtn.innerText = 'Current Plan'; proBtn.disabled = true; proBtn.style.background = '#333'; proBtn.style.color = '#888'; proBtn.style.boxShadow = 'none'; }
+            if (proBtn) {
+              proBtn.innerText = 'Current Plan';
+              proBtn.disabled  = true;
+              proBtn.style.background = '#333';
+              proBtn.style.color      = '#888';
+              proBtn.style.boxShadow  = 'none';
+            }
           }
         }
-      } catch (err) { console.error('Failed to check plan:', err); }
+      } catch (err) {
+        console.error('Failed to check plan:', err);
+      }
     }
 
+    // ── Notifications ────────────────────────────────────────────────────────
     function handleNotifClick() {
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       window.location.href = 'notifications.html';
     }
 
-    // ── Notification Badge (capped at 10+) ───────────────────────────────────
     async function loadNotifCount() {
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, {
@@ -901,60 +878,31 @@
           const data  = await res.json();
           const badge = document.getElementById('notifBadge');
           const btn   = document.getElementById('notifBtn');
+
           const hasServerMessages = data.count > 0;
-          const lastViewTime      = localStorage.getItem('lastNotifViewTime');
-          const shouldShowBadge   = hasServerMessages && !lastViewTime;
+          const lastViewTime      = localStorage.getItem('lastNotifViewTime');          const shouldShowBadge   = hasServerMessages && !lastViewTime;
 
           if (shouldShowBadge) {
             badge.style.display = 'flex';
-            // Cap display at 10+
-            badge.textContent = data.count > 10 ? '10+' : data.count;
+            badge.textContent   = data.count > 9 ? '9+' : data.count;
             btn.classList.add('has-notifs');
           } else {
             badge.style.display = 'none';
             btn.classList.remove('has-notifs');
           }
         }
-      } catch (err) { console.error('Failed to load notifications:', err); }
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      }
     }
 
+    // ── Logout ───────────────────────────────────────────────────────────────
     function handleLogout() {
       if (confirm('Are you sure you want to sign out?')) {
         localStorage.removeItem('token');
         localStorage.removeItem('lastNotifViewTime');
-        localStorage.removeItem('emailConnectedAt');
-        localStorage.removeItem('emailExpiryTime');
-        localStorage.removeItem('emailConnected');
         window.location.href = 'login.html';
       }
-    }
-
-    async function checkForNewReplies() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/replies`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const newReplyCount = data.count;
-          document.getElementById('refreshIndicator').innerHTML = `Last updated: ${new Date().toLocaleTimeString()}`;
-
-          if (newReplyCount > lastReplyCount && lastReplyCount !== 0) {
-            const newCount = newReplyCount - lastReplyCount;
-            showToast(`📬 ${newCount} new repl${newCount === 1 ? 'y' : 'ies'} received!`, 'info', 5000);
-
-            const notifBtn = document.getElementById('notifBtn');
-            notifBtn.classList.add('has-notifs');
-            const badge = document.getElementById('notifBadge');
-            badge.style.display = 'flex';
-            // Cap display at 10+
-            badge.textContent = newReplyCount > 10 ? '10+' : newReplyCount;
-
-            loadLeads();
-          }
-          lastReplyCount = newReplyCount;
-        }
-      } catch (err) { console.error('Error checking replies:', err); }
     }
 
     // ── Initialize ───────────────────────────────────────────────────────────
@@ -964,8 +912,13 @@
     checkCurrentPlan();
     checkEmailStatus();
     loadLeads();
-    checkForNewReplies();
-    autoRefreshInterval = setInterval(checkForNewReplies, 15000);
+    
+    // Start auto-refresh for new replies every 15 seconds
+    autoRefreshInterval = setInterval(() => {
+        loadNotifCount();
+        // Optional: reload leads if you want real-time stats
+        // loadLeads(); 
+    }, 15000);
   </script>
 </body>
-            </html>
+  </html>
