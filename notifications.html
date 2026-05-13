@@ -280,7 +280,32 @@
       font-family: var(--font-mono);
     }
 
-    .chat-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .chat-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+    
+    /* Robot Button Styles */
+    .robot-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      padding: 6px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+      display: flex;      align-items: center;
+      justify-content: center;
+    }
+    .robot-btn.active {
+      background: rgba(0, 210, 255, 0.15);
+      border-color: var(--accent-go);
+      color: var(--accent-go);
+      box-shadow: 0 0 8px rgba(0, 210, 255, 0.2);
+    }
+    .robot-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     .action-btn {
       background: none;
       border: 1px solid var(--border);
@@ -293,6 +318,7 @@
       transition: all 0.2s;
     }
     .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
     /* ── Messages ── */
     .messages-container {
       flex: 1;
@@ -315,8 +341,7 @@
     }
     .message-bubble.lead {
       align-self: flex-start;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
+      background: var(--bg-surface);      border: 1px solid var(--border);
       border-bottom-left-radius: 3px;
       color: var(--text-1);
     }
@@ -341,8 +366,13 @@
       background: var(--bg-base);
       border-top: 1px solid var(--border);
       display: flex;
-      gap: 10px;      align-items: flex-end;
+      gap: 10px;
+      align-items: flex-end;
       flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    .reply-input-area.hidden {
+      display: none;
     }
     .reply-input-area textarea {
       flex: 1;
@@ -360,8 +390,7 @@
       transition: border-color 0.2s;
       overflow-y: auto;
       outline: none;
-    }
-    .reply-input-area textarea:focus { border-color: rgba(200,255,87,0.3); }
+    }    .reply-input-area textarea:focus { border-color: rgba(200,255,87,0.3); }
     .reply-input-area textarea::placeholder { color: var(--text-3); }
 
     .send-btn {
@@ -410,8 +439,66 @@
       border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 4px;
+    }    .empty-icon svg { width: 24px; height: 24px; stroke: var(--text-3); fill: none; }
+
+    /* ── Auto-Reply Modal ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
     }
-    .empty-icon svg { width: 24px; height: 24px; stroke: var(--text-3); fill: none; }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h3 { margin: 0; color: var(--accent); }
+    .close-modal {
+      background: none; border: none; color: var(--text-3);
+      font-size: 24px; cursor: pointer;
+    }
+    .modal-body textarea {
+      width: 100%;
+      height: 150px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-1);
+      padding: 12px;
+      border-radius: 8px;
+      resize: vertical;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;    }
+    .save-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .save-btn:hover { background: #d4ff70; }
   </style>
 </head>
 <body>
@@ -439,6 +526,7 @@
         <div style="padding:24px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:12px;">Loading...</div>
       </div>
     </div>
+
     <!-- VIEW 2: Chat -->
     <div id="viewChat" class="view-chat">
       <div class="chat-header">
@@ -449,10 +537,13 @@
         </button>
         <div class="chat-avatar" id="chatAvatar">?</div>
         <div class="chat-info">
-          <h3 id="chatName">Customer Name</h3>
-          <p id="chatEmail">email@example.com</p>
+          <h3 id="chatName">Customer Name</h3>          <p id="chatEmail">email@example.com</p>
         </div>
         <div class="chat-actions">
+          <!-- Robot Button -->
+          <button class="robot-btn" id="robotBtn" onclick="toggleAutoReply()" title="Auto-Reply">🤖</button>
+          <!-- Edit Details Button (Hidden by default) -->
+          <button class="action-btn" id="editDetailsBtn" onclick="openInstructionsModal()" style="display:none;">Edit Details</button>
           <button class="action-btn" onclick="renameCustomer()">✎ Rename</button>
         </div>
       </div>
@@ -469,7 +560,7 @@
         </div>
       </div>
 
-      <div class="reply-input-area">
+      <div class="reply-input-area" id="replyInputArea">
         <textarea id="replyText" placeholder="Type a reply…"
           oninput="autoResize(this)"
           onkeydown="handleKey(event)"></textarea>
@@ -488,13 +579,32 @@
           <svg viewBox="0 0 24 24">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="9" cy="7" r="4" stroke-width="1.8"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>          </svg>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
         <h3>Skyline AA-1 Team</h3>
         <p>Admin notifications and team messages<br>will appear here.</p>
       </div>
     </div>
+  </div>
 
+  <!-- Auto-Reply Instructions Modal -->
+  <div class="modal-overlay" id="instructionsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Auto-Reply Instructions</h3>
+        <button class="close-modal" onclick="closeInstructionsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-2); font-size: 12px; margin-bottom: 8px;">
+          Define how the AI should respond to this customer. If the customer asks something outside these instructions, the AI will remain silent.
+        </p>
+        <textarea id="instructionsText" placeholder="E.g., Be professional, offer a 10% discount if they hesitate, and always sign off with 'Best Regards'..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="save-btn" onclick="saveAutoReplyInstructions()">Save & Activate</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -506,6 +616,8 @@
     let currentLeadName = "";
     let currentLeadEmail = "";
     let allContacts = [];
+    let isAutoReplyEnabled = false;
+    let autoReplyInstructions = "";
 
     document.addEventListener('DOMContentLoaded', loadContacts);
 
@@ -523,8 +635,7 @@
     function handleKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendReply();
-      }
+        sendReply();      }
     }
 
     function escapeHtml(str) {
@@ -537,7 +648,8 @@
     // ── Tab Switch ────────────────────────────────────────────────────────────
     function switchTab(tab, btn) {
       document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');      if (tab === 'leads') {
+      btn.classList.add('active');
+      if (tab === 'leads') {
         document.getElementById('viewList').classList.remove('hidden');
         document.getElementById('viewAdmin').classList.remove('active');
         closeChat();
@@ -572,8 +684,7 @@
       list.innerHTML = contacts.map(c => `
         <div class="contact-item" onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
           <div class="contact-avatar">${getInitials(c.name)}</div>
-          <div class="contact-body">
-            <div class="contact-row1">
+          <div class="contact-body">            <div class="contact-row1">
               <span class="contact-name">${escapeHtml(c.name)}</span>
               <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
             </div>
@@ -586,7 +697,8 @@
       `).join('');
     }
 
-    function filterContacts(query) {      if (!query.trim()) { renderContacts(allContacts); return; }
+    function filterContacts(query) {
+      if (!query.trim()) { renderContacts(allContacts); return; }
       const q = query.toLowerCase();
       renderContacts(allContacts.filter(c =>
         (c.name || '').toLowerCase().includes(q) ||
@@ -617,6 +729,10 @@
         });
         const data = await res.json();
 
+        // Update Auto-Reply State
+        isAutoReplyEnabled = data.lead.autoReplyEnabled || false;
+        autoReplyInstructions = data.lead.autoReplyInstructions || "";
+        updateAutoReplyUI();
         if (!data.messages || data.messages.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
@@ -635,7 +751,8 @@
           <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
             ${escapeHtml(msg.content)}
             <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-          </div>        `).join('');
+          </div>
+        `).join('');
 
         container.scrollTop = container.scrollHeight;
       } catch (err) {
@@ -647,6 +764,91 @@
     function closeChat() {
       document.getElementById('viewChat').classList.remove('active');
       currentLeadId = null;
+    }
+
+    // ── Auto-Reply Logic ──────────────────────────────────────────────────────
+    function toggleAutoReply() {
+      if (isAutoReplyEnabled) {
+        // Turn Off
+        isAutoReplyEnabled = false;
+        saveAutoReplyStatus();
+      } else {
+        // Turn On -> Open Modal
+        openInstructionsModal();
+      }
+    }
+
+    function openInstructionsModal() {
+      document.getElementById('instructionsText').value = autoReplyInstructions;
+      document.getElementById('instructionsModal').classList.add('active');
+    }
+    function closeInstructionsModal() {
+      document.getElementById('instructionsModal').classList.remove('active');
+      // If we closed without saving and it was off, keep it off.
+      // If it was on, it stays on.
+      updateAutoReplyUI();
+    }
+
+    async function saveAutoReplyInstructions() {
+      const instructions = document.getElementById('instructionsText').value.trim();
+      if (!instructions) {
+        alert("Please enter some instructions.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ enabled: true, instructions: instructions })
+        });
+
+        if (res.ok) {
+          isAutoReplyEnabled = true;
+          autoReplyInstructions = instructions;
+          closeInstructionsModal();
+          updateAutoReplyUI();
+        } else {
+          alert("Failed to save instructions.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Connection error.");
+      }
+    }
+
+    async function saveAutoReplyStatus() {
+      try {
+        await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ enabled: isAutoReplyEnabled })
+        });
+        updateAutoReplyUI();
+      } catch (err) {        console.error(err);
+      }
+    }
+
+    function updateAutoReplyUI() {
+      const robotBtn = document.getElementById('robotBtn');
+      const editBtn = document.getElementById('editDetailsBtn');
+      const inputArea = document.getElementById('replyInputArea');
+
+      if (isAutoReplyEnabled) {
+        robotBtn.classList.add('active');
+        editBtn.style.display = 'block';
+        inputArea.classList.add('hidden');
+      } else {
+        robotBtn.classList.remove('active');
+        editBtn.style.display = 'none';
+        inputArea.classList.remove('hidden');
+      }
     }
 
     // ── Send Reply (FIXED: Uses Pending Queue) ───────────────────────────────
@@ -679,12 +881,12 @@
         });
 
         const data = await res.json();
-
         // If Disconnected, Save to Pending Queue (Just like page.html)
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
           localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
           alert("⚠️ Your email session expired. Please reconnect. Your message will send automatically.");
-          window.location.href = 'dashboard.html?connect=true';          return;
+          window.location.href = 'dashboard.html?connect=true';
+          return;
         }
 
         if (data.success) {
@@ -727,6 +929,5 @@
         }
       }
     }
-  </script>
-</body>
-            </html>
+  </script></body>
+  </html>
