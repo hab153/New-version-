@@ -37,7 +37,6 @@
       align-items: center;
     }
 
-    /* ── Toast Banner ── */
     .toast {
       position: fixed;
       top: 16px;
@@ -47,7 +46,9 @@
       border-radius: 8px;
       font-family: var(--font-mono);
       font-size: 13px;
-      font-weight: 600;      z-index: 9999;      display: none;
+      font-weight: 600;
+      z-index: 9999;
+      display: none;
       animation: slideDown 0.3s ease;
     }
     .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
@@ -59,7 +60,6 @@
       to   { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
-    /* Topbar */
     .topbar {
       width: 100%;
       height: 58px;
@@ -88,15 +88,15 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
-    /* ── Notification Bell (SVG-based) ── */
     .notif-wrapper { display: flex; align-items: center; gap: 8px; }
-
     .notif-btn {
       background: none;
       border: none;
       cursor: pointer;
-      position: relative;      padding: 8px;
-      border-radius: 50%;      display: flex;
+      position: relative;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
       align-items: center;
       justify-content: center;
       transition: background 0.2s;
@@ -141,11 +141,11 @@
       line-height: 1;
     }
 
-    /* Main Container */
     .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
     .section-title {
       font-family: var(--font-mono);
-      font-size: 10px;      text-transform: uppercase;
+      font-size: 10px;
+      text-transform: uppercase;
       letter-spacing: 0.15em;
       color: var(--text-3);
       margin-bottom: 16px;
@@ -182,7 +182,6 @@
     }
     .back-link:hover { color: var(--accent); }
 
-    /* ===== COMMAND CENTER ===== */
     .command-center {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -191,10 +190,12 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .cc-header {
-      display: flex; justify-content: space-between; align-items: center;      padding: 20px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px;
       background: var(--bg-raised);
       border-bottom: 1px solid var(--border);
-      cursor: pointer; user-select: none;      transition: background 0.2s ease;
+      cursor: pointer; user-select: none;
+      transition: background 0.2s ease;
     }
     .cc-header:hover { background: #1e2229; }
     .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--accent); }
@@ -239,7 +240,8 @@
 
     .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .lead-table th {
-      text-align: left; padding: 12px; color: var(--text-3);      border-bottom: 1px solid var(--border);
+      text-align: left; padding: 12px; color: var(--text-3);
+      border-bottom: 1px solid var(--border);
       font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
     }
     .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
@@ -287,7 +289,8 @@
       min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
     }
     .send-reply-btn {
-      margin-top: 15px; width: 100%; padding: 12px;      background: var(--accent); color: #000; border: none;
+      margin-top: 15px; width: 100%; padding: 12px;
+      background: var(--accent); color: #000; border: none;
       border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
     }
     .send-reply-btn:hover { background: #d4ff70; }
@@ -335,13 +338,15 @@
     .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
     .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
     .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
-    .current-plan-tag {      display: inline-block; font-size: 10px;
+    .current-plan-tag {
+      display: inline-block; font-size: 10px;
       background: rgba(200, 255, 87, 0.1); color: var(--accent);
       padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
     }
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .command-center:not(.collapsed) .analytics-grid,    .command-center:not(.collapsed) .lead-table,
+    .command-center:not(.collapsed) .analytics-grid,
+    .command-center:not(.collapsed) .lead-table,
     .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
   </style>
 </head>
@@ -358,7 +363,6 @@
     </div>
     <div class="notif-wrapper">
       <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
-        <!-- Production SVG Bell Icon -->
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -383,14 +387,16 @@
           <div class="toggle-button">
             <div class="toggle-button-circle">
               <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>              </svg>
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
           </div>
         </div>
       </div>
 
       <div class="cc-content-wrapper">
-        <div class="cc-content">          <div class="analytics-grid">
+        <div class="cc-content">
+          <div class="analytics-grid">
             <div class="stat-card">
               <div class="stat-value" id="totalLeads">—</div>
               <div class="stat-label">Total Leads</div>
@@ -431,7 +437,8 @@
     <div class="pricing-header">
       <h2>Choose Your Power Level</h2>
       <p>Select the plan that fits your ambition. Upgrade anytime.</p>
-    </div>    <div class="pricing-cards">
+    </div>
+    <div class="pricing-cards">
 
       <div class="plan-card">
         <div class="plan-name">Free</div>
@@ -439,7 +446,8 @@
         <ul class="plan-features">
           <li>30 Requests / Day</li>
           <li>Basic Model (Skyline AA-1a)</li>
-          <li>Short Memory</li>          <li class="disabled">Powerful Reasoning</li>
+          <li>Short Memory</li>
+          <li class="disabled">Powerful Reasoning</li>
           <li class="disabled">Early Access</li>
         </ul>
         <button class="plan-btn btn-free" disabled>Current Plan</button>
@@ -488,7 +496,8 @@
       <a href="report.html" class="menu-item"><span>Report an Issue</span><span class="arrow">›</span></a>
     </div>
 
-    <div class="section-title">Dangerous Zone</div>    <div class="menu-grid danger-zone">
+    <div class="section-title">Dangerous Zone</div>
+    <div class="menu-grid danger-zone">
       <a href="#" onclick="handleLogout()" class="menu-item"><span class="danger-text">Sign Out</span><span class="arrow">›</span></a>
       <a href="delete-account.html" class="menu-item"><span class="danger-text">Delete Account</span><span class="arrow">›</span></a>
     </div>
@@ -537,7 +546,8 @@
         cc.classList.add('collapsed');
       } else {
         cc.classList.remove('collapsed');
-        if (savedState === null) localStorage.setItem('commandCenterCollapsed', 'false');      }
+        if (savedState === null) localStorage.setItem('commandCenterCollapsed', 'false');
+      }
     }
 
     function showToast(message, type = 'success', duration = 4000) {
@@ -586,7 +596,8 @@
         });
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));          throw new Error(err.message || `Server error ${res.status}`);
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Server error ${res.status}`);
         }
 
         const data = await res.json();
@@ -603,7 +614,7 @@
       }
     }
 
-    // ── Check Email Connection Status (Server-Side Only) ─────────────────────
+    // ── Check Email Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, {
@@ -635,9 +646,9 @@
 
         if (!res.ok) throw new Error(`Status ${res.status}`);
 
-        const leads = await res.json();        const tbody = document.getElementById('leadList');
-        
-        // Update stats
+        const leads = await res.json();
+        const tbody = document.getElementById('leadList');
+
         document.getElementById('totalLeads').innerText = leads.length;
         const interested = leads.filter(l => l.status === 'Interested').length;
         document.getElementById('interestedCount').innerText = interested;
@@ -651,7 +662,6 @@
           tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
-            
             return `
               <tr>
                 <td>${escapeHtml(lead.name || '—')}</td>
@@ -676,22 +686,23 @@
       return div.innerHTML;
     }
 
-    // ── Open Reply Modal with Full Conversation History ──────────────────────
+    // ── Open Reply Modal ─────────────────────────────────────────────────────
     async function openReplyModal(leadId, name, email) {
       currentReplyLeadId = leadId;
       currentReplyEmail = email;
-      
+
       document.getElementById('modalLeadName').innerText = name;
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
-      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';      
+      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
+
       try {
         const res = await fetch(`${BACKEND}/api/leads`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const leads = await res.json();
         const lead = leads.find(l => l._id === leadId);
-        
+
         if (lead && lead.replies && lead.replies.length > 0) {
           const conversationHtml = lead.replies.slice().reverse().map(reply => {
             const isLead = reply.from === 'lead';
@@ -727,14 +738,9 @@
     async function sendDirectReply() {
       const btn = document.getElementById('sendReplyBtn');
       const text = document.getElementById('replyTextArea').value.trim();
-      
-      if (!text) {
-        showToast("Please type a reply.", "error");
-        return;
-      }
-      if (!currentReplyEmail) {
-        showToast("Error: No email address found.", "error");        return;
-      }
+
+      if (!text) { showToast("Please type a reply.", "error"); return; }
+      if (!currentReplyEmail) { showToast("Error: No email address found.", "error"); return; }
 
       btn.disabled = true;
       btn.innerText = "Sending...";
@@ -745,13 +751,13 @@
             name: document.getElementById('modalLeadName').innerText,
             email: currentReplyEmail,
             company: '',
-            messages: [{ 
-              subject: "Re: Your inquiry about Skyline AA-1", 
-              body: text 
+            messages: [{
+              subject: "Re: Your inquiry about Skyline AA-1",
+              body: text
             }]
           }]
         };
-        
+
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
           headers: {
@@ -762,11 +768,11 @@
         });
 
         const data = await res.json();
-        
+
         if (data.success) {
           showToast("✅ Reply sent successfully!", "success");
           closeReplyModal();
-          loadLeads(); // Refresh table to update status
+          loadLeads();
         } else {
           showToast("❌ Failed to send reply.", "error");
         }
@@ -831,7 +837,8 @@
             document.getElementById('goTag').style.display = 'inline-block';
             const goBtn = document.querySelector('.btn-go');
             if (goBtn) {
-              goBtn.innerText = 'Current Plan';              goBtn.disabled  = true;
+              goBtn.innerText = 'Current Plan';
+              goBtn.disabled  = true;
               goBtn.classList.add('btn-free');
               goBtn.classList.remove('btn-go');
             }
@@ -854,9 +861,12 @@
 
     // ── Notifications ────────────────────────────────────────────────────────
     function handleNotifClick() {
-      // Mark notifications as viewed by updating the timestamp
+      // Save current visible unread count into lastSeenNotifCount before leaving
+      const badge = document.getElementById('notifBadge');
+      const visibleUnread = parseInt(badge.textContent, 10) || 0;
+      const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
+      localStorage.setItem('lastSeenNotifCount', lastSeen + visibleUnread);
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-      // Hide badge immediately when clicked
       updateBadgeUI(0);
       window.location.href = 'notifications.html';
     }
@@ -868,8 +878,12 @@
         });
         if (res.ok) {
           const data = await res.json();
-          const count = data.count || 0;
-          updateBadgeUI(count);
+          const serverCount = data.count || 0;
+          const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
+
+          // Only show badge for notifications that arrived after last visit
+          const unread = Math.max(0, serverCount - lastSeen);
+          updateBadgeUI(unread);
         }
       } catch (err) {
         console.error('Failed to load notifications:', err);
@@ -880,7 +894,8 @@
       const badge = document.getElementById('notifBadge');
       const btn   = document.getElementById('notifBtn');
 
-      if (count > 0) {        badge.style.display = 'flex';
+      if (count > 0) {
+        badge.style.display = 'flex';
         badge.textContent   = count > 9 ? '9+' : count;
         btn.classList.add('has-notifs');
       } else {
@@ -894,6 +909,7 @@
       if (confirm('Are you sure you want to sign out?')) {
         localStorage.removeItem('token');
         localStorage.removeItem('lastNotifViewTime');
+        localStorage.removeItem('lastSeenNotifCount');
         window.location.href = 'login.html';
       }
     }
@@ -904,14 +920,12 @@
     checkCurrentPlan();
     checkEmailStatus();
     loadLeads();
-    
-    // Initial load of notifications
     loadNotifCount();
 
-    // Start auto-refresh for new replies every 15 seconds
+    // Auto-refresh notifications every 15 seconds
     autoRefreshInterval = setInterval(() => {
-        loadNotifCount();
+      loadNotifCount();
     }, 15000);
   </script>
 </body>
-          </html>
+                </html>
