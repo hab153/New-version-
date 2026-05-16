@@ -194,23 +194,7 @@
       font-size: 9px; font-weight: 700; background: var(--bg-surface); margin-top: 4px;
     }
     .msg-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em; }
-    /* MONTH 2: NOTIFICATION BANNER */
-    .reply-notification {
-      display: none;
-      background: rgba(200, 255, 87, 0.1);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      padding: 10px 24px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-align: center;
-      cursor: pointer;
-      animation: slideDown 0.3s ease;
-    }
-    .reply-notification.active { display: block; }
-    @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-
-    /* REVIEW PANEL STYLES */
+        /* REVIEW PANEL STYLES */
     #reviewPanel {
       display: none;
       background: var(--bg-surface);
@@ -243,7 +227,8 @@
       padding: 15px;
       margin-bottom: 15px;
       border-radius: 8px;
-      background: var(--bg-base);    }
+      background: var(--bg-base);
+    }
     .lead-info {
       font-weight: bold;
       color: var(--accent);
@@ -258,8 +243,7 @@
     }
     .input-group {
       margin-bottom: 10px;
-    }
-    .input-group label {
+    }    .input-group label {
       display: block;
       font-size: 10px;
       text-transform: uppercase;
@@ -292,7 +276,8 @@
       border: none;
       border-radius: 8px;
       font-weight: bold;
-      cursor: pointer;      margin-top: 10px;
+      cursor: pointer;
+      margin-top: 10px;
       transition: all 0.2s;
     }
     .send-all-btn:hover {
@@ -307,8 +292,7 @@
       padding: 16px 24px 20px; background: var(--bg-base);
       border-top: 1px solid var(--border); flex-shrink: 0;
     }
-    .input-inner {
-      display: flex; align-items: flex-end; gap: 10px;
+    .input-inner {      display: flex; align-items: flex-end; gap: 10px;
       background: var(--bg-surface); border: 1px solid var(--border-md);
       border-radius: var(--radius-lg); padding: 12px 12px 12px 18px;
     }
@@ -341,7 +325,8 @@
       border: 1px solid var(--border);
       opacity: 0.4;
       cursor: default;
-      transform: none;      box-shadow: none;
+      transform: none;
+      box-shadow: none;
     }
     .typing-indicator { display: flex; align-items: center; gap: 5px; padding: 13px 16px; background: var(--ai-bg); border: 1px solid var(--ai-border); border-radius: var(--radius-lg); width: fit-content; }
     .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
@@ -356,8 +341,7 @@
       <div class="topbar-brand"><span class="dot"></span><span>Skyline AA-1</span></div>
       <div id="planBadge" class="plan-badge free">FREE PLAN</div>
     </div>
-    <span class="topbar-title">Business Agent</span>
-    <div class="menu-wrap">
+    <span class="topbar-title">Business Agent</span>    <div class="menu-wrap">
       <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
       <div class="dropdown" id="dropdown">
         <div class="dropdown-header">Navigation</div>
@@ -374,10 +358,6 @@
     ⚡ Checking email connection...
   </div>
 
-  <div id="replyNotification" class="reply-notification" onclick="window.location.href='dashboard.html'">
-    🔔 New Reply Detected! Click to view Dashboard.
-  </div>
-
   <div class="chat-area" id="chatArea">
     <div id="messagesContainer"></div>
   </div>
@@ -390,6 +370,7 @@
     <div id="emailList"></div>
     <button id="sendAllBtn" class="send-all-btn" onclick="submitBatchSend()">✅ Connect & Send All</button>
   </div>
+
   <div class="input-bar" id="inputBar">
     <div class="input-inner">
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
@@ -410,7 +391,6 @@
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
-
     let currentSessionId = new URLSearchParams(window.location.search).get('session');
     let conversationHistory = [];
     let isTyping = false;
@@ -430,7 +410,12 @@
 
       if (menuBtn) menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
       document.addEventListener('click', () => dropdown.classList.remove('open'));
-      document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
+      
+      // Clear Session Logic: Reload page without session param
+      document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        window.location.href = 'page.html'; 
+      });
 
       if (msgInput) {
         msgInput.addEventListener('input', handleInput);
@@ -439,7 +424,6 @@
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
       await checkPlanStatus();
-            // Update connection status banner
       updateConnectionStatusDisplay();
 
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
@@ -455,8 +439,7 @@
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
+        });        if (res.ok) {
           const user = await res.json();
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
             statusDiv.className = 'connection-status connected';
@@ -488,7 +471,8 @@
       showTyping();
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
-          method: 'POST',          headers: { 
+          method: 'POST',
+          headers: { 
             'Content-Type': 'application/json', 
             'Authorization': `Bearer ${token}`
           },
@@ -504,8 +488,7 @@
         
         if (res.ok) {
           if (data.sessionId && !currentSessionId) {
-             currentSessionId = data.sessionId; 
-             pushSessionToURL(currentSessionId); 
+             currentSessionId = data.sessionId;              pushSessionToURL(currentSessionId); 
           }
           if (data.history) conversationHistory = data.history;
           
@@ -537,7 +520,8 @@
             
             for (let msg of msgs) {
               if (msg.role === 'ai') {
-                appendMessage('ai', msg.content);                conversationHistory.push({ role: 'assistant', content: msg.content });
+                appendMessage('ai', msg.content);
+                conversationHistory.push({ role: 'assistant', content: msg.content });
               } else {
                 appendMessage('user', msg.content);
                 conversationHistory.push({ role: 'user', content: msg.content });
@@ -553,8 +537,7 @@
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` },
-          cache: 'no-cache'
-        });
+          cache: 'no-cache'        });
         if (res.ok) {
           const user = await res.json();
           const plan = user.subscriptionTier || 'free';
@@ -586,7 +569,8 @@
       }
 
       const row = document.createElement('div');
-      row.className = `msg-row ${role}`;      const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      row.className = `msg-row ${role}`;
+      const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
       row.innerHTML = `<div class="avatar">${role === 'ai' ? 'AI' : 'ME'}</div>
         <div class="bubble-wrap"><div class="bubble">${escapeHTML(content)}</div><div class="msg-time">${timeStr}</div></div>`;
       messagesContainer.appendChild(row);
@@ -602,8 +586,7 @@
         const leadDiv = document.createElement('div');
         leadDiv.className = 'lead-card';
         
-        leadDiv.innerHTML = `
-            <div class="lead-info">${escapeHTML(lead.name)} @ ${escapeHTML(lead.company)}</div>
+        leadDiv.innerHTML = `            <div class="lead-info">${escapeHTML(lead.name)} @ ${escapeHTML(lead.company)}</div>
             <div class="lead-email-display">AI Guess: ${escapeHTML(lead.email)}</div>
             <div class="input-group">
                 <label>To (Edit Email Address):</label>
@@ -652,8 +635,7 @@
         const payload = {
             leads: currentGeneratedLeads.map((lead, index) => {
                 const editedEmail = document.getElementById(`email-${index}`).value;
-                const subject = document.getElementById(`subject-${index}`).value;
-                const body = document.getElementById(`body-${index}`).value;
+                const subject = document.getElementById(`subject-${index}`).value;                const body = document.getElementById(`body-${index}`).value;
                 
                 return {
                     name: lead.name,
@@ -684,7 +666,8 @@
         });
 
         const data = await res.json();
-                // If Token Expired During Send, Save to Pending and Redirect
+        
+        // If Token Expired During Send, Save to Pending and Redirect
         if (res.status === 401 || (data.error === 'NYLAS_DISCONNECTED')) {
              localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
              alert("⚠️ Your email session expired during send. Please reconnect. Your message will send automatically.");
@@ -701,8 +684,7 @@
             }, 2000);
         } else {
             alert('Error sending emails: ' + JSON.stringify(data.errors));
-        }
-      } catch (err) {
+        }      } catch (err) {
         console.error(err);
         alert("Connection error. If your email session expired, please reconnect in Dashboard.");
       } finally {
@@ -733,7 +715,8 @@
       if (!str) return '';
       return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/\n/g, '<br>'); 
     }
-        function scrollToBottom() { 
+
+    function scrollToBottom() { 
       if (chatArea) chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); 
     }
     
@@ -750,8 +733,7 @@
     
     function handleKeydown(e) { 
       if (e.key === 'Enter' && !e.shiftKey) { 
-        e.preventDefault(); 
-        if (!sendBtn.disabled) sendMessage(); 
+        e.preventDefault();         if (!sendBtn.disabled) sendMessage(); 
       } 
     }
     
@@ -759,10 +741,6 @@
       const url = new URL(window.location); 
       url.searchParams.set('session', sid); 
       window.history.pushState({}, '', url); 
-    }
-    
-    function clearChat() { 
-      window.location.href = window.location.pathname; 
     }
   </script>
 </body>
