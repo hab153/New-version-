@@ -47,7 +47,8 @@
       font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 600;
-      z-index: 9999;      display: none;
+      z-index: 9999;
+      display: none;
       animation: slideDown 0.3s ease;
     }
     .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
@@ -87,6 +88,59 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
+    .notif-wrapper { display: flex; align-items: center; gap: 8px; }
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      color: var(--text-2);
+    }
+    .notif-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-1);
+    }
+    .notif-btn svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+      transition: color 0.2s;
+    }
+    .notif-btn.has-notifs {
+      color: var(--danger);
+      animation: pulse-red 2s infinite;
+    }
+    @keyframes pulse-red {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+      70%  { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+    }
+    .badge {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 15px;
+      height: 15px;
+      padding: 0 3px;
+      border-radius: 8px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--bg-base);
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
     .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
     .section-title {
       font-family: var(--font-mono);
@@ -96,7 +150,8 @@
       color: var(--text-3);
       margin-bottom: 16px;
       margin-top: 32px;
-      padding-left: 4px;    }
+      padding-left: 4px;
+    }
     .section-title:first-child { margin-top: 0; }
 
     .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
@@ -145,7 +200,8 @@
     .cc-header:hover { background: #1e2229; }
     .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--accent); }
     .cc-title-group { display: flex; align-items: center; gap: 12px; }
-    .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }    .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
+    .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
+    .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
     .toggle-button-circle {
       width: 32px; height: 32px; border-radius: 50%;
       background: rgba(255,255,255,0.05);
@@ -194,7 +250,8 @@
       font-size: 10px; font-weight: 600; text-transform: uppercase;
     }
     .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
+    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
     .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
     .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
     .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
@@ -243,7 +300,8 @@
     .pricing-header { text-align: center; margin-bottom: 40px; }
     .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
     .pricing-header p { color: var(--text-2); font-size: 14px; }
-    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }    .plan-card {
+    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
+    .plan-card {
       background: var(--bg-surface); border: 1px solid var(--border);
       border-radius: 16px; padding: 32px 24px;
       display: flex; flex-direction: column; position: relative;
@@ -293,6 +351,7 @@
   </style>
 </head>
 <body>
+
   <div class="toast" id="toast"></div>
 
   <header class="topbar">
@@ -302,7 +361,15 @@
         SKYLINE AA-1
       </div>
     </div>
-    <!-- Notification button removed -->
+    <div class="notif-wrapper">
+      <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="notifBadge" class="badge">0</span>
+      </button>
+    </div>
   </header>
 
   <div class="container">
@@ -341,7 +408,8 @@
             <div class="stat-card">
               <div class="stat-value" id="interestedCount">—</div>
               <div class="stat-label">Interested</div>
-            </div>          </div>
+            </div>
+          </div>
 
           <table class="lead-table">
             <thead>
@@ -390,7 +458,8 @@
         <div class="plan-price">$9<span>/mo</span></div>
         <ul class="plan-features">
           <li>18 Requests / Day</li>
-          <li>Powerful Model (Skyline AA-1mini)</li>          <li>Long Memory</li>
+          <li>Powerful Model (Skyline AA-1mini)</li>
+          <li>Long Memory</li>
           <li>Great Features</li>
           <li class="disabled">Skyline AA-1a Model</li>
         </ul>
@@ -439,7 +508,8 @@
   <div id="replyModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Reply to <span id="modalLeadName">Lead</span></h3>        <button class="close-modal" onclick="closeReplyModal()">×</button>
+        <h3>Reply to <span id="modalLeadName">Lead</span></h3>
+        <button class="close-modal" onclick="closeReplyModal()">×</button>
       </div>
       <div class="reply-history" id="replyHistoryContainer">
         <h4>Conversation History:</h4>
@@ -488,7 +558,8 @@
       setTimeout(() => { toast.style.display = 'none'; }, duration);
     }
 
-    // ── Handle OAuth Redirect ────────────────────────────────────────────────    function handleOAuthRedirect() {
+    // ── Handle OAuth Redirect ────────────────────────────────────────────────
+    function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
       const connected = params.get('connected');
       const error     = params.get('error');
@@ -537,7 +608,8 @@
         }
       } catch (err) {
         console.error('Error getting Nylas URL:', err);
-        showToast(`❌ Could not start connection: ${err.message}`, 'error');        btn.innerText = 'Connect Gmail/Outlook';
+        showToast(`❌ Could not start connection: ${err.message}`, 'error');
+        btn.innerText = 'Connect Gmail/Outlook';
         btn.disabled  = false;
       }
     }
@@ -586,7 +658,8 @@
 
         if (leads.length === 0) {
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
-        } else {          tbody.innerHTML = leads.map(lead => {
+        } else {
+          tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             return `
@@ -635,7 +708,8 @@
             const isLead = reply.from === 'lead';
             const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
             return `
-              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">                <div class="reply-meta">
+              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
+                <div class="reply-meta">
                   ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
                   ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
                 </div>
@@ -684,7 +758,8 @@
           }]
         };
 
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {          method: 'POST',
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -733,7 +808,8 @@
         }
         const data = await response.json();
         if (data.link) {
-          btn.innerText = 'Redirecting...';          window.location.href = data.link;
+          btn.innerText = 'Redirecting...';
+          window.location.href = data.link;
         } else {
           throw new Error('No payment link received from server.');
         }
@@ -782,10 +858,58 @@
         console.error('Failed to check plan:', err);
       }
     }
+
+    // ── Notifications ────────────────────────────────────────────────────────
+    function handleNotifClick() {
+      // Save current visible unread count into lastSeenNotifCount before leaving
+      const badge = document.getElementById('notifBadge');
+      const visibleUnread = parseInt(badge.textContent, 10) || 0;
+      const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
+      localStorage.setItem('lastSeenNotifCount', lastSeen + visibleUnread);
+      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+      updateBadgeUI(0);
+      window.location.href = 'notifications.html';
+    }
+
+    async function loadNotifCount() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const serverCount = data.count || 0;
+          const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
+
+          // Only show badge for notifications that arrived after last visit
+          const unread = Math.max(0, serverCount - lastSeen);
+          updateBadgeUI(unread);
+        }
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      }
+    }
+
+    function updateBadgeUI(count) {
+      const badge = document.getElementById('notifBadge');
+      const btn   = document.getElementById('notifBtn');
+
+      if (count > 0) {
+        badge.style.display = 'flex';
+        badge.textContent   = count > 9 ? '9+' : count;
+        btn.classList.add('has-notifs');
+      } else {
+        badge.style.display = 'none';
+        btn.classList.remove('has-notifs');
+      }
+    }
+
     // ── Logout ───────────────────────────────────────────────────────────────
     function handleLogout() {
       if (confirm('Are you sure you want to sign out?')) {
         localStorage.removeItem('token');
+        localStorage.removeItem('lastNotifViewTime');
+        localStorage.removeItem('lastSeenNotifCount');
         window.location.href = 'login.html';
       }
     }
@@ -796,6 +920,12 @@
     checkCurrentPlan();
     checkEmailStatus();
     loadLeads();
+    loadNotifCount();
+
+    // Auto-refresh notifications every 15 seconds
+    autoRefreshInterval = setInterval(() => {
+      loadNotifCount();
+    }, 15000);
   </script>
 </body>
-                                                    </html>
+  </html>
