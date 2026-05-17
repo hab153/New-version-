@@ -31,6 +31,7 @@
       --text-2:      #7aa8cc;
       --text-3:      #334e68;
       --warning:     #fbbf24;
+      --danger:      #ff4d4d; /* Added for badge */
       --user-bg:     #0d1f3c;
       --user-border: rgba(79,195,247,0.25);
       --ai-bg:       #07111f;
@@ -46,8 +47,7 @@
     html, body { height: 100%; overflow: hidden; }
 
     body {
-      background: var(--bg-void);
-      color: var(--text-1);
+      background: var(--bg-void);      color: var(--text-1);
       font-family: var(--font-sans);
       font-size: 14px;
       line-height: 1.6;
@@ -96,8 +96,7 @@
       letter-spacing: 0.05em;
     }
     .connection-status.connected {
-      background: rgba(34,197,94,0.08);
-      border-bottom-color: rgba(34,197,94,0.30);
+      background: rgba(34,197,94,0.08);      border-bottom-color: rgba(34,197,94,0.30);
       color: #4ade80;
     }
     .connection-status.disconnected {
@@ -146,8 +145,7 @@
       font-family: var(--font-mono); font-size: 9px; font-weight: 700;
       padding: 3px 8px; border-radius: 4px;
       text-transform: uppercase; letter-spacing: 0.1em;
-    }
-    .plan-badge.free { background: rgba(255,255,255,0.03); color: var(--text-3); border: 1px solid rgba(255,255,255,0.06); }
+    }    .plan-badge.free { background: rgba(255,255,255,0.03); color: var(--text-3); border: 1px solid rgba(255,255,255,0.06); }
     .plan-badge.go { background: rgba(56,189,248,0.10); color: var(--go-color); border: 1px solid rgba(56,189,248,0.28); box-shadow: 0 0 8px rgba(56,189,248,0.15); }
     .plan-badge.pro { background: rgba(192,132,252,0.10); color: var(--pro-color); border: 1px solid rgba(192,132,252,0.28); }
 
@@ -196,8 +194,7 @@
       letter-spacing: 0.08em;
       padding: 3px 7px;
       border-radius: 4px;
-      white-space: nowrap;
-      opacity: 0;
+      white-space: nowrap;      opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s;
       z-index: 999;
@@ -246,8 +243,7 @@
       font-family: var(--font-mono);
     }
     .msg-row.ai .avatar {
-      background: linear-gradient(135deg, var(--accent-2), var(--accent));
-      color: #03060f;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));      color: #03060f;
     }
     .msg-row.user .avatar {
       background: var(--bg-surface);
@@ -296,8 +292,7 @@
       width: 100%; background: var(--bg-raised); border: 1px solid var(--border);
       color: var(--text-1); padding: 9px 11px; border-radius: 6px;
       font-family: var(--font-sans); font-size: 13px;
-      transition: border-color 0.2s;
-      outline: none;
+      transition: border-color 0.2s;      outline: none;
     }
     .input-group input:focus, .input-group textarea:focus { border-color: var(--accent); }
     #reviewPanel .input-group input[type="email"] { border-color: rgba(79,195,247,0.35); background: rgba(79,195,247,0.04); }
@@ -346,8 +341,7 @@
       transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0;
     }
     .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 22px rgba(79,195,247,0.45); }
-    .send-btn:disabled {
-      background: var(--bg-surface); border: 1px solid var(--border);
+    .send-btn:disabled {      background: var(--bg-surface); border: 1px solid var(--border);
       opacity: 0.35; cursor: default; transform: none; box-shadow: none;
     }
 
@@ -396,8 +390,7 @@
       transition: color 0.2s;
       position: relative;
       border: none; background: none;
-    }
-    .nav-item svg { transition: transform 0.2s; }
+    }    .nav-item svg { transition: transform 0.2s; }
     .nav-item:hover { color: var(--accent); }
     .nav-item:hover svg { transform: scale(1.12); }
 
@@ -431,6 +424,27 @@
     }
     .nav-item.nav-home svg { color: #03060f; }
     .nav-item.nav-home::after { display: none; }
+
+    /* ── NOTIFICATION BADGE ON NAV ── */
+    .nav-badge {
+      position: absolute;
+      top: 2px;
+      right: calc(50% - 14px);
+      background: var(--danger);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 14px;
+      height: 14px;
+      padding: 0 3px;
+      border-radius: 7px;
+      display: none; /* Hidden by default */
+      align-items: center;      justify-content: center;
+      border: 1px solid var(--bg-base);
+      font-family: var(--font-mono);
+      line-height: 1;
+      z-index: 20;
+    }
 
     /* ── RESPONSIVE ── */
 
@@ -474,8 +488,7 @@
       .connection-status { padding: 5px 24px; font-size: 10px; }
       .chat-area { padding: 12px 0 8px; }
       .input-bar { padding: 8px 18px 6px; }
-      .nav-item.nav-home .nav-icon-wrap { width: 38px; height: 38px; border-radius: 11px; }
-    }
+      .nav-item.nav-home .nav-icon-wrap { width: 38px; height: 38px; border-radius: 11px; }    }
 
     /* Ensure input bar sits above bottom nav on all devices */
     .input-bar { position: relative; z-index: 5; }
@@ -524,8 +537,7 @@
     🔔 New Reply Detected! Click to view Dashboard.
   </div>
 
-  <!-- CHAT AREA -->
-  <div class="chat-area" id="chatArea">
+  <!-- CHAT AREA -->  <div class="chat-area" id="chatArea">
     <div id="messagesContainer"></div>
   </div>
 
@@ -574,11 +586,11 @@
         <polyline points="12 7 12 12 15 15"/>
         <path d="M3.05 11a9 9 0 1 0 .5-3"/>
         <polyline points="3 4 3 11 10 11"/>
-      </svg>
-    </a>
+      </svg>    </a>
 
     <!-- Notifications -->
-    <a href="notifications.html" class="nav-item">
+    <a href="notifications.html" class="nav-item" id="navNotifLink">
+      <span id="navNotifBadge" class="nav-badge">0</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -605,6 +617,7 @@
     let conversationHistory = [];
     let isTyping = false;
     let currentGeneratedLeads = [];
+    let notifInterval = null;
 
     let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
 
@@ -617,19 +630,20 @@
       charCount = document.getElementById('charCount');
       planBadge = document.getElementById('planBadge');
 
-
-
       document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
       document.getElementById('newChatBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
 
       if (msgInput) {
         msgInput.addEventListener('input', handleInput);
-        msgInput.addEventListener('keydown', handleKeydown);
-      }
+        msgInput.addEventListener('keydown', handleKeydown);      }
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
       await checkPlanStatus();
       updateConnectionStatusDisplay();
+      
+      // Start Notification Badge Logic
+      loadNavNotifCount();
+      notifInterval = setInterval(loadNavNotifCount, 15000);
 
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
 
@@ -638,14 +652,39 @@
       }
     });
 
+    // ── NOTIFICATION BADGE LOGIC ──
+    async function loadNavNotifCount() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          updateNavBadgeUI(data.count || 0);
+        }
+      } catch (err) {
+        console.error('Failed to load nav notifications:', err);
+      }
+    }
+
+    function updateNavBadgeUI(count) {
+      const badge = document.getElementById('navNotifBadge');
+      if (count > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = count > 9 ? '9+' : count;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    // ───────────────────────────────
+
     async function updateConnectionStatusDisplay() {
       const statusDiv = document.getElementById('connectionStatus');
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (res.ok) {
-          const user = await res.json();
+        if (res.ok) {          const user = await res.json();
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
             statusDiv.className = 'connection-status connected';
             statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
@@ -694,8 +733,7 @@
           const reply = data.reply || "I've received your message. How can I assist further?";
           appendMessage('ai', reply);
         } else {
-          appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
-        }
+          appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);        }
       } catch (err) {
         hideTyping();
         appendMessage('ai', '🔌 Connection error. Please check your network and try again.');
@@ -744,7 +782,6 @@
         }
       } catch(e) { console.warn('Plan status check failed:', e); }
     }
-
     function appendMessage(role, content) {
       const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
@@ -795,7 +832,6 @@
     function closeReviewPanel() {
       document.getElementById('reviewPanel').style.display = 'none';
     }
-
     async function submitBatchSend() {
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
@@ -844,8 +880,7 @@
         alert("Connection error. If your email session expired, please reconnect in Dashboard.");
       } finally {
         btn.innerText = originalText;
-        btn.disabled = false;
-      }
+        btn.disabled = false;      }
     }
 
     function showTyping() {
@@ -867,7 +902,7 @@
 
     function escapeHTML(str) {
       if (!str) return '';
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\n/g,'<br>');
     }
 
     function scrollToBottom() {
@@ -894,8 +929,7 @@
 
     function pushSessionToURL(sid) {
       const url = new URL(window.location);
-      url.searchParams.set('session', sid);
-      window.history.pushState({}, '', url);
+      url.searchParams.set('session', sid);      window.history.pushState({}, '', url);
     }
 
     function clearChat() {
@@ -903,4 +937,4 @@
     }
   </script>
 </body>
-</html>
+            </html>
