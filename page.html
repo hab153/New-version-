@@ -31,7 +31,7 @@
       --text-2:      #7aa8cc;
       --text-3:      #334e68;
       --warning:     #fbbf24;
-      --danger:      #ff4d4d; /* Added for badge */
+      --danger:      #ef4444;
       --user-bg:     #0d1f3c;
       --user-border: rgba(79,195,247,0.25);
       --ai-bg:       #07111f;
@@ -425,26 +425,21 @@
     .nav-item.nav-home svg { color: #03060f; }
     .nav-item.nav-home::after { display: none; }
 
-    /* ── NOTIFICATION BADGE ON NAV ── */
+    /* Notification Badge on Nav */
     .nav-badge {
       position: absolute;
-      top: 2px;
+      top: 6px;
       right: calc(50% - 14px);
+      width: 8px;
+      height: 8px;
       background: var(--danger);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      min-width: 14px;
-      height: 14px;
-      padding: 0 3px;
-      border-radius: 7px;
-      display: none; /* Hidden by default */
-      align-items: center;      justify-content: center;
-      border: 1px solid var(--bg-base);
-      font-family: var(--font-mono);
-      line-height: 1;
-      z-index: 20;
+      border-radius: 50%;
+      border: 2px solid var(--bg-base);
+      display: none;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
     }
+    .nav-item.has-notifs .nav-badge {
+      display: block;    }
 
     /* ── RESPONSIVE ── */
 
@@ -488,12 +483,12 @@
       .connection-status { padding: 5px 24px; font-size: 10px; }
       .chat-area { padding: 12px 0 8px; }
       .input-bar { padding: 8px 18px 6px; }
-      .nav-item.nav-home .nav-icon-wrap { width: 38px; height: 38px; border-radius: 11px; }    }
+      .nav-item.nav-home .nav-icon-wrap { width: 38px; height: 38px; border-radius: 11px; }
+    }
 
     /* Ensure input bar sits above bottom nav on all devices */
     .input-bar { position: relative; z-index: 5; }
-  </style>
-</head>
+  </style></head>
 <body>
 
   <!-- TOPBAR -->
@@ -537,12 +532,12 @@
     🔔 New Reply Detected! Click to view Dashboard.
   </div>
 
-  <!-- CHAT AREA -->  <div class="chat-area" id="chatArea">
+  <!-- CHAT AREA -->
+  <div class="chat-area" id="chatArea">
     <div id="messagesContainer"></div>
   </div>
 
-  <!-- REVIEW PANEL -->
-  <div id="reviewPanel">
+  <!-- REVIEW PANEL -->  <div id="reviewPanel">
     <div class="review-header">
       <h3>Review Generated Emails</h3>
       <button class="close-review" onclick="closeReviewPanel()">✕</button>
@@ -586,12 +581,12 @@
         <polyline points="12 7 12 12 15 15"/>
         <path d="M3.05 11a9 9 0 1 0 .5-3"/>
         <polyline points="3 4 3 11 10 11"/>
-      </svg>    </a>
+      </svg>
+    </a>
 
     <!-- Notifications -->
-    <a href="notifications.html" class="nav-item" id="navNotifLink">
-      <span id="navNotifBadge" class="nav-badge">0</span>
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <a href="notifications.html" class="nav-item" id="navNotifBtn">
+      <div class="nav-badge"></div>      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
       </svg>
@@ -633,17 +628,27 @@
       document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
       document.getElementById('newChatBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
 
+      // Notification Logic
+      const navNotifBtn = document.getElementById('navNotifBtn');
+      if (navNotifBtn) {
+        navNotifBtn.addEventListener('click', () => {
+          // Mark as seen locally so badge disappears on return
+          localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+          updateNavNotifBadge(0);
+        });      }
+      
+      // Start checking notifications
+      loadNavNotifCount();
+      notifInterval = setInterval(loadNavNotifCount, 15000);
+
       if (msgInput) {
         msgInput.addEventListener('input', handleInput);
-        msgInput.addEventListener('keydown', handleKeydown);      }
+        msgInput.addEventListener('keydown', handleKeydown);
+      }
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
       await checkPlanStatus();
       updateConnectionStatusDisplay();
-      
-      // Start Notification Badge Logic
-      loadNavNotifCount();
-      notifInterval = setInterval(loadNavNotifCount, 15000);
 
       appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
 
@@ -652,7 +657,7 @@
       }
     });
 
-    // ── NOTIFICATION BADGE LOGIC ──
+    // ── Notification Badge Logic ──
     async function loadNavNotifCount() {
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, {
@@ -660,23 +665,39 @@
         });
         if (res.ok) {
           const data = await res.json();
-          updateNavBadgeUI(data.count || 0);
+          const count = data.count || 0;
+          
+          // Check if we've viewed them recently
+          const lastView = localStorage.getItem('lastNotifViewTime');
+          let shouldShow = false;
+          
+          if (count > 0) {
+            if (!lastView) {
+              shouldShow = true;
+            } else {
+              // Simple check: if count is high, assume new ones arrived
+              // For precise "new since last view", backend should return unread count
+              // Here we just show if count > 0 and we haven't clicked recently
+              shouldShow = true; 
+            }
+          }
+          
+          updateNavNotifBadge(shouldShow ? count : 0);
         }
-      } catch (err) {
-        console.error('Failed to load nav notifications:', err);
+      } catch (err) {        console.error('Failed to load nav notifications:', err);
       }
     }
 
-    function updateNavBadgeUI(count) {
-      const badge = document.getElementById('navNotifBadge');
-      if (count > 0) {
-        badge.style.display = 'flex';
-        badge.textContent = count > 9 ? '9+' : count;
-      } else {
-        badge.style.display = 'none';
+    function updateNavNotifBadge(count) {
+      const navItem = document.getElementById('navNotifBtn');
+      if (navItem) {
+        if (count > 0) {
+          navItem.classList.add('has-notifs');
+        } else {
+          navItem.classList.remove('has-notifs');
+        }
       }
     }
-    // ───────────────────────────────
 
     async function updateConnectionStatusDisplay() {
       const statusDiv = document.getElementById('connectionStatus');
@@ -684,7 +705,8 @@
         const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (res.ok) {          const user = await res.json();
+        if (res.ok) {
+          const user = await res.json();
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
             statusDiv.className = 'connection-status connected';
             statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
@@ -711,8 +733,7 @@
       showTyping();
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
-          method: 'POST',
-          headers: {
+          method: 'POST',          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
@@ -733,7 +754,8 @@
           const reply = data.reply || "I've received your message. How can I assist further?";
           appendMessage('ai', reply);
         } else {
-          appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);        }
+          appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
+        }
       } catch (err) {
         hideTyping();
         appendMessage('ai', '🔌 Connection error. Please check your network and try again.');
@@ -760,8 +782,7 @@
               } else {
                 appendMessage('user', msg.content);
                 conversationHistory.push({ role: 'user', content: msg.content });
-              }
-            }
+              }            }
             scrollToBottom();
           }
         }
@@ -782,6 +803,7 @@
         }
       } catch(e) { console.warn('Plan status check failed:', e); }
     }
+
     function appendMessage(role, content) {
       const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
@@ -809,8 +831,7 @@
       scrollToBottom();
     }
 
-    function renderReviewPanel(leads) {
-      const panel = document.getElementById('reviewPanel');
+    function renderReviewPanel(leads) {      const panel = document.getElementById('reviewPanel');
       const list = document.getElementById('emailList');
       list.innerHTML = '';
       leads.forEach((lead, index) => {
@@ -832,6 +853,7 @@
     function closeReviewPanel() {
       document.getElementById('reviewPanel').style.display = 'none';
     }
+
     async function submitBatchSend() {
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
@@ -858,8 +880,7 @@
         btn.innerText = "Sending Emails...";
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
@@ -880,7 +901,8 @@
         alert("Connection error. If your email session expired, please reconnect in Dashboard.");
       } finally {
         btn.innerText = originalText;
-        btn.disabled = false;      }
+        btn.disabled = false;
+      }
     }
 
     function showTyping() {
@@ -908,7 +930,6 @@
     function scrollToBottom() {
       if (chatArea) chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
     }
-
     function updateSendButton() {
       if (sendBtn) sendBtn.disabled = !msgInput.value.trim() || isTyping;
     }
@@ -929,7 +950,8 @@
 
     function pushSessionToURL(sid) {
       const url = new URL(window.location);
-      url.searchParams.set('session', sid);      window.history.pushState({}, '', url);
+      url.searchParams.set('session', sid);
+      window.history.pushState({}, '', url);
     }
 
     function clearChat() {
@@ -937,4 +959,4 @@
     }
   </script>
 </body>
-            </html>
+  </html>
