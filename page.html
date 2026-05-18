@@ -631,11 +631,16 @@
       // Notification Logic
       const navNotifBtn = document.getElementById('navNotifBtn');
       if (navNotifBtn) {
-        navNotifBtn.addEventListener('click', () => {
-          // Mark as seen locally so badge disappears on return
+        navNotifBtn.addEventListener('click', (e) => {
+          // We don't want to prevent default navigation, but we want to clear the badge
+          // Mark as seen locally so badge disappears
           localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+          // Also store the last known count so we only show badge if count increases
+          const currentCount = localStorage.getItem('lastKnownNotifCount') || 0;
+          localStorage.setItem('lastSeenNotifCount', currentCount);
           updateNavNotifBadge(0);
-        });      }
+        });
+      }
       
       // Start checking notifications
       loadNavNotifCount();
@@ -667,24 +672,18 @@
           const data = await res.json();
           const count = data.count || 0;
           
-          // Check if we've viewed them recently
-          const lastView = localStorage.getItem('lastNotifViewTime');
-          let shouldShow = false;
+          // Store current count for comparison when clicking
+          localStorage.setItem('lastKnownNotifCount', count);
           
-          if (count > 0) {
-            if (!lastView) {
-              shouldShow = true;
-            } else {
-              // Simple check: if count is high, assume new ones arrived
-              // For precise "new since last view", backend should return unread count
-              // Here we just show if count > 0 and we haven't clicked recently
-              shouldShow = true; 
-            }
-          }
+          const lastSeenCount = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+          
+          // Logic: Show badge only if current count is greater than what was last "seen" by clicking the button
+          let shouldShow = count > lastSeenCount;
           
           updateNavNotifBadge(shouldShow ? count : 0);
         }
-      } catch (err) {        console.error('Failed to load nav notifications:', err);
+      } catch (err) {
+        console.error('Failed to load nav notifications:', err);
       }
     }
 
@@ -959,4 +958,4 @@
     }
   </script>
 </body>
-  </html>
+          </html>
