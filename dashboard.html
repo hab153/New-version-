@@ -361,15 +361,7 @@
         SKYLINE AA-1
       </div>
     </div>
-    <div class="notif-wrapper">
-      <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span id="notifBadge" class="badge">0</span>
-      </button>
-    </div>
+    <!-- Notification button removed -->
   </header>
 
   <div class="container">
@@ -450,7 +442,7 @@
           <li class="disabled">Powerful Reasoning</li>
           <li class="disabled">Early Access</li>
         </ul>
-        <button class="plan-btn btn-free" disabled>Current Plan</button>
+        <button class="plan-btn btn-free" onclick="alert('Coming Soon')">Current Plan</button>
       </div>
 
       <div class="plan-card">
@@ -463,7 +455,7 @@
           <li>Great Features</li>
           <li class="disabled">Skyline AA-1a Model</li>
         </ul>
-        <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
+        <button class="plan-btn btn-go" onclick="alert('Coming Soon')">Upgrade to GO</button>
       </div>
 
       <div class="plan-card featured">
@@ -477,7 +469,7 @@
           <li>Early Access to Features</li>
           <li>Priority Support</li>
         </ul>
-        <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
+        <button class="plan-btn btn-pro" onclick="alert('Coming Soon')">Upgrade to PRO</button>
       </div>
 
     </div>
@@ -928,4 +920,4 @@
     }, 15000);
   </script>
 </body>
-        </html>
+  </html>
