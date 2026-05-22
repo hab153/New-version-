@@ -47,8 +47,7 @@
       height: 54px;
       background: none;
       border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-3);
+      border-bottom: 2px solid transparent;      color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 12px;
       letter-spacing: 0.08em;
@@ -97,7 +96,6 @@
       z-index: 10;
     }
     .view-list.hidden { transform: translateX(-100%); pointer-events: none; }
-
     .search-bar {
       padding: 12px 16px;
       background: var(--bg-base);
@@ -147,8 +145,7 @@
       background: var(--bg-raised);
       border: 1px solid rgba(200,255,87,0.12);
       display: flex; align-items: center; justify-content: center;
-      font-size: 17px; font-weight: 700;
-      color: var(--accent);
+      font-size: 17px; font-weight: 700;      color: var(--accent);
       flex-shrink: 0;
       font-family: var(--font-sans);
       text-transform: uppercase;
@@ -197,8 +194,7 @@
       font-family: var(--font-mono); font-size: 9px; color: var(--text-3);
       background: var(--bg-raised); border: 1px solid var(--border);
       padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
-      white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis;
-    }
+      white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis;    }
 
     .view-chat {
       position: absolute; inset: 0;
@@ -240,13 +236,14 @@
     .chat-info h3 {
       margin: 0; font-size: 15px; font-weight: 600; color: var(--text-1);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
     }
     .chat-info p { margin: 2px 0 0; font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
 
     .chat-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
     .robot-btn {
-      background: none; border: 1px solid var(--border); color: var(--text-2);
-      padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 16px;
+      background: none; border: 1px solid var(--border); color: var(--text-2);      padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 16px;
       transition: all 0.2s; display: flex; align-items: center; justify-content: center;
     }
     .robot-btn.active {
@@ -295,8 +292,7 @@
     .reply-input-area textarea {
       flex: 1; background: var(--bg-raised); border: 1px solid var(--border);
       color: var(--text-1); padding: 10px 14px; border-radius: 20px;
-      resize: none; height: 42px; max-height: 120px;
-      font-family: var(--font-sans); font-size: 14px; line-height: 1.4;
+      resize: none; height: 42px; max-height: 120px;      font-family: var(--font-sans); font-size: 14px; line-height: 1.4;
       transition: border-color 0.2s; overflow-y: auto; outline: none;
     }
     .reply-input-area textarea:focus { border-color: rgba(200,255,87,0.3); }
@@ -345,8 +341,7 @@
     }
     .modal-header {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-    }
-    .modal-header h3 { margin: 0; color: var(--accent); }
+    }    .modal-header h3 { margin: 0; color: var(--accent); }
     .close-modal { background: none; border: none; color: var(--text-3); font-size: 24px; cursor: pointer; }
     .modal-body textarea {
       width: 100%; height: 150px; background: var(--bg-raised);
@@ -395,8 +390,7 @@
         </button>
         <div class="chat-avatar" id="chatAvatar">?</div>
         <div class="chat-info">
-          <h3 id="chatName">Customer Name</h3>
-          <p id="chatEmail">email@example.com</p>
+          <h3 id="chatName">Customer Name</h3>          <p id="chatEmail">email@example.com</p>
         </div>
         <div class="chat-actions">
           <button class="robot-btn" id="robotBtn" onclick="toggleAutoReply()" title="Auto-Reply">🤖</button>
@@ -445,8 +439,7 @@
   <div class="modal-overlay" id="instructionsModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Auto-Reply Instructions</h3>
-        <button class="close-modal" onclick="closeInstructionsModal()">×</button>
+        <h3>Auto-Reply Instructions</h3>        <button class="close-modal" onclick="closeInstructionsModal()">×</button>
       </div>
       <div class="modal-body">
         <p style="color: var(--text-2); font-size: 12px; margin-bottom: 8px;">
@@ -496,7 +489,6 @@
       if (!name) return '?';
       return name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     }
-
     function autoResize(el) {
       el.style.height = '42px';
       el.style.height = Math.min(el.scrollHeight, 120) + 'px';
@@ -545,7 +537,6 @@
           '<div style="padding:24px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:12px;">Failed to load. Refresh to retry.</div>';
       }
     }
-
     function renderContacts(contacts) {
       const list = document.getElementById('contactList');
       if (contacts.length === 0) {
@@ -565,6 +556,18 @@
       list.innerHTML = sortedContacts.map(c => {
         const unreadCount = c.unreadCount || 0;
         const isUnread = unreadCount > 0;
+        
+        // CONFIDENCE BADGE LOGIC
+        let confColor = '#ef4444'; // Red (Low)
+        let confLabel = 'Low';
+        if (c.confidenceTier === 'High') {
+            confColor = '#22c55e'; // Green
+            confLabel = 'High';
+        } else if (c.confidenceTier === 'Medium') {
+            confColor = '#f59e0b'; // Amber
+            confLabel = 'Med';
+        }
+
         return `
           <div class="contact-item ${isUnread ? 'unread' : ''}" onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
             <div class="contact-avatar">${getInitials(c.name)}</div>
@@ -577,12 +580,13 @@
                 <span class="contact-preview">${escapeHtml(c.lastMessage || 'No messages yet')}</span>
                 <div style="display:flex; align-items:center; gap:6px;">
                   ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                  <!-- CONFIDENCE BADGE -->
+                  <span style="font-size:9px; padding:2px 6px; border-radius:4px; background:${confColor}20; color:${confColor}; font-weight:bold; border:1px solid ${confColor}40;">${confLabel}</span>
                   ${c.company ? `<span class="contact-company-tag">${escapeHtml(c.company)}</span>` : ''}
                 </div>
               </div>
             </div>
-          </div>
-        `;
+          </div>        `;
       }).join('');
     }
 
@@ -602,7 +606,18 @@
       currentLeadName = name;
       currentLeadEmail = email;
 
-      document.getElementById('chatName').innerText = name;
+      // Find lead data for confidence info
+      const leadData = allContacts.find(l => l.id === leadId);
+      let badgeHtml = '';
+      if (leadData) {
+          let badgeColor = '#ef4444'; // Red
+          if (leadData.confidenceTier === 'High') badgeColor = '#22c55e'; // Green
+          else if (leadData.confidenceTier === 'Medium') badgeColor = '#f59e0b'; // Amber
+          
+          badgeHtml = `<span style="margin-left:10px; font-size:10px; padding:2px 8px; border-radius:10px; background:${badgeColor}20; color:${badgeColor}; border:1px solid ${badgeColor}40;">${leadData.confidenceTier} Confidence</span>`;
+      }
+
+      document.getElementById('chatName').innerHTML = `${name} ${badgeHtml}`;
       document.getElementById('chatEmail').innerText = email;
       document.getElementById('chatAvatar').innerText = getInitials(name);
       document.getElementById('replyText').value = '';
@@ -620,7 +635,6 @@
           headers: { 'Authorization': `Bearer ${token}` }
         }).catch(err => console.warn("Failed to mark as read on server", err));
       }
-
       const container = document.getElementById('messagesContainer');
       container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">Loading…</div>';
 
@@ -670,8 +684,7 @@
     // ── Auto-Reply Logic ──────────────────────────────────────────────────────
     function toggleAutoReply() {
       if (isAutoReplyEnabled) {
-        isAutoReplyEnabled = false;
-        saveAutoReplyStatus();
+        isAutoReplyEnabled = false;        saveAutoReplyStatus();
       } else {
         openInstructionsModal();
       }
@@ -720,8 +733,7 @@
         await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Content-Type': 'application/json',            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ enabled: isAutoReplyEnabled })
         });
@@ -770,8 +782,7 @@
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
+          },          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
@@ -820,7 +831,6 @@
           alert("Failed to rename");
         }
       }
-    }
-  </script>
+    }  </script>
 </body>
-  </html>
+            </html>
