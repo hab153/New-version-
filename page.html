@@ -201,14 +201,112 @@
     }
     .top-icon-btn:hover::after { opacity: 1; }
 
+    /* ── SETUP WIZARD (NEW) ── */
+    #setupWizard {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 5;
+      overflow-y: auto;
+    }
+    
+    .wizard-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
 
+    .wizard-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .wizard-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 8px;
+    }
+    .wizard-header p {
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .wizard-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-3);
+      font-weight: 600;
+    }
+
+    .form-input {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-dim);
+    }
+    .form-input::placeholder {
+      color: var(--text-3);
+    }
+
+    .start-search-btn {
+      margin-top: 12px;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #03060f;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .start-search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--accent-glow);
+    }
+    .start-search-btn:disabled {      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     /* ── CHAT AREA ── */
     .chat-area {
       flex: 1; overflow-y: auto;
       padding: 28px 0 16px;
-      display: flex; flex-direction: column; gap: 4px;
+      display: none; /* Hidden by default */
+      flex-direction: column; gap: 4px;
       scroll-behavior: smooth; position: relative; z-index: 1;
+    }
+    .chat-area.active {
+      display: flex;
     }
     .chat-area::-webkit-scrollbar { width: 3px; }
     .chat-area::-webkit-scrollbar-track { background: transparent; }
@@ -314,6 +412,10 @@
       background: var(--bg-base);
       border-top: 1px solid var(--border);
       flex-shrink: 0;
+      display: none; /* Hidden until search starts */
+    }
+    .input-bar.active {
+      display: block;
     }
     .input-inner {
       display: flex; align-items: flex-end; gap: 10px;
@@ -337,11 +439,11 @@
     .send-btn {
       width: 36px; height: 36px; border-radius: 10px; border: none;
       background: linear-gradient(135deg, var(--accent-2), var(--accent));
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;      transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0;
     }
     .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 22px rgba(79,195,247,0.45); }
-    .send-btn:disabled {      background: var(--bg-surface); border: 1px solid var(--border);
+    .send-btn:disabled {
+      background: var(--bg-surface); border: 1px solid var(--border);
       opacity: 0.35; cursor: default; transform: none; box-shadow: none;
     }
 
@@ -386,11 +488,11 @@
       gap: 5px; flex: 1;
       cursor: pointer; padding: 8px 0;
       text-decoration: none;
-      color: var(--text-3);
-      transition: color 0.2s;
+      color: var(--text-3);      transition: color 0.2s;
       position: relative;
       border: none; background: none;
-    }    .nav-item svg { transition: transform 0.2s; }
+    }
+    .nav-item svg { transition: transform 0.2s; }
     .nav-item:hover { color: var(--accent); }
     .nav-item:hover svg { transform: scale(1.12); }
 
@@ -435,8 +537,7 @@
       background: var(--danger);
       border-radius: 10px;
       border: 1.5px solid var(--bg-base);
-      display: none;
-      box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+      display: none;      box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
       color: white;
       font-family: var(--font-mono);
       font-size: 9px;
@@ -485,8 +586,7 @@
       :root { --nav-h: 64px; }
     }
 
-    /* Landscape mobile */
-    @media (max-height: 500px) and (orientation: landscape) {
+    /* Landscape mobile */    @media (max-height: 500px) and (orientation: landscape) {
       .topbar { height: 46px; }
       .bottom-nav { height: 54px; }
       :root { --nav-h: 54px; }
@@ -498,7 +598,8 @@
 
     /* Ensure input bar sits above bottom nav on all devices */
     .input-bar { position: relative; z-index: 5; }
-  </style></head>
+  </style>
+</head>
 <body>
 
   <!-- TOPBAR -->
@@ -512,14 +613,14 @@
 
     <div class="topbar-right">
       <!-- New Chat icon -->
-      <button class="top-icon-btn" id="newChatBtn" data-tip="New Chat" title="New Chat">
+      <button class="top-icon-btn" id="newChatBtn" data-tip="New Search" title="New Search">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14M5 12h14"/>
         </svg>
       </button>
 
       <!-- Clear Chat icon -->
-      <button class="top-icon-btn" id="clearSessionBtn" data-tip="Clear" title="Clear Chat">
+      <button class="top-icon-btn" id="clearSessionBtn" data-tip="Clear" title="Clear Session">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -527,8 +628,6 @@
           <path d="M9 6V4h6v2"/>
         </svg>
       </button>
-
-
     </div>
   </header>
 
@@ -536,19 +635,56 @@
   <div id="connectionStatus" class="connection-status disconnected">
     ⚡ Checking email connection...
   </div>
-
   <!-- REPLY NOTIFICATION -->
   <div id="replyNotification" class="reply-notification" onclick="window.location.href='dashboard.html'">
     🔔 New Reply Detected! Click to view Dashboard.
   </div>
 
-  <!-- CHAT AREA -->
+  <!-- SETUP WIZARD (NEW DEFAULT VIEW) -->
+  <div id="setupWizard">
+    <div class="wizard-card">
+      <div class="wizard-header">
+        <h2>Define Your Target</h2>
+        <p>Tell us who you want to reach, and we'll find them.</p>
+      </div>
+      <form class="wizard-form" id="targetForm">
+        <div class="form-group">
+          <label for="industry">Industry</label>
+          <input type="text" id="industry" class="form-input" placeholder="e.g. SaaS, Real Estate, Marketing" required>
+        </div>
+        <div class="form-group">
+          <label for="region">Region / Country</label>
+          <input type="text" id="region" class="form-input" placeholder="e.g. USA, London, Global" required>
+        </div>
+        <div class="form-group">
+          <label for="companySize">Company Size</label>
+          <select id="companySize" class="form-input">
+            <option value="Any">Any Size</option>
+            <option value="1-10">1-10 Employees</option>
+            <option value="11-50">11-50 Employees</option>
+            <option value="51-200">51-200 Employees</option>
+            <option value="201-500">201-500 Employees</option>
+            <option value="500+">500+ Employees</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="jobTitle">Job Title to Contact</label>
+          <input type="text" id="jobTitle" class="form-input" placeholder="e.g. CEO, Founder, Head of Sales" required>
+        </div>
+        <button type="submit" class="start-search-btn" id="startSearchBtn">
+          Start Search
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CHAT AREA (HIDDEN INITIALLY) -->
   <div class="chat-area" id="chatArea">
     <div id="messagesContainer"></div>
   </div>
 
-  <!-- REVIEW PANEL -->  <div id="reviewPanel">
-    <div class="review-header">
+  <!-- REVIEW PANEL -->
+  <div id="reviewPanel">    <div class="review-header">
       <h3>Review Generated Emails</h3>
       <button class="close-review" onclick="closeReviewPanel()">✕</button>
     </div>
@@ -556,7 +692,7 @@
     <button id="sendAllBtn" class="send-all-btn" onclick="submitBatchSend()">✅ Connect & Send All</button>
   </div>
 
-  <!-- INPUT BAR -->
+  <!-- INPUT BAR (HIDDEN INITIALLY) -->
   <div class="input-bar" id="inputBar">
     <div class="input-inner">
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
@@ -596,8 +732,8 @@
 
     <!-- Notifications -->
     <a href="notifications.html" class="nav-item" id="navNotifBtn">
-      <div class="nav-badge"></div>      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <div class="nav-badge"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
       </svg>
     </a>
@@ -624,16 +760,21 @@
     let currentGeneratedLeads = [];
     let notifInterval = null;
 
-    let chatArea, msgInput, sendBtn, menuBtn, dropdown, charCount, planBadge;
+    let chatArea, msgInput, sendBtn, charCount, planBadge;
+    let setupWizard, inputBar;
 
     document.addEventListener('DOMContentLoaded', async () => {
       chatArea = document.getElementById('chatArea');
       msgInput = document.getElementById('msgInput');
       sendBtn = document.getElementById('sendBtn');
-      menuBtn = null;
-      dropdown = null;
       charCount = document.getElementById('charCount');
       planBadge = document.getElementById('planBadge');
+      
+      // New Elements
+      setupWizard = document.getElementById('setupWizard');
+      inputBar = document.getElementById('inputBar');
+      const targetForm = document.getElementById('targetForm');
+      const startSearchBtn = document.getElementById('startSearchBtn');
 
       document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
       document.getElementById('newChatBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
@@ -641,18 +782,13 @@
       // Notification Logic
       const navNotifBtn = document.getElementById('navNotifBtn');
       if (navNotifBtn) {
-        navNotifBtn.addEventListener('click', (e) => {
-          // We don't want to prevent default navigation, but we want to clear the badge
-          // Mark as seen locally so badge disappears
-          localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-          // Also store the last known count so we only show badge if count increases
+        navNotifBtn.addEventListener('click', (e) => {          localStorage.setItem('lastNotifViewTime', new Date().toISOString());
           const currentCount = localStorage.getItem('lastKnownNotifCount') || 0;
           localStorage.setItem('lastSeenNotifCount', currentCount);
           updateNavNotifBadge(0);
         });
       }
       
-      // Start checking notifications
       loadNavNotifCount();
       notifInterval = setInterval(loadNavNotifCount, 15000);
 
@@ -665,10 +801,38 @@
       await checkPlanStatus();
       updateConnectionStatusDisplay();
 
-      appendMessage('ai', 'Hello! I\'m Skyline AA-1, your business agent. How can I help you today?');
+      // Handle Form Submission
+      targetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const industry = document.getElementById('industry').value;
+        const region = document.getElementById('region').value;
+        const companySize = document.getElementById('companySize').value;
+        const jobTitle = document.getElementById('jobTitle').value;
 
+        // Construct the message to send to AI
+        const message = `Find me ${jobTitle}s in the ${industry} industry located in ${region}. Company size: ${companySize}.`;
+
+        // Switch UI
+        setupWizard.style.display = 'none';
+        chatArea.classList.add('active');
+        inputBar.classList.add('active');
+        
+        // Show initial message
+        appendMessage('user', message);
+        
+        // Start Search
+        await fetchChatResponse(message);
+      });
+
+      // If there is an existing session, skip wizard and show chat
       if (currentSessionId) {
+        setupWizard.style.display = 'none';
+        chatArea.classList.add('active');
+        inputBar.classList.add('active');
         await loadHistoryFromSession();
+      } else {        // Show welcome message in wizard or just let the form speak for itself
+        // We keep the wizard clean for focus
       }
     });
 
@@ -681,15 +845,9 @@
         if (res.ok) {
           const data = await res.json();
           const count = data.count || 0;
-          
-          // Store current count for comparison when clicking
           localStorage.setItem('lastKnownNotifCount', count);
-          
           const lastSeenCount = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-          
-          // Logic: Show badge only if current count is greater than what was last "seen" by clicking the button
           let shouldShow = count > lastSeenCount;
-          
           updateNavNotifBadge(shouldShow ? count : 0);
         }
       } catch (err) {
@@ -700,16 +858,10 @@
     function updateNavNotifBadge(count) {
       const navItem = document.getElementById('navNotifBtn');
       const badge = navItem ? navItem.querySelector('.nav-badge') : null;
-      
       if (navItem && badge) {
         if (count > 0) {
           navItem.classList.add('has-notifs');
-          // Display logic: 1, 9, or 9+
-          if (count > 9) {
-            badge.innerText = '9+';
-          } else {
-            badge.innerText = count;
-          }
+          badge.innerText = count > 9 ? '9+' : count;
         } else {
           navItem.classList.remove('has-notifs');
           badge.innerText = '';
@@ -728,8 +880,7 @@
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
             statusDiv.className = 'connection-status connected';
             statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
-          } else {
-            statusDiv.className = 'connection-status disconnected';
+          } else {            statusDiv.className = 'connection-status disconnected';
             statusDiv.innerHTML = `⚠️ No active email connection • <a href="dashboard.html">Connect Gmail/Outlook</a> to send emails`;
           }
         }
@@ -751,7 +902,8 @@
       showTyping();
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
-          method: 'POST',          headers: {
+          method: 'POST',
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
@@ -777,8 +929,7 @@
       } catch (err) {
         hideTyping();
         appendMessage('ai', '🔌 Connection error. Please check your network and try again.');
-      } finally {
-        isTyping = false;
+      } finally {        isTyping = false;
         updateSendButton();
       }
     }
@@ -800,7 +951,8 @@
               } else {
                 appendMessage('user', msg.content);
                 conversationHistory.push({ role: 'user', content: msg.content });
-              }            }
+              }
+            }
             scrollToBottom();
           }
         }
@@ -826,8 +978,7 @@
       const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
 
-      if (role === 'ai' && content.startsWith('[')) {
-        try {
+      if (role === 'ai' && content.startsWith('[')) {        try {
           const leads = JSON.parse(content);
           currentGeneratedLeads = leads;
           renderReviewPanel(leads);
@@ -849,7 +1000,8 @@
       scrollToBottom();
     }
 
-    function renderReviewPanel(leads) {      const panel = document.getElementById('reviewPanel');
+    function renderReviewPanel(leads) {
+      const panel = document.getElementById('reviewPanel');
       const list = document.getElementById('emailList');
       list.innerHTML = '';
       leads.forEach((lead, index) => {
@@ -875,8 +1027,7 @@
     async function submitBatchSend() {
       const btn = document.getElementById('sendAllBtn');
       const originalText = btn.innerText;
-      btn.innerText = "Verifying Connection...";
-      btn.disabled = true;
+      btn.innerText = "Verifying Connection...";      btn.disabled = true;
       try {
         const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
@@ -898,7 +1049,8 @@
         btn.innerText = "Sending Emails...";
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
@@ -924,8 +1076,7 @@
     }
 
     function showTyping() {
-      if (document.getElementById('typingRow')) return;
-      const messagesContainer = document.getElementById('messagesContainer');
+      if (document.getElementById('typingRow')) return;      const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
       const row = document.createElement('div');
       row.className = 'msg-row ai';
@@ -974,7 +1125,6 @@
 
     function clearChat() {
       window.location.href = window.location.pathname;
-    }
-  </script>
+    }  </script>
 </body>
   </html>
