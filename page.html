@@ -47,8 +47,7 @@
     html, body { height: 100%; overflow: hidden; }
 
     body {
-      background: var(--bg-void);      color: var(--text-1);
-      font-family: var(--font-sans);
+      background: var(--bg-void);      color: var(--text-1);      font-family: var(--font-sans);
       font-size: 14px;
       line-height: 1.6;
       display: flex;
@@ -97,8 +96,7 @@
     }
     .connection-status.connected {
       background: rgba(34,197,94,0.08);      border-bottom-color: rgba(34,197,94,0.30);
-      color: #4ade80;
-    }
+      color: #4ade80;    }
     .connection-status.disconnected {
       background: rgba(239,68,68,0.08);
       border-bottom-color: rgba(239,68,68,0.30);
@@ -148,7 +146,6 @@
     }    .plan-badge.free { background: rgba(255,255,255,0.03); color: var(--text-3); border: 1px solid rgba(255,255,255,0.06); }
     .plan-badge.go { background: rgba(56,189,248,0.10); color: var(--go-color); border: 1px solid rgba(56,189,248,0.28); box-shadow: 0 0 8px rgba(56,189,248,0.15); }
     .plan-badge.pro { background: rgba(192,132,252,0.10); color: var(--pro-color); border: 1px solid rgba(192,132,252,0.28); }
-
     .topbar-title {
       font-family: var(--font-sans); font-size: 13px; font-weight: 800;
       letter-spacing: 0.08em; text-transform: uppercase;
@@ -197,8 +194,7 @@
       white-space: nowrap;      opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s;
-      z-index: 999;
-    }
+      z-index: 999;    }
     .top-icon-btn:hover::after { opacity: 1; }
 
     /* ── SETUP WIZARD (NEW) ── */
@@ -248,7 +244,6 @@
       flex-direction: column;
       gap: 6px;
     }
-
     .form-group label {
       font-size: 11px;
       text-transform: uppercase;
@@ -297,8 +292,7 @@
       transform: none;
     }
 
-    /* ── CHAT AREA ── */
-    .chat-area {
+    /* ── CHAT AREA ── */    .chat-area {
       flex: 1; overflow-y: auto;
       padding: 28px 0 16px;
       display: none; /* Hidden by default */
@@ -347,8 +341,7 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-md);
       color: var(--text-2);
-    }
-    .msg-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em; }
+    }    .msg-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); margin-top: 5px; letter-spacing: 0.06em; }
 
     /* ── REPLY NOTIFICATION ── */
     .reply-notification {
@@ -397,8 +390,7 @@
     .input-group textarea { resize: vertical; min-height: 80px; }
     .send-all-btn {
       width: 100%; padding: 13px; 
-      background: linear-gradient(135deg, var(--accent-2), var(--accent));
-      color: #03060f; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));      color: #03060f; border: none; border-radius: 10px;
       font-weight: 800; cursor: pointer; margin-top: 10px;
       font-family: var(--font-sans); font-size: 13px; letter-spacing: 0.05em;
       transition: all 0.2s;
@@ -447,8 +439,7 @@
       opacity: 0.35; cursor: default; transform: none; box-shadow: none;
     }
 
-    .input-meta {
-      display: flex; justify-content: space-between;
+    .input-meta {      display: flex; justify-content: space-between;
       margin-top: 7px; padding: 0 2px;
     }
     .input-hint {
@@ -497,8 +488,7 @@
     .nav-item:hover svg { transform: scale(1.12); }
 
     .nav-item.active { color: var(--accent); }
-    .nav-item.active svg { filter: drop-shadow(0 0 6px rgba(79,195,247,0.5)); }
-    .nav-item.active::after {
+    .nav-item.active svg { filter: drop-shadow(0 0 6px rgba(79,195,247,0.5)); }    .nav-item.active::after {
       content: '';
       position: absolute; bottom: -1px; left: 50%;
       transform: translateX(-50%);
@@ -547,8 +537,7 @@
       padding: 0 4px;
       line-height: 1;
       z-index: 2;
-    }
-    .nav-item.has-notifs .nav-badge {
+    }    .nav-item.has-notifs .nav-badge {
       display: flex;
     }
 
@@ -597,8 +586,7 @@
     }
 
     /* Ensure input bar sits above bottom nav on all devices */
-    .input-bar { position: relative; z-index: 5; }
-  </style>
+    .input-bar { position: relative; z-index: 5; }  </style>
 </head>
 <body>
 
@@ -647,8 +635,7 @@
         <h2>Define Your Target</h2>
         <p>Tell us who you want to reach, and we'll find them.</p>
       </div>
-      <form class="wizard-form" id="targetForm">
-        <div class="form-group">
+      <form class="wizard-form" id="targetForm">        <div class="form-group">
           <label for="industry">Industry</label>
           <input type="text" id="industry" class="form-input" placeholder="e.g. SaaS, Real Estate, Marketing" required>
         </div>
@@ -697,8 +684,7 @@
     <div class="input-inner">
       <textarea id="msgInput" placeholder="Ask me anything about your business..." rows="1"></textarea>
       <button class="send-btn" id="sendBtn" disabled>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 15 15" fill="none">
-          <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#03060f" stroke-width="2" stroke-linecap="round"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 15 15" fill="none">          <path d="M1.5 7.5L13.5 7.5M13.5 7.5L8.5 2.5M13.5 7.5L8.5 12.5" stroke="#03060f" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
@@ -748,7 +734,6 @@
       </svg>
     </a>
   </nav>
-
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -797,7 +782,6 @@
         msgInput.addEventListener('keydown', handleKeydown);
       }
       if (sendBtn) sendBtn.addEventListener('click', sendMessage);
-
       await checkPlanStatus();
       updateConnectionStatusDisplay();
 
@@ -847,8 +831,7 @@
           const count = data.count || 0;
           localStorage.setItem('lastKnownNotifCount', count);
           const lastSeenCount = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-          let shouldShow = count > lastSeenCount;
-          updateNavNotifBadge(shouldShow ? count : 0);
+          let shouldShow = count > lastSeenCount;          updateNavNotifBadge(shouldShow ? count : 0);
         }
       } catch (err) {
         console.error('Failed to load nav notifications:', err);
@@ -897,9 +880,10 @@
       await fetchChatResponse(text);
     }
 
-    async function fetchChatResponse(message) {
-      isTyping = true;
-      showTyping();
+    async function fetchChatResponse(message) {      isTyping = true;
+      // Show "AI Searching" immediately
+      showTyping("AI Searching..."); 
+      
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
           method: 'POST',
@@ -913,14 +897,21 @@
             sessionId: currentSessionId
           })
         });
+        
+        // Update status to "Processing Results" while waiting for response
+        showTyping("Processing Results...");
+
         const data = await res.json();
         hideTyping();
+        
         if (res.ok) {
           if (data.sessionId && !currentSessionId) {
             currentSessionId = data.sessionId;
             pushSessionToURL(currentSessionId);
           }
           if (data.history) conversationHistory = data.history;
+          
+          // Show final result
           const reply = data.reply || "I've received your message. How can I assist further?";
           appendMessage('ai', reply);
         } else {
@@ -938,8 +929,7 @@
       try {
         const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
+        });        if (res.ok) {
           const msgs = await res.json();
           if (msgs && msgs.length) {
             const messagesContainer = document.getElementById('messagesContainer');
@@ -988,8 +978,7 @@
           messagesContainer.appendChild(row);
           scrollToBottom();
           return;
-        } catch (e) {}
-      }
+        } catch (e) {}      }
 
       const row = document.createElement('div');
       row.className = `msg-row ${role}`;
@@ -1038,8 +1027,7 @@
             email: document.getElementById(`email-${index}`).value,
             company: lead.company,
             messages: [{ subject: document.getElementById(`subject-${index}`).value, body: document.getElementById(`body-${index}`).value }]
-          }))
-        };
+          }))        };
         if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
           localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
           alert("⚠️ Your email connection has expired. Please reconnect.");
@@ -1075,13 +1063,23 @@
       }
     }
 
-    function showTyping() {
-      if (document.getElementById('typingRow')) return;      const messagesContainer = document.getElementById('messagesContainer');
+    function showTyping(customMessage = "Thinking...") {
+      if (document.getElementById('typingRow')) return;
+      const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
+      
       const row = document.createElement('div');
       row.className = 'msg-row ai';
       row.id = 'typingRow';
-      row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+      
+      // Use the custom message instead of just dots
+      row.innerHTML = `
+        <div class="avatar">AI</div>
+        <div class="bubble-wrap">
+          <div class="bubble" style="font-style: italic; color: var(--text-2); font-size: 12px;">            ${customMessage} <span class="typing-dots">...</span>
+          </div>
+        </div>`;
+        
       messagesContainer.appendChild(row);
       scrollToBottom();
     }
