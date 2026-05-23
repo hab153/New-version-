@@ -47,8 +47,7 @@
     html, body { height: 100%; overflow: hidden; }
 
     body {
-      background: var(--bg-void);      color: var(--text-1);      font-family: var(--font-sans);
-      font-size: 14px;
+      background: var(--bg-void);      color: var(--text-1);      font-family: var(--font-sans);      font-size: 14px;
       line-height: 1.6;
       display: flex;
       flex-direction: column;
@@ -97,8 +96,7 @@
     .connection-status.connected {
       background: rgba(34,197,94,0.08);      border-bottom-color: rgba(34,197,94,0.30);
       color: #4ade80;    }
-    .connection-status.disconnected {
-      background: rgba(239,68,68,0.08);
+    .connection-status.disconnected {      background: rgba(239,68,68,0.08);
       border-bottom-color: rgba(239,68,68,0.30);
       color: #f87171;
     }
@@ -147,8 +145,7 @@
     .plan-badge.go { background: rgba(56,189,248,0.10); color: var(--go-color); border: 1px solid rgba(56,189,248,0.28); box-shadow: 0 0 8px rgba(56,189,248,0.15); }
     .plan-badge.pro { background: rgba(192,132,252,0.10); color: var(--pro-color); border: 1px solid rgba(192,132,252,0.28); }
     .topbar-title {
-      font-family: var(--font-sans); font-size: 13px; font-weight: 800;
-      letter-spacing: 0.08em; text-transform: uppercase;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 800;      letter-spacing: 0.08em; text-transform: uppercase;
       background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -197,8 +194,7 @@
       z-index: 999;    }
     .top-icon-btn:hover::after { opacity: 1; }
 
-    /* ── SETUP WIZARD (NEW) ── */
-    #setupWizard {
+    /* ── SETUP WIZARD (NEW) ── */    #setupWizard {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -247,8 +243,7 @@
     .form-group label {
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-3);
+      letter-spacing: 0.05em;      color: var(--text-3);
       font-weight: 600;
     }
 
@@ -297,8 +292,7 @@
       padding: 28px 0 16px;
       display: none; /* Hidden by default */
       flex-direction: column; gap: 4px;
-      scroll-behavior: smooth; position: relative; z-index: 1;
-    }
+      scroll-behavior: smooth; position: relative; z-index: 1;    }
     .chat-area.active {
       display: flex;
     }
@@ -347,8 +341,7 @@
     .reply-notification {
       display: none;
       background: rgba(79,195,247,0.08);
-      border: 1px solid rgba(79,195,247,0.30);
-      color: var(--accent);
+      border: 1px solid rgba(79,195,247,0.30);      color: var(--accent);
       padding: 9px 24px;
       font-family: var(--font-mono);
       font-size: 11px;
@@ -397,7 +390,6 @@
     }
     .send-all-btn:hover { opacity: 0.9; box-shadow: 0 0 24px rgba(79,195,247,0.30); }
     .send-all-btn:disabled { background: var(--bg-raised); color: var(--text-3); cursor: not-allowed; box-shadow: none; }
-
     /* ── INPUT BAR ── */
     .input-bar {
       padding: 12px 18px 10px;
@@ -447,8 +439,7 @@
       color: var(--text-3); letter-spacing: 0.15em;
     }
     .char-count {
-      font-family: var(--font-mono); font-size: 9px; color: var(--text-3);
-    }
+      font-family: var(--font-mono); font-size: 9px; color: var(--text-3);    }
 
     /* ── TYPING INDICATOR ── */
     .typing-indicator {
@@ -497,7 +488,6 @@
       border-radius: 2px 2px 0 0;
       box-shadow: 0 0 10px var(--accent-glow);
     }
-
     /* Center nav item (home) gets slight glow ring */
     .nav-item.nav-home {
       position: relative;
@@ -547,8 +537,7 @@
     @media (min-width: 1024px) {
       .chat-area { padding: 40px 0 20px; }
       .msg-row { padding: 5px 10%; }
-      .bubble { max-width: 60%; font-size: 14px; }
-      .msg-row.ai .bubble { font-size: 13.5px; }
+      .bubble { max-width: 60%; font-size: 14px; }      .msg-row.ai .bubble { font-size: 13.5px; }
       .topbar { padding: 0 32px; }
       .input-bar { padding: 14px 10% 12px; }
       .bottom-nav { padding: 0 20%; }
@@ -598,7 +587,6 @@
     </div>
 
     <span class="topbar-title">Business Agent</span>
-
     <div class="topbar-right">
       <!-- New Chat icon -->
       <button class="top-icon-btn" id="newChatBtn" data-tip="New Search" title="New Search">
@@ -647,8 +635,7 @@
           <label for="companySize">Company Size</label>
           <select id="companySize" class="form-input">
             <option value="Any">Any Size</option>
-            <option value="1-10">1-10 Employees</option>
-            <option value="11-50">11-50 Employees</option>
+            <option value="1-10">1-10 Employees</option>            <option value="11-50">11-50 Employees</option>
             <option value="51-200">51-200 Employees</option>
             <option value="201-500">201-500 Employees</option>
             <option value="500+">500+ Employees</option>
@@ -697,8 +684,7 @@
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <!-- Home / Main Page -->
-    <a href="page.html" class="nav-item nav-home active">
-      <div class="nav-icon-wrap">
+    <a href="page.html" class="nav-item nav-home active">      <div class="nav-icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
           <polyline points="9 21 9 12 15 12 15 21"/>
@@ -744,10 +730,10 @@
     let isTyping = false;
     let currentGeneratedLeads = [];
     let notifInterval = null;
+    let statusInterval = null; // For cycling status messages
 
     let chatArea, msgInput, sendBtn, charCount, planBadge;
     let setupWizard, inputBar;
-
     document.addEventListener('DOMContentLoaded', async () => {
       chatArea = document.getElementById('chatArea');
       msgInput = document.getElementById('msgInput');
@@ -796,7 +782,6 @@
 
         // Construct the message to send to AI
         const message = `Find me ${jobTitle}s in the ${industry} industry located in ${region}. Company size: ${companySize}.`;
-
         // Switch UI
         setupWizard.style.display = 'none';
         chatArea.classList.add('active');
@@ -846,8 +831,7 @@
           navItem.classList.add('has-notifs');
           badge.innerText = count > 9 ? '9+' : count;
         } else {
-          navItem.classList.remove('has-notifs');
-          badge.innerText = '';
+          navItem.classList.remove('has-notifs');          badge.innerText = '';
         }
       }
     }
@@ -880,9 +864,26 @@
       await fetchChatResponse(text);
     }
 
-    async function fetchChatResponse(message) {      isTyping = true;
-      // Show "AI Searching" immediately
-      showTyping("AI Searching..."); 
+    async function fetchChatResponse(message) {
+      isTyping = true;
+      
+      // Define the sequence of statuses that match Free.js steps
+      const statuses = [
+        "AI Searching...",       // Step 1: Discovery
+        "Filtering Results...",  // Step 2: Filtering
+        "Finding Decision Makers...", // Step 3: Finding People
+        "Finalizing..."          // Step 4: Formatting
+      ];
+      
+      let statusIndex = 0;
+      showTyping(statuses[0]);
+
+      // Cycle through statuses to simulate real-time progress
+      statusInterval = setInterval(() => {
+        statusIndex++;        if (statusIndex < statuses.length) {
+          showTyping(statuses[statusIndex]);
+        }
+      }, 2500); // Change status every 2.5 seconds
       
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
@@ -897,11 +898,11 @@
             sessionId: currentSessionId
           })
         });
-        
-        // Update status to "Processing Results" while waiting for response
-        showTyping("Processing Results...");
 
         const data = await res.json();
+        
+        // Clear the interval and hide typing immediately upon response
+        clearInterval(statusInterval);
         hideTyping();
         
         if (res.ok) {
@@ -918,16 +919,17 @@
           appendMessage('ai', `⚠️ ${data.message || 'Unable to process request. Please try again.'}`);
         }
       } catch (err) {
+        clearInterval(statusInterval);
         hideTyping();
         appendMessage('ai', '🔌 Connection error. Please check your network and try again.');
-      } finally {        isTyping = false;
+      } finally {
+        isTyping = false;
         updateSendButton();
       }
     }
 
     async function loadHistoryFromSession() {
-      try {
-        const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, {
+      try {        const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });        if (res.ok) {
           const msgs = await res.json();
@@ -976,8 +978,7 @@
           row.className = `msg-row ${role}`;
           row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="bubble">📊 Generated ${leads.length} leads. Please review below.</div></div>`;
           messagesContainer.appendChild(row);
-          scrollToBottom();
-          return;
+          scrollToBottom();          return;
         } catch (e) {}      }
 
       const row = document.createElement('div');
@@ -1026,8 +1027,7 @@
             name: lead.name,
             email: document.getElementById(`email-${index}`).value,
             company: lead.company,
-            messages: [{ subject: document.getElementById(`subject-${index}`).value, body: document.getElementById(`body-${index}`).value }]
-          }))        };
+            messages: [{ subject: document.getElementById(`subject-${index}`).value, body: document.getElementById(`body-${index}`).value }]          }))        };
         if (!user.nylasIntegration || !user.nylasIntegration.isConnected) {
           localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
           alert("⚠️ Your email connection has expired. Please reconnect.");
@@ -1064,10 +1064,19 @@
     }
 
     function showTyping(customMessage = "Thinking...") {
-      if (document.getElementById('typingRow')) return;
+      // If already showing typing, just update the text
+      const existingRow = document.getElementById('typingRow');
+      if (existingRow) {
+        const bubble = existingRow.querySelector('.bubble');
+        if (bubble) {
+            bubble.innerHTML = `${customMessage} <span class="typing-dots">...</span>`;
+        }
+        scrollToBottom();
+        return;
+      }
+
       const messagesContainer = document.getElementById('messagesContainer');
-      if (!messagesContainer) return;
-      
+      if (!messagesContainer) return;      
       const row = document.createElement('div');
       row.className = 'msg-row ai';
       row.id = 'typingRow';
@@ -1116,8 +1125,7 @@
     }
 
     function pushSessionToURL(sid) {
-      const url = new URL(window.location);
-      url.searchParams.set('session', sid);
+      const url = new URL(window.location);      url.searchParams.set('session', sid);
       window.history.pushState({}, '', url);
     }
 
@@ -1125,4 +1133,4 @@
       window.location.href = window.location.pathname;
     }  </script>
 </body>
-  </html>
+      </html>
