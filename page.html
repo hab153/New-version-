@@ -47,7 +47,8 @@
     html, body { height: 100%; overflow: hidden; }
 
     body {
-      background: var(--bg-void);      color: var(--text-1);      font-family: var(--font-sans);      font-size: 14px;      line-height: 1.6;
+      background: var(--bg-void);      color: var(--text-1);      font-family: var(--font-sans);      font-size: 14px;
+      line-height: 1.6;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -96,7 +97,8 @@
       background: rgba(34,197,94,0.08);      border-bottom-color: rgba(34,197,94,0.30);
       color: #4ade80;    }
     .connection-status.disconnected {      background: rgba(239,68,68,0.08);
-      border-bottom-color: rgba(239,68,68,0.30);      color: #f87171;
+      border-bottom-color: rgba(239,68,68,0.30);
+      color: #f87171;
     }
     .connection-status a {
       color: var(--accent);
@@ -145,7 +147,8 @@
     .topbar-title {
       font-family: var(--font-sans); font-size: 13px; font-weight: 800;      letter-spacing: 0.08em; text-transform: uppercase;
       background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     /* ── TOP RIGHT ACTION BUTTONS ── */
@@ -194,7 +197,8 @@
     /* ── SETUP WIZARD (NEW) ── */    #setupWizard {
       flex: 1;
       display: flex;
-      flex-direction: column;      align-items: center;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
       padding: 20px;
       z-index: 5;
@@ -243,7 +247,8 @@
       font-weight: 600;
     }
 
-    .form-input {      background: var(--bg-raised);
+    .form-input {
+      background: var(--bg-raised);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 12px;
@@ -292,7 +297,8 @@
       display: flex;
     }
     .chat-area::-webkit-scrollbar { width: 3px; }
-    .chat-area::-webkit-scrollbar-track { background: transparent; }    .chat-area::-webkit-scrollbar-thumb { background: #0f2040; border-radius: 2px; }
+    .chat-area::-webkit-scrollbar-track { background: transparent; }
+    .chat-area::-webkit-scrollbar-thumb { background: #0f2040; border-radius: 2px; }
 
     .msg-row { display: flex; padding: 4px 20px; animation: msgIn 0.28s ease both; }
     @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -341,7 +347,8 @@
       font-size: 11px;
       text-align: center;
       cursor: pointer;
-      animation: slideDown 0.3s ease;      letter-spacing: 0.05em;
+      animation: slideDown 0.3s ease;
+      letter-spacing: 0.05em;
     }
     .reply-notification.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
@@ -390,7 +397,8 @@
       border-top: 1px solid var(--border);
       flex-shrink: 0;
       display: none; /* Hidden until search starts */
-    }    .input-bar.active {
+    }
+    .input-bar.active {
       display: block;
     }
     .input-inner {
@@ -439,7 +447,8 @@
       padding: 13px 16px; background: var(--ai-bg);
       border: 1px solid var(--ai-border);
       border-radius: var(--radius-lg); width: fit-content;
-    }    .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
+    }
+    .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); animation: typingBounce 1.3s infinite; }
     .typing-dot:nth-child(2) { animation-delay: 0.16s; }
     .typing-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); background: var(--accent); } }
@@ -488,7 +497,8 @@
       background: linear-gradient(135deg, var(--accent-2), var(--accent));
       border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 18px rgba(79,195,247,0.30);      transition: box-shadow 0.2s, transform 0.2s;
+      box-shadow: 0 0 18px rgba(79,195,247,0.30);
+      transition: box-shadow 0.2s, transform 0.2s;
     }
     .nav-item.nav-home:hover .nav-icon-wrap {
       box-shadow: 0 0 28px rgba(79,195,247,0.50);
@@ -537,7 +547,8 @@
     @media (min-width: 600px) and (max-width: 1023px) {
       .msg-row { padding: 5px 6%; }
       .bubble { max-width: 68%; }
-      .topbar { padding: 0 24px; }      .input-bar { padding: 12px 6% 10px; }
+      .topbar { padding: 0 24px; }
+      .input-bar { padding: 12px 6% 10px; }
       .bottom-nav { padding: 0 8%; }
     }
 
@@ -586,7 +597,8 @@
 
       <!-- Clear Chat icon -->
       <button class="top-icon-btn" id="clearSessionBtn" data-tip="Clear" title="Clear Session">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">          <polyline points="3 6 5 6 21 6"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
           <path d="M10 11v6M14 11v6"/>
           <path d="M9 6V4h6v2"/>
@@ -635,7 +647,8 @@
         </div>
         <button type="submit" class="start-search-btn" id="startSearchBtn">
           Start Search
-        </button>      </form>
+        </button>
+      </form>
     </div>
   </div>
 
@@ -684,7 +697,8 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9"/>
         <polyline points="12 7 12 12 15 15"/>
-        <path d="M3.05 11a9 9 0 1 0 .5-3"/>        <polyline points="3 4 3 11 10 11"/>
+        <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+        <polyline points="3 4 3 11 10 11"/>
       </svg>
     </a>
 
@@ -733,7 +747,8 @@
       const targetForm = document.getElementById('targetForm');
       const startSearchBtn = document.getElementById('startSearchBtn');
 
-      document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });      document.getElementById('newChatBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
+      document.getElementById('clearSessionBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
+      document.getElementById('newChatBtn')?.addEventListener('click', (e) => { e.preventDefault(); clearChat(); });
 
       // Notification Logic
       const navNotifBtn = document.getElementById('navNotifBtn');
@@ -782,7 +797,8 @@
       // If there is an existing session, skip wizard and show chat
       if (currentSessionId) {
         setupWizard.style.display = 'none';
-        chatArea.classList.add('active');        inputBar.classList.add('active');
+        chatArea.classList.add('active');
+        inputBar.classList.add('active');
         await loadHistoryFromSession();
       } else {        // Show welcome message in wizard or just let the form speak for itself
         // We keep the wizard clean for focus
@@ -831,7 +847,8 @@
           if (user.nylasIntegration && user.nylasIntegration.isConnected) {
             statusDiv.className = 'connection-status connected';
             statusDiv.innerHTML = `🔌 Email Connected • <a href="dashboard.html">Manage Connection →</a>`;
-          } else {            statusDiv.className = 'connection-status disconnected';            statusDiv.innerHTML = `⚠️ No active email connection • <a href="dashboard.html">Connect Gmail/Outlook</a> to send emails`;
+          } else {            statusDiv.className = 'connection-status disconnected';
+            statusDiv.innerHTML = `⚠️ No active email connection • <a href="dashboard.html">Connect Gmail/Outlook</a> to send emails`;
           }
         }
       } catch (err) { console.error('Error checking connection status:', err); }
@@ -855,9 +872,7 @@
         "AI Searching...",       // Step 1: Discovery
         "Filtering Results...",  // Step 2: Filtering
         "Finding Decision Makers...", // Step 3: Finding People
-        "Verifying Emails...",   // Step 4: Verification
-        "Scoring Leads...",      // Step 5: Scoring
-        "Finalizing..."          // Step 6: Formatting
+        "Finalizing..."          // Step 4: Formatting
       ];
       
       let statusIndex = 0;
@@ -868,7 +883,7 @@
         statusIndex++;        if (statusIndex < statuses.length) {
           showTyping(statuses[statusIndex]);
         }
-      }, 2000); // Change status every 2 seconds
+      }, 2500); // Change status every 2.5 seconds
       
       try {
         const res = await fetch(`${BACKEND}/api/chat`, {
@@ -880,7 +895,8 @@
           body: JSON.stringify({
             message,
             history: conversationHistory,
-            sessionId: currentSessionId          })
+            sessionId: currentSessionId
+          })
         });
 
         const data = await res.json();
@@ -896,14 +912,7 @@
           }
           if (data.history) conversationHistory = data.history;
           
-          // Check if leads were returned in the data object
-          if (data.leads && Array.isArray(data.leads)) {
-             // Trigger the review panel with the new leads
-             currentGeneratedLeads = data.leads;
-             renderReviewPanel(data.leads);
-          }
-
-          // Show final result text
+          // Show final result
           const reply = data.reply || "I've received your message. How can I assist further?";
           appendMessage('ai', reply);
         } else {
@@ -929,7 +938,8 @@
             if (messagesContainer) messagesContainer.innerHTML = '';
             for (let msg of msgs) {
               if (msg.role === 'ai') {
-                appendMessage('ai', msg.content);                conversationHistory.push({ role: 'assistant', content: msg.content });
+                appendMessage('ai', msg.content);
+                conversationHistory.push({ role: 'assistant', content: msg.content });
               } else {
                 appendMessage('user', msg.content);
                 conversationHistory.push({ role: 'user', content: msg.content });
@@ -960,6 +970,17 @@
       const messagesContainer = document.getElementById('messagesContainer');
       if (!messagesContainer) return;
 
+      if (role === 'ai' && content.startsWith('[')) {        try {
+          const leads = JSON.parse(content);
+          currentGeneratedLeads = leads;
+          renderReviewPanel(leads);
+          const row = document.createElement('div');
+          row.className = `msg-row ${role}`;
+          row.innerHTML = `<div class="avatar">AI</div><div class="bubble-wrap"><div class="bubble">📊 Generated ${leads.length} leads. Please review below.</div></div>`;
+          messagesContainer.appendChild(row);
+          scrollToBottom();          return;
+        } catch (e) {}      }
+
       const row = document.createElement('div');
       row.className = `msg-row ${role}`;
       const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
@@ -973,20 +994,15 @@
       const panel = document.getElementById('reviewPanel');
       const list = document.getElementById('emailList');
       list.innerHTML = '';
-      
       leads.forEach((lead, index) => {
         const leadDiv = document.createElement('div');
         leadDiv.className = 'lead-card';
-        
-        // Get subject and body from the messages array generated in Step 6        const subject = lead.messages && lead.messages[0] ? lead.messages[0].subject : 'Introduction';
-        const body = lead.messages && lead.messages[0] ? lead.messages[0].body : 'Hello...';
-
         leadDiv.innerHTML = `
-          <div class="lead-info">${escapeHTML(lead.contactName)} @ ${escapeHTML(lead.company)} <span style="color:${lead.tier === 'high' ? '#22c55e' : '#f59e0b'}">(${lead.tierLabel})</span></div>
-          <div class="lead-email-display">${escapeHTML(lead.email)} [${lead.emailStatus}]</div>
+          <div class="lead-info">${escapeHTML(lead.name)} @ ${escapeHTML(lead.company)}</div>
+          <div class="lead-email-display">AI Guess: ${escapeHTML(lead.email)}</div>
           <div class="input-group"><label>To (Edit Email Address):</label><input type="email" id="email-${index}" value="${escapeHTML(lead.email)}"></div>
-          <div class="input-group"><label>Subject:</label><input type="text" id="subject-${index}" value="${escapeHTML(subject)}"></div>
-          <div class="input-group"><label>Email Body:</label><textarea id="body-${index}">${escapeHTML(body)}</textarea></div>
+          <div class="input-group"><label>Subject:</label><input type="text" id="subject-${index}" value="${escapeHTML(lead.messages[0].subject)}"></div>
+          <div class="input-group"><label>Email Body:</label><textarea id="body-${index}">${escapeHTML(lead.messages[0].body)}</textarea></div>
         `;
         list.appendChild(leadDiv);
       });
@@ -1008,7 +1024,7 @@
         const user = await userRes.json();
         const payload = {
           leads: currentGeneratedLeads.map((lead, index) => ({
-            name: lead.contactName,
+            name: lead.name,
             email: document.getElementById(`email-${index}`).value,
             company: lead.company,
             messages: [{ subject: document.getElementById(`subject-${index}`).value, body: document.getElementById(`body-${index}`).value }]          }))        };
@@ -1027,7 +1043,8 @@
         const data = await res.json();
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
           localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-          alert("⚠️ Your email session expired. Please reconnect.");          window.location.href = 'dashboard.html?connect=true';
+          alert("⚠️ Your email session expired. Please reconnect.");
+          window.location.href = 'dashboard.html?connect=true';
           return;
         }
         if (data.success) {
@@ -1076,7 +1093,8 @@
       scrollToBottom();
     }
 
-    function hideTyping() {      const el = document.getElementById('typingRow');
+    function hideTyping() {
+      const el = document.getElementById('typingRow');
       if (el) el.remove();
     }
 
@@ -1115,4 +1133,4 @@
       window.location.href = window.location.pathname;
     }  </script>
 </body>
-  </html>
+    </html>
