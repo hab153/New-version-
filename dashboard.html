@@ -361,7 +361,6 @@
         SKYLINE AA-1
       </div>
     </div>
-    <!-- Notification button removed -->
   </header>
 
   <div class="container">
@@ -442,7 +441,7 @@
           <li class="disabled">Powerful Reasoning</li>
           <li class="disabled">Early Access</li>
         </ul>
-        <button class="plan-btn btn-free" onclick="alert('Coming Soon')">Current Plan</button>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>
       </div>
 
       <div class="plan-card">
@@ -455,7 +454,7 @@
           <li>Great Features</li>
           <li class="disabled">Skyline AA-1a Model</li>
         </ul>
-        <button class="plan-btn btn-go" onclick="alert('Coming Soon')">Upgrade to GO</button>
+        <button class="plan-btn btn-go" id="goPlanBtn" onclick="initiateUpgrade('go')">Upgrade to GO</button>
       </div>
 
       <div class="plan-card featured">
@@ -469,7 +468,7 @@
           <li>Early Access to Features</li>
           <li>Priority Support</li>
         </ul>
-        <button class="plan-btn btn-pro" onclick="alert('Coming Soon')">Upgrade to PRO</button>
+        <button class="plan-btn btn-pro" id="proPlanBtn" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
       </div>
 
     </div>
@@ -479,6 +478,7 @@
       <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
       <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
     </div>
+
     <div class="section-title">Skyline System</div>
     <div class="menu-grid">
       <a href="Privacy.html" class="menu-item"><span>Privacy Policy</span><span class="arrow">›</span></a>
@@ -520,11 +520,11 @@
     const token   = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
-    let currentReplyLeadId = null;
-    let currentReplyEmail = null;
+    let currentReplyLeadId  = null;
+    let currentReplyEmail   = null;
     let autoRefreshInterval = null;
 
-    // ── Toggle Command Center ────────────────────────────────────────────────
+    // ── Toggle Command Center ─────────────────────────────────────────────────
     function toggleCommandCenter() {
       const cc = document.getElementById('commandCenter');
       cc.classList.toggle('collapsed');
@@ -532,30 +532,25 @@
     }
 
     function loadCollapseState() {
-      const savedState = localStorage.getItem('commandCenterCollapsed');
-      const cc = document.getElementById('commandCenter');
-      if (savedState === 'true') {
-        cc.classList.add('collapsed');
-      } else {
-        cc.classList.remove('collapsed');
-        if (savedState === null) localStorage.setItem('commandCenterCollapsed', 'false');
-      }
+      const saved = localStorage.getItem('commandCenterCollapsed');
+      const cc    = document.getElementById('commandCenter');
+      if (saved === 'true') cc.classList.add('collapsed');
+      else { cc.classList.remove('collapsed'); if (saved === null) localStorage.setItem('commandCenterCollapsed', 'false'); }
     }
 
     function showToast(message, type = 'success', duration = 4000) {
-      const toast = document.getElementById('toast');
+      const toast     = document.getElementById('toast');
       toast.textContent = message;
       toast.className   = `toast ${type}`;
       toast.style.display = 'block';
       setTimeout(() => { toast.style.display = 'none'; }, duration);
     }
 
-    // ── Handle OAuth Redirect ────────────────────────────────────────────────
+    // ── Handle OAuth Redirect ─────────────────────────────────────────────────
     function handleOAuthRedirect() {
-      const params = new URLSearchParams(window.location.search);
+      const params    = new URLSearchParams(window.location.search);
       const connected = params.get('connected');
       const error     = params.get('error');
-
       if (connected === 'true') {
         showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000);
         setConnectedState();
@@ -567,93 +562,65 @@
       }
     }
 
-    // ── Set button to connected state ────────────────────────────────────────
     function setConnectedState() {
       const btn = document.getElementById('connectEmailBtn');
-      if (btn) {
-        btn.innerText = '✅ Connected';
-        btn.classList.add('connected');
-      }
+      if (btn) { btn.innerText = '✅ Connected'; btn.classList.add('connected'); }
     }
 
-    // ── Connect Email ────────────────────────────────────────────────────────
+    // ── Connect Email ─────────────────────────────────────────────────────────
     async function connectEmail() {
-      const btn = document.getElementById('connectEmailBtn');
+      const btn     = document.getElementById('connectEmailBtn');
       btn.innerText = 'Connecting...';
       btn.disabled  = true;
-
       try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || `Server error ${res.status}`);
-        }
-
+        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `Server error ${res.status}`); }
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error('No URL returned from server');
-        }
+        if (data.url) { window.location.href = data.url; }
+        else throw new Error('No URL returned from server');
       } catch (err) {
-        console.error('Error getting Nylas URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
         btn.innerText = 'Connect Gmail/Outlook';
         btn.disabled  = false;
       }
     }
 
-    // ── Check Email Connection Status ────────────────────────────────────────
+    // ── Check Email Status ────────────────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           const user = await res.json();
-          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
-            setConnectedState();
-          } else {
+          if (user.nylasIntegration && user.nylasIntegration.isConnected) setConnectedState();
+          else {
             const btn = document.getElementById('connectEmailBtn');
-            if (btn) {
-              btn.innerText = 'Connect Gmail/Outlook';
-              btn.classList.remove('connected');
-            }
+            if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
           }
         }
-      } catch (err) {
-        console.error('Error checking email status:', err);
-      }
+      } catch (err) { console.error('Error checking email status:', err); }
     }
 
-    // ── Load Leads ───────────────────────────────────────────────────────────
+    // ── Load Leads ────────────────────────────────────────────────────────────
     async function loadLeads() {
       try {
-        const res = await fetch(`${BACKEND}/api/leads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
+        const res   = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!res.ok) throw new Error(`Status ${res.status}`);
-
         const leads = await res.json();
         const tbody = document.getElementById('leadList');
 
-        document.getElementById('totalLeads').innerText = leads.length;
-        const interested = leads.filter(l => l.status === 'Interested').length;
-        document.getElementById('interestedCount').innerText = interested;
-        const replied = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
-        const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
-        document.getElementById('replyRate').innerText = rate + '%';
+        document.getElementById('totalLeads').innerText     = leads.length;
+        document.getElementById('interestedCount').innerText = leads.filter(l => l.status === 'Interested').length;
+        const replied = leads.filter(l => ['Replied','Interested'].includes(l.status)).length;
+        document.getElementById('replyRate').innerText = leads.length > 0 ? Math.round((replied / leads.length) * 100) + '%' : '0%';
 
         if (leads.length === 0) {
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
         } else {
           tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
-            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
+            const lastDate    = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             return `
               <tr>
                 <td>${escapeHtml(lead.name || '—')}</td>
@@ -665,12 +632,10 @@
           }).join('');
         }
       } catch (err) {
-        console.error('Error loading leads:', err);
         document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
       }
     }
 
-    // ── Safe HTML escape ─────────────────────────────────────────────────────
     function escapeHtml(str) {
       if (!str) return '';
       const div = document.createElement('div');
@@ -678,108 +643,78 @@
       return div.innerHTML;
     }
 
-    // ── Open Reply Modal ─────────────────────────────────────────────────────
+    // ── Reply Modal ───────────────────────────────────────────────────────────
     async function openReplyModal(leadId, name, email) {
       currentReplyLeadId = leadId;
-      currentReplyEmail = email;
-
+      currentReplyEmail  = email;
       document.getElementById('modalLeadName').innerText = name;
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
       document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
-
       try {
-        const res = await fetch(`${BACKEND}/api/leads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res   = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
         const leads = await res.json();
-        const lead = leads.find(l => l._id === leadId);
-
+        const lead  = leads.find(l => l._id === leadId);
         if (lead && lead.replies && lead.replies.length > 0) {
-          const conversationHtml = lead.replies.slice().reverse().map(reply => {
+          document.getElementById('conversationHistory').innerHTML = lead.replies.slice().reverse().map(reply => {
             const isLead = reply.from === 'lead';
-            const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
+            const date   = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
             return `
               <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
-                <div class="reply-meta">
-                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
-                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
-                </div>
+                <div class="reply-meta">${isLead ? '📨 Lead' : '🤖 You'} • ${date}${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}</div>
                 <div class="reply-content">${escapeHtml(reply.content)}</div>
               </div>
             `;
           }).join('');
-          document.getElementById('conversationHistory').innerHTML = conversationHtml;
         } else {
           document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
         }
       } catch (err) {
-        console.error('Error loading conversation:', err);
         document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
       }
     }
 
-    // ── Close Reply Modal ────────────────────────────────────────────────────
     function closeReplyModal() {
       document.getElementById('replyModal').style.display = 'none';
       currentReplyLeadId = null;
-      currentReplyEmail = null;
+      currentReplyEmail  = null;
     }
 
-    // ── Send Direct Reply ────────────────────────────────────────────────────
     async function sendDirectReply() {
-      const btn = document.getElementById('sendReplyBtn');
+      const btn  = document.getElementById('sendReplyBtn');
       const text = document.getElementById('replyTextArea').value.trim();
-
-      if (!text) { showToast("Please type a reply.", "error"); return; }
-      if (!currentReplyEmail) { showToast("Error: No email address found.", "error"); return; }
-
-      btn.disabled = true;
+      if (!text)             { showToast("Please type a reply.", "error"); return; }
+      if (!currentReplyEmail){ showToast("Error: No email address found.", "error"); return; }
+      btn.disabled  = true;
       btn.innerText = "Sending...";
-
       try {
         const payload = {
           leads: [{
             name: document.getElementById('modalLeadName').innerText,
-            email: currentReplyEmail,
-            company: '',
-            messages: [{
-              subject: "Re: Your inquiry about Skyline AA-1",
-              body: text
-            }]
+            email: currentReplyEmail, company: '',
+            messages: [{ subject: "Re: Your inquiry about Skyline AA-1", body: text }]
           }]
         };
-
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        const res  = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
-
         const data = await res.json();
-
-        if (data.success) {
-          showToast("✅ Reply sent successfully!", "success");
-          closeReplyModal();
-          loadLeads();
-        } else {
-          showToast("❌ Failed to send reply.", "error");
-        }
+        if (data.success) { showToast("✅ Reply sent successfully!", "success"); closeReplyModal(); loadLeads(); }
+        else showToast("❌ Failed to send reply.", "error");
       } catch (err) {
-        console.error(err);
         showToast("❌ Connection error.", "error");
       } finally {
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.innerText = "🚀 Send Reply";
       }
     }
 
-    // ── Upgrade Logic ────────────────────────────────────────────────────────
+    // ── Upgrade — calls Flutterwave payment link ───────────────────────────────
     async function initiateUpgrade(planType) {
-      const btn = event.target;
+      const btnId  = planType === 'go' ? 'goPlanBtn' : 'proPlanBtn';
+      const btn    = document.getElementById(btnId);
       const originalText = btn.innerText;
       try {
         btn.innerText = 'Connecting...';
@@ -798,6 +733,7 @@
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || `Server Error: ${response.status}`);
         }
+
         const data = await response.json();
         if (data.link) {
           btn.innerText = 'Redirecting...';
@@ -806,97 +742,33 @@
           throw new Error('No payment link received from server.');
         }
       } catch (err) {
-        console.error('Upgrade Error:', err);
         showToast(`❌ ${err.message}`, 'error');
-        if (btn) {
-          btn.innerText = originalText;
-          btn.disabled  = false;
-        }
+        btn.innerText = originalText;
+        btn.disabled  = false;
       }
     }
 
-    // ── Check Current Plan ───────────────────────────────────────────────────
+    // ── Check Current Plan ────────────────────────────────────────────────────
     async function checkCurrentPlan() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           const user = await res.json();
           const plan = user.subscriptionTier || 'free';
-
           if (plan === 'go') {
             document.getElementById('goTag').style.display = 'inline-block';
-            const goBtn = document.querySelector('.btn-go');
-            if (goBtn) {
-              goBtn.innerText = 'Current Plan';
-              goBtn.disabled  = true;
-              goBtn.classList.add('btn-free');
-              goBtn.classList.remove('btn-go');
-            }
+            const goBtn = document.getElementById('goPlanBtn');
+            if (goBtn) { goBtn.innerText = 'Current Plan'; goBtn.disabled = true; goBtn.classList.add('btn-free'); goBtn.classList.remove('btn-go'); }
           } else if (plan === 'pro') {
             document.getElementById('proTag').style.display = 'inline-block';
-            const proBtn = document.querySelector('.btn-pro');
-            if (proBtn) {
-              proBtn.innerText = 'Current Plan';
-              proBtn.disabled  = true;
-              proBtn.style.background = '#333';
-              proBtn.style.color      = '#888';
-              proBtn.style.boxShadow  = 'none';
-            }
+            const proBtn = document.getElementById('proPlanBtn');
+            if (proBtn) { proBtn.innerText = 'Current Plan'; proBtn.disabled = true; proBtn.style.background = '#333'; proBtn.style.color = '#888'; proBtn.style.boxShadow = 'none'; }
           }
         }
-      } catch (err) {
-        console.error('Failed to check plan:', err);
-      }
+      } catch (err) { console.error('Failed to check plan:', err); }
     }
 
-    // ── Notifications ────────────────────────────────────────────────────────
-    function handleNotifClick() {
-      // Save current visible unread count into lastSeenNotifCount before leaving
-      const badge = document.getElementById('notifBadge');
-      const visibleUnread = parseInt(badge.textContent, 10) || 0;
-      const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
-      localStorage.setItem('lastSeenNotifCount', lastSeen + visibleUnread);
-      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-      updateBadgeUI(0);
-      window.location.href = 'notifications.html';
-    }
-
-    async function loadNotifCount() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/count`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const serverCount = data.count || 0;
-          const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
-
-          // Only show badge for notifications that arrived after last visit
-          const unread = Math.max(0, serverCount - lastSeen);
-          updateBadgeUI(unread);
-        }
-      } catch (err) {
-        console.error('Failed to load notifications:', err);
-      }
-    }
-
-    function updateBadgeUI(count) {
-      const badge = document.getElementById('notifBadge');
-      const btn   = document.getElementById('notifBtn');
-
-      if (count > 0) {
-        badge.style.display = 'flex';
-        badge.textContent   = count > 9 ? '9+' : count;
-        btn.classList.add('has-notifs');
-      } else {
-        badge.style.display = 'none';
-        btn.classList.remove('has-notifs');
-      }
-    }
-
-    // ── Logout ───────────────────────────────────────────────────────────────
+    // ── Logout ────────────────────────────────────────────────────────────────
     function handleLogout() {
       if (confirm('Are you sure you want to sign out?')) {
         localStorage.removeItem('token');
@@ -906,18 +778,12 @@
       }
     }
 
-    // ── Initialize ───────────────────────────────────────────────────────────
+    // ── Initialize ────────────────────────────────────────────────────────────
     handleOAuthRedirect();
     loadCollapseState();
     checkCurrentPlan();
     checkEmailStatus();
     loadLeads();
-    loadNotifCount();
-
-    // Auto-refresh notifications every 15 seconds
-    autoRefreshInterval = setInterval(() => {
-      loadNotifCount();
-    }, 15000);
   </script>
 </body>
-  </html>
+</html>
