@@ -711,7 +711,7 @@
       }
     }
 
-    // ── Upgrade — calls Flutterwave payment link ───────────────────────────────
+    // ── Upgrade — calls Flutterwave payment link (FIXED: replaces dev domain) ──
     async function initiateUpgrade(planType) {
       const btnId  = planType === 'go' ? 'goPlanBtn' : 'proPlanBtn';
       const btn    = document.getElementById(btnId);
@@ -736,8 +736,14 @@
 
         const data = await response.json();
         if (data.link) {
+          // 🔥 FIX: Replace dev domain with production domain
+          let fixedLink = data.link.replace('checkout-v2.dev-flutterwave.com', 'checkout.flutterwave.com');
+
+          console.log('Original link:', data.link);
+          console.log('Fixed link:', fixedLink);
+
           btn.innerText = 'Redirecting...';
-          window.location.href = data.link;
+          window.location.href = fixedLink;
         } else {
           throw new Error('No payment link received from server.');
         }
@@ -786,4 +792,4 @@
     loadLeads();
   </script>
 </body>
-</html>
+            </html>
