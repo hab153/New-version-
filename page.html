@@ -2,764 +2,1359 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
-  <title>Skyline AA-1 · Business Agent</title>
-  
-  <!-- Fonts: Inter for UI, JetBrains Mono for Data -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Skyline · Business Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    /* ──────────────────────────────────
-       DESIGN TOKENS & RESET
-    ────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      /* Palette: Deep Spatial */
-      --bg-deep: #050505;
-      --bg-surface: #0a0a0a;
-      --bg-glass: rgba(20, 20, 20, 0.6);
-      --bg-glass-hover: rgba(30, 30, 30, 0.7);
-      
-      /* Borders & Dividers */
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-active: rgba(255, 255, 255, 0.15);
-      --border-focus: rgba(255, 255, 255, 0.25);
+      /* Warm Obsidian Palette */
+      --void:        #0c0b09;
+      --base:        #111009;
+      --surface:     #18160f;
+      --raised:      #1f1d14;
+      --hover:       #26231a;
+      --card:        #1c1a12;
 
-      /* Accents */
-      --accent-primary: #ffffff;
-      --accent-secondary: #a1a1aa;
-      --accent-glow: rgba(255, 255, 255, 0.15);
-      --status-success: #10b981;
-      --status-warning: #f59e0b;
-      --status-error: #ef4444;
+      /* Borders */
+      --br-dim:      rgba(212,185,120,0.06);
+      --br-md:       rgba(212,185,120,0.13);
+      --br-hi:       rgba(212,185,120,0.28);
 
-      /* Typography */
-      --font-ui: 'Inter', sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      /* Amber accent system */
+      --amber:       #d4b978;
+      --amber-2:     #c9a84c;
+      --amber-3:     #f0d078;
+      --amber-glow:  rgba(212,185,120,0.22);
+      --amber-dim:   rgba(212,185,120,0.08);
 
-      /* Spacing & Radius */
-      --radius-sm: 6px;
-      --radius-md: 12px;
-      --radius-lg: 20px;
-      --radius-full: 9999px;
-      
-      /* Layout */
-      --nav-height: 60px;
-      --header-height: 50px;
+      /* Semantic colours */
+      --sage:        #7aab88;
+      --sage-dim:    rgba(122,171,136,0.08);
+      --rose:        #c97070;
+      --rose-dim:    rgba(201,112,112,0.08);
+      --sky:         #6fa8c9;
+
+      /* Text */
+      --t1:          #ede8d8;
+      --t2:          #8c8470;
+      --t3:          #4a4535;
+
+      /* Type */
+      --serif:       'DM Serif Display', Georgia, serif;
+      --mono:        'JetBrains Mono', monospace;
+      --sans:        'Instrument Sans', sans-serif;
+
+      /* Sizing */
+      --nav-h:       64px;
+      --top-h:       52px;
+      --bar-h:       32px;
+      --r-sm:        6px;
+      --r-md:        12px;
+      --r-lg:        18px;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+    html, body { height: 100%; overflow: hidden; }
 
     body {
-      background-color: var(--bg-deep);
-      color: var(--accent-primary);
-      font-family: var(--font-ui);
+      background: var(--void);
+      color: var(--t1);
+      font-family: var(--sans);
       font-size: 14px;
-      line-height: 1.5;
-      height: 100vh;
-      height: 100dvh;
+      line-height: 1.6;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      position: relative;
+      height: 100vh;
+      height: 100dvh;
     }
 
-    /* Ambient Background Glow */
+    /* ── CANVAS GRAIN ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.045'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    /* Warm radial glow top-left */
     body::before {
       content: '';
-      position: absolute;
-      top: -20%; left: -10%;
-      width: 60vw; height: 60vw;
-      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+      position: fixed;
+      top: -15%; left: -10%;
+      width: 55vw; height: 55vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,185,120,0.04) 0%, transparent 65%);
       pointer-events: none;
       z-index: 0;
     }
 
     /* ──────────────────────────────────
-       HEADER & STATUS
+       STATUS BAR
     ────────────────────────────────── */
-    .app-header {
-      height: var(--header-height);
+    .status-bar {
+      height: var(--bar-h);
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.4s, border-color 0.4s, color 0.4s;
+      background: rgba(212,185,120,0.04);
+      border-bottom: 1px solid rgba(212,185,120,0.10);
+      color: rgba(212,185,120,0.55);
+    }
+    .status-bar.connected {
+      background: rgba(122,171,136,0.04);
+      border-bottom-color: rgba(122,171,136,0.14);
+      color: var(--sage);
+    }
+    .status-bar.disconnected {
+      background: rgba(201,112,112,0.04);
+      border-bottom-color: rgba(201,112,112,0.14);
+      color: var(--rose);
+    }
+    .status-pip {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+      animation: pip 2.4s ease-in-out infinite;
+    }
+    @keyframes pip {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+    .status-bar a { color: var(--amber); text-decoration: none; }
+    .status-bar a:hover { text-decoration: underline; }
+
+    /* ──────────────────────────────────
+       TOPBAR
+    ────────────────────────────────── */
+    .topbar {
+      height: var(--top-h);
+      padding: 0 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      border-bottom: 1px solid var(--border-subtle);
-      background: rgba(5, 5, 5, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      z-index: 20;
+      background: var(--base);
+      border-bottom: 1px solid var(--br-dim);
       flex-shrink: 0;
+      position: relative;
+      z-index: 10;
     }
 
-    .brand-group { display: flex; align-items: center; gap: 12px; }
-    .brand-logo {
-      font-weight: 600;
-      font-size: 16px;
-      letter-spacing: -0.02em;      display: flex;
-      align-items: center;
-      gap: 8px;
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 9px;
     }
-    .brand-logo svg { width: 18px; height: 18px; color: var(--accent-primary); }
-    
-    .plan-badge {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border-subtle);
-      color: var(--accent-secondary);
+    .brand-name {
+      font-family: var(--serif);
+      font-size: 20px;
+      color: var(--t1);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    .brand-name em {
+      font-style: italic;
+      color: var(--amber);
+    }
+    .brand-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--br-md);
+      align-self: center;
+    }
+    .brand-sub {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      color: var(--t3);
     }
-    .plan-badge.go { color: #60a5fa; border-color: rgba(96, 165, 250, 0.2); background: rgba(96, 165, 250, 0.05); }
-    .plan-badge.pro { color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.05); }
 
-    .header-actions { display: flex; gap: 8px; }
-    .icon-btn {
-      width: 32px; height: 32px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--accent-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .plan-chip {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
     }
-    .icon-btn:hover { background: var(--bg-glass-hover); color: var(--accent-primary); border-color: var(--border-subtle); }
-    .icon-btn svg { width: 16px; height: 16px; }
+    .plan-chip.free { background: rgba(255,255,255,0.02); color: var(--t3); border: 1px solid var(--br-dim); }
+    .plan-chip.go   { background: rgba(111,168,201,0.10); color: var(--sky); border: 1px solid rgba(111,168,201,0.22); }
+    .plan-chip.pro  { background: rgba(212,185,120,0.10); color: var(--amber); border: 1px solid rgba(212,185,120,0.24); }
 
-    /* Living Status Pill */
-    .status-pill {
+    /* Centred wordmark absolutely */
+    .topbar-center {
       position: absolute;
       left: 50%; top: 50%;
       transform: translate(-50%, -50%);
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-full);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--accent-secondary);
-      transition: all 0.3s ease;    }
-    .status-pill.connected { border-color: rgba(16, 185, 129, 0.3); color: var(--status-success); }
-    .status-pill.disconnected { border-color: rgba(239, 68, 68, 0.3); color: var(--status-error); }
-    .status-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 8px currentColor;
-      animation: pulse 2s infinite;
+      gap: 7px;
+      pointer-events: none;
     }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .topbar-center .live-ring {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      border: 1.5px solid var(--amber);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .topbar-center .live-ring::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: liveCore 2.8s ease-in-out infinite;
+    }
+    @keyframes liveCore {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.2; transform: scale(0.5); }
+    }
+    .topbar-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--t2);
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 5px; }
+
+    .icon-btn {
+      width: 32px; height: 32px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--br-dim);
+      background: transparent;
+      color: var(--t3);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
+      position: relative;
+    }
+    .icon-btn:hover {
+      background: var(--hover);
+      border-color: var(--br-md);
+      color: var(--amber);
+    }
+    .icon-btn::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: -26px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--raised);
+      border: 1px solid var(--br-md);
+      color: var(--t2);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.07em;
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      z-index: 99;
+    }
+    .icon-btn:hover::after { opacity: 1; }
 
     /* ──────────────────────────────────
-       MAIN CONTENT AREA
+       REPLY NOTIF
     ────────────────────────────────── */
-    .main-stage {
-      flex: 1;
+    .reply-notif {
+      display: none;
+      padding: 7px 18px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(212,185,120,0.06);
+      border-bottom: 1px solid var(--br-md);
+      color: var(--amber);
+      animation: slideDown 0.3s ease;
+      flex-shrink: 0;
       position: relative;
-      overflow: hidden;
+      z-index: 8;
+    }
+    .reply-notif.active { display: block; }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(0); }
+    }
+
+    /* ──────────────────────────────────
+       SETUP WIZARD
+    ────────────────────────────────── */
+    #setupWizard {
+      flex: 1;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+      overflow-y: auto;
+      position: relative;
       z-index: 1;
     }
 
-    /* Setup Wizard (Overlay) */
-    #setupWizard {
-      position: absolute;
-      inset: 0;
+    .wizard-kicker {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.30em;
+      text-transform: uppercase;
+      color: var(--amber-2);
+      margin-bottom: 12px;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    .wizard-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--br-md);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,185,120,0.03);
+      animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Gold top bar on card */
+    .wizard-card-bar {
+      height: 3px;
+      background: linear-gradient(90deg, var(--amber-2), var(--amber-3), var(--amber-2));
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .wizard-body {
+      padding: 26px 22px 28px;
+    }
+
+    .wizard-heading {
+      font-family: var(--serif);
+      font-size: 22px;
+      color: var(--t1);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .wizard-heading em { font-style: italic; color: var(--amber); }
+
+    .wizard-sub {
+      font-size: 12.5px;
+      color: var(--t2);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+
+    .form-field.full { grid-column: 1 / -1; }
+
+    .field-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--t3);
+      font-weight: 500;
+    }
+
+    .field-input {
+      background: var(--raised);
+      border: 1px solid var(--br-dim);
+      border-radius: var(--r-sm);
+      padding: 10px 12px;
+      color: var(--t1);
+      font-family: var(--sans);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field-input:focus {
+      border-color: var(--amber-2);
+      box-shadow: 0 0 0 3px rgba(212,185,120,0.08);
+    }
+    .field-input::placeholder { color: var(--t3); }
+    select.field-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M1 1l3.5 3L8 1' stroke='%234a4535' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 11px center;
+      padding-right: 28px;
+      cursor: pointer;
+    }
+    select.field-input option { background: var(--raised); color: var(--t1); }
+
+    .form-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+
+    .launch-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--amber-2);
+      color: var(--void);
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.03em;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--bg-deep);
-      z-index: 10;
-      transition: opacity 0.4s ease, visibility 0.4s;
+      gap: 8px;
+      transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+      position: relative;
+      overflow: hidden;
     }
-    #setupWizard.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-    .wizard-card {
-      width: 90%; max-width: 480px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    .launch-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+      pointer-events: none;
     }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    .wizard-title { font-size: 24px; font-weight: 500; margin-bottom: 8px; letter-spacing: -0.02em; }
-    .wizard-sub { color: var(--accent-secondary); margin-bottom: 24px; font-size: 14px; }    
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-    .form-field { display: flex; flex-direction: column; gap: 6px; }
-    .form-field.full { grid-column: span 2; }
-    
-    .field-label { font-family: var(--font-mono); font-size: 11px; color: var(--accent-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-    .field-input {
-      background: var(--bg-deep);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      color: var(--accent-primary);
-      font-family: var(--font-ui);
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
+    .launch-btn:hover {
+      background: var(--amber-3);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(212,185,120,0.28);
     }
-    .field-input:focus { border-color: var(--accent-primary); }
-    select.field-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+    .launch-btn:active { transform: translateY(0); }
+    .launch-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .primary-btn {
-      width: 100%;
-      padding: 12px;
-      background: var(--accent-primary);
-      color: var(--bg-deep);
-      border: none;
-      border-radius: var(--radius-sm);
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .primary-btn:hover { opacity: 0.9; }
-    .primary-btn:active { transform: scale(0.98); }
-
-    /* Chat Area */
-    .chat-container {
+    /* ──────────────────────────────────
+       CHAT AREA
+    ────────────────────────────────── */
+    .chat-area {
       flex: 1;
       overflow-y: auto;
-      padding: 24px 0;
-      scroll-behavior: smooth;
+      overflow-x: hidden;
+      padding: 18px 0 8px;
       display: none;
       flex-direction: column;
+      scroll-behavior: smooth;
+      position: relative;
+      z-index: 1;
     }
-    .chat-container.active { display: flex; }
-    .chat-container::-webkit-scrollbar { width: 4px; }
-    .chat-container::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+    .chat-area.active { display: flex; }
+    .chat-area::-webkit-scrollbar { width: 3px; }
+    .chat-area::-webkit-scrollbar-track { background: transparent; }
+    .chat-area::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 2px; }
 
-    .msg-row {      display: flex;
-      padding: 4px 24px;
-      animation: fadeIn 0.3s ease;
+    /* ── Messages ── */
+    .msg-row {
+      display: flex;
+      padding: 3px 14px;
+      animation: msgIn 0.22s ease both;
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
     .msg-row.user { justify-content: flex-end; }
-    .msg-row.ai { justify-content: flex-start; gap: 12px; }
+    .msg-row.ai   { justify-content: flex-start; gap: 9px; align-items: flex-start; }
 
     .bubble {
-      max-width: 70%;
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      line-height: 1.6;
+      max-width: 75%;
+      padding: 11px 15px;
+      border-radius: var(--r-lg);
+      line-height: 1.65;
+      font-size: 13.5px;
+      word-break: break-word;
     }
     .msg-row.user .bubble {
-      background: var(--bg-glass-hover);
-      border: 1px solid var(--border-subtle);
+      background: var(--raised);
+      border: 1px solid var(--br-md);
       border-bottom-right-radius: 4px;
-      color: var(--accent-primary);
+      color: var(--t1);
     }
     .msg-row.ai .bubble {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--accent-secondary);
-      padding-left: 0;
+      background: var(--surface);
+      border: 1px solid var(--br-dim);
+      border-bottom-left-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.80;
+      color: var(--t1);
     }
-    .msg-row.ai .bubble strong { color: var(--accent-primary); font-weight: 500; }
-    
-    .ai-avatar {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      display: flex; align-items: center; justify-content: center;
+    .msg-row.ai .bubble strong { color: var(--amber); font-weight: 500; }
+    .msg-row.ai .bubble .ai-ul { list-style: none; padding: 4px 0; margin: 0; }
+    .msg-row.ai .bubble .ai-ul li { padding: 2px 0 2px 14px; position: relative; }
+    .msg-row.ai .bubble .ai-ul li::before { content: '›'; position: absolute; left: 0; color: var(--amber-2); }
+
+    .av {
+      width: 24px; height: 24px;
+      border-radius: 7px;
       flex-shrink: 0;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--accent-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 7.5px;
+      font-weight: 600;
+      margin-top: 3px;
+      letter-spacing: 0.05em;
     }
+    .msg-row.ai   .av { background: var(--amber-2); color: var(--void); }
+    .msg-row.user .av { background: var(--raised); border: 1px solid var(--br-md); color: var(--t2); }
 
-    /* Review Panel (Glass Overlay) */
-    #reviewPanel {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 50vh;
-      background: rgba(10, 10, 10, 0.95);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border-active);      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 30;
+    .bubble-wrap { display: flex; flex-direction: column; }
+    .msg-time {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      color: var(--t3);
+      margin-top: 4px;
+      letter-spacing: 0.06em;
+    }
+    .msg-row.user .msg-time { text-align: right; }
+
+    /* ── Typing ── */
+    .typing-row {
       display: flex;
-      flex-direction: column;
+      padding: 3px 14px;
+      gap: 9px;
+      align-items: flex-start;
+      animation: msgIn 0.2s ease both;
     }
-    #reviewPanel.open { transform: translateY(0); }
+    .typing-bubble {
+      background: var(--surface);
+      border: 1px solid var(--br-dim);
+      border-radius: var(--r-lg);
+      border-bottom-left-radius: 4px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--t2);
+    }
+    .t-dots { display: flex; gap: 4px; align-items: center; }
+    .t-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--t3);
+      animation: tdot 1.1s ease-in-out infinite;
+    }
+    .t-dot:nth-child(2) { animation-delay: 0.14s; }
+    .t-dot:nth-child(3) { animation-delay: 0.28s; }
+    @keyframes tdot {
+      0%, 60%, 100% { transform: translateY(0); background: var(--t3); }
+      30%            { transform: translateY(-5px); background: var(--amber); }
+    }
 
-    .panel-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border-subtle);
+    /* ──────────────────────────────────
+       REVIEW PANEL
+    ────────────────────────────────── */
+    #reviewPanel {
+      display: none;
+      background: var(--base);
+      border-top: 1px solid var(--br-md);
+      padding: 16px 14px;
+      max-height: 46vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 6;
+    }
+    #reviewPanel::-webkit-scrollbar { width: 3px; }
+    #reviewPanel::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 2px; }
+
+    .rv-header {
       display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
     }
-    .panel-title { font-weight: 500; font-size: 14px; }
-    .panel-close { background: none; border: none; color: var(--accent-secondary); cursor: pointer; }
-
-    .panel-content { flex: 1; overflow-y: auto; padding: 24px; }
-    .lead-item {
-      background: var(--bg-deep);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      margin-bottom: 16px;
+    .rv-title { font-family: var(--serif); font-size: 15px; color: var(--amber); font-style: italic; }
+    .rv-close {
+      background: none; border: none; color: var(--t3);
+      cursor: pointer; font-size: 15px; padding: 3px;
+      border-radius: 4px; transition: color 0.2s, background 0.2s;
     }
-    .lead-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-    .lead-name { font-weight: 500; color: var(--accent-primary); }
-    .lead-company { font-family: var(--font-mono); font-size: 12px; color: var(--accent-secondary); }
+    .rv-close:hover { color: var(--t1); background: var(--hover); }
 
-    /* Command Bar (Input) */
-    .command-bar {
-      padding: 16px 24px 24px;
-      background: linear-gradient(to top, var(--bg-deep) 80%, transparent);
+    .lead-card {
+      border: 1px solid var(--br-dim);
+      padding: 13px;
+      margin-bottom: 10px;
+      border-radius: var(--r-md);
+      background: var(--surface);
+      transition: border-color 0.2s;
+    }
+    .lead-card:hover { border-color: var(--br-md); }
+    .lead-name { font-weight: 600; color: var(--amber); margin-bottom: 2px; font-size: 13px; }
+    .lead-email-guess {
+      font-family: var(--mono); font-size: 10.5px;
+      color: var(--t3); text-decoration: line-through;
+      margin-bottom: 9px;
+    }
+    .rv-field { margin-bottom: 8px; }
+    .rv-label {
+      display: block; font-family: var(--mono); font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.10em;
+      color: var(--t3); margin-bottom: 3px;
+    }
+    .rv-input, .rv-textarea {
+      width: 100%; background: var(--raised);
+      border: 1px solid var(--br-dim); border-radius: var(--r-sm);
+      color: var(--t1); padding: 8px 10px;
+      font-family: var(--sans); font-size: 13px;
+      outline: none; transition: border-color 0.18s;
+    }
+    .rv-input:focus, .rv-textarea:focus { border-color: var(--amber-2); }
+    .rv-input[type="email"] { border-color: rgba(212,185,120,0.22); background: rgba(212,185,120,0.03); }
+    .rv-textarea { resize: vertical; min-height: 70px; }
+
+    .send-all {
+      width: 100%; padding: 12px;
+      background: var(--amber-2); color: var(--void);
+      border: none; border-radius: var(--r-sm);
+      font-family: var(--sans); font-weight: 600;
+      font-size: 13.5px; cursor: pointer; margin-top: 8px;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+    }
+    .send-all:hover { background: var(--amber-3); box-shadow: 0 4px 18px rgba(212,185,120,0.24); transform: translateY(-1px); }
+    .send-all:disabled { background: var(--hover); color: var(--t3); cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ──────────────────────────────────
+       INPUT BAR
+    ────────────────────────────────── */
+    .input-bar {
+      padding: 10px 14px 12px;
+      background: var(--base);
+      border-top: 1px solid var(--br-dim);
       flex-shrink: 0;
       display: none;
+      position: relative;
+      z-index: 5;
     }
-    .command-bar.active { display: block; }
+    .input-bar.active { display: block; }
 
     .input-shell {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 4px;
       display: flex;
       align-items: flex-end;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--br-md);
+      border-radius: var(--r-lg);
+      padding: 9px 9px 9px 15px;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     .input-shell:focus-within {
-      border-color: var(--border-active);
-      box-shadow: 0 0 0 4px rgba(255,255,255,0.02);
+      border-color: rgba(212,185,120,0.32);
+      box-shadow: 0 0 0 3px rgba(212,185,120,0.05);
     }
-    .cmd-input {
+
+    .msg-ta {
       flex: 1;
       background: transparent;
-      border: none;
-      color: var(--accent-primary);
-      padding: 12px 16px;
-      font-family: var(--font-ui);
-      font-size: 14px;
+      border: none; outline: none;
       resize: none;
-      outline: none;
-      max-height: 120px;
-      min-height: 24px;
+      color: var(--t1);
+      font-family: var(--sans);
+      font-size: 13.5px;
+      min-height: 22px;
+      max-height: 130px;
+      caret-color: var(--amber);
+      line-height: 1.55;
     }
-    .cmd-input::placeholder { color: var(--accent-secondary); opacity: 0.5; }
+    .msg-ta::placeholder { color: var(--t3); }
 
-    .cmd-send {
-      width: 36px; height: 36px;
-      margin: 4px;
-      border-radius: var(--radius-md);
-      background: var(--accent-primary);
+    .send-btn {
+      width: 33px; height: 33px;
+      border-radius: var(--r-sm);
       border: none;
-      color: var(--bg-deep);
-      display: flex; align-items: center; justify-content: center;
+      background: var(--amber-2);
       cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .cmd-send:hover { transform: scale(1.05); }
-    .cmd-send:disabled { background: var(--bg-glass-hover); color: var(--accent-secondary); cursor: default; }
-
-    /* Bottom Nav */
-    .bottom-nav {
-      height: var(--nav-height);
-      background: var(--bg-deep);
-      border-top: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
       flex-shrink: 0;
-      z-index: 20;
     }
+    .send-btn:hover:not(:disabled) { background: var(--amber-3); transform: scale(1.05); box-shadow: 0 0 16px rgba(212,185,120,0.30); }
+    .send-btn:active:not(:disabled) { transform: scale(0.96); }
+    .send-btn:disabled { background: var(--hover); border: 1px solid var(--br-dim); opacity: 0.35; cursor: default; }
+
+    .input-foot {
+      display: flex; justify-content: space-between;
+      margin-top: 5px; padding: 0 2px;
+    }
+    .input-tag {
+      font-family: var(--mono); font-size: 8px;
+      letter-spacing: 0.20em; text-transform: uppercase; color: var(--t3);
+    }
+    .char-ct {
+      font-family: var(--mono); font-size: 8px; color: var(--t3);
+    }
+
+    /* ──────────────────────────────────
+       BOTTOM NAV
+    ────────────────────────────────── */
+    .bottom-nav {
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: var(--base);
+      border-top: 1px solid var(--br-dim);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      padding: 0 6px;
+    }
+
     .nav-item {
-      flex: 1;
-      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      color: var(--accent-secondary);      text-decoration: none;
+      gap: 5px;
+      flex: 1;
+      cursor: pointer;
+      padding: 7px 0;
+      text-decoration: none;
+      color: var(--t3);
       transition: color 0.2s;
       position: relative;
+      border: none;
+      background: none;
     }
-    .nav-item.active { color: var(--accent-primary); }
-    .nav-item.active::before {
+    .nav-item svg { transition: transform 0.2s; }
+    .nav-item:hover { color: var(--amber); }
+    .nav-item:hover svg { transform: scale(1.08); }
+    .nav-item.active { color: var(--amber); }
+    .nav-item.active::after {
       content: '';
       position: absolute;
-      top: 0; left: 50%; transform: translateX(-50%);
-      width: 40px; height: 2px;
-      background: var(--accent-primary);
-      box-shadow: 0 0 10px var(--accent-primary);
+      bottom: -1px; left: 50%;
+      transform: translateX(-50%);
+      width: 22px; height: 2px;
+      background: var(--amber-2);
+      border-radius: 2px 2px 0 0;
     }
-    .nav-item svg { width: 20px; height: 20px; }
 
-    /* Responsive */
-    @media (min-width: 768px) {
-      .msg-row { padding: 8px 15%; }
-      .bubble { max-width: 60%; }
-      .command-bar { padding: 24px 15% 32px; }
+    /* Home button */
+    .nav-item.nav-home .home-wrap {
+      width: 42px; height: 42px;
+      background: var(--amber-2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(212,185,120,0.22);
+    }
+    .nav-item.nav-home:hover .home-wrap {
+      background: var(--amber-3);
+      transform: scale(1.06);
+      box-shadow: 0 6px 20px rgba(212,185,120,0.35);
+    }
+    .nav-item.nav-home svg { color: var(--void); }
+    .nav-item.nav-home::after { display: none; }
+
+    /* Notif badge */
+    .nav-badge {
+      position: absolute;
+      top: 3px; right: calc(50% - 19px);
+      min-width: 15px; height: 15px;
+      background: var(--rose);
+      border-radius: 10px;
+      border: 1.5px solid var(--base);
+      display: none;
+      color: white;
+      font-family: var(--mono);
+      font-size: 7.5px;
+      font-weight: 600;
+      align-items: center; justify-content: center;
+      padding: 0 3px;
+      z-index: 2;
+    }
+    .nav-item.has-notifs .nav-badge { display: flex; }
+
+    /* ──────────────────────────────────
+       RESPONSIVE
+    ────────────────────────────────── */
+    @media (min-width: 1024px) {
+      .chat-area { padding: 26px 0 10px; }
+      .msg-row { padding: 3px 12%; }
+      .bubble { max-width: 56%; font-size: 14px; }
+      .msg-row.ai .bubble { font-size: 12.5px; }
+      .topbar { padding: 0 28px; }
+      .input-bar { padding: 12px 12% 14px; }
+      .bottom-nav { padding: 0 22%; }
+      #reviewPanel { padding: 18px 12%; }
+      .status-bar { padding: 0 28px; }
+    }
+
+    @media (min-width: 600px) and (max-width: 1023px) {
+      .msg-row { padding: 3px 7%; }
+      .bubble { max-width: 64%; }
+      .topbar { padding: 0 20px; }
+      .input-bar { padding: 10px 7% 12px; }
+      .bottom-nav { padding: 0 5%; }
+    }
+
+    @media (max-width: 375px) {
+      .brand-name { font-size: 17px; }
+      .brand-sep, .brand-sub { display: none; }
+      .icon-btn { width: 29px; height: 29px; }
+      .bubble { max-width: 88%; }
+      :root { --nav-h: 60px; }
+      .wizard-body { padding: 20px 16px 22px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      :root { --top-h: 44px; --nav-h: 52px; --bar-h: 28px; }
+      .chat-area { padding: 8px 0 4px; }
+      .input-bar { padding: 7px 14px 8px; }
+      .nav-item.nav-home .home-wrap { width: 36px; height: 36px; border-radius: 10px; }
+      .wizard-body { padding: 14px 16px 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="app-header">
-    <div class="brand-group">
-      <div class="brand-logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        Skyline
-      </div>
-      <div id="planChip" class="plan-badge">Free</div>
-    </div>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-name">Sky<em>line</em></span>
+    <div class="brand-sep"></div>
+    <span class="brand-sub">AA-1</span>
+    <div id="planChip" class="plan-chip free">FREE</div>
+  </div>
 
-    <div class="status-pill" id="statusPill">
-      <div class="status-dot"></div>
-      <span id="statusText">Initializing...</span>
-    </div>
+  <div class="topbar-center">
+    <div class="live-ring"></div>
+    <span class="topbar-label">Business Agent</span>
+  </div>
 
-    <div class="header-actions">
-      <button class="icon-btn" id="clearSessionBtn" aria-label="Clear Session">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      </button>
-    </div>
-  </header>
+  <div class="topbar-right">
+    <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+    </button>
+  </div>
+</header>
 
-  <!-- Main Stage -->
-  <div class="main-stage">
-        <!-- Setup Wizard -->
-    <div id="setupWizard">
-      <div class="wizard-card">
-        <h2 class="wizard-title">Define Target Profile</h2>
-        <p class="wizard-sub">Configure the AI agent to identify and outreach to your ideal prospects.</p>
-        <form id="targetForm">
-          <div class="form-grid">
+<!-- STATUS BAR -->
+<div id="statusBar" class="status-bar">
+  <span class="status-pip"></span>
+  <span id="statusText">Checking email connection…</span>
+</div>
+
+<!-- REPLY NOTIF -->
+<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
+  ↑ New reply detected — tap to open Dashboard
+</div>
+
+<!-- SETUP WIZARD -->
+<div id="setupWizard">
+  <p class="wizard-kicker">Prospecting Engine · v2</p>
+  <div class="wizard-card">
+    <div class="wizard-card-bar"></div>
+    <div class="wizard-body">
+      <h2 class="wizard-heading">Define your <em>target.</em></h2>
+      <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
+      <form id="targetForm" autocomplete="off">
+        <div class="form-stack">
+          <div class="form-row">
             <div class="form-field">
-              <label class="field-label">Industry</label>
-              <input type="text" id="industry" class="field-input" placeholder="e.g. SaaS" required>
+              <label class="field-label" for="industry">Industry</label>
+              <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
             </div>
             <div class="form-field">
-              <label class="field-label">Region</label>
-              <input type="text" id="region" class="field-input" placeholder="e.g. North America" required>
+              <label class="field-label" for="region">Region</label>
+              <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-field">
-              <label class="field-label">Company Size</label>
+              <label class="field-label" for="companySize">Company size</label>
               <select id="companySize" class="field-input">
-                <option value="Any">Any Size</option>
-                <option value="1-10">1-10 Employees</option>
-                <option value="11-50">11-50 Employees</option>
-                <option value="51-200">51-200 Employees</option>
-                <option value="201+">201+ Employees</option>
+                <option value="Any">Any size</option>
+                <option value="1-10">1–10</option>
+                <option value="11-50">11–50</option>
+                <option value="51-200">51–200</option>
+                <option value="201-500">201–500</option>
+                <option value="500+">500+</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="field-label">Job Title</label>
-              <input type="text" id="jobTitle" class="field-input" placeholder="e.g. CTO" required>
+              <label class="field-label" for="jobTitle">Job title</label>
+              <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
             </div>
           </div>
-          <button type="submit" class="primary-btn">
-            Initialize Search
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Chat Container -->
-    <div class="chat-container" id="chatContainer">
-      <div id="msgContainer"></div>
-    </div>
-
-    <!-- Review Panel -->
-    <div id="reviewPanel">
-      <div class="panel-header">
-        <span class="panel-title">Outreach Review</span>
-        <button class="panel-close" onclick="closeReview()">✕</button>
-      </div>
-      <div class="panel-content" id="emailList"></div>      <div style="padding: 16px 24px; border-top: 1px solid var(--border-subtle);">
-        <button class="primary-btn" id="sendAllBtn" onclick="submitBatch()">Confirm & Send Batch</button>
-      </div>
-    </div>
-
-    <!-- Command Bar -->
-    <div class="command-bar" id="commandBar">
-      <div class="input-shell">
-        <textarea class="cmd-input" id="cmdInput" rows="1" placeholder="Ask Skyline to refine results..."></textarea>
-        <button class="cmd-send" id="cmdSend" disabled>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </div>
+        <button type="submit" class="launch-btn" id="launchBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          Start Search
         </button>
-      </div>
+      </form>
     </div>
   </div>
+</div>
 
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="page.html" class="nav-item active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    </a>
-    <a href="history.html" class="nav-item">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    </a>
-    <a href="notifications.html" class="nav-item">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    </a>
-    <a href="dashboard.html" class="nav-item">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    </a>
-  </nav>
+<!-- CHAT AREA -->
+<div class="chat-area" id="chatArea">
+  <div id="msgContainer"></div>
+</div>
 
-  <script>
-    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'login.html';
+<!-- REVIEW PANEL -->
+<div id="reviewPanel">
+  <div class="rv-header">
+    <span class="rv-title">Review Generated Emails</span>
+    <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
+  </div>
+  <div id="emailList"></div>
+  <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect & Send All</button>
+</div>
 
-    // DOM Elements
-    const els = {
-      wizard: document.getElementById('setupWizard'),
-      chat: document.getElementById('chatContainer'),
-      cmdBar: document.getElementById('commandBar'),
-      msgContainer: document.getElementById('msgContainer'),
-      cmdInput: document.getElementById('cmdInput'),
-      cmdSend: document.getElementById('cmdSend'),
-      statusPill: document.getElementById('statusPill'),
-      statusText: document.getElementById('statusText'),
-      planChip: document.getElementById('planChip'),
-      reviewPanel: document.getElementById('reviewPanel'),
-      emailList: document.getElementById('emailList')    };
+<!-- INPUT BAR -->
+<div class="input-bar" id="inputBar">
+  <div class="input-shell">
+    <textarea class="msg-ta" id="msgInput" rows="1" placeholder="Ask anything about your outreach…" aria-label="Message"></textarea>
+    <button class="send-btn" id="sendBtn" disabled aria-label="Send">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0c0b09" stroke-width="2.6" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
+  </div>
+  <div class="input-foot">
+    <span class="input-tag">Skyline AA-1</span>
+    <span class="char-ct" id="charCount"></span>
+  </div>
+</div>
 
-    let currentSessionId = new URLSearchParams(window.location.search).get('session');
-    let conversationHistory = [];
-    let isTyping = false;
-    let currentLeads = [];
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" aria-label="Main navigation">
+  <a href="page.html" class="nav-item nav-home active" aria-label="Home">
+    <div class="home-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+        <polyline points="9 21 9 12 15 12 15 21"/>
+      </svg>
+    </div>
+  </a>
 
-    // Initialization
-    document.addEventListener('DOMContentLoaded', async () => {
-      await checkPlan();
-      await updateStatus();
-      
-      if (currentSessionId) {
-        activateChatMode();
-        await loadSession();
-      }
+  <a href="history.html" class="nav-item" aria-label="History">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <polyline points="12 7 12 12 15 15"/>
+      <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+      <polyline points="3 4 3 11 10 11"/>
+    </svg>
+  </a>
 
-      // Event Listeners
-      document.getElementById('targetForm').addEventListener('submit', handleTargetSubmit);
-      els.cmdInput.addEventListener('input', autoResize);
-      els.cmdInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
+    <div class="nav-badge"></div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  </a>
+
+  <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  </a>
+</nav>
+
+<script>
+  const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'login.html';
+
+  let currentSessionId = new URLSearchParams(window.location.search).get('session');
+  let conversationHistory = [];
+  let isTyping = false;
+  let currentGeneratedLeads = [];
+  let notifInterval = null;
+  let statusInterval = null;
+
+  let chatArea, msgInput, sendBtn, charCount, planChip, setupWizard, inputBar;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    chatArea    = document.getElementById('chatArea');
+    msgInput    = document.getElementById('msgInput');
+    sendBtn     = document.getElementById('sendBtn');
+    charCount   = document.getElementById('charCount');
+    planChip    = document.getElementById('planChip');
+    setupWizard = document.getElementById('setupWizard');
+    inputBar    = document.getElementById('inputBar');
+
+    document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
+    document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
+
+    const navNotifBtn = document.getElementById('navNotifBtn');
+    if (navNotifBtn) {
+      navNotifBtn.addEventListener('click', () => {
+        localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || 0);
+        updateBadge(0);
       });
-      els.cmdSend.addEventListener('click', sendMessage);
-      document.getElementById('clearSessionBtn').addEventListener('click', () => window.location.reload());
+    }
+
+    loadNotifCount();
+    notifInterval = setInterval(loadNotifCount, 15000);
+
+    msgInput.addEventListener('input', onInput);
+    msgInput.addEventListener('keydown', onKeydown);
+    sendBtn.addEventListener('click', sendMessage);
+
+    await checkPlan();
+    updateStatus();
+
+    document.getElementById('targetForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const industry    = document.getElementById('industry').value.trim();
+      const region      = document.getElementById('region').value.trim();
+      const companySize = document.getElementById('companySize').value;
+      const jobTitle    = document.getElementById('jobTitle').value.trim();
+      const msg = `Find me ${jobTitle}s in the ${industry} industry, located in ${region}. Company size: ${companySize}.`;
+
+      setupWizard.style.display = 'none';
+      chatArea.classList.add('active');
+      inputBar.classList.add('active');
+      appendMsg('user', msg);
+      await fetchResponse(msg);
     });
 
-    async function checkPlan() {
-      try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) {
-          const user = await res.json();
-          const tier = user.subscriptionTier || 'free';
-          els.planChip.textContent = tier.toUpperCase();
-          els.planChip.className = `plan-badge ${tier}`;
-        }
-      } catch (e) { console.error("Plan check failed", e); }
+    if (currentSessionId) {
+      setupWizard.style.display = 'none';
+      chatArea.classList.add('active');
+      inputBar.classList.add('active');
+      await loadSession();
     }
+  });
 
-    async function updateStatus() {
-      try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) {
-          const user = await res.json();
-          const isConnected = user.nylasIntegration?.isConnected;
-          els.statusPill.className = `status-pill ${isConnected ? 'connected' : 'disconnected'}`;
-          els.statusText.textContent = isConnected ? 'System Online' : 'Connection Required';
-        }
-      } catch (e) {
-        els.statusPill.className = 'status-pill disconnected';        els.statusText.textContent = 'Offline';
-      }
-    }
-
-    function activateChatMode() {
-      els.wizard.classList.add('hidden');
-      els.chat.classList.add('active');
-      els.cmdBar.classList.add('active');
-    }
-
-    async function handleTargetSubmit(e) {
-      e.preventDefault();
-      const industry = document.getElementById('industry').value;
-      const region = document.getElementById('region').value;
-      const size = document.getElementById('companySize').value;
-      const title = document.getElementById('jobTitle').value;
-      
-      const prompt = `Initiate prospecting for ${title} roles in the ${industry} sector, located in ${region}. Target company size: ${size}.`;
-      
-      activateChatMode();
-      appendMsg('user', prompt);
-      await fetchAIResponse(prompt);
-    }
-
-    async function sendMessage() {
-      const text = els.cmdInput.value.trim();
-      if (!text || isTyping) return;
-      appendMsg('user', text);
-      els.cmdInput.value = '';
-      els.cmdInput.style.height = 'auto';
-      els.cmdSend.disabled = true;
-      await fetchAIResponse(text);
-    }
-
-    async function fetchAIResponse(message) {
-      isTyping = true;
-      showTypingIndicator();
-      
-      try {
-        const res = await fetch(`${BACKEND}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
-        });
-        
+  /* ── Notification badge ── */
+  async function loadNotifCount() {
+    try {
+      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
         const data = await res.json();
-        hideTypingIndicator();
-        
-        if (res.ok) {
-          if (data.sessionId && !currentSessionId) {            currentSessionId = data.sessionId;
-            const url = new URL(window.location);
-            url.searchParams.set('session', data.sessionId);
-            window.history.pushState({}, '', url);
-          }
-          if (data.history) conversationHistory = data.history;
-          
-          // Check if response is lead data
-          if (data.reply.startsWith('[')) {
-            try {
-              const leads = JSON.parse(data.reply);
-              currentLeads = leads;
-              renderReviewPanel(leads);
-              appendMsg('ai', `I've identified ${leads.length} high-potential leads. Please review the generated drafts below.`);
-            } catch (err) {
-              appendMsg('ai', data.reply);
-            }
-          } else {
-            appendMsg('ai', data.reply);
-          }
+        const count = data.count || 0;
+        localStorage.setItem('lastKnownNotifCount', count);
+        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+        updateBadge(count > seen ? count : 0);
+      }
+    } catch {}
+  }
+
+  function updateBadge(count) {
+    const item  = document.getElementById('navNotifBtn');
+    const badge = item?.querySelector('.nav-badge');
+    if (!item || !badge) return;
+    if (count > 0) {
+      item.classList.add('has-notifs');
+      badge.textContent = count > 9 ? '9+' : count;
+    } else {
+      item.classList.remove('has-notifs');
+      badge.textContent = '';
+    }
+  }
+
+  /* ── Connection status ── */
+  async function updateStatus() {
+    const bar  = document.getElementById('statusBar');
+    const txt  = document.getElementById('statusText');
+    try {
+      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const user = await res.json();
+        if (user.nylasIntegration?.isConnected) {
+          bar.className = 'status-bar connected';
+          txt.innerHTML = `Email connected · <a href="dashboard.html">Manage →</a>`;
         } else {
-          appendMsg('ai', `Error: ${data.message || 'Failed to process request.'}`);
+          bar.className = 'status-bar disconnected';
+          txt.innerHTML = `No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
         }
-      } catch (err) {
-        hideTypingIndicator();
-        appendMsg('ai', 'Network error. Please check your connection.');
-      } finally {
-        isTyping = false;
       }
-    }
+    } catch {}
+  }
 
-    function appendMsg(role, content) {
-      const row = document.createElement('div');
-      row.className = `msg-row ${role}`;
-      
-      if (role === 'ai') {
-        row.innerHTML = `
-          <div class="ai-avatar">AA-1</div>
-          <div class="bubble">${formatAI(content)}</div>
-        `;
-      } else {
-        row.innerHTML = `<div class="bubble">${esc(content)}</div>`;
-      }
-      
-      els.msgContainer.appendChild(row);
-      els.chat.scrollTop = els.chat.scrollHeight;
-    }
+  /* ── Send ── */
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!text || isTyping) return;
+    appendMsg('user', text);
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+    updateSend();
+    await fetchResponse(text);
+  }
 
-    function showTypingIndicator() {
-      const row = document.createElement('div');      row.className = 'msg-row ai';
-      row.id = 'typingIndicator';
-      row.innerHTML = `
-        <div class="ai-avatar">AA-1</div>
-        <div class="bubble" style="color:var(--accent-secondary); font-style:italic;">Processing data...</div>
-      `;
-      els.msgContainer.appendChild(row);
-      els.chat.scrollTop = els.chat.scrollHeight;
-    }
+  /* ── Fetch AI response ── */
+  async function fetchResponse(message) {
+    isTyping = true;
+    updateSend();
+    const steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
+    let si = 0;
+    showTyping(steps[0]);
+    statusInterval = setInterval(() => {
+      si++;
+      if (si < steps.length) showTyping(steps[si]);
+    }, 2500);
 
-    function hideTypingIndicator() {
-      document.getElementById('typingIndicator')?.remove();
-    }
-
-    function renderReviewPanel(leads) {
-      els.emailList.innerHTML = '';
-      leads.forEach((lead, i) => {
-        const item = document.createElement('div');
-        item.className = 'lead-item';
-        item.innerHTML = `
-          <div class="lead-header">
-            <span class="lead-name">${esc(lead.name)}</span>
-            <span class="lead-company">${esc(lead.company)}</span>
-          </div>
-          <div class="form-field" style="margin-bottom:12px">
-            <label class="field-label">Subject</label>
-            <input type="text" class="field-input" id="sub-${i}" value="${esc(lead.messages[0].subject)}">
-          </div>
-          <div class="form-field">
-            <label class="field-label">Body</label>
-            <textarea class="field-input" id="body-${i}" rows="4">${esc(lead.messages[0].body)}</textarea>
-          </div>
-        `;
-        els.emailList.appendChild(item);
+    try {
+      const res  = await fetch(`${BACKEND}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
       });
-      els.reviewPanel.classList.add('open');
+      const data = await res.json();
+      clearInterval(statusInterval);
+      hideTyping();
+
+      if (res.ok) {
+        if (data.sessionId && !currentSessionId) {
+          currentSessionId = data.sessionId;
+          const url = new URL(window.location);
+          url.searchParams.set('session', data.sessionId);
+          window.history.pushState({}, '', url);
+        }
+        if (data.history) conversationHistory = data.history;
+        appendMsg('ai', data.reply || "Request received. How can I help further?");
+      } else {
+        appendMsg('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
+      }
+    } catch {
+      clearInterval(statusInterval);
+      hideTyping();
+      appendMsg('ai', '🔌 Connection error — check your network and try again.');
+    } finally {
+      isTyping = false;
+      updateSend();
+    }
+  }
+
+  /* ── Load session ── */
+  async function loadSession() {
+    try {
+      const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const msgs = await res.json();
+        if (msgs?.length) {
+          document.getElementById('msgContainer').innerHTML = '';
+          for (const m of msgs) {
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            appendMsg(role, m.content);
+            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
+          }
+          scrollDown();
+        }
+      }
+    } catch {}
+  }
+
+  /* ── Plan ── */
+  async function checkPlan() {
+    try {
+      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-cache' });
+      if (res.ok) {
+        const user = await res.json();
+        const p = user.subscriptionTier || 'free';
+        planChip.className = `plan-chip ${p}`;
+        planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+      }
+    } catch {}
+  }
+
+  /* ── Append message ── */
+  function appendMsg(role, content) {
+    const container = document.getElementById('msgContainer');
+    if (!container) return;
+
+    if (role === 'ai' && content.trimStart().startsWith('[')) {
+      try {
+        const leads = JSON.parse(content);
+        currentGeneratedLeads = leads;
+        renderReview(leads);
+        const row = document.createElement('div');
+        row.className = 'msg-row ai';
+        row.innerHTML = `
+          <div class="av">AI</div>
+          <div class="bubble-wrap">
+            <div class="bubble">📊 Found <strong>${leads.length}</strong> lead${leads.length !== 1 ? 's' : ''}. Review the emails below.</div>
+            <div class="msg-time">${now()}</div>
+          </div>`;
+        container.appendChild(row);
+        scrollDown();
+        return;
+      } catch {}
     }
 
-    function closeReview() {
-      els.reviewPanel.classList.remove('open');
-    }
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    const html = role === 'ai' ? formatAI(content) : esc(content);
+    row.innerHTML = `
+      <div class="av">${role === 'ai' ? 'AI' : 'ME'}</div>
+      <div class="bubble-wrap">
+        <div class="bubble">${html}</div>
+        <div class="msg-time">${now()}</div>
+      </div>`;
+    container.appendChild(row);
+    scrollDown();
+  }
 
-    async function submitBatch() {
-      const btn = document.getElementById('sendAllBtn');
-      btn.textContent = 'Sending...';
-      btn.disabled = true;
-      
-      // Implementation for batch sending would go here
-      // For now, we simulate success
-      setTimeout(() => {        alert('Batch sent successfully.');
+  function formatAI(text) {
+    let s = esc(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+    s = s.replace(/\n/g, '<br>');
+    return s;
+  }
+
+  /* ── Review panel ── */
+  function renderReview(leads) {
+    const list = document.getElementById('emailList');
+    list.innerHTML = '';
+    leads.forEach((lead, i) => {
+      const d = document.createElement('div');
+      d.className = 'lead-card';
+      d.innerHTML = `
+        <div class="lead-name">${esc(lead.name)} · ${esc(lead.company)}</div>
+        <div class="lead-email-guess">${esc(lead.email)}</div>
+        <div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${esc(lead.email)}"></div>
+        <div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${esc(lead.messages[0].subject)}"></div>
+        <div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${esc(lead.messages[0].body)}</textarea></div>`;
+      list.appendChild(d);
+    });
+    document.getElementById('reviewPanel').style.display = 'block';
+    scrollDown();
+  }
+
+  function closeReview() { document.getElementById('reviewPanel').style.display = 'none'; }
+
+  async function submitBatch() {
+    const btn = document.getElementById('sendAllBtn');
+    const orig = btn.textContent;
+    btn.textContent = 'Verifying…';
+    btn.disabled = true;
+    try {
+      const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+      const user = await userRes.json();
+      const payload = {
+        leads: currentGeneratedLeads.map((lead, i) => ({
+          name: lead.name,
+          email: document.getElementById(`email-${i}`).value,
+          company: lead.company,
+          messages: [{ subject: document.getElementById(`subject-${i}`).value, body: document.getElementById(`body-${i}`).value }]
+        }))
+      };
+      if (!user.nylasIntegration?.isConnected) {
+        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+        alert('⚠️ Email connection expired. Please reconnect.');
+        window.location.href = 'dashboard.html?connect=true';
+        return;
+      }
+      btn.textContent = 'Sending…';
+      const res  = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+        alert('⚠️ Session expired. Please reconnect.');
+        window.location.href = 'dashboard.html?connect=true';
+        return;
+      }
+      if (data.success) {
+        alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
+        appendMsg('ai', '✅ Emails sent! Track replies in Dashboard.');
         closeReview();
-        btn.textContent = 'Confirm & Send Batch';
-        btn.disabled = false;
-      }, 1500);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+      } else {
+        alert('Error: ' + JSON.stringify(data.errors));
+      }
+    } catch {
+      alert('Connection error. Reconnect in Dashboard if session expired.');
+    } finally {
+      btn.textContent = orig;
+      btn.disabled = false;
     }
+  }
 
-    // Utilities
-    function autoResize() {
-      els.cmdInput.style.height = 'auto';
-      els.cmdInput.style.height = els.cmdInput.scrollHeight + 'px';
-      els.cmdSend.disabled = !els.cmdInput.value.trim();
+  /* ── Typing indicator ── */
+  function showTyping(label = 'Thinking…') {
+    let row = document.getElementById('typingRow');
+    if (row) {
+      const lbl = row.querySelector('.t-label');
+      if (lbl) lbl.textContent = label;
+      scrollDown();
+      return;
     }
+    const c = document.getElementById('msgContainer');
+    if (!c) return;
+    row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'typingRow';
+    row.innerHTML = `
+      <div class="av" style="background:var(--amber-2);color:var(--void);">AI</div>
+      <div class="typing-bubble">
+        <span class="t-label">${label}</span>
+        <div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>
+      </div>`;
+    c.appendChild(row);
+    scrollDown();
+  }
+  function hideTyping() { document.getElementById('typingRow')?.remove(); }
 
-    function esc(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    function formatAI(text) {
-      return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-    }
-
-    async function loadSession() {
-      // Load logic from previous implementation
-    }
-  </script>
+  /* ── Helpers ── */
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function now() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function scrollDown() { chatArea?.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
+  function updateSend() { sendBtn.disabled = !msgInput.value.trim() || isTyping; }
+  function onInput() {
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 130) + 'px';
+    updateSend();
+    charCount.textContent = msgInput.value.length || '';
+  }
+  function onKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
+  }
+  function clearChat() { window.location.href = window.location.pathname; }
+</script>
 </body>
-              </html>
+</html>
+
+page.html
+
+so I don't a new just this update it completely give me the complete code so I want you to write the complete code with different methods structure style and design of millions of dollar app.
