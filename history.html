@@ -2,472 +2,400 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dream Sessions | Skyline AA-1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <title>Skyline AA-1 · Session Archive</title>
+  
+  <!-- Fonts: Inter for UI, JetBrains Mono for Data -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ──────────────────────────────────
+       DESIGN TOKENS (MATCHING PAGE.HTML)
+    ────────────────────────────────── */
     :root {
-      --bg-void: #060608;
-      --bg-base: #0b0c0f;
-      --bg-surface: #0f1115;
-      --bg-raised: #151820;
-      --bg-hover: #1b1f2a;
-      --border: rgba(255,255,255,0.055);
-      --border-bright: rgba(200,255,87,0.25);
-      --accent: #c8ff57;
-      --accent-dim: rgba(200,255,87,0.08);
-      --text-1: #e8eaf0;
-      --text-2: #7c8194;
-      --text-3: #3e4255;
-      --font-mono: 'IBM Plex Mono', monospace;
-      --font-sans: 'Syne', sans-serif;
-      --radius: 10px;
-      --topbar-h: 60px;
+      --bg-deep: #050505;
+      --bg-surface: #0a0a0a;
+      --bg-glass: rgba(20, 20, 20, 0.6);
+      --bg-glass-hover: rgba(30, 30, 30, 0.7);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(255, 255, 255, 0.15);
+      
+      --accent-primary: #ffffff;
+      --accent-secondary: #a1a1aa;
+      
+      --font-ui: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      
+      --nav-height: 60px;
+      --header-height: 50px;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg-void);
-      color: var(--text-1);
-      font-family: var(--font-sans);
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
 
     body {
+      background-color: var(--bg-deep);
+      color: var(--accent-primary);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      height: 100vh;
+      height: 100dvh;
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      flex-direction: column;      overflow: hidden;
     }
 
-    .topbar {
-      position: relative;
-      z-index: 10;
-      height: var(--topbar-h);
-      padding: 0 28px;
-      background: rgba(11,12,15,0.85);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
+    /* Ambient Background Glow */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -20%; left: -10%;
+      width: 60vw; height: 60vw;
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ──────────────────────────────────
+       HEADER (IDENTICAL TO PAGE.HTML)
+    ────────────────────────────────── */
+    .app-header {
+      height: var(--header-height);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(5, 5, 5, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 20;
       flex-shrink: 0;
     }
 
-    .back-btn {
-      color: var(--text-2);
-      text-decoration: none;
-      font-size: 12px;
-      font-family: var(--font-mono);
+    .brand-group { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: -0.02em;
       display: flex;
       align-items: center;
-      gap: 9px;
-      transition: color 0.18s;
-    }
-    .back-btn:hover { color: var(--accent); }
-
-    .topbar-brand {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-3);
-      letter-spacing: 0.14em;
-    }
-
-    .page-body {
-      flex: 1;
-      overflow-y: auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    .page-body::-webkit-scrollbar { width: 4px; }
-    .page-body::-webkit-scrollbar-track { background: transparent; }
-    .page-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
-
-    .history-container {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 52px 28px 80px;
-    }
-
-    .page-header {
-      margin-bottom: 40px;
-    }
-
-    .page-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--accent);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .page-eyebrow::after {
-      content: '';
-      height: 1px;
-      width: 36px;
-      background: var(--accent);
-      opacity: 0.4;
-    }
-
-    .page-title {
-      font-size: clamp(26px, 4vw, 34px);
-      font-weight: 800;
-      color: var(--text-1);
-      line-height: 1.15;
-    }
-
-    .page-subtitle {
-      margin-top: 10px;
-      font-size: 14px;
-      color: var(--text-2);
-    }
-
-    /* SIMPLE SEARCH BAR */
-    .search-wrap {
-      position: relative;
-      margin-bottom: 24px;
-    }
-    
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-3);
-      pointer-events: none;
-      z-index: 2;
-    }
-    
-    .search-input {
-      width: 100%;
-      height: 46px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text-1);
-      font-family: var(--font-mono);
-      font-size: 13px;
-      padding: 0 50px 0 42px;
-      outline: none;
-      transition: all 0.2s;
-    }
-    
-    .search-input:focus {
-      border-color: var(--accent);
-      background: var(--bg-raised);
-    }
-    
-    .search-input::placeholder {
-      color: var(--text-3);
-      font-size: 12px;
-    }
-    
-    .search-clear {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      border: none;
-      color: var(--text-3);
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      opacity: 0;
-      visibility: hidden;
-    }
-    
-    .search-clear.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-    
-    .search-clear:hover {
-      color: var(--accent);
-      background: var(--accent-dim);
-    }
-
-    /* Session list */
-    #sessionList {
-      display: flex;
-      flex-direction: column;
       gap: 8px;
     }
+    .brand-logo svg { width: 18px; height: 18px; color: var(--accent-primary); }
 
-    .session-item {
-      position: relative;
+    /* ──────────────────────────────────
+       MAIN CONTENT AREA
+    ────────────────────────────────── */
+    .archive-stage {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 16px 100px;
+      position: relative;      z-index: 1;
+    }
+    .archive-stage::-webkit-scrollbar { width: 4px; }
+    .archive-stage::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+
+    .archive-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      margin-bottom: 32px;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      color: var(--accent-secondary);
+      font-size: 14px;
+    }
+
+    /* Command Search Bar */
+    .search-shell {
       background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 20px 18px 24px;
-      cursor: pointer;
-      transition: all 0.2s;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 32px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-shell:focus-within {
+      border-color: var(--border-active);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.02);
+    }
+    .search-icon {
+      padding: 0 12px;
+      color: var(--accent-secondary);
+    }
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--accent-primary);
+      padding: 12px 0;
+      font-family: var(--font-ui);      font-size: 14px;
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--accent-secondary); opacity: 0.5; }
+
+    /* Session Grid */
+    .session-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .session-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      text-decoration: none;
+      position: relative;
+      overflow: hidden;
     }
-
-    .session-item:hover {
-      border-color: var(--border-bright);
-      background: var(--bg-raised);
-      transform: translateX(3px);
+    .session-card:hover {
+      background: var(--bg-glass-hover);
+      border-color: var(--border-active);
+      transform: translateY(-2px);
     }
-
-    .session-left { flex: 1; min-width: 0; }
-
-    .session-title {
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--text-1);
-      line-height: 1.3;
+    
+    .card-content { flex: 1; min-width: 0; }
+    .card-title {
+      font-weight: 500;
+      font-size: 15px;
+      margin-bottom: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    .session-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 5px;
-    }
-
-    .session-date {
+    .card-meta {
       font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-3);
+      font-size: 11px;
+      color: var(--accent-secondary);
+      display: flex;
+      gap: 12px;
+    }
+    
+    .card-arrow {      color: var(--accent-secondary);
+      transition: transform 0.2s;
+    }
+    .session-card:hover .card-arrow {
+      color: var(--accent-primary);
+      transform: translateX(4px);
     }
 
-    .session-arrow {
-      color: var(--text-3);
-      flex-shrink: 0;
-      transition: all 0.2s;
-    }
-    .session-item:hover .session-arrow {
-      color: var(--accent);
-      transform: translateX(3px);
-    }
-
-    .state-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg-surface);
+    /* Empty State */
+    .empty-state {
       text-align: center;
-      padding: 64px 32px;
+      padding: 64px 24px;
+      color: var(--accent-secondary);
+    }
+    .empty-icon {
+      width: 48px; height: 48px;
+      margin: 0 auto 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    .state-icon { font-size: 36px; margin-bottom: 16px; opacity: 0.5; }
-    .state-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
-    .state-desc { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ──────────────────────────────────
+       BOTTOM NAV (IDENTICAL TO PAGE.HTML)
+    ────────────────────────────────── */
+    .bottom-nav {
+      height: var(--nav-height);
+      background: var(--bg-deep);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 20;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
     }
-
-    .session-item {
-      animation: fadeUp 0.3s ease forwards;
+    .nav-item {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--accent-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+      position: relative;    }
+    .nav-item.active { color: var(--accent-primary); }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 2px;
+      background: var(--accent-primary);
+      box-shadow: 0 0 10px var(--accent-primary);
     }
+    .nav-item svg { width: 20px; height: 20px; }
 
-    .hidden {
-      display: none !important;
+    @media (min-width: 768px) {
+      .archive-stage { padding: 48px 24px 120px; }
+      .session-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
 
-  <header class="topbar">
-    <a href="page.html" class="back-btn">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M10 12L6 8L10 4"/>
-      </svg>
-      Back to Chat
-    </a>
-    <span class="topbar-brand">Skyline AA-1</span>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Skyline
+      </div>
+    </div>
   </header>
 
-  <div class="page-body">
-    <div class="history-container">
-
-      <div class="page-header">
-        <div class="page-eyebrow">Memory Archive</div>
-        <h1 class="page-title">Your Dream Sessions</h1>
-        <p class="page-subtitle">Every conversation, saved and searchable.</p>
+  <!-- Main Stage -->
+  <div class="archive-stage">
+    <div class="archive-container">
+      
+      <div class="section-header">
+        <h1 class="section-title">Session Archive</h1>
+        <p class="section-sub">Access your historical prospecting data and outreach logs.</p>
       </div>
 
-      <!-- SIMPLE SEARCH BAR -->
-      <div class="search-wrap">
-        <svg class="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="6.5" cy="6.5" r="4.5"/>
-          <path d="M11 11l3 3"/>
-        </svg>
-        <input class="search-input" type="text" id="searchInput" placeholder="Search by title..." autocomplete="off" />
-        <button class="search-clear" id="searchClearBtn" aria-label="Clear">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M4 4L12 12M12 4L4 12"/>
-          </svg>
-        </button>
+      <!-- Search Command -->
+      <div class="search-shell">
+        <div class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by company or title..." autocomplete="off">
       </div>
 
-      <!-- Session list -->
-      <div id="sessionList">
-        <div class="state-card">
-          <div class="state-icon">📋</div>
-          <div class="state-title">Loading sessions...</div>
+      <!-- Session List -->
+      <div class="session-grid" id="sessionGrid">
+        <div class="empty-state">          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <p>Loading archive...</p>
         </div>
       </div>
 
     </div>
   </div>
 
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="page.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <a href="history.html" class="nav-item active">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </a>
+    <a href="notifications.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </a>
+    <a href="dashboard.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </a>
+  </nav>
+
   <script>
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
     let allSessions = [];
 
-    function formatDate(dateStr) {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
+    document.addEventListener('DOMContentLoaded', loadSessions);
 
-    function escapeHTML(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // SIMPLE: Show only sessions that match search, hide others
-    function filterSessions() {
-      const searchInput = document.getElementById('searchInput');
-      const query = searchInput.value.toLowerCase().trim();
-      const clearBtn = document.getElementById('searchClearBtn');
-      const items = document.querySelectorAll('.session-item');
-      
-      if (query === '') {
-        // Show ALL sessions
-        items.forEach(item => {
-          item.classList.remove('hidden');
-        });
-        clearBtn.classList.remove('visible');
-      } else {
-        // Show ONLY matching sessions
-        clearBtn.classList.add('visible');
-        let visibleCount = 0;
-        
-        items.forEach(item => {
-          const title = item.querySelector('.session-title').innerText.toLowerCase();
-          if (title.includes(query)) {
-            item.classList.remove('hidden');
-            visibleCount++;
-          } else {
-            item.classList.add('hidden');
-          }
-        });
-        
-        // Show "no results" message if nothing found
-        let noResultsMsg = document.getElementById('noResultsMsg');
-        if (visibleCount === 0) {
-          if (!noResultsMsg) {
-            noResultsMsg = document.createElement('div');
-            noResultsMsg.id = 'noResultsMsg';
-            noResultsMsg.className = 'state-card';
-            noResultsMsg.innerHTML = `
-              <div class="state-icon">🔍</div>
-              <div class="state-title">No matching sessions</div>
-              <div class="state-desc">Try a different search term.</div>
-            `;
-            document.getElementById('sessionList').appendChild(noResultsMsg);
-          }
-        } else {
-          if (noResultsMsg) noResultsMsg.remove();
-        }
-      }
-    }
-
-    // Clear search and show all
-    function clearSearch() {
-      const searchInput = document.getElementById('searchInput');
-      searchInput.value = '';
-      filterSessions();
-      searchInput.focus();
-    }
-
-    // Render all sessions from API
     async function loadSessions() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/sessions', {
+        const res = await fetch(`${BACKEND}/api/sessions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error('Failed to load sessions');
 
         allSessions = await res.json();
-        
-        if (allSessions.length === 0) {
-          document.getElementById('sessionList').innerHTML = `
-            <div class="state-card">
-              <div class="state-icon">🌙</div>
-              <div class="state-title">No sessions yet</div>
-              <div class="state-desc">Start a conversation in the chat to see it here.</div>
-            </div>`;
-          return;
-        }
-        
-        // Build the list HTML
-        const listContainer = document.getElementById('sessionList');
-        listContainer.innerHTML = '';
-        
-        allSessions.forEach(session => {
-          const item = document.createElement('a');
-          item.className = 'session-item';
-          item.href = `page.html?session=${session._id}`;
-          item.innerHTML = `
-            <div class="session-left">
-              <div class="session-title">${escapeHTML(session.title)}</div>
-              <div class="session-meta">
-                <span class="session-date">${formatDate(session.lastUpdated)}</span>
-              </div>
-            </div>
-            <svg class="session-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M6 4l4 4-4 4"/>
-            </svg>`;
-          listContainer.appendChild(item);
+        renderSessions(allSessions);
+
+        // Search Logic
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase();
+          const filtered = allSessions.filter(s =>             s.title.toLowerCase().includes(query) || 
+            (s.company && s.company.toLowerCase().includes(query))
+          );
+          renderSessions(filtered);
         });
-        
-        // Set up search event
-        const searchInput = document.getElementById('searchInput');
-        const clearBtn = document.getElementById('searchClearBtn');
-        
-        searchInput.addEventListener('input', filterSessions);
-        clearBtn.addEventListener('click', clearSearch);
-        
-        // ESC key clears
-        searchInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') clearSearch();
-        });
-        
+
       } catch (err) {
-        console.error('Error:', err);
-        document.getElementById('sessionList').innerHTML = `
-          <div class="state-card">
-            <div class="state-icon">⚠️</div>
-            <div class="state-title">Failed to load</div>
-            <div class="state-desc">Check your connection and try again.</div>
+        console.error(err);
+        document.getElementById('sessionGrid').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon" style="border-color: var(--status-error)">!</div>
+            <p>Failed to connect to archive.</p>
           </div>`;
       }
     }
 
-    loadSessions();
+    function renderSessions(sessions) {
+      const grid = document.getElementById('sessionGrid');
+      grid.innerHTML = '';
+
+      if (sessions.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <p>No sessions found.</p>
+          </div>`;
+        return;
+      }
+
+      sessions.forEach(session => {
+        const date = new Date(session.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const card = document.createElement('a');
+        card.className = 'session-card';
+        card.href = `page.html?session=${session._id}`;
+        card.innerHTML = `
+          <div class="card-content">
+            <div class="card-title">${escapeHTML(session.title)}</div>
+            <div class="card-meta">
+              <span>${date}</span>
+              <span>•</span>
+              <span>${session.messageCount || 0} messages</span>
+            </div>
+          </div>
+          <div class="card-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        `;
+        grid.appendChild(card);      });
+    }
+
+    function escapeHTML(str) {
+      return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+    }
   </script>
 </body>
-</html>
+  </html>
