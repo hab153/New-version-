@@ -507,6 +507,27 @@
       // Load messages logic here...
       const container = document.getElementById('messagesContainer');
       container.innerHTML = '<div style="text-align:center; color:var(--accent-secondary);">Loading messages...</div>';
+
+      // FIX: Added the actual fetch call to load messages
+      try {
+        const res = await fetch(`${BACKEND}/api/conversations/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        // Render messages
+        if (data.messages && data.messages.length > 0) {
+           container.innerHTML = data.messages.map(msg => `
+            <div class="msg-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
+              ${msg.content}
+            </div>
+           `).join('');
+        } else {
+           container.innerHTML = '<div style="text-align:center; color:var(--accent-secondary);">No messages yet.</div>';
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; color:var(--status-error);">Failed to load messages.</div>';
+      }
     }
 
     function closeChat() {
@@ -516,8 +537,7 @@
 
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
-      if (!text || !currentLeadId) return;
-      // Send logic here...
+      if (!text || !currentLeadId) return;      // Send logic here...
       alert("Reply sent (Simulation)");
       document.getElementById('replyText').value = '';
     }
