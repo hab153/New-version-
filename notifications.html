@@ -47,8 +47,7 @@
       align-items: center;
       padding: 0 16px;
       height: 56px;
-      background: var(--bg-base);
-      border-bottom: 1px solid var(--border);
+      background: var(--bg-base);      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       gap: 12px;
       position: relative;
@@ -98,7 +97,6 @@
       padding: 3px;
       gap: 2px;
     }
-
     .tab-pill {
       height: 30px;
       padding: 0 14px;
@@ -148,7 +146,6 @@
     }
 
     .nav-spacer { flex: 1; }
-
     .nav-status {
       display: flex;
       align-items: center;
@@ -197,8 +194,7 @@
       flex-shrink: 0;
     }
     .search-wrap {
-      position: relative;
-    }
+      position: relative;    }
     .search-icon {
       position: absolute;
       left: 12px;
@@ -247,8 +243,7 @@
       gap: 2px;
     }
     .stat-chip-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
+      font-family: var(--font-mono);      font-size: 9px;
       color: var(--text-3);
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -297,8 +292,7 @@
     .contact-item:active { background: var(--bg-raised); }
 
     .contact-avatar {
-      width: 44px; height: 44px;
-      border-radius: 12px;
+      width: 44px; height: 44px;      border-radius: 12px;
       background: var(--bg-raised);
       border: 1px solid var(--border-mid);
       display: flex; align-items: center; justify-content: center;
@@ -347,8 +341,7 @@
     .contact-preview {
       font-size: 12px;
       color: var(--text-3);
-      white-space: nowrap;
-      overflow: hidden;
+      white-space: nowrap;      overflow: hidden;
       text-overflow: ellipsis;
       flex: 1;
       line-height: 1.4;
@@ -397,8 +390,7 @@
       white-space: nowrap;
       max-width: 70px;
       overflow: hidden;
-      text-overflow: ellipsis;
-    }
+      text-overflow: ellipsis;    }
 
     /* ─── VIEW: CHAT ─── */
     .view-chat {
@@ -447,8 +439,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; font-weight: 700; color: var(--accent);
       text-transform: uppercase;
-    }
-    .chat-online-dot {
+    }    .chat-online-dot {
       position: absolute; bottom: -2px; right: -2px;
       width: 9px; height: 9px; border-radius: 50%;
       background: var(--green);
@@ -497,8 +488,7 @@
 
     .ai-toggle-text {
       font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
+      font-size: 10px;      font-weight: 600;
       color: var(--text-3);
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -547,7 +537,6 @@
     }
     .edit-details-btn:hover { border-color: var(--accent); color: var(--accent); }
     .edit-details-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
-
     /* ─── MESSAGES ─── */
     .messages-container {
       flex: 1; padding: 16px 16px 8px;
@@ -597,8 +586,7 @@
       margin-top: 4px;
       text-align: right;
       font-family: var(--font-mono);
-    }
-    .msg-group.from-lead .message-time { text-align: left; }
+    }    .msg-group.from-lead .message-time { text-align: left; }
 
     /* ─── REPLY AREA ─── */
     .reply-input-area {
@@ -648,7 +636,6 @@
     }
     .reply-input-area textarea:focus { border-color: rgba(200,255,87,0.28); }
     .reply-input-area textarea::placeholder { color: var(--text-3); }
-
     .send-btn {
       width: 42px; height: 42px;
       background: var(--accent);
@@ -697,8 +684,7 @@
     /* ─── MODAL ─── */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.75);      backdrop-filter: blur(4px);
       z-index: 1000;
       display: none; align-items: center; justify-content: center;
     }
@@ -747,8 +733,7 @@
     .modal-field label {
       display: block;
       font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-3);
+      font-size: 10px;      color: var(--text-3);
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 8px;
@@ -797,8 +782,7 @@
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
-    }
+      transition: all 0.2s;    }
     .btn-primary:hover { background: #d4ff6a; }
 
     /* ─── DIVIDERS / DATE LABELS IN CHAT ─── */
@@ -847,13 +831,48 @@
       width: 4px; height: 4px; border-radius: 50%;
       background: var(--accent-go);
       animation: bounce-dot 1.2s ease-in-out infinite;
-    }
-    .ai-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    }    .ai-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
     .ai-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce-dot {
       0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
       40% { transform: scale(1); opacity: 1; }
     }
+
+    /* ─── BOTTOM NAVIGATION (ADDED) ─── */
+    .bottom-nav {
+      height: 60px;
+      background: var(--bg-base);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+    .nav-item {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-item.active { color: var(--accent); }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 40px;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+    .nav-item svg { width: 20px; height: 20px; }
   </style>
 </head>
 <body>
@@ -861,8 +880,7 @@
   <!-- TOP NAV -->
   <div class="top-nav">
     <div class="nav-logo">
-      <div class="nav-logo-mark">
-        <!-- Skyline logo mark -->
+      <div class="nav-logo-mark">        <!-- Skyline logo mark -->
         <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="1" y="9" width="2" height="5" rx="0.5" fill="#000"/>
           <rect x="4" y="6" width="2" height="8" rx="0.5" fill="#000"/>
@@ -911,8 +929,7 @@
           <div class="stat-chip-label">Total</div>
           <div class="stat-chip-val accent" id="statTotal">—</div>
         </div>
-        <div class="stat-chip">
-          <div class="stat-chip-label">Unread</div>
+        <div class="stat-chip">          <div class="stat-chip-label">Unread</div>
           <div class="stat-chip-val red" id="statUnread">—</div>
         </div>
         <div class="stat-chip">
@@ -961,8 +978,7 @@
               <!-- Eyes -->
               <rect x="6.5" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
               <rect x="11.3" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
-              <!-- Mouth -->
-              <path d="M7 12h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <!-- Mouth -->              <path d="M7 12h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
               <!-- Body stub -->
               <path d="M7 14v1.5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               <!-- Arms -->
@@ -1011,8 +1027,7 @@
             oninput="autoResize(this)"
             onkeydown="handleKey(event)"></textarea>
           <button class="send-btn" id="sendBtn" onclick="sendReply()">
-            <svg viewBox="0 0 24 24">
-              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg viewBox="0 0 24 24">              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
         </div>
@@ -1036,6 +1051,22 @@
 
   </div>
 
+  <!-- BOTTOM NAVIGATION (ADDED) -->
+  <nav class="bottom-nav">
+    <a href="page.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <a href="history.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </a>
+    <a href="notifications.html" class="nav-item active">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </a>
+    <a href="dashboard.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </a>
+  </nav>
+
   <!-- MODAL: AUTO-REPLY INSTRUCTIONS -->
   <div class="modal-overlay" id="instructionsModal">
     <div class="modal-content">
@@ -1045,8 +1076,7 @@
           <p>AI · AUTO-REPLY INSTRUCTIONS</p>
         </div>
         <button class="modal-close" onclick="closeInstructionsModal()">×</button>
-      </div>
-      <div class="modal-field">
+      </div>      <div class="modal-field">
         <label>Instructions for AI</label>
         <textarea id="instructionsText" placeholder="E.g., Be concise and professional. Offer a 10% discount if they hesitate. Always sign off with 'Best, Team Skyline'."></textarea>
       </div>
@@ -1095,8 +1125,7 @@
     }
     function handleKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
-    }
-    function escapeHtml(str) {
+    }    function escapeHtml(str) {
       if (!str) return '';
       const div = document.createElement('div');
       div.appendChild(document.createTextNode(str));
@@ -1145,8 +1174,7 @@
       if (unread > 0) {
         badge.textContent = unread > 99 ? '99+' : unread;
         badge.style.display = 'flex';
-      } else {
-        badge.style.display = 'none';
+      } else {        badge.style.display = 'none';
       }
     }
 
@@ -1195,8 +1223,7 @@
     function filterContacts(query) {
       if (!query.trim()) { renderContacts(allContacts); return; }
       const q = query.toLowerCase();
-      renderContacts(allContacts.filter(c =>
-        (c.name || '').toLowerCase().includes(q) ||
+      renderContacts(allContacts.filter(c =>        (c.name || '').toLowerCase().includes(q) ||
         (c.company || '').toLowerCase().includes(q) ||
         (c.email || '').toLowerCase().includes(q)
       ));
@@ -1245,7 +1272,6 @@
         isAutoReplyEnabled = data.lead.autoReplyEnabled || false;
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
-
         if (!data.messages || data.messages.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
@@ -1296,7 +1322,6 @@
       document.getElementById('instructionsModal').classList.remove('active');
       updateAutoReplyUI();
     }
-
     async function saveAutoReplyInstructions() {
       const instructions = document.getElementById('instructionsText').value.trim();
       if (!instructions) { alert("Please enter AI instructions."); return; }
@@ -1345,8 +1370,7 @@
       const text = document.getElementById('replyText').value.trim();
       if (!text || !currentLeadId) return;
       const btn = document.getElementById('sendBtn');
-      btn.disabled = true;
-      const payload = {
+      btn.disabled = true;      const payload = {
         leads: [{ name: currentLeadName, email: currentLeadEmail, company: '',
           messages: [{ subject: "Re: Conversation", body: text }] }]
       };
