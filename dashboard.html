@@ -5,369 +5,754 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- 🔥 ADD FLUTTERWAVE INLINE CHECKOUT SCRIPT -->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <style>
     :root {
-      --bg-void: #060608;
-      --bg-base: #0b0c0f;
-      --bg-surface: #111318;
-      --bg-raised: #181b22;
-      --border: rgba(255,255,255,0.06);
+      --bg-void: #05060a;
+      --bg-base: #090b10;
+      --bg-surface: #0f1119;
+      --bg-raised: #161925;
+      --bg-hover: #1c2030;
+      --border: rgba(255,255,255,0.05);
+      --border-mid: rgba(255,255,255,0.09);
       --accent: #c8ff57;
+      --accent-dim: rgba(200,255,87,0.10);
       --accent-go: #00d2ff;
-      --text-1: #e8eaf0;
+      --accent-go-dim: rgba(0,210,255,0.10);
+      --text-1: #eceef5;
       --text-2: #8c909e;
-      --text-3: #52566a;
-      --danger: #ff4d4d;
-      --success: #00e676;
-      --warning: #ffaa00;
+      --text-3: #434659;
+      --danger: #ff4d6d;
+      --success: #2ecc71;
+      --warning: #ffb347;
       --font-mono: 'IBM Plex Mono', monospace;
-      --font-sans: 'Syne', sans-serif;
+      --font-display: 'Syne', sans-serif;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg-void);
       color: var(--text-1);
-      font-family: var(--font-sans);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
+      font-family: var(--font-display);
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      align-items: center;
     }
 
+    /* ─── TOAST ─── */
     .toast {
       position: fixed;
       top: 16px;
       left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 600;
-      z-index: 9999;
-      display: none;
-      animation: slideDown 0.3s ease;
-    }
-    .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
-    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--danger);  color: var(--danger); }
-    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--accent-go); color: var(--accent-go); }
-    .toast.warning { background: rgba(255, 170, 0, 0.15);  border: 1px solid var(--warning); color: var(--warning); }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-
-    .topbar {
-      width: 100%;
-      height: 58px;
-      background: var(--bg-base);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      box-sizing: border-box;
-    }
-    .topbar-left { display: flex; align-items: center; gap: 16px; }
-    .brand {
+      transform: translateX(-50%) translateY(-60px);
+      padding: 11px 20px;
+      border-radius: 10px;
       font-family: var(--font-mono);
       font-size: 12px;
-      letter-spacing: 0.12em;
-      color: var(--text-2);
+      font-weight: 500;
+      z-index: 9999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.success { background: rgba(46,204,113,0.12); border: 1px solid rgba(46,204,113,0.3); color: var(--success); }
+    .toast.error   { background: rgba(255,77,109,0.12); border: 1px solid rgba(255,77,109,0.3); color: var(--danger); }
+    .toast.info    { background: rgba(0,210,255,0.12);  border: 1px solid rgba(0,210,255,0.3);  color: var(--accent-go); }
+    .toast.warning { background: rgba(255,179,71,0.12); border: 1px solid rgba(255,179,71,0.3); color: var(--warning); }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      height: 56px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-logo {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
     }
-    .brand .dot {
-      width: 6px; height: 6px;
+    .nav-logo-mark {
+      width: 28px; height: 28px;
       background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
     }
-
-    .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
-    .section-title {
+    .nav-logo-mark svg { width: 16px; height: 16px; }
+    .nav-logo-text {
+      font-family: var(--font-mono);
+      font-size: 11px; font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .nav-logo-text span { color: var(--accent); }
+    .nav-divider {
+      width: 1px; height: 22px;
+      background: var(--border-mid);
+      flex-shrink: 0;
+    }
+    .nav-page-label {
       font-family: var(--font-mono);
       font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
       color: var(--text-3);
-      margin-bottom: 16px;
-      margin-top: 32px;
-      padding-left: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
-    .section-title:first-child { margin-top: 0; }
+    .nav-spacer { flex: 1; }
+    .nav-status {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 10px; color: var(--text-3);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse-dot 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
 
-    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
-    .menu-item {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 16px 20px;
-      border-radius: 12px;
-      text-decoration: none;
-      color: var(--text-1);
-      font-weight: 500;
+    /* ─── SCROLL CONTAINER ─── */
+    .page-scroll {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+      padding-bottom: 80px;
+    }
+    .page-scroll::-webkit-scrollbar { display: none; }
+
+    /* ─── HERO STRIP ─── */
+    .hero-strip {
+      padding: 20px 16px 0;
+    }
+    .hero-card {
+      background: linear-gradient(135deg, rgba(200,255,87,0.07) 0%, rgba(0,210,255,0.04) 100%);
+      border: 1px solid rgba(200,255,87,0.12);
+      border-radius: 16px;
+      padding: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: all 0.2s ease;
+      gap: 12px;
     }
-    .menu-item:hover { background: var(--bg-raised); border-color: var(--accent); transform: translateX(4px); }
-    .menu-item span { font-size: 14px; }
-    .arrow { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; }
-    .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.1); }
-    .danger-zone .menu-item:hover { border-color: var(--danger); background: rgba(255, 77, 77, 0.05); }
-    .danger-text { color: var(--danger); }
-
-    .back-link {
-      display: block; text-align: center; margin-top: 40px;
-      color: var(--text-2); text-decoration: none;
-      font-size: 13px; font-family: var(--font-mono);
+    .hero-left {}
+    .hero-greeting {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--text-3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
-    .back-link:hover { color: var(--accent); }
+    .hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-1);
+      line-height: 1.1;
+    }
+    .hero-title span { color: var(--accent); }
+    .hero-sub {
+      font-size: 11.5px;
+      color: var(--text-2);
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+    .hero-badge {
+      flex-shrink: 0;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-mid);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .hero-badge-val {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .hero-badge-label {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      color: var(--text-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
 
-    .command-center {
+    /* ─── SECTION LABEL ─── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-3);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 24px 16px 10px;
+    }
+
+    /* ─── STAT STRIP ─── */
+    .stat-strip {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .stat-strip::-webkit-scrollbar { display: none; }
+    .stat-tile {
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-width: 90px;
+    }
+    .stat-tile-val {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-tile-val.accent { color: var(--accent); }
+    .stat-tile-val.go     { color: var(--accent-go); }
+    .stat-tile-val.warn   { color: var(--warning); }
+    .stat-tile-label {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      color: var(--text-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ─── EMAIL CONNECT CARD ─── */
+    .email-card {
+      margin: 0 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .email-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .email-card-header:hover { background: var(--bg-raised); }
+    .email-card-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .email-card-icon {
+      width: 36px; height: 36px;
+      background: var(--accent-go-dim);
+      border: 1px solid rgba(0,210,255,0.2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .email-card-icon svg { width: 16px; height: 16px; stroke: var(--accent-go); fill: none; }
+    .email-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-1);
+    }
+    .email-card-sub {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+    .email-card-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .connect-btn {
+      height: 32px;
+      padding: 0 14px;
+      background: var(--accent-go);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .connect-btn:hover { box-shadow: 0 0 14px rgba(0,210,255,0.35); transform: translateY(-1px); }
+    .connect-btn.connected {
+      background: rgba(46,204,113,0.12);
+      color: var(--success);
+      border: 1px solid rgba(46,204,113,0.25);
+    }
+    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .chevron-btn {
+      width: 28px; height: 28px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .chevron-btn svg {
+      width: 14px; height: 14px;
+      stroke: var(--text-3);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .email-card.collapsed .chevron-btn svg { transform: rotate(-90deg); }
+    .email-card-body {
+      max-height: 800px;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .email-card.collapsed .email-card-body { max-height: 0; }
+
+    /* ─── LEADS TABLE ─── */
+    .leads-inner { padding: 16px; }
+    .lead-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .lead-row:last-child { border-bottom: none; }
+    .lead-avatar {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      text-transform: uppercase;
+      font-family: var(--font-display);
+    }
+    .lead-info { flex: 1; min-width: 0; }
+    .lead-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lead-company {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lead-meta { flex-shrink: 0; text-align: right; }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
+    .status-contacted  { background: rgba(0,210,255,0.1);    color: var(--accent-go); border: 1px solid rgba(0,210,255,0.2); }
+    .status-interested { background: rgba(200,255,87,0.1);   color: var(--accent);    border: 1px solid rgba(200,255,87,0.2); }
+    .status-replied    { background: rgba(200,255,87,0.07);  color: var(--accent);    border: 1px solid rgba(200,255,87,0.15); }
+    .status-closed     { background: rgba(255,77,109,0.1);   color: var(--danger);    border: 1px solid rgba(255,77,109,0.2); }
+    .lead-date {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+    .leads-empty {
+      text-align: center;
+      padding: 28px 20px;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    /* ─── PLAN CARDS ─── */
+    .plan-scroll {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .plan-scroll::-webkit-scrollbar { display: none; }
+    .plan-card {
+      flex-shrink: 0;
+      width: 220px;
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      margin-bottom: 40px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .cc-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 24px;
-      background: var(--bg-raised);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer; user-select: none;
-      transition: background 0.2s ease;
-    }
-    .cc-header:hover { background: #1e2229; }
-    .cc-title-group { display: flex; align-items: center; gap: 12px; }
-    .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
-    .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
-    .toggle-button-circle {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .toggle-icon-svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .toggle-icon-svg path { stroke: var(--text-2); stroke-width: 2; transition: stroke 0.2s ease; }
-    .toggle-button:hover .toggle-icon-svg path { stroke: var(--accent); }
-    .command-center.collapsed .toggle-icon-svg { transform: rotate(-90deg); }
-    .cc-content-wrapper { max-height: 2000px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .command-center.collapsed .cc-content-wrapper { max-height: 0; }
-    .cc-content { padding: 24px; opacity: 1; transition: opacity 0.2s ease; }
-    .command-center.collapsed .cc-content { opacity: 0; }
-
-    .connect-btn {
-      background: var(--accent-go); color: #000;
-      border: none; padding: 8px 16px; border-radius: 6px;
-      font-weight: 600; cursor: pointer; font-family: var(--font-mono);
-      font-size: 12px; transition: all 0.2s; z-index: 2; position: relative;
-    }
-    .connect-btn:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); transform: translateY(-1px); }
-    .connect-btn.connected { background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent); }
-    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--bg-base); padding: 16px; border-radius: 8px;
-      text-align: center; border: 1px solid var(--border);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .stat-card:hover { border-color: var(--text-3); transform: translateY(-2px); }
-    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
-    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
-
-    .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .lead-table th {
-      text-align: left; padding: 12px; color: var(--text-3);
-      border-bottom: 1px solid var(--border);
-      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
-    }
-    .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
-    .status-badge {
-      padding: 4px 8px; border-radius: 4px;
-      font-size: 10px; font-weight: 600; text-transform: uppercase;
-    }
-    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
-    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
-    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
-    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
-    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
-
-    .pricing-header { text-align: center; margin-bottom: 40px; }
-    .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
-    .pricing-header p { color: var(--text-2); font-size: 14px; }
-    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
-    .plan-card {
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 32px 24px;
-      display: flex; flex-direction: column; position: relative;
+      padding: 20px 18px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
       transition: transform 0.2s, border-color 0.2s;
     }
-    .plan-card:hover { transform: translateY(-5px); border-color: var(--text-3); }
-    .plan-card.featured { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(200, 255, 87, 0.1); }
+    .plan-card:hover { transform: translateY(-3px); border-color: var(--border-mid); }
+    .plan-card.featured {
+      border-color: rgba(200,255,87,0.25);
+      background: linear-gradient(160deg, rgba(200,255,87,0.05) 0%, var(--bg-surface) 60%);
+    }
     .plan-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--accent); color: #060608; font-size: 10px; font-weight: 700;
-      padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
+      position: absolute;
+      top: -10px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #000;
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
-    .plan-name { font-size: 18px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+    .plan-name {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .plan-active-tag {
+      background: rgba(200,255,87,0.12);
+      color: var(--accent);
+      font-size: 8px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(200,255,87,0.2);
+    }
     .plan-price {
-      font-size: 36px; font-weight: 700; color: var(--text-1); margin-bottom: 24px;
-      display: flex; align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
     }
-    .plan-price span { font-size: 14px; color: var(--text-3); margin-left: 4px; font-weight: 400; }
-    .plan-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex-grow: 1; }
+    .plan-price-unit {
+      font-size: 12px;
+      color: var(--text-3);
+      font-weight: 400;
+    }
+    .plan-features {
+      list-style: none;
+      flex: 1;
+      margin-bottom: 16px;
+    }
     .plan-features li {
-      margin-bottom: 12px; font-size: 13px; color: var(--text-2);
-      display: flex; align-items: center; gap: 8px;
+      font-size: 11.5px;
+      color: var(--text-2);
+      padding: 4px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      line-height: 1.4;
     }
-    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: bold; }
-    .plan-features li.disabled { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
-    .plan-features li.disabled::before { content: '✕'; color: var(--text-3); }
+    .plan-features li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .plan-features li.off { color: var(--text-3); }
+    .plan-features li.off::before { content: '—'; color: var(--text-3); }
     .plan-btn {
-      width: 100%; padding: 14px; border-radius: 8px; border: none;
-      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+      width: 100%;
+      height: 36px;
+      border: none;
+      border-radius: 9px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .btn-free { background: var(--bg-raised); color: var(--text-3); cursor: default; }
-    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
-    .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
-    .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
-    .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
-    .current-plan-tag {
-      display: inline-block; font-size: 10px;
-      background: rgba(200, 255, 87, 0.1); color: var(--accent);
-      padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
-    }
+    .plan-btn.inactive { background: var(--bg-raised); color: var(--text-3); cursor: default; }
+    .plan-btn.go-btn   { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border-mid); }
+    .plan-btn.go-btn:hover { border-color: var(--accent-go); color: var(--accent-go); }
+    .plan-btn.pro-btn  { background: var(--accent); color: #000; box-shadow: 0 0 18px rgba(200,255,87,0.2); }
+    .plan-btn.pro-btn:hover { background: #d4ff6a; transform: scale(1.02); }
 
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .command-center:not(.collapsed) .analytics-grid,
-    .command-center:not(.collapsed) .lead-table,
-    .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
+    /* ─── MENU LIST ─── */
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 16px;
+    }
+    .menu-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-1);
+      transition: all 0.18s;
+      cursor: pointer;
+    }
+    .menu-row:hover { background: var(--bg-raised); border-color: var(--border-mid); transform: translateX(3px); }
+    .menu-row-left { display: flex; align-items: center; gap: 12px; }
+    .menu-row-icon {
+      width: 34px; height: 34px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-mid);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .menu-row-icon svg { width: 15px; height: 15px; stroke: var(--text-2); fill: none; }
+    .menu-row-text { font-size: 13.5px; font-weight: 600; }
+    .menu-row-sub { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-3); margin-top: 2px; }
+    .menu-row-arrow { color: var(--text-3); font-size: 18px; line-height: 1; }
+    .menu-row.danger { border-color: rgba(255,77,109,0.08); }
+    .menu-row.danger:hover { border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.04); }
+    .menu-row.danger .menu-row-text { color: var(--danger); }
+    .menu-row.danger .menu-row-icon { background: rgba(255,77,109,0.08); border-color: rgba(255,77,109,0.15); }
+    .menu-row.danger .menu-row-icon svg { stroke: var(--danger); }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      height: 60px;
+      background: var(--bg-base);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      z-index: 30;
+    }
+    .nav-item {
+      flex: 1; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      position: relative;
+      cursor: pointer;
+    }
+    .nav-item svg { width: 20px; height: 20px; transition: all 0.2s ease; }
+    .nav-item:hover { color: var(--text-1); }
+    .nav-item:hover svg { transform: scale(1.1); }
+    .nav-item.active { color: var(--accent); }
+    .nav-item.active svg { filter: drop-shadow(0 0 6px rgba(200,255,87,0.5)); }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 8px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(200,255,87,0.4);
+    }
   </style>
 </head>
 <body>
 
   <div class="toast" id="toast"></div>
 
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="brand">
-        <span class="dot"></span>
-        SKYLINE AA-1
+  <!-- TOP NAV -->
+  <header class="top-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="9" width="2" height="5" rx="0.5" fill="#000"/>
+          <rect x="4" y="6" width="2" height="8" rx="0.5" fill="#000"/>
+          <rect x="7" y="3" width="2" height="11" rx="0.5" fill="#000"/>
+          <rect x="10" y="6" width="2" height="8" rx="0.5" fill="#000"/>
+          <rect x="13" y="8" width="2" height="6" rx="0.5" fill="#000"/>
+        </svg>
       </div>
+      <span class="nav-logo-text">Skyline <span>AA-1</span></span>
+    </div>
+    <div class="nav-divider"></div>
+    <span class="nav-page-label">Dashboard</span>
+    <div class="nav-spacer"></div>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      Live
     </div>
   </header>
 
-  <div class="container">
+  <!-- SCROLL BODY -->
+  <div class="page-scroll">
 
-    <div class="section-title">Month 2: Command Center</div>
-    <div class="command-center" id="commandCenter">
-      <div class="cc-header" onclick="toggleCommandCenter()">
-        <div class="cc-title-group">
-          <span class="cc-title">Email Infrastructure</span>
+    <!-- HERO -->
+    <div class="hero-strip">
+      <div class="hero-card">
+        <div class="hero-left">
+          <div class="hero-greeting">Welcome back</div>
+          <div class="hero-title">Skyline <span>AA-1</span></div>
+          <div class="hero-sub" id="heroPlanLabel">Free Plan · Active</div>
         </div>
-        <div style="display:flex; align-items:center; gap:16px;">
-          <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
-            Connect Gmail/Outlook
+        <div class="hero-badge">
+          <div class="hero-badge-val" id="heroLeadCount">—</div>
+          <div class="hero-badge-label">Total Leads</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="section-label">Analytics</div>
+    <div class="stat-strip">
+      <div class="stat-tile">
+        <div class="stat-tile-val accent" id="statTotal">—</div>
+        <div class="stat-tile-label">Leads</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile-val go" id="statReply">—</div>
+        <div class="stat-tile-label">Reply Rate</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile-val" style="color:var(--success)" id="statInterested">—</div>
+        <div class="stat-tile-label">Interested</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile-val warn" id="statContacted">—</div>
+        <div class="stat-tile-label">Contacted</div>
+      </div>
+    </div>
+
+    <!-- EMAIL INFRASTRUCTURE -->
+    <div class="section-label">Email Infrastructure</div>
+    <div class="email-card" id="emailCard">
+      <div class="email-card-header" onclick="toggleEmailCard()">
+        <div class="email-card-left">
+          <div class="email-card-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2z" stroke-width="1.8"/>
+              <polyline points="22,6 12,13 2,6" stroke-width="1.8"/>
+            </svg>
+          </div>
+          <div>
+            <div class="email-card-title">Gmail / Outlook</div>
+            <div class="email-card-sub" id="emailStatusLabel">Not connected</div>
+          </div>
+        </div>
+        <div class="email-card-right">
+          <button id="connectEmailBtn" class="connect-btn"
+            onclick="event.stopPropagation(); connectEmail()">
+            Connect
           </button>
-          <div class="toggle-button">
-            <div class="toggle-button-circle">
-              <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
+          <div class="chevron-btn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6 9L12 15L18 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
         </div>
       </div>
-
-      <div class="cc-content-wrapper">
-        <div class="cc-content">
-          <div class="analytics-grid">
-            <div class="stat-card">
-              <div class="stat-value" id="totalLeads">—</div>
-              <div class="stat-label">Total Leads</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="replyRate">—</div>
-              <div class="stat-label">Reply Rate</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value" id="interestedCount">—</div>
-              <div class="stat-label">Interested</div>
-            </div>
-          </div>
-
-          <table class="lead-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Status</th>
-                <th>Last Action</th>
-              </tr>
-            </thead>
-            <tbody id="leadList">
-              <tr>
-                <td colspan="4" style="text-align:center; color: var(--text-3); padding: 24px;">
-                  Loading leads...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
+      <div class="email-card-body">
+        <div class="leads-inner" id="leadsInner">
+          <div class="leads-empty">Loading leads…</div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">Subscription</div>
-    <div class="pricing-header">
-      <h2>Choose Your Power Level</h2>
-      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
-    </div>
-    <div class="pricing-cards">
+    <!-- SUBSCRIPTION -->
+    <div class="section-label">Subscription</div>
+    <div class="plan-scroll">
 
       <div class="plan-card">
         <div class="plan-name">Free</div>
-        <div class="plan-price">$0<span>/mo</span></div>
+        <div class="plan-price">$0<span class="plan-price-unit">/mo</span></div>
         <ul class="plan-features">
           <li>30 Requests / Day</li>
-          <li>Basic Model (Skyline AA-1a)</li>
+          <li>Basic Model (AA-1a)</li>
           <li>Short Memory</li>
-          <li class="disabled">Powerful Reasoning</li>
-          <li class="disabled">Early Access</li>
+          <li class="off">Powerful Reasoning</li>
+          <li class="off">Early Access</li>
         </ul>
-        <button class="plan-btn btn-free" disabled>Current Plan</button>
+        <button class="plan-btn inactive" disabled>Current Plan</button>
       </div>
 
       <div class="plan-card">
-        <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price">$9<span>/mo</span></div>
+        <div class="plan-name">
+          GO
+          <span class="plan-active-tag" id="goActiveTag" style="display:none">ACTIVE</span>
+        </div>
+        <div class="plan-price">$9<span class="plan-price-unit">/mo</span></div>
         <ul class="plan-features">
           <li>18 Requests / Day</li>
-          <li>Powerful Model (Skyline AA-1mini)</li>
+          <li>Powerful Model (AA-1mini)</li>
           <li>Long Memory</li>
           <li>Great Features</li>
-          <li class="disabled">Skyline AA-1a Model</li>
+          <li class="off">AA-1aa Model</li>
         </ul>
-        <button class="plan-btn btn-go" id="goPlanBtn" onclick="initiateUpgrade('go')">Upgrade to GO</button>
+        <button class="plan-btn go-btn" id="goPlanBtn" onclick="initiateUpgrade('go')">Upgrade to GO</button>
       </div>
 
       <div class="plan-card featured">
         <div class="plan-badge">Best Value</div>
-        <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price">$20<span>/mo</span></div>
+        <div class="plan-name">
+          PRO
+          <span class="plan-active-tag" id="proActiveTag" style="display:none">ACTIVE</span>
+        </div>
+        <div class="plan-price">$20<span class="plan-price-unit">/mo</span></div>
         <ul class="plan-features">
           <li>40 Requests / Day</li>
           <li>Skyline AA-1aa Model</li>
@@ -375,255 +760,372 @@
           <li>Early Access to Features</li>
           <li>Priority Support</li>
         </ul>
-        <button class="plan-btn btn-pro" id="proPlanBtn" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
+        <button class="plan-btn pro-btn" id="proPlanBtn" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
       </div>
 
     </div>
 
-    <div class="section-title">Profile</div>
-    <div class="menu-grid">
-      <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
-      <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
+    <!-- PROFILE -->
+    <div class="section-label">Profile</div>
+    <div class="menu-list">
+      <a href="profile.html" class="menu-row">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke-width="1.8"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Profile Details</div>
+            <div class="menu-row-sub">Name, photo, bio</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow">›</span>
+      </a>
+      <a href="account.html" class="menu-row">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="1.8"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Account Settings</div>
+            <div class="menu-row-sub">Security, preferences</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow">›</span>
+      </a>
     </div>
 
-    <div class="section-title">Skyline System</div>
-    <div class="menu-grid">
-      <a href="Privacy.html" class="menu-item"><span>Privacy Policy</span><span class="arrow">›</span></a>
-      <a href="age-verification.html" class="menu-item"><span>Age Verification</span><span class="arrow">›</span></a>
-      <a href="email-settings.html" class="menu-item"><span>Email Preferences</span><span class="arrow">›</span></a>
-      <a href="about.html" class="menu-item"><span>About Skyline AA-1</span><span class="arrow">›</span></a>
-      <a href="report.html" class="menu-item"><span>Report an Issue</span><span class="arrow">›</span></a>
+    <!-- SYSTEM -->
+    <div class="section-label">Skyline System</div>
+    <div class="menu-list">
+      <a href="Privacy.html" class="menu-row">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Privacy Policy</div>
+            <div class="menu-row-sub">How we handle your data</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow">›</span>
+      </a>
+      <a href="email-settings.html" class="menu-row">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2z" stroke-width="1.8"/><polyline points="22,6 12,13 2,6" stroke-width="1.8"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Email Preferences</div>
+            <div class="menu-row-sub">Notifications, frequency</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow">›</span>
+      </a>
+      <a href="about.html" class="menu-row">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="1.8"/><line x1="12" y1="8" x2="12" y2="12" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">About Skyline AA-1</div>
+            <div class="menu-row-sub">Version, changelog</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow">›</span>
+      </a>
+      <a href="report.html" class="menu-row">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="13" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Report an Issue</div>
+            <div class="menu-row-sub">Bugs, feedback</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow">›</span>
+      </a>
     </div>
 
-    <div class="section-title">Dangerous Zone</div>
-    <div class="menu-grid danger-zone">
-      <a href="#" onclick="handleLogout()" class="menu-item"><span class="danger-text">Sign Out</span><span class="arrow">›</span></a>
-      <a href="delete-account.html" class="menu-item"><span class="danger-text">Delete Account</span><span class="arrow">›</span></a>
+    <!-- DANGER ZONE -->
+    <div class="section-label">Danger Zone</div>
+    <div class="menu-list" style="margin-bottom: 8px;">
+      <a href="#" onclick="handleLogout(); return false;" class="menu-row danger">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-width="1.8" stroke-linecap="round"/><polyline points="16 17 21 12 16 7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Sign Out</div>
+            <div class="menu-row-sub" style="color: rgba(255,77,109,0.5)">End your session</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow" style="color:var(--danger)">›</span>
+      </a>
+      <a href="delete-account.html" class="menu-row danger">
+        <div class="menu-row-left">
+          <div class="menu-row-icon">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke-width="1.8" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke-width="1.8" stroke-linecap="round"/><path d="M10 11v6M14 11v6" stroke-width="1.8" stroke-linecap="round"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="menu-row-text">Delete Account</div>
+            <div class="menu-row-sub" style="color: rgba(255,77,109,0.5)">Permanently remove data</div>
+          </div>
+        </div>
+        <span class="menu-row-arrow" style="color:var(--danger)">›</span>
+      </a>
     </div>
 
-    <a href="page.html" class="back-link">← Return to Dream Architect</a>
-  </div>
+  </div><!-- end page-scroll -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="page.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </a>
+    <a href="history.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </a>
+    <a href="notifications.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </a>
+    <a href="dashboard.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    </a>
+  </nav>
 
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token   = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
-    // 🔥 YOUR FLUTTERWAVE TEST PUBLIC KEY — REPLACE THIS
     const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK_TEST-24d6f21e5868f2107c825d08fbd8a761-X';
 
-    let currentReplyLeadId  = null;
-    let currentReplyEmail   = null;
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    function showToast(message, type = 'success', duration = 4000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type}`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), duration);
+    }
 
-    // ── Toggle Command Center ─────────────────────────────────────────────────
-    function toggleCommandCenter() {
-      const cc = document.getElementById('commandCenter');
-      cc.classList.toggle('collapsed');
-      localStorage.setItem('commandCenterCollapsed', cc.classList.contains('collapsed'));
+    // ── Toggle Email Card ─────────────────────────────────────────────────────
+    function toggleEmailCard() {
+      const card = document.getElementById('emailCard');
+      card.classList.toggle('collapsed');
+      localStorage.setItem('emailCardCollapsed', card.classList.contains('collapsed'));
     }
 
     function loadCollapseState() {
-      const saved = localStorage.getItem('commandCenterCollapsed');
-      const cc    = document.getElementById('commandCenter');
-      if (saved === 'true') cc.classList.add('collapsed');
-      else { cc.classList.remove('collapsed'); if (saved === null) localStorage.setItem('commandCenterCollapsed', 'false'); }
+      if (localStorage.getItem('emailCardCollapsed') === 'true') {
+        document.getElementById('emailCard').classList.add('collapsed');
+      }
     }
 
-    function showToast(message, type = 'success', duration = 4000) {
-      const toast     = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className   = `toast ${type}`;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, duration);
-    }
-
-    // ── Handle OAuth Redirect ─────────────────────────────────────────────────
+    // ── OAuth Redirect ────────────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params    = new URLSearchParams(window.location.search);
       const connected = params.get('connected');
       const error     = params.get('error');
       if (connected === 'true') {
-        showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000);
+        showToast('✅ Gmail/Outlook connected!', 'success', 6000);
         setConnectedState();
         window.history.replaceState({}, document.title, '/dashboard.html');
       } else if (connected === 'false') {
         const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
-        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
+        showToast(`❌ Connection failed${errMsg}`, 'error', 6000);
         window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
 
     function setConnectedState() {
       const btn = document.getElementById('connectEmailBtn');
-      if (btn) { btn.innerText = '✅ Connected'; btn.classList.add('connected'); }
+      if (btn) {
+        btn.innerText = '✅ Connected';
+        btn.classList.add('connected');
+      }
+      document.getElementById('emailStatusLabel').textContent = 'Connected · Sending active';
     }
 
     // ── Connect Email ─────────────────────────────────────────────────────────
     async function connectEmail() {
-      const btn     = document.getElementById('connectEmailBtn');
-      btn.innerText = 'Connecting...';
-      btn.disabled  = true;
+      const btn = document.getElementById('connectEmailBtn');
+      btn.innerText = 'Connecting…';
+      btn.disabled = true;
       try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `Server error ${res.status}`); }
+        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `Error ${res.status}`); }
         const data = await res.json();
-        if (data.url) { window.location.href = data.url; }
-        else throw new Error('No URL returned from server');
+        if (data.url) window.location.href = data.url;
+        else throw new Error('No URL returned');
       } catch (err) {
-        showToast(`❌ Could not start connection: ${err.message}`, 'error');
-        btn.innerText = 'Connect Gmail/Outlook';
-        btn.disabled  = false;
+        showToast(`❌ ${err.message}`, 'error');
+        btn.innerText = 'Connect';
+        btn.disabled = false;
       }
     }
 
     // ── Check Email Status ────────────────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (res.ok) {
           const user = await res.json();
           if (user.nylasIntegration && user.nylasIntegration.isConnected) setConnectedState();
-          else {
-            const btn = document.getElementById('connectEmailBtn');
-            if (btn) { btn.innerText = 'Connect Gmail/Outlook'; btn.classList.remove('connected'); }
-          }
         }
-n      } catch (err) { console.error('Error checking email status:', err); }
+      } catch (err) { console.error(err); }
     }
 
     // ── Load Leads ────────────────────────────────────────────────────────────
+    function getInitials(name) {
+      if (!name) return '?';
+      return name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    }
+    function escapeHtml(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(str));
+      return d.innerHTML;
+    }
+
     async function loadLeads() {
       try {
         const res   = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const leads = await res.json();
-        const tbody = document.getElementById('leadList');
 
-        document.getElementById('totalLeads').innerText     = leads.length;
-        document.getElementById('interestedCount').innerText = leads.filter(l => l.status === 'Interested').length;
-        const replied = leads.filter(l => ['Replied','Interested'].includes(l.status)).length;
-        document.getElementById('replyRate').innerText = leads.length > 0 ? Math.round((replied / leads.length) * 100) + '%' : '0%';
+        // Hero count
+        document.getElementById('heroLeadCount').textContent = leads.length;
+        document.getElementById('statTotal').textContent     = leads.length;
 
+        const replied     = leads.filter(l => ['Replied','Interested'].includes(l.status)).length;
+        const interested  = leads.filter(l => l.status === 'Interested').length;
+        const contacted   = leads.filter(l => l.status === 'Contacted').length;
+
+        document.getElementById('statReply').textContent      = leads.length > 0 ? Math.round((replied / leads.length) * 100) + '%' : '0%';
+        document.getElementById('statInterested').textContent = interested;
+        document.getElementById('statContacted').textContent  = contacted;
+
+        const inner = document.getElementById('leadsInner');
         if (leads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
-        } else {
-          tbody.innerHTML = leads.map(lead => {
-            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
-            const lastDate    = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
-            return `
-              <tr>
-                <td>${escapeHtml(lead.name || '—')}</td>
-                <td>${escapeHtml(lead.company || '—')}</td>
-                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
-                <td>${lastDate}</td>
-              </tr>
-            `;
-          }).join('');
+          inner.innerHTML = '<div class="leads-empty">No leads yet.<br>Say "Research [company]" in the Architect to start.</div>';
+          return;
         }
+        inner.innerHTML = leads.map(lead => {
+          const sc = (lead.status || 'new').toLowerCase().replace(/\s/g,'-');
+          const dt = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : '—';
+          return `
+            <div class="lead-row">
+              <div class="lead-avatar">${getInitials(lead.name)}</div>
+              <div class="lead-info">
+                <div class="lead-name">${escapeHtml(lead.name || '—')}</div>
+                <div class="lead-company">${escapeHtml(lead.company || '—')}</div>
+              </div>
+              <div class="lead-meta">
+                <span class="status-badge status-${sc}">${lead.status || 'New'}</span>
+                <div class="lead-date">${dt}</div>
+              </div>
+            </div>`;
+        }).join('');
       } catch (err) {
-        document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
+        document.getElementById('leadsInner').innerHTML = '<div class="leads-empty">Could not load leads.<br>Refresh to try again.</div>';
       }
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(str));
-      return div.innerHTML;
+    // ── Check Plan ────────────────────────────────────────────────────────────
+    async function checkCurrentPlan() {
+      try {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          const plan = user.subscriptionTier || 'free';
+          document.getElementById('heroPlanLabel').textContent =
+            plan === 'pro' ? 'PRO Plan · Active' :
+            plan === 'go'  ? 'GO Plan · Active'  : 'Free Plan · Active';
+
+          if (plan === 'go') {
+            document.getElementById('goActiveTag').style.display = 'inline-block';
+            const btn = document.getElementById('goPlanBtn');
+            btn.textContent = 'Current Plan';
+            btn.disabled = true;
+            btn.className = 'plan-btn inactive';
+          } else if (plan === 'pro') {
+            document.getElementById('proActiveTag').style.display = 'inline-block';
+            const btn = document.getElementById('proPlanBtn');
+            btn.textContent = 'Current Plan';
+            btn.disabled = true;
+            btn.className = 'plan-btn inactive';
+          }
+        }
+      } catch (err) { console.error(err); }
     }
 
-    // ── 🔥 UPGRADE — Flutterwave Inline Checkout (Popup) ─────────────────────
+    // ── Upgrade ───────────────────────────────────────────────────────────────
     async function initiateUpgrade(planType) {
-      const btnId  = planType === 'go' ? 'goPlanBtn' : 'proPlanBtn';
-      const btn    = document.getElementById(btnId);
-      const originalText = btn.innerText;
-      
+      const btnId = planType === 'go' ? 'goPlanBtn' : 'proPlanBtn';
+      const btn   = document.getElementById(btnId);
+      const orig  = btn.innerText;
       try {
-        btn.innerText = 'Loading...';
+        btn.innerText = 'Loading…';
         btn.disabled  = true;
-
-        // 1. Get txRef from backend
         const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ planType })
         });
-
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Server Error: ${response.status}`);
+          const e = await response.json().catch(() => ({}));
+          throw new Error(e.message || `Server Error: ${response.status}`);
         }
-
         const data = await response.json();
         if (!data.txRef) throw new Error('No transaction reference received');
-
-        // 2. Open Flutterwave Inline Checkout popup
         FlutterwaveCheckout({
           public_key: FLUTTERWAVE_PUBLIC_KEY,
           tx_ref: data.txRef,
           amount: planType === 'go' ? 9 : 20,
           currency: 'USD',
           payment_options: 'card',
-          customer: {
-            email: 'saa@gmail.com',  // ← Replace with actual user email if you have it
-            phonenumber: '',
-            name: ''
-          },
+          customer: { email: 'saa@gmail.com', phonenumber: '', name: '' },
           customizations: {
             title: 'Skyline AA-1 Subscription',
             description: `Payment for ${planType.toUpperCase()} Plan`,
             logo: 'https://skylineai-app.vercel.app/logo.png'
           },
           callback: function(response) {
-            console.log('Payment callback:', response);
             if (response.status === 'successful') {
-              showToast('✅ Payment successful! Upgrading...', 'success');
-              setTimeout(() => {
-                window.location.href = 'https://skylineai-app.vercel.app/dashboard.html?payment=success';
-              }, 2000);
+              showToast('✅ Payment successful! Upgrading…', 'success');
+              setTimeout(() => { window.location.href = 'dashboard.html?payment=success'; }, 2000);
             } else {
               showToast('❌ Payment failed or cancelled.', 'error');
-              btn.innerText = originalText;
-              btn.disabled = false;
+              btn.innerText = orig; btn.disabled = false;
             }
           },
-          onclose: function() {
-            // User closed the popup
-            btn.innerText = originalText;
-            btn.disabled = false;
-          }
+          onclose: function() { btn.innerText = orig; btn.disabled = false; }
         });
-
       } catch (err) {
         showToast(`❌ ${err.message}`, 'error');
-        btn.innerText = originalText;
-        btn.disabled = false;
+        btn.innerText = orig; btn.disabled = false;
       }
-    }
-
-    // ── Check Current Plan ────────────────────────────────────────────────────
-    async function checkCurrentPlan() {
-      try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) {
-          const user = await res.json();
-          const plan = user.subscriptionTier || 'free';
-          if (plan === 'go') {
-            document.getElementById('goTag').style.display = 'inline-block';
-            const goBtn = document.getElementById('goPlanBtn');
-            if (goBtn) { goBtn.innerText = 'Current Plan'; goBtn.disabled = true; goBtn.classList.add('btn-free'); goBtn.classList.remove('btn-go'); }
-          } else if (plan === 'pro') {
-            document.getElementById('proTag').style.display = 'inline-block';
-            const proBtn = document.getElementById('proPlanBtn');
-            if (proBtn) { proBtn.innerText = 'Current Plan'; proBtn.disabled = true; proBtn.style.background = '#333'; proBtn.style.color = '#888'; proBtn.style.boxShadow = 'none'; }
-          }
-        }
-      } catch (err) { console.error('Failed to check plan:', err); }
     }
 
     // ── Logout ────────────────────────────────────────────────────────────────
@@ -636,7 +1138,7 @@ n      } catch (err) { console.error('Error checking email status:', err); }
       }
     }
 
-    // ── Initialize ────────────────────────────────────────────────────────────
+    // ── Init ──────────────────────────────────────────────────────────────────
     handleOAuthRedirect();
     loadCollapseState();
     checkCurrentPlan();
@@ -644,4 +1146,4 @@ n      } catch (err) { console.error('Error checking email status:', err); }
     loadLeads();
   </script>
 </body>
-</html>
+    </html>
