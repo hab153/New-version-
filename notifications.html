@@ -25,8 +25,8 @@
       
       --accent-primary: #ffffff;
       --accent-secondary: #a1a1aa;
-      --status-unread: #3b82f6; /* WhatsApp-like Blue */
-      --status-success: #10b981;
+      --status-unread: #3b82f6; /* Blue for unread glow */
+      --status-new: #10b981;    /* Green for "New" text */
       
       --font-ui: 'Inter', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
@@ -197,28 +197,18 @@
       position: relative;    }
     .contact-item:hover { background: var(--bg-glass-hover); }
     
-    /* WhatsApp-style Unread Indicator */
-    .contact-item.unread {
-      background: rgba(59, 130, 246, 0.05);
+    /* WhatsApp-style Unread State */
+    .contact-item.unread { 
+      background: rgba(59, 130, 246, 0.05); 
+      border-left: 3px solid var(--status-unread);
     }
     .contact-item.unread .contact-name {
       color: var(--accent-primary);
       font-weight: 600;
     }
     .contact-item.unread .contact-preview {
-      color: var(--accent-primary);
+      color: var(--status-new); /* Green text for new message */
       font-weight: 500;
-    }
-    .unread-dot {
-      width: 8px;
-      height: 8px;
-      background-color: var(--status-unread);
-      border-radius: 50%;
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      box-shadow: 0 0 8px var(--status-unread);
     }
     
     .avatar {
@@ -228,9 +218,21 @@
       border: 1px solid var(--border-subtle);
       display: flex; align-items: center; justify-content: center;
       font-weight: 600; font-size: 14px;
+      position: relative;
     }
+    /* Green Dot for Unread */
+    .contact-item.unread .avatar::after {
+      content: '';
+      position: absolute;
+      top: -2px; right: -2px;
+      width: 10px; height: 10px;
+      background: var(--status-new);
+      border-radius: 50%;
+      border: 2px solid var(--bg-deep);
+    }
+
     .contact-info { flex: 1; min-width: 0; }
-    .contact-name { font-weight: 500; font-size: 14px; margin-bottom: 2px; color: var(--accent-secondary); transition: color 0.2s; }
+    .contact-name { font-weight: 500; font-size: 14px; margin-bottom: 2px; transition: color 0.2s; }
     .contact-preview { 
       color: var(--accent-secondary); 
       font-size: 13px; 
@@ -241,9 +243,9 @@
       font-family: var(--font-mono);
       font-size: 10px;
       color: var(--accent-secondary);
-      margin-top: 4px;
-      display: flex; gap: 8px;
+      margin-top: 4px;      display: flex; gap: 8px;
     }
+
     /* Chat View Specifics */
     .chat-header {
       padding: 12px 16px;
@@ -290,9 +292,9 @@
       border-top: 1px solid var(--border-subtle);
       background: var(--bg-surface);
       display: flex;
-      gap: 8px;
-    }
-    .reply-input {      flex: 1;
+      gap: 8px;    }
+    .reply-input {
+      flex: 1;
       background: var(--bg-deep);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
@@ -339,9 +341,9 @@
     .nav-item.active { color: var(--accent-primary); }
     .nav-item.active::before {
       content: '';
-      position: absolute;
-      top: 0; left: 50%; transform: translateX(-50%);
-      width: 40px; height: 2px;      background: var(--accent-primary);
+      position: absolute;      top: 0; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 2px;
+      background: var(--accent-primary);
       box-shadow: 0 0 10px var(--accent-primary);
     }
     .nav-item svg { width: 20px; height: 20px; }
@@ -388,9 +390,9 @@
     </div>
 
     <!-- VIEW: TEAM (ADMIN) -->
-    <div id="viewAdmin" class="view-admin">
-      <div style="text-align:center; color:var(--accent-secondary);">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>        <h2 style="font-size:18px; font-weight:500; margin-bottom:8px; color:var(--accent-primary);">Team Command</h2>
+    <div id="viewAdmin" class="view-admin">      <div style="text-align:center; color:var(--accent-secondary);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <h2 style="font-size:18px; font-weight:500; margin-bottom:8px; color:var(--accent-primary);">Team Command</h2>
         <p style="font-size:13px;">Admin notifications and team messages will appear here.</p>
       </div>
     </div>
@@ -438,15 +440,13 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
     </a>
   </nav>
-
-  <script>    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+  <script>
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
     let allContacts = [];
     let currentLeadId = null;
-    let currentLeadName = "";
-    let currentLeadEmail = "";
 
     document.addEventListener('DOMContentLoaded', loadContacts);
 
@@ -470,26 +470,36 @@
     function renderContacts(contacts) {
       const list = document.getElementById('contactList');
       list.innerHTML = '';
-      contacts.forEach(c => {
+      
+      // Sort: Unread first, then by date
+      const sorted = [...contacts].sort((a, b) => {
+        if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+        if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
+        return new Date(b.lastDate) - new Date(a.lastDate);
+      });
+
+      sorted.forEach(c => {
         const item = document.createElement('div');
         // Add 'unread' class if there are unread messages
         item.className = `contact-item ${c.unreadCount > 0 ? 'unread' : ''}`;
         item.onclick = () => openChat(c.id, c.name, c.email);
         
-        // WhatsApp-style Unread Dot
-        const unreadDot = c.unreadCount > 0 ? '<div class="unread-dot"></div>' : '';
-
+        // WhatsApp-style Preview Logic
+        let previewText = c.lastMessage || 'No messages yet';
+        if (c.unreadCount > 0) {
+          previewText = `New: ${previewText}`;
+        }
         item.innerHTML = `
           <div class="avatar">${c.name.charAt(0)}</div>
           <div class="contact-info">
             <div class="contact-name">${c.name}</div>
-            <div class="contact-preview">${c.lastMessage || 'No messages yet'}</div>
+            <div class="contact-preview">${previewText}</div>
             <div class="contact-meta">
               <span>${c.company || 'Unknown'}</span>
               <span>•</span>
               <span>${new Date(c.lastDate).toLocaleDateString()}</span>
-            </div>          </div>
-          ${unreadDot}
+            </div>
+          </div>
         `;
         list.appendChild(item);
       });
@@ -505,16 +515,13 @@
     }
 
     function switchTab(tab, btn) {
-      // Update Tab UI
       document.querySelectorAll('.tab-pill').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
 
-      // Handle View Switching
       const viewList = document.getElementById('viewList');
       const viewAdmin = document.getElementById('viewAdmin');
       const viewChat = document.getElementById('viewChat');
 
-      // Always close chat when switching tabs
       viewChat.classList.remove('active');
 
       if (tab === 'leads') {
@@ -528,34 +535,36 @@
 
     async function openChat(id, name, email) {
       currentLeadId = id;
-      currentLeadName = name;
-      currentLeadEmail = email;
       
       document.getElementById('chatName').textContent = name;
-      document.getElementById('chatEmail').textContent = email;
-      document.getElementById('viewChat').classList.add('active');
+      document.getElementById('chatEmail').textContent = email;      document.getElementById('viewChat').classList.add('active');
 
-      // MARK AS READ LOGIC
-      // Find the contact in our local array and set unreadCount to 0
-      const contactIndex = allContacts.findIndex(c => c.id === id);      if (contactIndex !== -1) {
-        allContacts[contactIndex].unreadCount = 0;
-        // Re-render the list to remove the blue dot and bold text
-        renderContacts(allContacts);
-        updateStats();
-      }
+      // 1. Mark as Read in Backend
+      try {
+        await fetch(`${BACKEND}/api/conversations/${id}/read`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        // 2. Update Local State immediately
+        const contact = allContacts.find(c => c.id === id);
+        if (contact) {
+          contact.unreadCount = 0;
+          updateStats();
+          renderContacts(allContacts); // Re-render list to remove "New:" and green dot
+        }
+      } catch (err) { console.error("Failed to mark as read", err); }
 
-      // Load messages logic here...
+      // 3. Load Messages
       const container = document.getElementById('messagesContainer');
       container.innerHTML = '<div style="text-align:center; color:var(--accent-secondary);">Loading messages...</div>';
 
-      // FIX: Added the actual fetch call to load messages
       try {
         const res = await fetch(`${BACKEND}/api/conversations/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
         
-        // Render messages
         if (data.messages && data.messages.length > 0) {
            container.innerHTML = data.messages.map(msg => `
             <div class="msg-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
@@ -577,11 +586,16 @@
 
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
-      if (!text || !currentLeadId) return;
-      // Send logic here...
-      alert("Reply sent (Simulation)");
+      if (!text || !currentLeadId) return;      
+      // Simulation of sending
+      alert("Reply sent!");
       document.getElementById('replyText').value = '';
+      
+      // Refresh chat to show sent message
+      const name = document.getElementById('chatName').textContent;
+      const email = document.getElementById('chatEmail').textContent;
+      openChat(currentLeadId, name, email);
     }
   </script>
 </body>
-  </html>
+                                                                                                                                                                                                                                                                                                      </html>
