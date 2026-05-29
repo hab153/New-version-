@@ -13,34 +13,34 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
 
     :root {
-      --void:        #080808;
-      --base:        #0d0d0d;
-      --surface:     #111111;
-      --raised:      #171717;
-      --hover:       #1e1e1e;
-      --card:        #131313;
+      --void:        #0a0a0a;
+      --base:        #121212;
+      --surface:     #1a1a1a;
+      --raised:      #242424;
+      --hover:       #2d2d2d;
+      --card:        #1a1a1a;
 
-      --br-dim:      rgba(255,255,255,0.04);
-      --br-md:       rgba(255,255,255,0.09);
+      --br-dim:      rgba(255,255,255,0.08);
+      --br-md:       rgba(255,255,255,0.12);
       --br-hi:       rgba(255,255,255,0.18);
 
-      --gold:        #c9a84c;
-      --gold-bright: #e8c96a;
-      --gold-pale:   #f5e4a8;
-      --gold-mute:   rgba(201,168,76,0.15);
-      --gold-glow:   rgba(201,168,76,0.08);
+      --gold:        #ffffff;
+      --gold-bright: #f0f0f0;
+      --gold-pale:   #e0e0e0;
+      --gold-mute:   rgba(255,255,255,0.1);
+      --gold-glow:   rgba(255,255,255,0.15);
 
-      --sage:        #6b9e7a;
-      --rose:        #b85c5c;
-      --sky:         #5e9ab8;
+      --sage:        #66dd99;
+      --rose:        #ff5555;
+      --sky:         #66ddff;
 
-      --t1:          #f0ece0;
-      --t2:          #7a7468;
-      --t3:          #3a3630;
+      --t1:          #f5f5f5;
+      --t2:          #b0b0b0;
+      --t3:          #707070;
 
-      --display:     'Cormorant Garamond', Georgia, serif;
-      --ui:          'Syne', sans-serif;
-      --mono:        'JetBrains Mono', monospace;
+      --display:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --ui:          -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:        'Monaco', 'Menlo', monospace;
 
       --nav-h:       68px;
       --top-h:       54px;
@@ -72,8 +72,8 @@
       pointer-events: none;
       z-index: 0;
       background:
-        radial-gradient(ellipse 55% 35% at 5% 0%, rgba(201,168,76,0.05) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 55% at 95% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        radial-gradient(ellipse 55% 35% at 5% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 55% at 95% 100%, rgba(102,221,255,0.02) 0%, transparent 55%);
     }
 
     body::after {
@@ -107,7 +107,7 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), rgba(201,168,76,0.55), rgba(201,168,76,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15), transparent);
     }
 
     .brand {
@@ -118,10 +118,11 @@
     .brand-mark {
       width: 28px; height: 28px;
       border-radius: 7px;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 0 0 1px rgba(201,168,76,0.3), 0 4px 12px rgba(201,168,76,0.18);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(255,255,255,0.05);
       position: relative;
       overflow: hidden;
     }
@@ -246,8 +247,8 @@
       transition: border-color 0.25s, box-shadow 0.25s;
     }
     .search-shell:focus-within {
-      border-color: rgba(201,168,76,0.30);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.05), 0 6px 20px rgba(0,0,0,0.25);
+      border-color: rgba(255,255,255,0.20);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.05), 0 6px 20px rgba(0,0,0,0.25);
     }
     .search-icon {
       color: var(--t3);
@@ -268,7 +269,7 @@
       font-size: 13.5px;
       font-weight: 400;
       outline: none;
-      caret-color: var(--gold);
+      caret-color: #ffffff;
     }
     .search-input::placeholder { color: var(--t3); }
 
@@ -315,7 +316,7 @@
       position: absolute;
       top: 0; left: 0;
       width: 2px; height: 100%;
-      background: linear-gradient(180deg, var(--gold), transparent);
+      background: linear-gradient(180deg, #ffffff, transparent);
       opacity: 0;
       transition: opacity 0.22s;
     }
@@ -323,7 +324,7 @@
       background: var(--surface);
       border-color: var(--br-md);
       transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(201,168,76,0.06);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
     }
     .session-card:hover::before { opacity: 1; }
 
@@ -453,7 +454,7 @@
       position: absolute;
       top: 0; left: 20%; right: 20%;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
     }
 
     .nav-item {
@@ -486,11 +487,12 @@
     /* Home button */
     .nav-item.nav-home .home-wrap {
       width: 44px; height: 44px;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: var(--r-md);
       display: flex; align-items: center; justify-content: center;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(201,168,76,0.26), 0 0 0 1px rgba(201,168,76,0.38);
+      box-shadow: 0 4px 16px rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.12);
       position: relative;
       overflow: hidden;
     }
@@ -498,13 +500,13 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
     }
     .nav-item.nav-home:hover .home-wrap {
       transform: scale(1.07) translateY(-2px);
-      box-shadow: 0 8px 24px rgba(201,168,76,0.38), 0 0 0 1px rgba(201,168,76,0.5);
+      box-shadow: 0 8px 24px rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.18);
     }
-    .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
+    .nav-item.nav-home svg { color: #ffffff; position: relative; z-index: 1; }
     .nav-item.nav-home::after { display: none; }
 
     /* Notif badge */
@@ -512,7 +514,7 @@
       position: absolute;
       top: 2px; right: calc(50% - 20px);
       min-width: 14px; height: 14px;
-      background: var(--rose);
+      background: #ff5555;
       border-radius: 10px;
       border: 1.5px solid var(--base);
       display: none;
@@ -523,7 +525,7 @@
       align-items: center; justify-content: center;
       padding: 0 3px;
       z-index: 2;
-      box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+      box-shadow: 0 2px 6px rgba(255,85,85,0.3);
     }
     .nav-item.has-notifs .nav-badge { display: flex; }
 
@@ -802,4 +804,4 @@
     }
   </script>
 </body>
-  </html>
+</html>
