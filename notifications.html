@@ -8,25 +8,25 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg-void: #05060a;
-      --bg-base: #090b10;
-      --bg-surface: #0f1119;
-      --bg-raised: #161925;
-      --bg-hover: #1c2030;
-      --border: rgba(255,255,255,0.05);
-      --border-mid: rgba(255,255,255,0.09);
-      --accent: #c8ff57;
-      --accent-dim: rgba(200,255,87,0.12);
-      --accent-go: #00d2ff;
-      --accent-go-dim: rgba(0,210,255,0.12);
-      --text-1: #eceef5;
-      --text-2: #8c909e;
-      --text-3: #434659;
-      --red: #ff4d6d;
-      --amber: #ffb347;
-      --green: #2ecc71;
-      --font-mono: 'IBM Plex Mono', monospace;
-      --font-display: 'Syne', sans-serif;
+      --bg-void: #0a0a0a;
+      --bg-base: #121212;
+      --bg-surface: #1a1a1a;
+      --bg-raised: #242424;
+      --bg-hover: #2d2d2d;
+      --border: rgba(255,255,255,0.08);
+      --border-mid: rgba(255,255,255,0.12);
+      --accent: #ffffff;
+      --accent-dim: rgba(255,255,255,0.1);
+      --accent-go: #66ddff;
+      --accent-go-dim: rgba(102,221,255,0.12);
+      --text-1: #f5f5f5;
+      --text-2: #b0b0b0;
+      --text-3: #707070;
+      --red: #ff5555;
+      --amber: #ffbb44;
+      --green: #66dd99;
+      --font-mono: 'Monaco', 'Menlo', monospace;
+      --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -472,9 +472,9 @@
     }
     .ai-toggle:hover { border-color: var(--border-mid); background: var(--bg-raised); }
     .ai-toggle.active {
-      background: var(--accent-go-dim);
-      border-color: rgba(0,210,255,0.35);
-      box-shadow: 0 0 16px rgba(0,210,255,0.12);
+      background: rgba(102,221,255,0.1);
+      border-color: rgba(102,221,255,0.3);
+      box-shadow: 0 0 16px rgba(102,221,255,0.1);
     }
 
     .ai-icon {
@@ -575,8 +575,8 @@
       color: var(--text-1);
     }
     .message-bubble.ai {
-      background: linear-gradient(135deg, rgba(200,255,87,0.10) 0%, rgba(200,255,87,0.06) 100%);
-      border: 1px solid rgba(200,255,87,0.18);
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
+      border: 1px solid rgba(255,255,255,0.12);
       border-bottom-right-radius: 3px;
       color: var(--text-1);
     }
@@ -645,7 +645,7 @@
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: all 0.2s;
     }
-    .send-btn:hover { background: #d4ff6a; transform: scale(1.05); }
+    .send-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.05); }
     .send-btn:disabled { background: var(--bg-raised); cursor: not-allowed; transform: none; }
     .send-btn svg { width: 17px; height: 17px; stroke: #000; fill: none; }
     .send-btn:disabled svg { stroke: var(--text-3); }
