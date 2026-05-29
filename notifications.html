@@ -47,8 +47,7 @@
       align-items: center;
       padding: 0 16px;
       height: 56px;
-      background: var(--bg-base);      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      background: var(--bg-base);      border-bottom: 1px solid var(--border);      flex-shrink: 0;
       gap: 12px;
       position: relative;
       z-index: 10;
@@ -97,8 +96,7 @@
       padding: 3px;
       gap: 2px;
     }
-    .tab-pill {
-      height: 30px;
+    .tab-pill {      height: 30px;
       padding: 0 14px;
       background: none;
       border: none;
@@ -147,8 +145,7 @@
 
     .nav-spacer { flex: 1; }
     .nav-status {
-      display: flex;
-      align-items: center;
+      display: flex;      align-items: center;
       gap: 6px;
       font-family: var(--font-mono);
       font-size: 10px;
@@ -197,8 +194,7 @@
       position: relative;    }
     .search-icon {
       position: absolute;
-      left: 12px;
-      top: 50%;
+      left: 12px;      top: 50%;
       transform: translateY(-50%);
       width: 15px;
       height: 15px;
@@ -247,8 +243,7 @@
       color: var(--text-3);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }
-    .stat-chip-val {
+    }    .stat-chip-val {
       font-family: var(--font-mono);
       font-size: 16px;
       font-weight: 600;
@@ -297,8 +292,7 @@
       border: 1px solid var(--border-mid);
       display: flex; align-items: center; justify-content: center;
       font-size: 15px; font-weight: 700;
-      color: var(--accent);
-      flex-shrink: 0;
+      color: var(--accent);      flex-shrink: 0;
       font-family: var(--font-display);
       text-transform: uppercase;
       letter-spacing: -0.5px;
@@ -347,7 +341,6 @@
       line-height: 1.4;
     }
     .contact-item.unread .contact-preview { color: var(--text-2); }
-
     .contact-meta {
       display: flex;
       align-items: center;
@@ -374,6 +367,9 @@
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .conf-badge.high { background: rgba(46,204,113,0.12); color: var(--green); border: 1px solid rgba(46,204,113,0.25); }
     .conf-badge.med  { background: rgba(255,179,71,0.12); color: var(--amber); border: 1px solid rgba(255,179,71,0.25); }
@@ -394,8 +390,7 @@
 
     /* ─── VIEW: CHAT ─── */
     .view-chat {
-      position: absolute; inset: 0;
-      background: var(--bg-void);
+      position: absolute; inset: 0;      background: var(--bg-void);
       display: flex; flex-direction: column;
       transform: translateX(100%);
       transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
@@ -445,7 +440,6 @@
       background: var(--green);
       border: 2px solid var(--bg-base);
     }
-
     .chat-info { flex: 1; min-width: 0; }
     .chat-info h3 {
       font-size: 14px; font-weight: 700; color: var(--text-1);
@@ -494,8 +488,7 @@
       text-transform: uppercase;
       transition: color 0.2s;
     }
-    .ai-toggle.active .ai-toggle-text { color: var(--accent-go); }
-    .ai-toggle-indicator {
+    .ai-toggle.active .ai-toggle-text { color: var(--accent-go); }    .ai-toggle-indicator {
       width: 6px; height: 6px; border-radius: 50%;
       background: var(--text-3);
       transition: background 0.2s, box-shadow 0.2s;
@@ -545,7 +538,6 @@
       scrollbar-width: none;
     }
     .messages-container::-webkit-scrollbar { display: none; }
-
     .msg-group { display: flex; flex-direction: column; gap: 4px; }
     .msg-group.from-lead { align-items: flex-start; }
     .msg-group.from-ai   { align-items: flex-end; }
@@ -594,8 +586,7 @@
       background: var(--bg-base);
       border-top: 1px solid var(--border);
       flex-shrink: 0;
-    }
-    .reply-input-area.hidden { display: none; }
+    }    .reply-input-area.hidden { display: none; }
 
     .reply-toolbar {
       display: flex;
@@ -644,8 +635,7 @@
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: all 0.2s;
-    }
-    .send-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.05); }
+    }    .send-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.05); }
     .send-btn:disabled { background: var(--bg-raised); cursor: not-allowed; transform: none; }
     .send-btn svg { width: 17px; height: 17px; stroke: #000; fill: none; }
     .send-btn:disabled svg { stroke: var(--text-3); }
@@ -694,8 +684,7 @@
       border: 1px solid var(--border-mid);
       border-radius: 18px;
       padding: 24px;
-      width: 92%;
-      max-width: 480px;
+      width: 92%;      max-width: 480px;
       box-shadow: 0 30px 80px rgba(0,0,0,0.6);
       animation: modal-in 0.2s ease;
     }
@@ -744,8 +733,7 @@
       background: var(--bg-raised);
       border: 1px solid var(--border);
       color: var(--text-1);
-      padding: 12px 14px;
-      border-radius: 10px;
+      padding: 12px 14px;      border-radius: 10px;
       resize: vertical;
       font-family: var(--font-display);
       font-size: 13px;
@@ -794,8 +782,7 @@
       padding: 4px 0 8px;
       position: relative;
     }
-    .date-divider span {
-      background: var(--bg-void);
+    .date-divider span {      background: var(--bg-void);
       padding: 0 10px;
       position: relative;
       z-index: 1;
@@ -844,8 +831,7 @@
       background: var(--bg-base);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border);
-      display: flex;
+      border-top: 1px solid var(--border);      display: flex;
       justify-content: space-around;
       align-items: center;
       flex-shrink: 0;
@@ -894,8 +880,7 @@
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(200,255,87,0.4);
     }
-  </style>
-</head>
+  </style></head>
 <body>
 
   <!-- TOP NAV -->
@@ -944,7 +929,6 @@
           <input class="search-input" type="text" placeholder="Search leads, companies…" oninput="filterContacts(this.value)" />
         </div>
       </div>
-
       <div class="stats-row" id="statsRow">
         <div class="stat-chip">
           <div class="stat-chip-label">Total</div>
@@ -994,8 +978,7 @@
               <!-- Head -->
               <rect x="4" y="5" width="12" height="9" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
               <!-- Antenna -->
-              <path d="M10 5V2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="10" cy="2" r="1" fill="currentColor"/>
+              <path d="M10 5V2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>              <circle cx="10" cy="2" r="1" fill="currentColor"/>
               <!-- Eyes -->
               <rect x="6.5" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
               <rect x="11.3" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
@@ -1044,8 +1027,7 @@
           <span class="reply-toolbar-label">Reply as Agent</span>
         </div>
         <div class="reply-wrap">
-          <textarea id="replyText" placeholder="Type a reply…"
-            oninput="autoResize(this)"
+          <textarea id="replyText" placeholder="Type a reply…"            oninput="autoResize(this)"
             onkeydown="handleKey(event)"></textarea>
           <button class="send-btn" id="sendBtn" onclick="sendReply()">
             <svg viewBox="0 0 24 24">              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1094,8 +1076,7 @@
     <a href="dashboard.html" class="nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>        <rect x="14" y="14" width="7" height="7"/>
         <rect x="3" y="14" width="7" height="7"/>
       </svg>
     </a>
@@ -1144,8 +1125,7 @@
         }
       } catch (err) {
         localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastSeenNotifCount') || 0);
-      }
-      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+      }      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       loadContacts();
     });
 
@@ -1180,6 +1160,99 @@
       }
     }
 
+    /**
+     * Calculates a confidence score for a lead based on available data fields.
+     * @param {Object} lead - The lead object containing verification, role, and company details.
+     * @returns {Object} An object containing score (number), tier (string), color (hex), and reasons (array).
+     */
+    function calculateLeadScore(lead) {
+        let score = 0;
+        const reasons = [];
+
+        // 1. Email Verification Status (Max 40 points)
+        if (lead.verification) {
+            if (lead.verification.email_syntax) {
+                score += 5;
+                reasons.push("Valid Syntax");
+            }            
+            if (lead.verification.mx_valid) {
+                score += 10;
+                reasons.push("MX Records Valid");
+            }
+            
+            if (lead.verification.smtp_status === 'valid') {
+                score += 25;
+                reasons.push("SMTP Verified");
+            } else if (lead.verification.smtp_status === 'catch-all') {
+                score += 15;
+                reasons.push("Catch-all Domain");
+            }
+            
+            if (!lead.verification.is_disposable) {
+                score += 5;
+            }
+            
+            if (!lead.verification.is_free_provider) {
+                score += 5; // Professional domain bonus
+                reasons.push("Professional Domain");
+            }
+        }
+
+        // 2. Role/Decision Maker Match (Max 30 points)
+        if (lead.role && lead.role.length > 2) {
+            const roleLower = lead.role.toLowerCase();
+            const decisionKeywords = ['ceo', 'founder', 'owner', 'director', 'head', 'vp', 'chief', 'partner'];
+            const isDecisionMaker = decisionKeywords.some(keyword => roleLower.includes(keyword));
+            
+            if (isDecisionMaker) {
+                score += 30;
+                reasons.push("Decision Maker");
+            } else {
+                score += 15;
+                reasons.push("Role Identified");
+            }
+        }
+
+        // 3. Company & Source Quality (Max 30 points)
+        if (lead.company && lead.company.length > 2) {
+            score += 10;
+        }
+        
+        if (lead.industry && lead.industry.length > 2) {
+            score += 10;
+        }
+        
+        // Source quality bonus
+        if (lead.source === 'linkedin' || lead.source === 'official_website') {            score += 10;
+            reasons.push("High-Quality Source");
+        } else {
+            score += 5;
+        }
+
+        // Cap score at 100
+        score = Math.min(score, 100);
+
+        // Determine Tier and Color
+        let tier, color;
+        if (score >= 80) {
+            tier = 'Outreach Ready';
+            color = '#10b981'; // Green
+        } else if (score >= 50) {
+            tier = 'Needs Review';
+            color = '#f59e0b'; // Amber
+        } else {
+            tier = 'Low Confidence';
+            color = '#ef4444'; // Red
+        }
+
+        return { 
+            score, 
+            tier, 
+            color, 
+            reasons 
+        };
+    }
+
     async function loadContacts() {
       try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
@@ -1197,8 +1270,15 @@
     function updateStats(contacts) {
       const total = contacts.length;
       const unread = contacts.filter(c => (c.unreadCount || 0) > 0).length;
-      const high = contacts.filter(c => c.confidenceTier === 'High').length;
-      const med  = contacts.filter(c => c.confidenceTier === 'Medium').length;
+      
+      // Calculate stats based on dynamic scoring
+      let high = 0;      let med = 0;
+      contacts.forEach(c => {
+        const rating = calculateLeadScore(c);
+        if (rating.score >= 80) high++;
+        else if (rating.score >= 50) med++;
+      });
+
       document.getElementById('statTotal').textContent = total;
       document.getElementById('statUnread').textContent = unread;
       document.getElementById('statHigh').textContent = high;
@@ -1228,9 +1308,12 @@
 
       list.innerHTML = sorted.map(c => {
         const unread = c.unreadCount || 0;
-        let confClass = 'low', confLabel = 'Low';
-        if (c.confidenceTier === 'High') { confClass = 'high'; confLabel = 'High'; }
-        else if (c.confidenceTier === 'Medium') { confClass = 'med'; confLabel = 'Med'; }
+        
+        // Calculate dynamic score
+        const rating = calculateLeadScore(c);
+        let confClass = 'low';
+        if (rating.score >= 80) confClass = 'high';
+        else if (rating.score >= 50) confClass = 'med';
 
         return `
           <div class="contact-item ${unread > 0 ? 'unread' : ''}"
@@ -1238,14 +1321,15 @@
             <div class="contact-avatar">${getInitials(c.name)}</div>
             <div class="contact-body">
               <div class="contact-row1">
-                <span class="contact-name">${escapeHtml(c.name)}</span>
-                <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
+                <span class="contact-name">${escapeHtml(c.name)}</span>                <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
               </div>
               <div class="contact-row2">
                 <span class="contact-preview">${escapeHtml(c.lastMessage || 'No messages yet')}</span>
                 <div class="contact-meta">
                   ${unread > 0 ? `<span class="unread-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
-                  <span class="conf-badge ${confClass}">${confLabel}</span>
+                  <span class="conf-badge ${confClass}">
+                    ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>
+                  </span>
                   ${c.company ? `<span class="company-tag">${escapeHtml(c.company)}</span>` : ''}
                 </div>
               </div>
@@ -1271,10 +1355,11 @@
       const leadData = allContacts.find(l => l.id === leadId);
       let badgeHtml = '';
       if (leadData) {
+        const rating = calculateLeadScore(leadData);
         let cls = 'low';
-        if (leadData.confidenceTier === 'High') cls = 'high';
-        else if (leadData.confidenceTier === 'Medium') cls = 'med';
-        badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${leadData.confidenceTier}</span>`;
+        if (rating.score >= 80) cls = 'high';
+        else if (rating.score >= 50) cls = 'med';
+        badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${rating.score} ${rating.tier}</span>`;
       }
 
       document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
@@ -1285,8 +1370,7 @@
       document.getElementById('viewChat').classList.add('active');
 
       const contact = allContacts.find(c => c.id === leadId);
-      if (contact && contact.unreadCount > 0) {
-        contact.unreadCount = 0;
+      if (contact && contact.unreadCount > 0) {        contact.unreadCount = 0;
         updateStats(allContacts);
         renderContacts(allContacts);
         fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
@@ -1335,8 +1419,7 @@
     }
 
     function closeChat() {
-      document.getElementById('viewChat').classList.remove('active');
-      currentLeadId = null;
+      document.getElementById('viewChat').classList.remove('active');      currentLeadId = null;
     }
 
     function toggleAutoReply() {
@@ -1385,8 +1468,7 @@
       } catch {}
     }
 
-    function updateAutoReplyUI() {
-      const toggle = document.getElementById('aiToggle');
+    function updateAutoReplyUI() {      const toggle = document.getElementById('aiToggle');
       const editBtn = document.getElementById('editDetailsBtn');
       const inputArea = document.getElementById('replyInputArea');
       if (isAutoReplyEnabled) {
@@ -1435,8 +1517,7 @@
 
     async function renameCustomer() {
       const newName = prompt("Enter new name for this customer:", currentLeadName);
-      if (newName && newName !== currentLeadName) {
-        try {
+      if (newName && newName !== currentLeadName) {        try {
           await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
