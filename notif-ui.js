@@ -1,5 +1,6 @@
 // Global UI State
 let allContacts = [];
+let userTier = 'Free'; // Default, will be updated on load
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(document.getElementById('replyText').value.trim()); }
@@ -46,8 +47,9 @@ function updateStats(contacts) {
   }
 }
 
-function renderContacts(contacts) {
-  const list = document.getElementById('contactList');  if (contacts.length === 0) {    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
+function renderContacts(contacts) {  const list = document.getElementById('contactList');
+  if (contacts.length === 0) {
+    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
     return;
   }
   const sorted = [...contacts].sort((a, b) => {
@@ -94,14 +96,15 @@ function filterContacts(query) {
   const q = query.toLowerCase();
   renderContacts(allContacts.filter(c =>
     (c.name || '').toLowerCase().includes(q) ||
-    (c.company || '').toLowerCase().includes(q) ||
-    (c.email || '').toLowerCase().includes(q)  ));
+    (c.company || '').toLowerCase().includes(q) ||    (c.email || '').toLowerCase().includes(q)
+  ));
 }
+
 async function openChat(leadId, name, email) {
   window.currentLeadId = leadId;
   window.currentLeadName = name;
   window.currentLeadEmail = email;
-  currentLeadId = leadId; // Sync with api.js global
+  currentLeadId = leadId;
 
   const leadData = allContacts.find(l => l.id === leadId);
   let badgeHtml = '';
@@ -142,10 +145,11 @@ async function openChat(leadId, name, email) {
          let cls = 'low';
          if (realRating.score >= 75) cls = 'high';
          else if (realRating.score >= 40) cls = 'med';
-         document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
-    }    if (!data.messages || data.messages.length === 0) {
+         document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;    }
+    if (!data.messages || data.messages.length === 0) {
       container.innerHTML = `
-        <div class="empty-state">          <div class="empty-icon">
+        <div class="empty-state">
+          <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -190,11 +194,11 @@ function openInstructionsModal() {
 
 function closeInstructionsModal() {
   document.getElementById('instructionsModal').classList.remove('active');
-  updateAutoReplyUI();
-}
+  updateAutoReplyUI();}
 
 async function handleSaveInstructions() {
-  const instructions = document.getElementById('instructionsText').value.trim();  const success = await saveAutoReplyInstructions(instructions);
+  const instructions = document.getElementById('instructionsText').value.trim();
+  const success = await saveAutoReplyInstructions(instructions);
   if (success) closeInstructionsModal();
 }
 
@@ -202,9 +206,6 @@ function updateAutoReplyUI() {
   const toggle = document.getElementById('aiToggle');
   const editBtn = document.getElementById('editDetailsBtn');
   const inputArea = document.getElementById('replyInputArea');
-  
-  // We no longer disable the hint button itself, so we remove that logic here.
-  // The hint button remains clickable, but the item inside will be styled differently.
   
   if (isAutoReplyEnabled) {
     toggle.classList.add('active');
@@ -222,28 +223,33 @@ function updateAutoReplyUI() {
 function toggleHintMenu() {
   const dropdown = document.getElementById('hintDropdown');
   const hintItem = document.querySelector('.hint-item');
+  const tierBadge = document.getElementById('hintTierBadge');
   
-  // Check if Auto-Reply is enabled
+  // Update Tier Badge Visibility
+  if (tierBadge) {
+    if (userTier === 'Free') {
+      tierBadge.textContent = 'GO';
+      tierBadge.style.display = 'inline-block';
+    } else {
+      tierBadge.style.display = 'none';
+    }
+  }
+
+  // Handle Auto-Reply State
   if (isAutoReplyEnabled) {
-    // Add disabled/strikethrough class to the hint item
     if (hintItem) hintItem.classList.add('disabled-hint');
   } else {
-    // Remove disabled/strikethrough class
     if (hintItem) hintItem.classList.remove('disabled-hint');
   }
   
   dropdown.classList.toggle('show');
 }
-
 async function triggerHint() {
-  // If Auto-Reply is on, do nothing (or show a small alert)
-  if (isAutoReplyEnabled) {
-    return; 
-  }
+  if (isAutoReplyEnabled) return;
 
-  // Close the menu first
   document.getElementById('hintDropdown').classList.remove('show');
-    if (!currentLeadId) {
+  
+  if (!currentLeadId) {
     alert("Open a chat first to get a hint.");
     return;
   }
@@ -251,7 +257,6 @@ async function triggerHint() {
   const btn = document.getElementById('hintMenuBtn');
   const originalContent = btn.innerHTML;
   
-  // Show loading state on the 3-dot button
   btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
   
   try {
@@ -276,23 +281,31 @@ async function triggerHint() {
 
     const suggestData = await suggestRes.json();
     
+    if (!suggestRes.ok) {
+      if (suggestRes.status === 403) {
+        alert(`AI Hint is not available for your plan or you have reached your daily limit.`);
+        if (suggestData.tier) userTier = suggestData.tier;
+      } else {
+        alert("Failed to get hint.");
+      }
+      return;
+    }
+    
     if (suggestData.suggestion) {
-      const textArea = document.getElementById('replyText');
-      textArea.value = suggestData.suggestion;
+      const textArea = document.getElementById('replyText');      textArea.value = suggestData.suggestion;
       autoResize(textArea);
       textArea.focus();
     }
   } catch (error) {
     console.error(error);
-    alert("Failed to get hint.");
+    alert("Connection error.");
   } finally {
-    // Reset button icon
     btn.innerHTML = originalContent;
   }
 }
 
-// Close menu if clicking outside
-document.addEventListener('click', function(event) {  const menu = document.querySelector('.hint-menu-wrap');
+document.addEventListener('click', function(event) {
+  const menu = document.querySelector('.hint-menu-wrap');
   const dropdown = document.getElementById('hintDropdown');
   if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {
     dropdown.classList.remove('show');
