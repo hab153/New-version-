@@ -47,8 +47,7 @@
       align-items: center;
       padding: 0 16px;
       height: 56px;
-      background: var(--bg-base);      border-bottom: 1px solid var(--border);      flex-shrink: 0;
-      gap: 12px;
+      background: var(--bg-base);      border-bottom: 1px solid var(--border);      flex-shrink: 0;      gap: 12px;
       position: relative;
       z-index: 10;
     }
@@ -97,8 +96,7 @@
       gap: 2px;
     }
     .tab-pill {      height: 30px;
-      padding: 0 14px;
-      background: none;
+      padding: 0 14px;      background: none;
       border: none;
       border-radius: 7px;
       color: var(--text-3);
@@ -147,8 +145,7 @@
     .nav-status {
       display: flex;      align-items: center;
       gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 10px;
+      font-family: var(--font-mono);      font-size: 10px;
       color: var(--text-3);
       flex-shrink: 0;
     }
@@ -197,8 +194,7 @@
       left: 12px;      top: 50%;
       transform: translateY(-50%);
       width: 15px;
-      height: 15px;
-      pointer-events: none;
+      height: 15px;      pointer-events: none;
     }
     .search-icon svg { width: 15px; height: 15px; stroke: var(--text-3); }
     .search-input {
@@ -247,8 +243,7 @@
       font-family: var(--font-mono);
       font-size: 16px;
       font-weight: 600;
-      color: var(--text-1);
-      line-height: 1;
+      color: var(--text-1);      line-height: 1;
     }
     .stat-chip-val.green { color: var(--green); }
     .stat-chip-val.amber { color: var(--amber); }
@@ -297,8 +292,7 @@
       text-transform: uppercase;
       letter-spacing: -0.5px;
     }
-    .contact-item.unread .contact-avatar {
-      border-color: rgba(200,255,87,0.25);
+    .contact-item.unread .contact-avatar {      border-color: rgba(200,255,87,0.25);
       background: rgba(200,255,87,0.06);
     }
 
@@ -347,8 +341,7 @@
       gap: 5px;
       flex-shrink: 0;
     }
-    .unread-badge {
-      background: var(--accent);
+    .unread-badge {      background: var(--accent);
       color: #000;
       font-size: 9px;
       font-weight: 800;
@@ -397,7 +390,6 @@
       z-index: 20;
     }
     .view-chat.active { transform: translateX(0); }
-
     /* ─── CHAT HEADER ─── */
     .chat-header {
       padding: 10px 14px;
@@ -447,8 +439,7 @@
       display: flex; align-items: center; gap: 8px; margin: 0;
     }
     .chat-info p {
-      font-size: 10.5px; color: var(--text-3);
-      font-family: var(--font-mono); margin: 2px 0 0;
+      font-size: 10.5px; color: var(--text-3);      font-family: var(--font-mono); margin: 2px 0 0;
     }
 
     /* ─── AI TOGGLE BUTTON ─── */
@@ -497,7 +488,6 @@
       background: var(--accent-go);
       box-shadow: 0 0 6px var(--accent-go);
     }
-
     .chat-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
     .icon-btn {
       width: 34px; height: 34px;
@@ -547,8 +537,7 @@
       font-size: 9px;
       color: var(--text-3);
       margin-bottom: 3px;
-      padding: 0 4px;
-      letter-spacing: 0.05em;
+      padding: 0 4px;      letter-spacing: 0.05em;
     }
 
     .message-bubble {
@@ -597,8 +586,7 @@
     .reply-toolbar-label {
       font-family: var(--font-mono);
       font-size: 9.5px;
-      color: var(--text-3);
-      letter-spacing: 0.06em;
+      color: var(--text-3);      letter-spacing: 0.06em;
       text-transform: uppercase;
       flex: 1;
     }
@@ -647,8 +635,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 5;
-    }
+      z-index: 5;    }
     .view-admin.active { display: flex; }
 
     /* ─── EMPTY STATE ─── */
@@ -697,8 +684,7 @@
       margin-bottom: 20px;
     }
     .modal-header-left h3 {
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 16px;      font-weight: 700;
       color: var(--text-1);
       margin: 0 0 3px;
     }
@@ -747,8 +733,7 @@
     .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
-      margin-top: 16px;
+      gap: 8px;      margin-top: 16px;
     }
     .btn-ghost {
       height: 38px; padding: 0 16px;
@@ -797,8 +782,7 @@
     }
 
     /* ─── AI RESPONDING INDICATOR ─── */
-    .ai-typing {
-      display: flex;
+    .ai-typing {      display: flex;
       align-items: center;
       gap: 8px;
       padding: 6px 12px;
@@ -847,8 +831,7 @@
       gap: 4px;
       color: var(--text-3);
       text-decoration: none;
-      transition: all 0.2s ease;
-      position: relative;
+      transition: all 0.2s ease;      position: relative;
       cursor: pointer;
     }
     .nav-item svg {
@@ -897,8 +880,7 @@
       </div>
       <span class="nav-logo-text">Skyline <span>AA-1</span></span>
     </div>
-    <div class="nav-divider"></div>
-    <div class="tab-group">
+    <div class="nav-divider"></div>    <div class="tab-group">
       <button class="tab-pill active" id="tabLeads" onclick="switchTab('leads', this)">
         Leads
         <span class="tab-badge" id="leadsTabBadge" style="display:none">0</span>
@@ -938,17 +920,16 @@
           <div class="stat-chip-val red" id="statUnread">—</div>
         </div>
         <div class="stat-chip">
-          <div class="stat-chip-label">High</div>
+          <div class="stat-chip-label">Active</div>
           <div class="stat-chip-val green" id="statHigh">—</div>
         </div>
         <div class="stat-chip">
-          <div class="stat-chip-label">Med</div>
+          <div class="stat-chip-label">Moderate</div>
           <div class="stat-chip-val amber" id="statMed">—</div>
         </div>
       </div>
 
-      <div class="contact-list" id="contactList">
-        <div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">LOADING CONTACTS…</div>
+      <div class="contact-list" id="contactList">        <div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">LOADING CONTACTS…</div>
       </div>
     </div>
 
@@ -997,8 +978,7 @@
         <div class="chat-actions">
           <button class="edit-details-btn" id="editDetailsBtn" onclick="openInstructionsModal()">
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             Edit
           </button>
@@ -1047,8 +1027,7 @@
             <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <h3>Skyline AA-1 Team</h3>
-        <p>Admin notifications and team<br>messages will appear here.</p>
+        <h3>Skyline AA-1 Team</h3>        <p>Admin notifications and team<br>messages will appear here.</p>
       </div>
     </div>
 
@@ -1097,8 +1076,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-ghost" onclick="closeInstructionsModal()">Cancel</button>
-        <button class="btn-primary" onclick="saveAutoReplyInstructions()">Activate AI Reply</button>
-      </div>
+        <button class="btn-primary" onclick="saveAutoReplyInstructions()">Activate AI Reply</button>      </div>
     </div>
   </div>
 
@@ -1147,8 +1125,7 @@
     }
 
     function switchTab(tab, btn) {
-      document.querySelectorAll('.tab-pill').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
+      document.querySelectorAll('.tab-pill').forEach(t => t.classList.remove('active'));      btn.classList.add('active');
       if (tab === 'leads') {
         document.getElementById('viewList').classList.remove('hidden');
         document.getElementById('viewAdmin').classList.remove('active');
@@ -1161,96 +1138,78 @@
     }
 
     /**
-     * Calculates a confidence score for a lead based on available data fields.
-     * @param {Object} lead - The lead object containing verification, role, and company details.
-     * @returns {Object} An object containing score (number), tier (string), color (hex), and reasons (array).
+     * Calculates an engagement score based on chat activity.
+     * @param {Object} lead - The lead object containing message history or counts.
+     * @param {Array} messages - Optional array of message objects for deeper analysis.
+     * @returns {Object} Score details.
      */
-    function calculateLeadScore(lead) {
+    function calculateEngagementScore(lead, messages = []) {
         let score = 0;
         const reasons = [];
 
-        // 1. Email Verification Status (Max 40 points)
-        if (lead.verification) {
-            if (lead.verification.email_syntax) {
-                score += 5;
-                reasons.push("Valid Syntax");
-            }            
-            if (lead.verification.mx_valid) {
-                score += 10;
-                reasons.push("MX Records Valid");
-            }
-            
-            if (lead.verification.smtp_status === 'valid') {
+        // 1. Recency of Interaction (Max 40 points)
+        if (lead.lastDate) {
+            const lastMsgTime = new Date(lead.lastDate).getTime();
+            const now = new Date().getTime();
+            const hoursSinceLastMsg = (now - lastMsgTime) / (1000 * 60 * 60);
+
+            if (hoursSinceLastMsg < 24) {
+                score += 40;
+                reasons.push("Active Today");
+            } else if (hoursSinceLastMsg < 72) {
                 score += 25;
-                reasons.push("SMTP Verified");
-            } else if (lead.verification.smtp_status === 'catch-all') {
-                score += 15;
-                reasons.push("Catch-all Domain");
-            }
-            
-            if (!lead.verification.is_disposable) {
-                score += 5;
-            }
-            
-            if (!lead.verification.is_free_provider) {
-                score += 5; // Professional domain bonus
-                reasons.push("Professional Domain");
+                reasons.push("Active Recently");
+            } else if (hoursSinceLastMsg < 168) { // 1 week
+                score += 10;
+                reasons.push("Active This Week");
             }
         }
 
-        // 2. Role/Decision Maker Match (Max 30 points)
-        if (lead.role && lead.role.length > 2) {
-            const roleLower = lead.role.toLowerCase();
-            const decisionKeywords = ['ceo', 'founder', 'owner', 'director', 'head', 'vp', 'chief', 'partner'];
-            const isDecisionMaker = decisionKeywords.some(keyword => roleLower.includes(keyword));
+        // 2. Message Volume (Max 30 points)
+        const msgCount = messages.length || lead.messageCount || 0;
+        if (msgCount > 10) {
+            score += 30;
+            reasons.push("High Engagement");
+        } else if (msgCount > 5) {
+            score += 20;
+            reasons.push("Moderate Engagement");
+        } else if (msgCount > 2) {
+            score += 10;            reasons.push("Initial Contact");
+        }
+
+        // 3. Conversation Balance (Max 30 points)
+        if (messages.length > 0) {
+            const leadMsgs = messages.filter(m => m.from === 'lead').length;
+            const aiMsgs = messages.filter(m => m.from === 'ai').length;
             
-            if (isDecisionMaker) {
+            if (leadMsgs > 0 && aiMsgs > 0) {
                 score += 30;
-                reasons.push("Decision Maker");
-            } else {
+                reasons.push("Two-way Conversation");
+            } else if (leadMsgs > 0) {
                 score += 15;
-                reasons.push("Role Identified");
+                reasons.push("Lead Responding");
             }
+        } else if (lead.unreadCount > 0) {
+            // If we don't have full messages but know there's an unread reply
+            score += 20;
+            reasons.push("Lead Replied");
         }
 
-        // 3. Company & Source Quality (Max 30 points)
-        if (lead.company && lead.company.length > 2) {
-            score += 10;
-        }
-        
-        if (lead.industry && lead.industry.length > 2) {
-            score += 10;
-        }
-        
-        // Source quality bonus
-        if (lead.source === 'linkedin' || lead.source === 'official_website') {            score += 10;
-            reasons.push("High-Quality Source");
-        } else {
-            score += 5;
-        }
-
-        // Cap score at 100
         score = Math.min(score, 100);
 
-        // Determine Tier and Color
         let tier, color;
-        if (score >= 80) {
-            tier = 'Outreach Ready';
+        if (score >= 75) {
+            tier = 'Highly Active';
             color = '#10b981'; // Green
-        } else if (score >= 50) {
-            tier = 'Needs Review';
+        } else if (score >= 40) {
+            tier = 'Moderately Active';
             color = '#f59e0b'; // Amber
         } else {
-            tier = 'Low Confidence';
-            color = '#ef4444'; // Red
+            tier = 'Inactive';
+            color = '#707070'; // Gray/Text-3
         }
 
-        return { 
-            score, 
-            tier, 
-            color, 
-            reasons 
-        };
+        return { score, tier, color, reasons };
     }
 
     async function loadContacts() {
@@ -1264,19 +1223,18 @@
       } catch (err) {
         document.getElementById('contactList').innerHTML =
           '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
-      }
-    }
+      }    }
 
     function updateStats(contacts) {
       const total = contacts.length;
       const unread = contacts.filter(c => (c.unreadCount || 0) > 0).length;
       
-      // Calculate stats based on dynamic scoring
+      // Calculate stats based on dynamic engagement scoring
       let high = 0;      let med = 0;
       contacts.forEach(c => {
-        const rating = calculateLeadScore(c);
-        if (rating.score >= 80) high++;
-        else if (rating.score >= 50) med++;
+        const rating = calculateEngagementScore(c, []);
+        if (rating.score >= 75) high++;
+        else if (rating.score >= 40) med++;
       });
 
       document.getElementById('statTotal').textContent = total;
@@ -1309,12 +1267,11 @@
       list.innerHTML = sorted.map(c => {
         const unread = c.unreadCount || 0;
         
-        // Calculate dynamic score
-        const rating = calculateLeadScore(c);
+        // Calculate dynamic engagement score
+        const rating = calculateEngagementScore(c, []);
         let confClass = 'low';
-        if (rating.score >= 80) confClass = 'high';
-        else if (rating.score >= 50) confClass = 'med';
-
+        if (rating.score >= 75) confClass = 'high';
+        else if (rating.score >= 40) confClass = 'med';
         return `
           <div class="contact-item ${unread > 0 ? 'unread' : ''}"
                onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
@@ -1355,16 +1312,16 @@
       const leadData = allContacts.find(l => l.id === leadId);
       let badgeHtml = '';
       if (leadData) {
-        const rating = calculateLeadScore(leadData);
+        // We'll update this with real messages once loaded, but show initial estimate
+        const rating = calculateEngagementScore(leadData, []);
         let cls = 'low';
-        if (rating.score >= 80) cls = 'high';
-        else if (rating.score >= 50) cls = 'med';
+        if (rating.score >= 75) cls = 'high';
+        else if (rating.score >= 40) cls = 'med';
         badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${rating.score} ${rating.tier}</span>`;
       }
 
       document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
-      document.getElementById('chatEmail').innerText = email;
-      document.getElementById('chatAvatar').innerText = getInitials(name);
+      document.getElementById('chatEmail').innerText = email;      document.getElementById('chatAvatar').innerText = getInitials(name);
       document.getElementById('replyText').value = '';
       document.getElementById('replyText').style.height = '42px';
       document.getElementById('viewChat').classList.add('active');
@@ -1390,6 +1347,16 @@
         isAutoReplyEnabled = data.lead.autoReplyEnabled || false;
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
+        
+        // Update header with precise score now that we have messages
+        if (data.messages) {
+            const preciseRating = calculateEngagementScore(leadData, data.messages);
+            let cls = 'low';
+            if (preciseRating.score >= 75) cls = 'high';
+            else if (preciseRating.score >= 40) cls = 'med';
+            document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${preciseRating.score} ${preciseRating.tier}</span>`;
+        }
+
         if (!data.messages || data.messages.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
@@ -1403,7 +1370,6 @@
             </div>`;
           return;
         }
-
         container.innerHTML = data.messages.map(msg => `
           <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
             <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
@@ -1453,8 +1419,7 @@
           autoReplyInstructions = instructions;
           closeInstructionsModal();
           updateAutoReplyUI();
-        } else { alert("Failed to save."); }
-      } catch { alert("Connection error."); }
+        } else { alert("Failed to save."); }      } catch { alert("Connection error."); }
     }
 
     async function saveAutoReplyStatus() {
@@ -1503,8 +1468,7 @@
           window.location.href = 'dashboard.html?connect=true';
           return;
         }
-        if (data.success) {
-          document.getElementById('replyText').value = '';
+        if (data.success) {          document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '42px';
           openChat(currentLeadId, currentLeadName, currentLeadEmail);
         } else { alert("Failed to send: " + JSON.stringify(data.errors)); }
