@@ -1,6 +1,6 @@
 // Global UI State
 let allContacts = [];
-let userTier = 'Free'; // Default, will be updated on load
+let userTier = 'free'; // Default to lowercase to match DB
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(document.getElementById('replyText').value.trim()); }
@@ -225,9 +225,12 @@ function toggleHintMenu() {
   const hintItem = document.querySelector('.hint-item');
   const tierBadge = document.getElementById('hintTierBadge');
   
+  // Normalize tier for comparison (lowercase)
+  const currentTier = (userTier || 'free').toLowerCase();
+
   // Update Tier Badge Visibility
   if (tierBadge) {
-    if (userTier === 'Free') {
+    if (currentTier === 'free') {
       tierBadge.textContent = 'GO';
       tierBadge.style.display = 'inline-block';
     } else {
@@ -240,10 +243,10 @@ function toggleHintMenu() {
     if (hintItem) hintItem.classList.add('disabled-hint');
   } else {
     if (hintItem) hintItem.classList.remove('disabled-hint');
-  }
-  
+  }  
   dropdown.classList.toggle('show');
 }
+
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
 
@@ -289,10 +292,10 @@ async function triggerHint() {
         alert("Failed to get hint.");
       }
       return;
-    }
-    
+    }    
     if (suggestData.suggestion) {
-      const textArea = document.getElementById('replyText');      textArea.value = suggestData.suggestion;
+      const textArea = document.getElementById('replyText');
+      textArea.value = suggestData.suggestion;
       autoResize(textArea);
       textArea.focus();
     }
