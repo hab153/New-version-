@@ -262,12 +262,9 @@
           });
           if (res.ok) {
               const user = await res.json();
-              // Store tier in lowercase for consistent comparison
-              userTier = (user.subscriptionTier || 'free').toLowerCase();
+              userTier = user.subscriptionTier || 'Free';
           }
-      } catch (e) { 
-          console.error("Failed to fetch user tier", e); 
-      }
+      } catch (e) { console.error(e); }
 
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, {
@@ -285,4 +282,4 @@
     });
   </script>
 </body>
-                </html>
+          </html>
