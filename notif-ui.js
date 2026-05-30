@@ -47,8 +47,7 @@ function updateStats(contacts) {
 }
 
 function renderContacts(contacts) {
-  const list = document.getElementById('contactList');  if (contacts.length === 0) {
-    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
+  const list = document.getElementById('contactList');  if (contacts.length === 0) {    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
     return;
   }
   const sorted = [...contacts].sort((a, b) => {
@@ -98,7 +97,6 @@ function filterContacts(query) {
     (c.company || '').toLowerCase().includes(q) ||
     (c.email || '').toLowerCase().includes(q)  ));
 }
-
 async function openChat(leadId, name, email) {
   window.currentLeadId = leadId;
   window.currentLeadName = name;
@@ -147,8 +145,7 @@ async function openChat(leadId, name, email) {
          document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
     }    if (!data.messages || data.messages.length === 0) {
       container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">
+        <div class="empty-state">          <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -197,22 +194,39 @@ function closeInstructionsModal() {
 }
 async function handleSaveInstructions() {
   const instructions = document.getElementById('instructionsText').value.trim();
-  const success = await saveAutoReplyInstructions(instructions);
-  if (success) closeInstructionsModal();
+  const success = await saveAutoReplyInstructions(instructions);  if (success) closeInstructionsModal();
 }
 
 function updateAutoReplyUI() {
   const toggle = document.getElementById('aiToggle');
   const editBtn = document.getElementById('editDetailsBtn');
   const inputArea = document.getElementById('replyInputArea');
+  const hintMenuBtn = document.getElementById('hintMenuBtn'); // Get the hint button
+
   if (isAutoReplyEnabled) {
     toggle.classList.add('active');
     editBtn.style.display = 'flex';
     inputArea.classList.add('hidden');
+    
+    // DISABLE HINT BUTTON
+    if (hintMenuBtn) {
+      hintMenuBtn.disabled = true;
+      hintMenuBtn.style.opacity = '0.3';
+      hintMenuBtn.style.cursor = 'not-allowed';
+      hintMenuBtn.title = "Disabled: Auto-Reply is active";
+    }
   } else {
     toggle.classList.remove('active');
     editBtn.style.display = 'none';
     inputArea.classList.remove('hidden');
+    
+    // ENABLE HINT BUTTON
+    if (hintMenuBtn) {
+      hintMenuBtn.disabled = false;
+      hintMenuBtn.style.opacity = '1';
+      hintMenuBtn.style.cursor = 'pointer';
+      hintMenuBtn.title = "Options";
+    }
   }
 }
 
@@ -229,8 +243,7 @@ async function triggerHint() {
   
   if (!currentLeadId) {
     alert("Open a chat first to get a hint.");
-    return;
-  }
+    return;  }
 
   const btn = document.getElementById('hintMenuBtn');
   const originalContent = btn.innerHTML;
@@ -279,7 +292,6 @@ async function triggerHint() {
 document.addEventListener('click', function(event) {
   const menu = document.querySelector('.hint-menu-wrap');
   const dropdown = document.getElementById('hintDropdown');
-  if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {
-    dropdown.classList.remove('show');
+  if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {    dropdown.classList.remove('show');
   }
 });
