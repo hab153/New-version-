@@ -192,41 +192,28 @@ function closeInstructionsModal() {
   document.getElementById('instructionsModal').classList.remove('active');
   updateAutoReplyUI();
 }
+
 async function handleSaveInstructions() {
-  const instructions = document.getElementById('instructionsText').value.trim();
-  const success = await saveAutoReplyInstructions(instructions);  if (success) closeInstructionsModal();
+  const instructions = document.getElementById('instructionsText').value.trim();  const success = await saveAutoReplyInstructions(instructions);
+  if (success) closeInstructionsModal();
 }
 
 function updateAutoReplyUI() {
   const toggle = document.getElementById('aiToggle');
   const editBtn = document.getElementById('editDetailsBtn');
   const inputArea = document.getElementById('replyInputArea');
-  const hintMenuBtn = document.getElementById('hintMenuBtn'); // Get the hint button
-
+  
+  // We no longer disable the hint button itself, so we remove that logic here.
+  // The hint button remains clickable, but the item inside will be styled differently.
+  
   if (isAutoReplyEnabled) {
     toggle.classList.add('active');
     editBtn.style.display = 'flex';
     inputArea.classList.add('hidden');
-    
-    // DISABLE HINT BUTTON
-    if (hintMenuBtn) {
-      hintMenuBtn.disabled = true;
-      hintMenuBtn.style.opacity = '0.3';
-      hintMenuBtn.style.cursor = 'not-allowed';
-      hintMenuBtn.title = "Disabled: Auto-Reply is active";
-    }
   } else {
     toggle.classList.remove('active');
     editBtn.style.display = 'none';
     inputArea.classList.remove('hidden');
-    
-    // ENABLE HINT BUTTON
-    if (hintMenuBtn) {
-      hintMenuBtn.disabled = false;
-      hintMenuBtn.style.opacity = '1';
-      hintMenuBtn.style.cursor = 'pointer';
-      hintMenuBtn.title = "Options";
-    }
   }
 }
 
@@ -234,16 +221,32 @@ function updateAutoReplyUI() {
 
 function toggleHintMenu() {
   const dropdown = document.getElementById('hintDropdown');
+  const hintItem = document.querySelector('.hint-item');
+  
+  // Check if Auto-Reply is enabled
+  if (isAutoReplyEnabled) {
+    // Add disabled/strikethrough class to the hint item
+    if (hintItem) hintItem.classList.add('disabled-hint');
+  } else {
+    // Remove disabled/strikethrough class
+    if (hintItem) hintItem.classList.remove('disabled-hint');
+  }
+  
   dropdown.classList.toggle('show');
 }
 
 async function triggerHint() {
+  // If Auto-Reply is on, do nothing (or show a small alert)
+  if (isAutoReplyEnabled) {
+    return; 
+  }
+
   // Close the menu first
   document.getElementById('hintDropdown').classList.remove('show');
-  
-  if (!currentLeadId) {
+    if (!currentLeadId) {
     alert("Open a chat first to get a hint.");
-    return;  }
+    return;
+  }
 
   const btn = document.getElementById('hintMenuBtn');
   const originalContent = btn.innerHTML;
@@ -289,9 +292,9 @@ async function triggerHint() {
 }
 
 // Close menu if clicking outside
-document.addEventListener('click', function(event) {
-  const menu = document.querySelector('.hint-menu-wrap');
+document.addEventListener('click', function(event) {  const menu = document.querySelector('.hint-menu-wrap');
   const dropdown = document.getElementById('hintDropdown');
-  if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {    dropdown.classList.remove('show');
+  if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
   }
 });
