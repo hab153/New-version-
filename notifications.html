@@ -47,8 +47,7 @@
       align-items: center;
       padding: 0 16px;
       height: 56px;
-      background: var(--bg-base);      border-bottom: 1px solid var(--border);      flex-shrink: 0;      gap: 12px;
-      position: relative;
+      background: var(--bg-base);      border-bottom: 1px solid var(--border);      flex-shrink: 0;      gap: 12px;      position: relative;
       z-index: 10;
     }
 
@@ -97,8 +96,7 @@
     }
     .tab-pill {      height: 30px;
       padding: 0 14px;      background: none;
-      border: none;
-      border-radius: 7px;
+      border: none;      border-radius: 7px;
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 11px;
@@ -147,8 +145,7 @@
       gap: 6px;
       font-family: var(--font-mono);      font-size: 10px;
       color: var(--text-3);
-      flex-shrink: 0;
-    }
+      flex-shrink: 0;    }
     .status-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
@@ -197,8 +194,7 @@
       height: 15px;      pointer-events: none;
     }
     .search-icon svg { width: 15px; height: 15px; stroke: var(--text-3); }
-    .search-input {
-      width: 100%;
+    .search-input {      width: 100%;
       background: var(--bg-raised);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -247,8 +243,7 @@
     }
     .stat-chip-val.green { color: var(--green); }
     .stat-chip-val.amber { color: var(--amber); }
-    .stat-chip-val.red   { color: var(--red); }
-    .stat-chip-val.accent { color: var(--accent); }
+    .stat-chip-val.red   { color: var(--red); }    .stat-chip-val.accent { color: var(--accent); }
 
     /* ─── CONTACT LIST ─── */
     .contact-list {
@@ -297,8 +292,7 @@
     }
 
     .contact-body { flex: 1; min-width: 0; }
-    .contact-row1 {
-      display: flex;
+    .contact-row1 {      display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 4px;
@@ -347,8 +341,7 @@
       font-weight: 800;
       min-width: 18px;
       height: 18px;
-      border-radius: 9px;
-      display: flex;
+      border-radius: 9px;      display: flex;
       align-items: center;
       justify-content: center;
       padding: 0 5px;
@@ -397,8 +390,7 @@
       background: var(--bg-base);
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
+      gap: 10px;      flex-shrink: 0;
       min-height: 60px;
     }
     .back-btn {
@@ -447,8 +439,7 @@
       display: flex;
       align-items: center;
       gap: 7px;
-      padding: 7px 12px;
-      border-radius: 9px;
+      padding: 7px 12px;      border-radius: 9px;
       border: 1px solid var(--border);
       background: var(--bg-surface);
       cursor: pointer;
@@ -497,8 +488,7 @@
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s;
       color: var(--text-3);
-      font-size: 13px;
-    }
+      font-size: 13px;    }
     .icon-btn:hover { border-color: var(--border-mid); color: var(--text-2); background: var(--bg-raised); }
     .icon-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; }
 
@@ -547,8 +537,7 @@
       line-height: 1.55;
       word-wrap: break-word;
       border-radius: 14px;
-      position: relative;
-    }
+      position: relative;    }
     .message-bubble.lead {
       background: var(--bg-surface);
       border: 1px solid var(--border-mid);
@@ -596,6 +585,25 @@
       gap: 8px;
       align-items: flex-end;
     }
+    
+    /* HINT BUTTON STYLES */    .hint-btn {
+      width: 42px; height: 42px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s;
+      color: var(--accent-go);
+    }
+    .hint-btn:hover { 
+      background: var(--bg-raised); 
+      border-color: var(--accent-go);
+      box-shadow: 0 0 12px rgba(102,221,255,0.15);
+    }
+    .hint-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+    .hint-btn:disabled { opacity: 0.5; cursor: wait; }
+
     .reply-input-area textarea {
       flex: 1;
       background: var(--bg-raised);
@@ -627,7 +635,6 @@
     .send-btn:disabled { background: var(--bg-raised); cursor: not-allowed; transform: none; }
     .send-btn svg { width: 17px; height: 17px; stroke: #000; fill: none; }
     .send-btn:disabled svg { stroke: var(--text-3); }
-
     /* ─── VIEW: ADMIN ─── */
     .view-admin {
       position: absolute; inset: 0;
@@ -677,8 +684,7 @@
     }
     @keyframes modal-in {
       from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
+      to   { opacity: 1; transform: scale(1) translateY(0); }    }
     .modal-header {
       display: flex; justify-content: space-between; align-items: flex-start;
       margin-bottom: 20px;
@@ -727,8 +733,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    .modal-field textarea:focus { border-color: rgba(200,255,87,0.3); }
-    .modal-field textarea::placeholder { color: var(--text-3); }
+    .modal-field textarea:focus { border-color: rgba(200,255,87,0.3); }    .modal-field textarea::placeholder { color: var(--text-3); }
 
     .modal-footer {
       display: flex;
@@ -777,8 +782,7 @@
       position: absolute;
       left: 0; right: 0;
       top: 50%;
-      height: 1px;
-      background: var(--border);
+      height: 1px;      background: var(--border);
     }
 
     /* ─── AI RESPONDING INDICATOR ─── */
@@ -827,8 +831,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 4px;
+      justify-content: center;      gap: 4px;
       color: var(--text-3);
       text-decoration: none;
       transition: all 0.2s ease;      position: relative;
@@ -877,8 +880,7 @@
           <rect x="10" y="6" width="2" height="8" rx="0.5" fill="#000"/>
           <rect x="13" y="8" width="2" height="6" rx="0.5" fill="#000"/>
         </svg>
-      </div>
-      <span class="nav-logo-text">Skyline <span>AA-1</span></span>
+      </div>      <span class="nav-logo-text">Skyline <span>AA-1</span></span>
     </div>
     <div class="nav-divider"></div>    <div class="tab-group">
       <button class="tab-pill active" id="tabLeads" onclick="switchTab('leads', this)">
@@ -928,7 +930,6 @@
           <div class="stat-chip-val amber" id="statMed">—</div>
         </div>
       </div>
-
       <div class="contact-list" id="contactList">        <div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">LOADING CONTACTS…</div>
       </div>
     </div>
@@ -977,8 +978,7 @@
 
         <div class="chat-actions">
           <button class="edit-details-btn" id="editDetailsBtn" onclick="openInstructionsModal()">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg viewBox="0 0 24 24" fill="none">              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             Edit
           </button>
@@ -1007,6 +1007,13 @@
           <span class="reply-toolbar-label">Reply as Agent</span>
         </div>
         <div class="reply-wrap">
+          <!-- NEW HINT BUTTON -->
+          <button class="hint-btn" id="hintBtn" onclick="fetchAISuggestion(currentLeadId, this, document.getElementById('replyText'))" title="Get AI Suggestion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+            </svg>
+          </button>
+          
           <textarea id="replyText" placeholder="Type a reply…"            oninput="autoResize(this)"
             onkeydown="handleKey(event)"></textarea>
           <button class="send-btn" id="sendBtn" onclick="sendReply()">
@@ -1020,8 +1027,7 @@
     <!-- VIEW: ADMIN -->
     <div id="viewAdmin" class="view-admin">
       <div class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none">
+        <div class="empty-icon">          <svg viewBox="0 0 24 24" fill="none">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="9" cy="7" r="4" stroke-width="1.8"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1070,8 +1076,7 @@
           <p>AI · AUTO-REPLY INSTRUCTIONS</p>
         </div>
         <button class="modal-close" onclick="closeInstructionsModal()">×</button>
-      </div>      <div class="modal-field">
-        <label>Instructions for AI</label>
+      </div>      <div class="modal-field">        <label>Instructions for AI</label>
         <textarea id="instructionsText" placeholder="E.g., Be concise and professional. Offer a 10% discount if they hesitate. Always sign off with 'Best, Team Skyline'."></textarea>
       </div>
       <div class="modal-footer">
@@ -1080,6 +1085,7 @@
     </div>
   </div>
 
+  <script src="suggest.js"></script>
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -1119,8 +1125,7 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
     }    function escapeHtml(str) {
       if (!str) return '';
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(str));
+      const div = document.createElement('div');      div.appendChild(document.createTextNode(str));
       return div.innerHTML;
     }
 
@@ -1169,8 +1174,7 @@
         const msgCount = messages.length || lead.messageCount || 0;
         if (msgCount > 10) {
             score += 30;
-            reasons.push("High Engagement");
-        } else if (msgCount > 5) {
+            reasons.push("High Engagement");        } else if (msgCount > 5) {
             score += 20;
             reasons.push("Moderate Engagement");
         } else if (msgCount > 2) {
@@ -1219,8 +1223,7 @@
         });
         allContacts = await res.json();
         updateStats(allContacts);
-        renderContacts(allContacts);
-      } catch (err) {
+        renderContacts(allContacts);      } catch (err) {
         document.getElementById('contactList').innerHTML =
           '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
       }    }
@@ -1269,8 +1272,7 @@
         
         // Calculate dynamic engagement score
         const rating = calculateEngagementScore(c, []);
-        let confClass = 'low';
-        if (rating.score >= 75) confClass = 'high';
+        let confClass = 'low';        if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
         return `
           <div class="contact-item ${unread > 0 ? 'unread' : ''}"
@@ -1319,7 +1321,6 @@
         else if (rating.score >= 40) cls = 'med';
         badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${rating.score} ${rating.tier}</span>`;
       }
-
       document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
       document.getElementById('chatEmail').innerText = email;      document.getElementById('chatAvatar').innerText = getInitials(name);
       document.getElementById('replyText').value = '';
@@ -1369,8 +1370,7 @@
               <p>Send the first message to start the conversation.</p>
             </div>`;
           return;
-        }
-        container.innerHTML = data.messages.map(msg => `
+        }        container.innerHTML = data.messages.map(msg => `
           <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
             <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
               ${escapeHtml(msg.content)}
@@ -1419,8 +1419,7 @@
           autoReplyInstructions = instructions;
           closeInstructionsModal();
           updateAutoReplyUI();
-        } else { alert("Failed to save."); }      } catch { alert("Connection error."); }
-    }
+        } else { alert("Failed to save."); }      } catch { alert("Connection error."); }    }
 
     async function saveAutoReplyStatus() {
       try {
@@ -1469,8 +1468,7 @@
           return;
         }
         if (data.success) {          document.getElementById('replyText').value = '';
-          document.getElementById('replyText').style.height = '42px';
-          openChat(currentLeadId, currentLeadName, currentLeadEmail);
+          document.getElementById('replyText').style.height = '42px';          openChat(currentLeadId, currentLeadName, currentLeadEmail);
         } else { alert("Failed to send: " + JSON.stringify(data.errors)); }
       } catch {
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
