@@ -178,12 +178,23 @@ function closeChat() {
   currentLeadId = null;
 }
 
+// UPDATED: Auto-Reply Toggle Logic
 function toggleAutoReply() {
+  // 1. Check if Auto-Reply is currently ON
   if (isAutoReplyEnabled) {
+    // If ON, just turn it OFF (Allowed for everyone)
     isAutoReplyEnabled = false;
     saveAutoReplyStatus();
   } else {
-    openInstructionsModal();
+    // If OFF, user wants to turn it ON. Check Tier.
+    const currentTier = (userTier || 'free').toLowerCase();
+
+    if (currentTier === 'free') {
+      // Free users (0 Auto-reply) -> Redirect to Dashboard
+      window.location.href = 'dashboard.html?upgrade=true';
+    } else {
+      // Go (20) and Pro (100) users -> Open Modal to set instructions
+      openInstructionsModal();    }
   }
 }
 
@@ -194,7 +205,8 @@ function openInstructionsModal() {
 
 function closeInstructionsModal() {
   document.getElementById('instructionsModal').classList.remove('active');
-  updateAutoReplyUI();}
+  updateAutoReplyUI();
+}
 
 async function handleSaveInstructions() {
   const instructions = document.getElementById('instructionsText').value.trim();
@@ -231,8 +243,7 @@ function toggleHintMenu() {
   // Update Tier Badge Visibility
   if (tierBadge) {
     if (currentTier === 'free') {
-      tierBadge.textContent = 'GO';
-      tierBadge.style.display = 'inline-block';
+      tierBadge.textContent = 'GO';      tierBadge.style.display = 'inline-block';
     } else {
       tierBadge.style.display = 'none';
     }
@@ -247,6 +258,7 @@ function toggleHintMenu() {
   dropdown.classList.toggle('show');
 }
 
+// UPDATED: Hint Trigger Logic
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
 
@@ -263,6 +275,7 @@ async function triggerHint() {
   btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
   
   try {
+    // 1. Fetch Messages
     const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -273,26 +286,39 @@ async function triggerHint() {
       return;
     }
 
+    // 2. Request Hint from Backend
     const suggestRes = await fetch(`${BACKEND}/api/ai/suggest`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}` 
-      },
-      body: JSON.stringify({ messages: messages.slice(-3) })
+      },      body: JSON.stringify({ messages: messages.slice(-3) })
     });
 
     const suggestData = await suggestRes.json();
     
+    // 3. Handle Backend Rejection (403 Forbidden)
     if (!suggestRes.ok) {
       if (suggestRes.status === 403) {
-        // REDIRECT TO DASHBOARD FOR UPGRADE
-        window.location.href = 'dashboard.html?upgrade=true';
+        const currentTier = (userTier || 'free').toLowerCase();
+        
+        if (currentTier === 'free') {
+          // Free users rejected (Limit 3 reached) -> Redirect to Dashboard
+          window.location.href = 'dashboard.html?upgrade=true';
+        } else if (currentTier === 'go') {
+          // Go users rejected (Limit 20 reached) -> Show Upgrade Message
+          alert("You have reached your daily hint limit (20/20). Upgrade to Pro for unlimited hints.");
+        } else if (currentTier === 'pro') {
+          // Pro users should not be rejected
+          alert("An unexpected error occurred. Please try again later.");
+        }
       } else {
         alert("Failed to get hint.");
       }
       return;
-    }    
+    }
+    
+    // 4. Success
     if (suggestData.suggestion) {
       const textArea = document.getElementById('replyText');
       textArea.value = suggestData.suggestion;
