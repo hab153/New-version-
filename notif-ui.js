@@ -47,7 +47,8 @@ function updateStats(contacts) {
 }
 
 function renderContacts(contacts) {
-  const list = document.getElementById('contactList');  if (contacts.length === 0) {    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
+  const list = document.getElementById('contactList');  if (contacts.length === 0) {
+    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
     return;
   }
   const sorted = [...contacts].sort((a, b) => {
@@ -97,6 +98,7 @@ function filterContacts(query) {
     (c.company || '').toLowerCase().includes(q) ||
     (c.email || '').toLowerCase().includes(q)  ));
 }
+
 async function openChat(leadId, name, email) {
   window.currentLeadId = leadId;
   window.currentLeadName = name;
@@ -143,9 +145,9 @@ async function openChat(leadId, name, email) {
          if (realRating.score >= 75) cls = 'high';
          else if (realRating.score >= 40) cls = 'med';
          document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
-    }
-    if (!data.messages || data.messages.length === 0) {
-      container.innerHTML = `        <div class="empty-state">
+    }    if (!data.messages || data.messages.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -191,10 +193,11 @@ function openInstructionsModal() {
 
 function closeInstructionsModal() {
   document.getElementById('instructionsModal').classList.remove('active');
-  updateAutoReplyUI();}
-
+  updateAutoReplyUI();
+}
 async function handleSaveInstructions() {
-  const instructions = document.getElementById('instructionsText').value.trim();  const success = await saveAutoReplyInstructions(instructions);
+  const instructions = document.getElementById('instructionsText').value.trim();
+  const success = await saveAutoReplyInstructions(instructions);
   if (success) closeInstructionsModal();
 }
 
@@ -240,10 +243,10 @@ async function triggerHint() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
-    const messages = data.messages || [];
-    
+    const messages = data.messages || [];    
     if (messages.length === 0) {
-      alert("No messages to base a hint on.");      return;
+      alert("No messages to base a hint on.");
+      return;
     }
 
     const suggestRes = await fetch(`${BACKEND}/api/ai/suggest`, {
