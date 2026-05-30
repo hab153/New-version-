@@ -55,6 +55,8 @@
             <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
           <span>AI Hint</span>
+          <!-- NEW: Tier Badge -->
+          <span id="hintTierBadge" class="hint-tier-badge" style="display:none;">GO</span>
         </button>
       </div>
     </div>
@@ -67,7 +69,8 @@
     <div id="viewList" class="view-list">
       <div class="search-section">
         <div class="search-wrap">
-          <div class="search-icon">            <svg viewBox="0 0 24 24" fill="none">
+          <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none">
               <circle cx="11" cy="11" r="7.5" stroke-width="1.8"/>
               <path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/>
             </svg>
@@ -93,10 +96,10 @@
           <div class="stat-chip-val amber" id="statMed">—</div>
         </div>
       </div>
-
       <div class="contact-list" id="contactList">
         <div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">LOADING CONTACTS…</div>
-      </div>    </div>
+      </div>
+    </div>
 
     <!-- VIEW: CHAT -->
     <div id="viewChat" class="view-chat">
@@ -142,10 +145,10 @@
             </svg>
             Edit
           </button>
-          <button class="icon-btn" onclick="renameCustomer(prompt('Enter new name:', window.currentLeadName))" title="Rename">
-            <svg viewBox="0 0 24 24" fill="none">
+          <button class="icon-btn" onclick="renameCustomer(prompt('Enter new name:', window.currentLeadName))" title="Rename">            <svg viewBox="0 0 24 24" fill="none">
               <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>          </button>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -163,7 +166,8 @@
 
       <div class="reply-input-area" id="replyInputArea">
         <div class="reply-toolbar">
-          <span class="reply-toolbar-label">Reply as Agent</span>        </div>
+          <span class="reply-toolbar-label">Reply as Agent</span>
+        </div>
         <div class="reply-wrap">
           <textarea id="replyText" placeholder="Type a reply…"
             oninput="autoResize(this)"
@@ -191,10 +195,10 @@
         <p>Admin notifications and team<br>messages will appear here.</p>
       </div>
     </div>
-
   </div>
 
-  <!-- BOTTOM NAVIGATION -->  <nav class="bottom-nav">
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
     <a href="page.html" class="nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -211,7 +215,8 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
-    </a>    <a href="dashboard.html" class="nav-item">
+    </a>
+    <a href="dashboard.html" class="nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="7" height="7"/>
         <rect x="14" y="3" width="7" height="7"/>
@@ -238,18 +243,29 @@
       <div class="modal-footer">
         <button class="btn-ghost" onclick="closeInstructionsModal()">Cancel</button>
         <button class="btn-primary" onclick="handleSaveInstructions()">Activate AI Reply</button>
-      </div>
-    </div>
+      </div>    </div>
   </div>
 
   <script src="notif-utils.js"></script>
-  <script src="notif-api.js"></script>  <script src="notif-ui.js"></script>
+  <script src="notif-api.js"></script>
+  <script src="notif-ui.js"></script>
   
   <script>
     // Initialization Logic
     if (!localStorage.getItem('token')) window.location.href = "login.html";
 
     document.addEventListener('DOMContentLoaded', async () => {
+      // Fetch user profile to get initial tier
+      try {
+          const res = await fetch(`${BACKEND}/api/users/me`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+              const user = await res.json();
+              userTier = user.subscriptionTier || 'Free';
+          }
+      } catch (e) { console.error(e); }
+
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -259,10 +275,11 @@
           localStorage.setItem('lastSeenNotifCount', data.count || 0);
         }
       } catch (err) {
-        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastSeenNotifCount') || 0);      }
+        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastSeenNotifCount') || 0);
+      }
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       loadContacts();
     });
   </script>
 </body>
-                </html>
+          </html>
