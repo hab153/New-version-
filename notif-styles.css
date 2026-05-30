@@ -847,3 +847,16 @@ body {
   background: var(--accent);
   box-shadow: 0 0 6px var(--accent), 0 0 12px rgba(200,255,87,0.3);
   }
+
+/* ─── DISABLED HINT ITEM STYLES ─── */
+.hint-item.disabled-hint {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: line-through; /* This creates the straight line through the text */
+  pointer-events: none; /* Prevents clicking */
+}
+
+.hint-item.disabled-hint:hover {
+  background: transparent;
+  color: var(--text-2);
+}
