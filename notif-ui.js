@@ -283,8 +283,8 @@ async function triggerHint() {
     
     if (!suggestRes.ok) {
       if (suggestRes.status === 403) {
-        alert(`AI Hint is not available for your plan or you have reached your daily limit.`);
-        if (suggestData.tier) userTier = suggestData.tier;
+        // REDIRECT TO DASHBOARD FOR UPGRADE
+        window.location.href = 'dashboard.html?upgrade=true';
       } else {
         alert("Failed to get hint.");
       }
