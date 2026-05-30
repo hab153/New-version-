@@ -47,8 +47,7 @@ function updateStats(contacts) {
 }
 
 function renderContacts(contacts) {
-  const list = document.getElementById('contactList');  if (contacts.length === 0) {
-    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
+  const list = document.getElementById('contactList');  if (contacts.length === 0) {    list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
     return;
   }
   const sorted = [...contacts].sort((a, b) => {
@@ -98,7 +97,6 @@ function filterContacts(query) {
     (c.company || '').toLowerCase().includes(q) ||
     (c.email || '').toLowerCase().includes(q)  ));
 }
-
 async function openChat(leadId, name, email) {
   window.currentLeadId = leadId;
   window.currentLeadName = name;
@@ -147,8 +145,7 @@ async function openChat(leadId, name, email) {
          document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
     }
     if (!data.messages || data.messages.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
+      container.innerHTML = `        <div class="empty-state">
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -197,8 +194,7 @@ function closeInstructionsModal() {
   updateAutoReplyUI();}
 
 async function handleSaveInstructions() {
-  const instructions = document.getElementById('instructionsText').value.trim();
-  const success = await saveAutoReplyInstructions(instructions);
+  const instructions = document.getElementById('instructionsText').value.trim();  const success = await saveAutoReplyInstructions(instructions);
   if (success) closeInstructionsModal();
 }
 
@@ -215,4 +211,72 @@ function updateAutoReplyUI() {
     editBtn.style.display = 'none';
     inputArea.classList.remove('hidden');
   }
-             }
+}
+
+// ─── HINT MENU LOGIC ───
+
+function toggleHintMenu() {
+  const dropdown = document.getElementById('hintDropdown');
+  dropdown.classList.toggle('show');
+}
+
+async function triggerHint() {
+  // Close the menu first
+  document.getElementById('hintDropdown').classList.remove('show');
+  
+  if (!currentLeadId) {
+    alert("Open a chat first to get a hint.");
+    return;
+  }
+
+  const btn = document.getElementById('hintMenuBtn');
+  const originalContent = btn.innerHTML;
+  
+  // Show loading state on the 3-dot button
+  btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  
+  try {
+    const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const messages = data.messages || [];
+    
+    if (messages.length === 0) {
+      alert("No messages to base a hint on.");      return;
+    }
+
+    const suggestRes = await fetch(`${BACKEND}/api/ai/suggest`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ messages: messages.slice(-3) })
+    });
+
+    const suggestData = await suggestRes.json();
+    
+    if (suggestData.suggestion) {
+      const textArea = document.getElementById('replyText');
+      textArea.value = suggestData.suggestion;
+      autoResize(textArea);
+      textArea.focus();
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Failed to get hint.");
+  } finally {
+    // Reset button icon
+    btn.innerHTML = originalContent;
+  }
+}
+
+// Close menu if clicking outside
+document.addEventListener('click', function(event) {
+  const menu = document.querySelector('.hint-menu-wrap');
+  const dropdown = document.getElementById('hintDropdown');
+  if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+  }
+});
