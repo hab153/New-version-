@@ -586,20 +586,20 @@
       align-items: flex-end;
     }
     
-    /* HINT BUTTON STYLES */    .hint-btn {
+    /* NEW: Hint Button Styles */    .hint-btn {
       width: 42px; height: 42px;
       background: var(--bg-surface);
       border: 1px solid var(--border);
+      color: var(--accent-go);
       border-radius: 12px;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: all 0.2s;
-      color: var(--accent-go);
     }
     .hint-btn:hover { 
       background: var(--bg-raised); 
       border-color: var(--accent-go);
-      box-shadow: 0 0 12px rgba(102,221,255,0.15);
+      box-shadow: 0 0 10px rgba(102,221,255,0.1);
     }
     .hint-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
     .hint-btn:disabled { opacity: 0.5; cursor: wait; }
@@ -1007,10 +1007,12 @@
           <span class="reply-toolbar-label">Reply as Agent</span>
         </div>
         <div class="reply-wrap">
-          <!-- NEW HINT BUTTON -->
+          <!-- NEW: AI Hint Button -->
           <button class="hint-btn" id="hintBtn" onclick="fetchAISuggestion(currentLeadId, this, document.getElementById('replyText'))" title="Get AI Suggestion">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/>
+              <path d="M9 21h6"/>
+              <path d="M12 17v4"/>
             </svg>
           </button>
           
@@ -1025,9 +1027,9 @@
     </div>
 
     <!-- VIEW: ADMIN -->
-    <div id="viewAdmin" class="view-admin">
-      <div class="empty-state">
-        <div class="empty-icon">          <svg viewBox="0 0 24 24" fill="none">
+    <div id="viewAdmin" class="view-admin">      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="9" cy="7" r="4" stroke-width="1.8"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1074,9 +1076,9 @@
         <div class="modal-header-left">
           <h3>AI Auto-Reply Setup</h3>
           <p>AI · AUTO-REPLY INSTRUCTIONS</p>
-        </div>
-        <button class="modal-close" onclick="closeInstructionsModal()">×</button>
-      </div>      <div class="modal-field">        <label>Instructions for AI</label>
+        </div>        <button class="modal-close" onclick="closeInstructionsModal()">×</button>
+      </div>      <div class="modal-field">
+        <label>Instructions for AI</label>
         <textarea id="instructionsText" placeholder="E.g., Be concise and professional. Offer a 10% discount if they hesitate. Always sign off with 'Best, Team Skyline'."></textarea>
       </div>
       <div class="modal-footer">
@@ -1085,7 +1087,9 @@
     </div>
   </div>
 
+  <!-- NEW: Include suggest.js -->
   <script src="suggest.js"></script>
+
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -1121,11 +1125,11 @@
       el.style.height = '42px';
       el.style.height = Math.min(el.scrollHeight, 120) + 'px';
     }
-    function handleKey(e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
+    function handleKey(e) {      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
     }    function escapeHtml(str) {
       if (!str) return '';
-      const div = document.createElement('div');      div.appendChild(document.createTextNode(str));
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
       return div.innerHTML;
     }
 
@@ -1170,11 +1174,11 @@
             }
         }
 
-        // 2. Message Volume (Max 30 points)
-        const msgCount = messages.length || lead.messageCount || 0;
+        // 2. Message Volume (Max 30 points)        const msgCount = messages.length || lead.messageCount || 0;
         if (msgCount > 10) {
             score += 30;
-            reasons.push("High Engagement");        } else if (msgCount > 5) {
+            reasons.push("High Engagement");
+        } else if (msgCount > 5) {
             score += 20;
             reasons.push("Moderate Engagement");
         } else if (msgCount > 2) {
@@ -1219,11 +1223,11 @@
     async function loadContacts() {
       try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+          headers: { 'Authorization': `Bearer ${token}` }        });
         allContacts = await res.json();
         updateStats(allContacts);
-        renderContacts(allContacts);      } catch (err) {
+        renderContacts(allContacts);
+      } catch (err) {
         document.getElementById('contactList').innerHTML =
           '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
       }    }
@@ -1268,11 +1272,11 @@
       });
 
       list.innerHTML = sorted.map(c => {
-        const unread = c.unreadCount || 0;
-        
+        const unread = c.unreadCount || 0;        
         // Calculate dynamic engagement score
         const rating = calculateEngagementScore(c, []);
-        let confClass = 'low';        if (rating.score >= 75) confClass = 'high';
+        let confClass = 'low';
+        if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
         return `
           <div class="contact-item ${unread > 0 ? 'unread' : ''}"
@@ -1317,10 +1321,10 @@
         // We pass empty messages here initially; it will update when messages load
         const rating = calculateEngagementScore(leadData, []);
         let cls = 'low';
-        if (rating.score >= 75) cls = 'high';
-        else if (rating.score >= 40) cls = 'med';
+        if (rating.score >= 75) cls = 'high';        else if (rating.score >= 40) cls = 'med';
         badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${rating.score} ${rating.tier}</span>`;
       }
+
       document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
       document.getElementById('chatEmail').innerText = email;      document.getElementById('chatAvatar').innerText = getInitials(name);
       document.getElementById('replyText').value = '';
@@ -1366,11 +1370,11 @@
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <h3>No messages yet</h3>
-              <p>Send the first message to start the conversation.</p>
+              <h3>No messages yet</h3>              <p>Send the first message to start the conversation.</p>
             </div>`;
           return;
-        }        container.innerHTML = data.messages.map(msg => `
+        }
+        container.innerHTML = data.messages.map(msg => `
           <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
             <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
               ${escapeHtml(msg.content)}
@@ -1415,11 +1419,11 @@
           body: JSON.stringify({ enabled: true, instructions })
         });
         if (res.ok) {
-          isAutoReplyEnabled = true;
-          autoReplyInstructions = instructions;
+          isAutoReplyEnabled = true;          autoReplyInstructions = instructions;
           closeInstructionsModal();
           updateAutoReplyUI();
-        } else { alert("Failed to save."); }      } catch { alert("Connection error."); }    }
+        } else { alert("Failed to save."); }      } catch { alert("Connection error."); }
+    }
 
     async function saveAutoReplyStatus() {
       try {
@@ -1464,11 +1468,11 @@
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
           localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
           alert("⚠️ Email session expired. Please reconnect.");
-          window.location.href = 'dashboard.html?connect=true';
-          return;
+          window.location.href = 'dashboard.html?connect=true';          return;
         }
         if (data.success) {          document.getElementById('replyText').value = '';
-          document.getElementById('replyText').style.height = '42px';          openChat(currentLeadId, currentLeadName, currentLeadEmail);
+          document.getElementById('replyText').style.height = '42px';
+          openChat(currentLeadId, currentLeadName, currentLeadEmail);
         } else { alert("Failed to send: " + JSON.stringify(data.errors)); }
       } catch {
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
