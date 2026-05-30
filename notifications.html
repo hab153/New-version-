@@ -1312,7 +1312,7 @@
       const leadData = allContacts.find(l => l.id === leadId);
       let badgeHtml = '';
       if (leadData) {
-        // We'll update this with real messages once loaded, but show initial estimate
+        // We pass empty messages here initially; it will update when messages load
         const rating = calculateEngagementScore(leadData, []);
         let cls = 'low';
         if (rating.score >= 75) cls = 'high';
@@ -1348,13 +1348,13 @@
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
         
-        // Update header with precise score now that we have messages
-        if (data.messages) {
-            const preciseRating = calculateEngagementScore(leadData, data.messages);
-            let cls = 'low';
-            if (preciseRating.score >= 75) cls = 'high';
-            else if (preciseRating.score >= 40) cls = 'med';
-            document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${preciseRating.score} ${preciseRating.tier}</span>`;
+        // Update the header with the REAL engagement score now that we have messages
+        if (data.messages && data.messages.length > 0) {
+             const realRating = calculateEngagementScore(leadData, data.messages);
+             let cls = 'low';
+             if (realRating.score >= 75) cls = 'high';
+             else if (realRating.score >= 40) cls = 'med';
+             document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:8px; font-size:9px;">${realRating.score} ${realRating.tier}</span>`;
         }
 
         if (!data.messages || data.messages.length === 0) {
@@ -1496,4 +1496,5 @@
     }
   </script>
 </body>
+  
   </html>
