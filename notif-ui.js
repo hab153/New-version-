@@ -1,6 +1,6 @@
 // Global UI State
 let allContacts = [];
-let userTier = 'free'; // Default to lowercase to match DB
+let userTier = 'Free'; // Default, will be updated on load
 
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(document.getElementById('replyText').value.trim()); }
@@ -225,12 +225,9 @@ function toggleHintMenu() {
   const hintItem = document.querySelector('.hint-item');
   const tierBadge = document.getElementById('hintTierBadge');
   
-  // Normalize tier for comparison (lowercase)
-  const currentTier = (userTier || 'free').toLowerCase();
-
   // Update Tier Badge Visibility
   if (tierBadge) {
-    if (currentTier === 'free') {
+    if (userTier === 'Free') {
       tierBadge.textContent = 'GO';
       tierBadge.style.display = 'inline-block';
     } else {
@@ -243,9 +240,10 @@ function toggleHintMenu() {
     if (hintItem) hintItem.classList.add('disabled-hint');
   } else {
     if (hintItem) hintItem.classList.remove('disabled-hint');
-  }    dropdown.classList.toggle('show');
+  }
+  
+  dropdown.classList.toggle('show');
 }
-
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
 
@@ -285,18 +283,8 @@ async function triggerHint() {
     
     if (!suggestRes.ok) {
       if (suggestRes.status === 403) {
-        // HANDLE LIMIT REACHED BASED ON TIER
-        const currentTier = (userTier || 'free').toLowerCase();
-        
-        if (currentTier === 'free') {
-          // Free users get redirected
-          window.location.href = 'dashboard.html?upgrade=true';
-        } else if (currentTier === 'go') {
-          // Go users get upgrade prompt          alert("You have reached your daily hint limit. Upgrade to Pro for more usage.");
-        } else if (currentTier === 'pro') {
-          // Pro users get wait message
-          alert("You have reached your daily hint limit. Please wait until tomorrow to continue.");
-        }
+        alert(`AI Hint is not available for your plan or you have reached your daily limit.`);
+        if (suggestData.tier) userTier = suggestData.tier;
       } else {
         alert("Failed to get hint.");
       }
@@ -304,8 +292,7 @@ async function triggerHint() {
     }
     
     if (suggestData.suggestion) {
-      const textArea = document.getElementById('replyText');
-      textArea.value = suggestData.suggestion;
+      const textArea = document.getElementById('replyText');      textArea.value = suggestData.suggestion;
       autoResize(textArea);
       textArea.focus();
     }
