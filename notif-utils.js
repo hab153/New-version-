@@ -1,7 +1,43 @@
-// Global UI State
+// ========== UTILITY FUNCTIONS (MUST BE DEFINED FIRST) ==========
+function calculateEngagementScore(lead, messages) {
+    // Simple scoring – adjust as needed
+    let score = 50;
+    let tier = 'MED';
+    if (lead && lead.status === 'Replied') score = 70;
+    else if (lead && lead.status === 'Contacted') score = 40;
+    if (messages && messages.length > 10) score += 10;
+    if (score >= 75) tier = 'HIGH';
+    else if (score >= 40) tier = 'MED';
+    else tier = 'LOW';
+    return { score, tier };
+}
+
+function getInitials(name) {
+    if (!name) return '?';
+    return name.charAt(0).toUpperCase();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+function autoResize(textarea) {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+}
+
+// ========== GLOBAL UI STATE ==========
 let allContacts = [];
 let userTier = 'free'; // Default to lowercase to match DB
 
+// ========== UI FUNCTIONS ==========
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(document.getElementById('replyText').value.trim()); }
 }
@@ -47,7 +83,8 @@ function updateStats(contacts) {
   }
 }
 
-function renderContacts(contacts) {  const list = document.getElementById('contactList');
+function renderContacts(contacts) {  
+  const list = document.getElementById('contactList');
   if (contacts.length === 0) {
     list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
     return;
@@ -96,7 +133,8 @@ function filterContacts(query) {
   const q = query.toLowerCase();
   renderContacts(allContacts.filter(c =>
     (c.name || '').toLowerCase().includes(q) ||
-    (c.company || '').toLowerCase().includes(q) ||    (c.email || '').toLowerCase().includes(q)
+    (c.company || '').toLowerCase().includes(q) ||
+    (c.email || '').toLowerCase().includes(q)
   ));
 }
 
@@ -145,7 +183,8 @@ async function openChat(leadId, name, email) {
          let cls = 'low';
          if (realRating.score >= 75) cls = 'high';
          else if (realRating.score >= 40) cls = 'med';
-         document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;    }
+         document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
+    }
     if (!data.messages || data.messages.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
@@ -194,7 +233,8 @@ function openInstructionsModal() {
 
 function closeInstructionsModal() {
   document.getElementById('instructionsModal').classList.remove('active');
-  updateAutoReplyUI();}
+  updateAutoReplyUI();
+}
 
 async function handleSaveInstructions() {
   const instructions = document.getElementById('instructionsText').value.trim();
@@ -292,7 +332,8 @@ async function triggerHint() {
         if (currentTier === 'free') {
           // Free users get redirected
           window.location.href = 'dashboard.html?upgrade=true';
-        } else if (currentTier === 'go') {          // Go users get upgrade prompt
+        } else if (currentTier === 'go') {
+          // Go users get upgrade prompt
           alert("You have reached your daily hint limit. Upgrade to Pro for more usage.");
         } else if (currentTier === 'pro') {
           // Pro users get wait message
