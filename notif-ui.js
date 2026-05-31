@@ -1,5 +1,6 @@
 // Global UI State
 let allContacts = [];
+let userTier = 'free'; // Ensure this is set by your initialization script
 
 function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -46,8 +47,7 @@ function updateStats(contacts) {
     }
 }
 
-function renderContacts(contacts) {
-    const list = document.getElementById('contactList');
+function renderContacts(contacts) {    const list = document.getElementById('contactList');
     if (contacts.length === 0) {
         list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
         return;
@@ -96,8 +96,7 @@ function filterContacts(query) {
         (c.name || '').toLowerCase().includes(q) ||
         (c.company || '').toLowerCase().includes(q) ||
         (c.email || '').toLowerCase().includes(q)
-    ));
-}
+    ));}
 
 async function openChat(leadId, name, email) {
     console.log(`💬 [openChat] Opening chat with ${name} (${leadId})`);
@@ -146,8 +145,7 @@ async function openChat(leadId, name, email) {
             document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
         }
         if (!data.messages || data.messages.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
+            container.innerHTML = `                <div class="empty-state">
                     <div class="empty-icon">
                         <svg viewBox="0 0 24 24" fill="none">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -179,19 +177,24 @@ function closeChat() {
     currentLeadId = null;
 }
 
+// UPDATED: No Redirects for Auto-Reply
 function toggleAutoReply() {
     console.log(`🤖 [toggleAutoReply] Current isAutoReplyEnabled=${isAutoReplyEnabled}`);
     if (isAutoReplyEnabled) {
         isAutoReplyEnabled = false;
         saveAutoReplyStatus();
     } else {
-        openInstructionsModal();
+        const currentTier = (userTier || 'free').toLowerCase();
+        if (currentTier === 'free') {
+            alert("Auto-reply is not available on the Free plan. Upgrade to Go or Pro to use AI auto-replies.");
+        } else {
+            openInstructionsModal();
+        }
     }
 }
 
 function openInstructionsModal() {
-    document.getElementById('instructionsText').value = autoReplyInstructions;
-    document.getElementById('instructionsModal').classList.add('active');
+    document.getElementById('instructionsText').value = autoReplyInstructions;    document.getElementById('instructionsModal').classList.add('active');
 }
 
 function closeInstructionsModal() {
@@ -228,6 +231,7 @@ function toggleHintMenu() {
     dropdown.classList.toggle('show');
 }
 
+// UPDATED: No Redirects for Hints
 async function triggerHint() {
     if (isAutoReplyEnabled) return;
     document.getElementById('hintDropdown').classList.remove('show');
@@ -239,7 +243,7 @@ async function triggerHint() {
     const btn = document.getElementById('hintMenuBtn');
     const originalContent = btn.innerHTML;
     btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-    try {
+        try {
         const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -254,7 +258,26 @@ async function triggerHint() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ messages: messages.slice(-3) })
         });
+        
         const suggestData = await suggestRes.json();
+
+        // Handle Limits without Redirecting
+        if (!suggestRes.ok) {
+            if (suggestRes.status === 403) {
+                const currentTier = (userTier || 'free').toLowerCase();
+                if (currentTier === 'free') {
+                    alert("You have reached your daily hint limit (3/3). Upgrade to Go for more hints.");
+                } else if (currentTier === 'go') {
+                    alert("You have reached your daily hint limit (20/20). Upgrade to Pro for unlimited hints.");
+                } else {
+                    alert("An unexpected error occurred. Please try again later.");
+                }
+            } else {
+                alert("Failed to get hint.");
+            }
+            return;
+        }
+
         if (suggestData.suggestion) {
             const textArea = document.getElementById('replyText');
             textArea.value = suggestData.suggestion;
@@ -269,8 +292,7 @@ async function triggerHint() {
         alert("Failed to get hint.");
     } finally {
         btn.innerHTML = originalContent;
-    }
-}
+    }}
 
 document.addEventListener('click', function(event) {
     const menu = document.querySelector('.hint-menu-wrap');
