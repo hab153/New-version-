@@ -217,7 +217,13 @@ function closeChat() {
   currentLeadId = null;
 }
 
+// UPDATED: Auto-reply toggle with free plan check
 function toggleAutoReply() {
+  const tier = (userTier || 'free').toLowerCase();
+  if (tier === 'free') {
+    alert("Auto-reply is not available on the Free plan. Upgrade to Go or Pro to use AI auto-replies.");
+    return;
+  }
   if (isAutoReplyEnabled) {
     isAutoReplyEnabled = false;
     saveAutoReplyStatus();
@@ -265,10 +271,8 @@ function toggleHintMenu() {
   const hintItem = document.querySelector('.hint-item');
   const tierBadge = document.getElementById('hintTierBadge');
   
-  // Normalize tier for comparison (lowercase)
   const currentTier = (userTier || 'free').toLowerCase();
 
-  // Update Tier Badge Visibility
   if (tierBadge) {
     if (currentTier === 'free') {
       tierBadge.textContent = 'GO';
@@ -278,7 +282,6 @@ function toggleHintMenu() {
     }
   }
 
-  // Handle Auto-Reply State
   if (isAutoReplyEnabled) {
     if (hintItem) hintItem.classList.add('disabled-hint');
   } else {
@@ -287,6 +290,7 @@ function toggleHintMenu() {
   dropdown.classList.toggle('show');
 }
 
+// UPDATED: Hint trigger with backend message
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
 
@@ -326,19 +330,9 @@ async function triggerHint() {
     
     if (!suggestRes.ok) {
       if (suggestRes.status === 403) {
-        // HANDLE LIMIT REACHED BASED ON TIER
-        const currentTier = (userTier || 'free').toLowerCase();
-        
-        if (currentTier === 'free') {
-          // Free users get redirected
-          window.location.href = 'dashboard.html?upgrade=true';
-        } else if (currentTier === 'go') {
-          // Go users get upgrade prompt
-          alert("You have reached your daily hint limit. Upgrade to Pro for more usage.");
-        } else if (currentTier === 'pro') {
-          // Pro users get wait message
-          alert("You have reached your daily hint limit. Please wait until tomorrow to continue.");
-        }
+        // Use backend message and redirect free users
+        alert(suggestData.message);
+        if (userTier === 'free') window.location.href = 'dashboard.html?upgrade=true';
       } else {
         alert("Failed to get hint.");
       }
