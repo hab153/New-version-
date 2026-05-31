@@ -1,10 +1,9 @@
 // ========== GLOBAL UI STATE ==========
 let allContacts = [];
-let userTier = 'free';           // Set by initialization script
-let autoFollowUpEnabled = false; // For current lead
+let userTier = 'free';
+let autoFollowUpEnabled = false;
 
-// ========== EXISTING UI FUNCTIONS ==========
-
+// ========== EXISTING UI FUNCTIONS (kept as is) ==========
 function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -142,7 +141,6 @@ async function openChat(leadId, name, email) {
         isAutoReplyEnabled = data.lead.autoReplyEnabled || false;
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
-        // Load follow-up status
         await loadFollowUpStatus();
         if (data.messages && data.messages.length > 0) {
             const realRating = calculateEngagementScore(leadData, data.messages);
@@ -184,7 +182,7 @@ function closeChat() {
     currentLeadId = null;
 }
 
-// ========== AUTO‑REPLY (unchanged, already includes free plan check) ==========
+// ========== AUTO‑REPLY ==========
 function toggleAutoReply() {
     console.log(`🤖 [toggleAutoReply] Current isAutoReplyEnabled=${isAutoReplyEnabled}`);
     if (isAutoReplyEnabled) {
@@ -231,18 +229,23 @@ function updateAutoReplyUI() {
     }
 }
 
-// ========== HINT & FOLLOW‑UP MENU ==========
+// ========== FOLLOW‑UP & HINT DROPDOWN (FIXED) ==========
 function toggleFollowUpMenu() {
+    console.log('🔽 toggleFollowUpMenu called');
     const dropdown = document.getElementById('followUpDropdown');
+    if (!dropdown) {
+        console.error('❌ Element with id "followUpDropdown" not found!');
+        return;
+    }
     dropdown.classList.toggle('show');
+    console.log('Dropdown classes:', dropdown.className);
     if (currentLeadId) {
         loadFollowUpStatus();
     }
 }
 
-// The original toggleHintMenu – we keep it for backward compatibility but we now use the combined menu
+// For compatibility, keep toggleHintMenu (it's the same)
 function toggleHintMenu() {
-    // The same button now opens the follow-up menu, so we just call toggleFollowUpMenu()
     toggleFollowUpMenu();
 }
 
@@ -280,7 +283,6 @@ async function suggestFollowUp() {
         alert("Open a chat first to get a follow-up suggestion.");
         return;
     }
-    // Disable the button temporarily to prevent double clicks
     const btn = document.querySelector('.follow-up-option[onclick="suggestFollowUp()"]');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
@@ -329,7 +331,7 @@ async function toggleAutoFollowUp() {
     }
 }
 
-// ========== HINT FUNCTION (modified to remove redirects) ==========
+// ========== HINT FUNCTION ==========
 async function triggerHint() {
     if (isAutoReplyEnabled) return;
     document.getElementById('followUpDropdown').classList.remove('show');
