@@ -860,3 +860,120 @@ body {
   background: transparent;
   color: var(--text-2);
 }
+
+/* ──────────────────────────────────
+   FOLLOW‑UP DROPDOWN & SUBMENU
+   ────────────────────────────────── */
+.hint-dropdown {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: var(--raised);
+    border: 1px solid var(--br-md);
+    border-radius: var(--r-md);
+    min-width: 200px;
+    margin-bottom: 8px;
+    z-index: 100;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.hint-dropdown.show {
+    display: block;
+}
+
+.hint-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    color: var(--t1);
+    font-family: var(--ui);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.hint-item:hover {
+    background: var(--hover);
+}
+
+.hint-item svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.hint-tier-badge {
+    margin-left: auto;
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+    font-size: 8px;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+}
+
+.dropdown-arrow {
+    width: 12px;
+    height: 12px;
+    margin-left: auto;
+    transition: transform 0.2s;
+}
+
+.follow-up-submenu {
+    border-top: 1px solid var(--br-dim);
+    margin-top: 4px;
+}
+
+.follow-up-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px 10px 28px;
+    background: transparent;
+    border: none;
+    color: var(--t2);
+    font-family: var(--ui);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.follow-up-option:hover {
+    background: var(--hover);
+    color: var(--t1);
+}
+
+.follow-up-option svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.follow-up-option .auto-status {
+    margin-left: auto;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.follow-up-option.active {
+    color: var(--sage);
+}
+
+/* Spin animation for loading states */
+.spin-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
