@@ -235,9 +235,10 @@ function toggleFollowUpMenu(event) {
     const dropdown = document.getElementById('followUpDropdown');
     if (!dropdown) return;
     const isOpen = dropdown.classList.contains('show');
-    // Close submenu whenever main dropdown closes
     if (isOpen) {
-        document.getElementById('followUpSubmenu').style.display = 'none';
+        // Close submenu when main dropdown closes
+        const submenu = document.getElementById('followUpSubmenu');
+        if (submenu) submenu.style.display = 'none';
     }
     dropdown.classList.toggle('show');
     if (!isOpen && currentLeadId) {
@@ -341,7 +342,11 @@ async function toggleAutoFollowUp() {
 // ========== HINT FUNCTION ==========
 async function triggerHint() {
     if (isAutoReplyEnabled) return;
-    document.getElementById('followUpDropdown').classList.remove('show');
+    // Close any open dropdowns first
+    const dropdown = document.getElementById('followUpDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+    const submenu = document.getElementById('followUpSubmenu');
+    if (submenu) submenu.style.display = 'none';
     if (!currentLeadId) {
         alert("Open a chat first to get a hint.");
         return;
@@ -406,6 +411,7 @@ document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('followUpDropdown');
     if (menu && !menu.contains(event.target) && dropdown && dropdown.classList.contains('show')) {
         dropdown.classList.remove('show');
-        document.getElementById('followUpSubmenu').style.display = 'none';
+        const submenu = document.getElementById('followUpSubmenu');
+        if (submenu) submenu.style.display = 'none';
     }
 });
