@@ -156,4 +156,30 @@ async function markAsRead(leadId) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     }).catch(err => console.error('❌ [markAsRead] Error:', err));
-                       }
+}
+
+// ========== FOLLOW-UP API FUNCTIONS ==========
+
+async function suggestFollowUp(leadId) {
+    const res = await fetch(`${BACKEND}/api/leads/${leadId}/suggest-follow-up`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+    return await res.json();
+}
+
+async function toggleAutoFollowUp(leadId, enabled) {
+    const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled })
+    });
+    return await res.json();
+}
+
+async function getFollowUpStatus(leadId) {
+    const res = await fetch(`${BACKEND}/api/leads/${leadId}/follow-up-status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return await res.json();
+            }
