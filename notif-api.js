@@ -33,6 +33,7 @@ async function loadContacts() {
     }
 }
 
+// UPDATED: sendReply – display backend error message
 async function sendReply(text) {
     if (!text || !currentLeadId) return;
     console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
@@ -65,7 +66,9 @@ async function sendReply(text) {
             document.getElementById('replyText').style.height = '38px';
             openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
         } else {
-            alert("Failed to send: " + JSON.stringify(data.errors));
+            // Use backend error message if available
+            const errorMsg = data.message || data.error || JSON.stringify(data.errors);
+            alert(`Failed to send: ${errorMsg}`);
         }
     } catch (err) {
         console.error('❌ [sendReply] Network error:', err);
@@ -153,4 +156,4 @@ async function markAsRead(leadId) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     }).catch(err => console.error('❌ [markAsRead] Error:', err));
-                        }
+                       }
