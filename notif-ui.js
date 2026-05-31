@@ -178,7 +178,7 @@ function closeChat() {
   currentLeadId = null;
 }
 
-// UPDATED: Auto-Reply Toggle Logic
+// UPDATED: Auto-Reply Toggle Logic (Free=0, Go=20, Pro=100)
 function toggleAutoReply() {
   // 1. Check if Auto-Reply is currently ON
   if (isAutoReplyEnabled) {
@@ -258,7 +258,7 @@ function toggleHintMenu() {
   dropdown.classList.toggle('show');
 }
 
-// UPDATED: Hint Trigger Logic
+// UPDATED: Hint Trigger Logic (Free=3, Go=20, Pro=Unlimited)
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
 
