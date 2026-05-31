@@ -3,7 +3,7 @@ let allContacts = [];
 let userTier = 'free';
 let autoFollowUpEnabled = false;
 
-// ========== EXISTING UI FUNCTIONS (kept as is) ==========
+// ========== EXISTING UI FUNCTIONS ==========
 function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -229,7 +229,7 @@ function updateAutoReplyUI() {
     }
 }
 
-// ========== FOLLOW‑UP & HINT DROPDOWN (FIXED) ==========
+// ========== FOLLOW‑UP & HINT DROPDOWN ==========
 function toggleFollowUpMenu() {
     console.log('🔽 toggleFollowUpMenu called');
     const dropdown = document.getElementById('followUpDropdown');
@@ -244,7 +244,6 @@ function toggleFollowUpMenu() {
     }
 }
 
-// For compatibility, keep toggleHintMenu (it's the same)
 function toggleHintMenu() {
     toggleFollowUpMenu();
 }
