@@ -7,6 +7,64 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="notif-styles.css">
+  <style>
+    /* Emergency inline styles to ensure dropdown works */
+    .hint-menu-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .hint-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      min-width: 180px;
+      z-index: 99999;
+      margin-top: 8px;
+    }
+    .hint-dropdown.show {
+      display: block !important;
+    }
+    .hint-item, .follow-up-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 14px;
+      background: none;
+      border: none;
+      color: #ddd;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      text-align: left;
+    }
+    .hint-item:hover, .follow-up-option:hover {
+      background: #2c2c2c;
+      color: white;
+    }
+    .follow-up-submenu {
+      border-top: 1px solid #333;
+    }
+    .auto-status {
+      margin-left: auto;
+      font-size: 9px;
+      font-weight: bold;
+    }
+    .follow-up-option.active {
+      color: #66dd99;
+    }
+    .spin-icon {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
 
@@ -41,9 +99,9 @@
       Live
     </div>
 
-    <!-- FOLLOW-UP & HINT MENU -->
+    <!-- FOLLOW-UP & HINT MENU (WORKING DROPDOWN) -->
     <div class="hint-menu-wrap">
-      <button class="icon-btn" id="hintMenuBtn" onclick="toggleFollowUpMenu(event)" title="Options">
+      <button class="icon-btn" id="hintMenuBtn" title="Options">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="1"></circle>
           <circle cx="12" cy="5" r="1"></circle>
@@ -52,31 +110,31 @@
       </button>
       <div class="hint-dropdown" id="followUpDropdown">
         <!-- AI Hint option -->
-        <button class="hint-item" onclick="triggerHint()">
+        <button class="hint-item" id="aiHintBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
           <span>AI Hint</span>
           <span id="hintTierBadge" class="hint-tier-badge" style="display:none;">GO</span>
         </button>
-        <!-- Follow-up section -->
-        <button class="hint-item follow-up-btn" onclick="toggleFollowUpSubmenu(event)">
+        <!-- Follow-up button (opens submenu) -->
+        <button class="hint-item" id="followUpBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
           </svg>
           <span>Follow‑up</span>
-          <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto; width:12px;">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
         <div class="follow-up-submenu" id="followUpSubmenu" style="display:none;">
-          <button class="follow-up-option" onclick="suggestFollowUp()">
+          <button class="follow-up-option" id="suggestFollowUpBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
             Suggest Follow‑up
           </button>
-          <button class="follow-up-option" id="autoFollowUpBtn" onclick="toggleAutoFollowUp()">
+          <button class="follow-up-option" id="autoFollowUpBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
@@ -280,7 +338,68 @@
   <script src="notif-ui.js"></script>
   
   <script>
-    // Initialization Logic
+    // ========== DROPDOWN CONTROLLER (WORKS EVEN IF EXTERNAL SCRIPTS FAIL) ==========
+    (function() {
+      const menuBtn = document.getElementById('hintMenuBtn');
+      const dropdown = document.getElementById('followUpDropdown');
+      const followUpBtn = document.getElementById('followUpBtn');
+      const submenu = document.getElementById('followUpSubmenu');
+
+      // Toggle main dropdown
+      if (menuBtn) {
+        menuBtn.onclick = function(e) {
+          e.stopPropagation();
+          dropdown.classList.toggle('show');
+        };
+      }
+
+      // Toggle submenu inside dropdown
+      if (followUpBtn && submenu) {
+        followUpBtn.onclick = function(e) {
+          e.stopPropagation();
+          submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        };
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function() {
+        dropdown.classList.remove('show');
+        if (submenu) submenu.style.display = 'none';
+      });
+
+      // Stop propagation inside dropdown so clicks on dropdown don't close it
+      if (dropdown) {
+        dropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+      }
+
+      // Connect AI Hint button to global triggerHint function
+      const aiHintBtn = document.getElementById('aiHintBtn');
+      if (aiHintBtn && typeof triggerHint === 'function') {
+        aiHintBtn.onclick = triggerHint;
+      } else if (aiHintBtn) {
+        aiHintBtn.onclick = function() { alert('AI Hint feature loading... Please wait.'); };
+      }
+
+      // Connect Suggest Follow-up button
+      const suggestBtn = document.getElementById('suggestFollowUpBtn');
+      if (suggestBtn && typeof suggestFollowUp === 'function') {
+        suggestBtn.onclick = suggestFollowUp;
+      } else if (suggestBtn) {
+        suggestBtn.onclick = function() { alert('Follow-up suggestion loading...'); };
+      }
+
+      // Connect Auto Follow-up button
+      const autoBtn = document.getElementById('autoFollowUpBtn');
+      if (autoBtn && typeof toggleAutoFollowUp === 'function') {
+        autoBtn.onclick = toggleAutoFollowUp;
+      } else if (autoBtn) {
+        autoBtn.onclick = function() { alert('Auto follow-up loading...'); };
+      }
+    })();
+
+    // Initialization Logic (kept from original)
     if (!localStorage.getItem('token')) window.location.href = "login.html";
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -310,4 +429,4 @@
     });
   </script>
 </body>
-  </html>
+            </html>
