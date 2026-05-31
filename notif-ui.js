@@ -230,18 +230,26 @@ function updateAutoReplyUI() {
 }
 
 // ========== FOLLOW‑UP & HINT DROPDOWN ==========
-function toggleFollowUpMenu() {
-    console.log('🔽 toggleFollowUpMenu called');
+function toggleFollowUpMenu(event) {
+    if (event) event.stopPropagation();
     const dropdown = document.getElementById('followUpDropdown');
-    if (!dropdown) {
-        console.error('❌ Element with id "followUpDropdown" not found!');
-        return;
+    if (!dropdown) return;
+    const isOpen = dropdown.classList.contains('show');
+    // Close submenu whenever main dropdown closes
+    if (isOpen) {
+        document.getElementById('followUpSubmenu').style.display = 'none';
     }
     dropdown.classList.toggle('show');
-    console.log('Dropdown classes:', dropdown.className);
-    if (currentLeadId) {
+    if (!isOpen && currentLeadId) {
         loadFollowUpStatus();
     }
+}
+
+function toggleFollowUpSubmenu(event) {
+    if (event) event.stopPropagation();
+    const submenu = document.getElementById('followUpSubmenu');
+    if (!submenu) return;
+    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
 }
 
 function toggleHintMenu() {
@@ -317,8 +325,8 @@ async function toggleAutoFollowUp() {
         if (result.success) {
             autoFollowUpEnabled = result.autoFollowUpEnabled;
             updateAutoFollowUpUI();
-            const msg = autoFollowUpEnabled ? 
-                `Auto follow-up enabled. First follow-up scheduled in 3 days.` : 
+            const msg = autoFollowUpEnabled ?
+                `Auto follow-up enabled. First follow-up scheduled in 3 days.` :
                 `Auto follow-up disabled.`;
             alert(msg);
         } else {
@@ -398,5 +406,6 @@ document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('followUpDropdown');
     if (menu && !menu.contains(event.target) && dropdown && dropdown.classList.contains('show')) {
         dropdown.classList.remove('show');
+        document.getElementById('followUpSubmenu').style.display = 'none';
     }
 });
