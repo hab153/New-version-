@@ -217,7 +217,7 @@ function closeChat() {
   currentLeadId = null;
 }
 
-// UPDATED: Auto-reply toggle with free plan check
+// UPDATED: Auto-reply toggle with free plan check (NO redirect)
 function toggleAutoReply() {
   const tier = (userTier || 'free').toLowerCase();
   if (tier === 'free') {
@@ -290,7 +290,7 @@ function toggleHintMenu() {
   dropdown.classList.toggle('show');
 }
 
-// UPDATED: Hint trigger with backend message
+// UPDATED: Hint trigger with backend message (NO redirect for free users)
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
 
@@ -330,9 +330,8 @@ async function triggerHint() {
     
     if (!suggestRes.ok) {
       if (suggestRes.status === 403) {
-        // Use backend message and redirect free users
+        // Show backend message – NO redirect for any plan
         alert(suggestData.message);
-        if (userTier === 'free') window.location.href = 'dashboard.html?upgrade=true';
       } else {
         alert("Failed to get hint.");
       }
