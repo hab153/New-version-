@@ -1,6 +1,9 @@
-// Global UI State
+// ========== GLOBAL UI STATE ==========
 let allContacts = [];
-let userTier = 'free'; // Ensure this is set by your initialization script
+let userTier = 'free';           // Set by initialization script
+let autoFollowUpEnabled = false; // For current lead
+
+// ========== EXISTING UI FUNCTIONS ==========
 
 function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -47,7 +50,8 @@ function updateStats(contacts) {
     }
 }
 
-function renderContacts(contacts) {    const list = document.getElementById('contactList');
+function renderContacts(contacts) {
+    const list = document.getElementById('contactList');
     if (contacts.length === 0) {
         list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
         return;
@@ -96,7 +100,8 @@ function filterContacts(query) {
         (c.name || '').toLowerCase().includes(q) ||
         (c.company || '').toLowerCase().includes(q) ||
         (c.email || '').toLowerCase().includes(q)
-    ));}
+    ));
+}
 
 async function openChat(leadId, name, email) {
     console.log(`💬 [openChat] Opening chat with ${name} (${leadId})`);
@@ -137,6 +142,8 @@ async function openChat(leadId, name, email) {
         isAutoReplyEnabled = data.lead.autoReplyEnabled || false;
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
+        // Load follow-up status
+        await loadFollowUpStatus();
         if (data.messages && data.messages.length > 0) {
             const realRating = calculateEngagementScore(leadData, data.messages);
             let cls = 'low';
@@ -145,7 +152,7 @@ async function openChat(leadId, name, email) {
             document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
         }
         if (!data.messages || data.messages.length === 0) {
-            container.innerHTML = `                <div class="empty-state">
+            container.innerHTML = `<div class="empty-state">
                     <div class="empty-icon">
                         <svg viewBox="0 0 24 24" fill="none">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -177,7 +184,7 @@ function closeChat() {
     currentLeadId = null;
 }
 
-// UPDATED: No Redirects for Auto-Reply
+// ========== AUTO‑REPLY (unchanged, already includes free plan check) ==========
 function toggleAutoReply() {
     console.log(`🤖 [toggleAutoReply] Current isAutoReplyEnabled=${isAutoReplyEnabled}`);
     if (isAutoReplyEnabled) {
@@ -194,7 +201,8 @@ function toggleAutoReply() {
 }
 
 function openInstructionsModal() {
-    document.getElementById('instructionsText').value = autoReplyInstructions;    document.getElementById('instructionsModal').classList.add('active');
+    document.getElementById('instructionsText').value = autoReplyInstructions;
+    document.getElementById('instructionsModal').classList.add('active');
 }
 
 function closeInstructionsModal() {
@@ -223,18 +231,108 @@ function updateAutoReplyUI() {
     }
 }
 
-function toggleHintMenu() {
-    const dropdown = document.getElementById('hintDropdown');
-    const hintItem = document.querySelector('.hint-item');
-    if (isAutoReplyEnabled && hintItem) hintItem.classList.add('disabled-hint');
-    else if (hintItem) hintItem.classList.remove('disabled-hint');
+// ========== HINT & FOLLOW‑UP MENU ==========
+function toggleFollowUpMenu() {
+    const dropdown = document.getElementById('followUpDropdown');
     dropdown.classList.toggle('show');
+    if (currentLeadId) {
+        loadFollowUpStatus();
+    }
 }
 
-// UPDATED: No Redirects for Hints
+// The original toggleHintMenu – we keep it for backward compatibility but we now use the combined menu
+function toggleHintMenu() {
+    // The same button now opens the follow-up menu, so we just call toggleFollowUpMenu()
+    toggleFollowUpMenu();
+}
+
+// ========== FOLLOW‑UP UI FUNCTIONS ==========
+async function loadFollowUpStatus() {
+    if (!currentLeadId) return;
+    try {
+        const status = await getFollowUpStatus(currentLeadId);
+        autoFollowUpEnabled = status.autoFollowUpEnabled;
+        updateAutoFollowUpUI();
+    } catch (err) {
+        console.error('Failed to load follow-up status:', err);
+        autoFollowUpEnabled = false;
+        updateAutoFollowUpUI();
+    }
+}
+
+function updateAutoFollowUpUI() {
+    const btn = document.getElementById('autoFollowUpBtn');
+    const statusSpan = document.getElementById('autoFollowUpStatus');
+    if (!btn) return;
+    if (autoFollowUpEnabled) {
+        btn.classList.add('active');
+        statusSpan.textContent = 'ON';
+        statusSpan.style.color = '#66dd99';
+    } else {
+        btn.classList.remove('active');
+        statusSpan.textContent = 'OFF';
+        statusSpan.style.color = '#ff5555';
+    }
+}
+
+async function suggestFollowUp() {
+    if (!currentLeadId) {
+        alert("Open a chat first to get a follow-up suggestion.");
+        return;
+    }
+    // Disable the button temporarily to prevent double clicks
+    const btn = document.querySelector('.follow-up-option[onclick="suggestFollowUp()"]');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generating...`;
+        btn.disabled = true;
+    }
+    try {
+        const result = await window.suggestFollowUp(currentLeadId);
+        if (result.success && result.suggestion) {
+            const textArea = document.getElementById('replyText');
+            textArea.value = result.suggestion;
+            autoResize(textArea);
+            textArea.focus();
+        } else {
+            alert(result.message || "Failed to generate follow-up suggestion.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Connection error. Please try again.");
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+}
+
+async function toggleAutoFollowUp() {
+    if (!currentLeadId) return;
+    const newState = !autoFollowUpEnabled;
+    try {
+        const result = await window.toggleAutoFollowUp(currentLeadId, newState);
+        if (result.success) {
+            autoFollowUpEnabled = result.autoFollowUpEnabled;
+            updateAutoFollowUpUI();
+            const msg = autoFollowUpEnabled ? 
+                `Auto follow-up enabled. First follow-up scheduled in 3 days.` : 
+                `Auto follow-up disabled.`;
+            alert(msg);
+        } else {
+            alert(result.message || "Failed to toggle auto follow-up.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Connection error. Please try again.");
+    }
+}
+
+// ========== HINT FUNCTION (modified to remove redirects) ==========
 async function triggerHint() {
     if (isAutoReplyEnabled) return;
-    document.getElementById('hintDropdown').classList.remove('show');
+    document.getElementById('followUpDropdown').classList.remove('show');
     if (!currentLeadId) {
         alert("Open a chat first to get a hint.");
         return;
@@ -243,7 +341,7 @@ async function triggerHint() {
     const btn = document.getElementById('hintMenuBtn');
     const originalContent = btn.innerHTML;
     btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-        try {
+    try {
         const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -258,10 +356,8 @@ async function triggerHint() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ messages: messages.slice(-3) })
         });
-        
         const suggestData = await suggestRes.json();
 
-        // Handle Limits without Redirecting
         if (!suggestRes.ok) {
             if (suggestRes.status === 403) {
                 const currentTier = (userTier || 'free').toLowerCase();
@@ -292,12 +388,14 @@ async function triggerHint() {
         alert("Failed to get hint.");
     } finally {
         btn.innerHTML = originalContent;
-    }}
+    }
+}
 
+// Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
     const menu = document.querySelector('.hint-menu-wrap');
-    const dropdown = document.getElementById('hintDropdown');
-    if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {
+    const dropdown = document.getElementById('followUpDropdown');
+    if (menu && !menu.contains(event.target) && dropdown && dropdown.classList.contains('show')) {
         dropdown.classList.remove('show');
     }
 });
