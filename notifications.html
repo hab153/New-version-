@@ -10,6 +10,26 @@
   <style>
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .spin-icon { animation: spin 1s linear infinite; }
+    .delay-day-btn {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .delay-day-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
+      color: white;
+    }
+    .delay-day-btn.selected {
+      background: var(--accent);
+      color: black;
+      border-color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -257,12 +277,46 @@
     </div>
   </div>
 
+  <!-- NEW MODAL: AUTO-FOLLOW-UP DELAY SELECTION -->
+  <div class="modal-overlay" id="autoFollowUpModal">
+    <div class="modal-content" style="max-width: 380px;">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h3>Auto Follow‑up Delay</h3>
+          <p>Choose when to send the first follow‑up</p>
+        </div>
+        <button class="modal-close" onclick="closeAutoFollowUpModal()">×</button>
+      </div>
+      <div class="modal-field">
+        <label>Preset days</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+          <button class="delay-day-btn" data-days="1">1 day</button>
+          <button class="delay-day-btn" data-days="2">2 days</button>
+          <button class="delay-day-btn" data-days="3">3 days</button>
+          <button class="delay-day-btn" data-days="4">4 days</button>
+          <button class="delay-day-btn" data-days="5">5 days</button>
+          <button class="delay-day-btn" data-days="6">6 days</button>
+          <button class="delay-day-btn" data-days="7">7 days</button>
+        </div>
+        <label>Custom days</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="number" id="customDelayDays" min="1" max="365" step="1" style="flex:1; background: var(--bg-raised); border:1px solid var(--border); color:white; padding:8px; border-radius:6px;">
+          <button id="applyCustomDelay" class="btn-primary" style="padding:8px 12px;">Apply</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeAutoFollowUpModal()">Cancel</button>
+        <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
+      </div>
+    </div>
+  </div>
+
   <!-- External scripts (keep for other functionality) -->
   <script src="notif-utils.js"></script>
   <script src="notif-api.js"></script>
   <script src="notif-ui.js"></script>
 
-  <!-- INLINE SCRIPT FOR MENU (with auto-reply blocking) -->
+  <!-- INLINE SCRIPT FOR MENU (with auto-reply blocking and custom delay modal) -->
   <script>
     (function() {
       const menuBtn = document.getElementById('menuBtn');
@@ -406,7 +460,7 @@
         };
       }
 
-      // ----- Auto Follow-up toggle (blocked if auto-reply ON) -----
+      // ----- Auto Follow-up: open modal instead of toggling directly -----
       let autoFollowUpEnabled = false;
       async function loadAutoStatus() {
         if (!window.currentLeadId) return;
@@ -425,8 +479,94 @@
         } catch(e) { console.error(e); }
       }
 
+      // ----- Delay selection modal logic -----
+      let selectedDelayDays = 3;
+      const modal = document.getElementById('autoFollowUpModal');
+      const confirmBtn = document.getElementById('confirmAutoFollowUpBtn');
+      const customInput = document.getElementById('customDelayDays');
+      const applyCustomBtn = document.getElementById('applyCustomDelay');
+
+      function updateModalUI() {
+        document.querySelectorAll('.delay-day-btn').forEach(btn => {
+          let days = parseInt(btn.getAttribute('data-days'));
+          if (days === selectedDelayDays) {
+            btn.classList.add('selected');
+          } else {
+            btn.classList.remove('selected');
+          }
+        });
+        confirmBtn.textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
+        confirmBtn.disabled = false;
+      }
+
+      function openAutoFollowUpModal() {
+        selectedDelayDays = 3;
+        updateModalUI();
+        modal.classList.add('active');
+      }
+
+      function closeAutoFollowUpModal() {
+        modal.classList.remove('active');
+      }
+
+      // Preset button clicks
+      document.querySelectorAll('.delay-day-btn').forEach(btn => {
+        btn.onclick = () => {
+          selectedDelayDays = parseInt(btn.getAttribute('data-days'));
+          updateModalUI();
+        };
+      });
+
+      // Apply custom delay
+      if (applyCustomBtn) {
+        applyCustomBtn.onclick = () => {
+          let customVal = parseInt(customInput.value);
+          if (isNaN(customVal) || customVal < 1) {
+            alert('Please enter a valid number of days (at least 1).');
+            return;
+          }
+          selectedDelayDays = customVal;
+          updateModalUI();
+        };
+      }
+
+      // Confirm enable auto follow-up with selected delay
+      if (confirmBtn) {
+        confirmBtn.onclick = async () => {
+          closeAutoFollowUpModal();
+          if (!window.currentLeadId) {
+            alert('Open a chat first.');
+            return;
+          }
+          const leadId = window.currentLeadId;
+          const token = localStorage.getItem('token');
+          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+          try {
+            const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: true, delayDays: selectedDelayDays })
+            });
+            const data = await res.json();
+            if (data.success) {
+              autoFollowUpEnabled = data.autoFollowUpEnabled;
+              autoStatusSpan.textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
+              autoStatusSpan.style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
+              alert(data.message || `Auto follow-up enabled. First follow-up in ${selectedDelayDays} day(s).`);
+            } else {
+              alert(data.message || 'Failed to enable auto follow-up.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Connection error.');
+          }
+        };
+      }
+
+      // Auto Follow-up button click: open modal instead of direct toggle
       if (autoBtn) {
-        autoBtn.onclick = async function() {
+        autoBtn.onclick = function(e) {
+          e.stopPropagation();
           if (isAutoReplyActive()) {
             alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
             return;
@@ -435,28 +575,7 @@
             alert('Open a chat first.');
             return;
           }
-          const newState = !autoFollowUpEnabled;
-          const token = localStorage.getItem('token');
-          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
-          try {
-            const res = await fetch(`${BACKEND}/api/leads/${window.currentLeadId}/auto-follow-up`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ enabled: newState })
-            });
-            const data = await res.json();
-            if (data.success) {
-              autoFollowUpEnabled = data.autoFollowUpEnabled;
-              autoStatusSpan.textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
-              autoStatusSpan.style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
-              alert(autoFollowUpEnabled ? 'Auto follow-up enabled. First follow-up in 3 days.' : 'Auto follow-up disabled.');
-            } else {
-              alert(data.message || 'Failed to toggle auto follow-up.');
-            }
-          } catch(err) {
-            console.error(err);
-            alert('Connection error.');
-          }
+          openAutoFollowUpModal();
         };
       }
 
@@ -488,6 +607,7 @@
         if (submenu && followUpMain && !followUpMain.contains(e.target) && !submenu.contains(e.target)) {
           submenu.style.display = 'none';
         }
+        // Also close modal if clicking outside? Not needed because modal overlay handles it.
       });
     })();
   </script>
@@ -522,4 +642,4 @@
     });
   </script>
 </body>
-  </html>
+      </html>
