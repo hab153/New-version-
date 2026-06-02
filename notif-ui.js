@@ -236,7 +236,6 @@ function toggleFollowUpMenu(event) {
     if (!dropdown) return;
     const isOpen = dropdown.classList.contains('show');
     if (isOpen) {
-        // Close submenu when main dropdown closes
         const submenu = document.getElementById('followUpSubmenu');
         if (submenu) submenu.style.display = 'none';
     }
@@ -342,7 +341,6 @@ async function toggleAutoFollowUp() {
 // ========== HINT FUNCTION ==========
 async function triggerHint() {
     if (isAutoReplyEnabled) return;
-    // Close any open dropdowns first
     const dropdown = document.getElementById('followUpDropdown');
     if (dropdown) dropdown.classList.remove('show');
     const submenu = document.getElementById('followUpSubmenu');
@@ -415,3 +413,151 @@ document.addEventListener('click', function(event) {
         if (submenu) submenu.style.display = 'none';
     }
 });
+
+// ========== REVENUE TRACKING UI ==========
+let revenueModal = null;
+let revenueContent = null;
+
+function openRevenueTracking() {
+    if (!revenueModal) {
+        revenueModal = document.getElementById('revenueModal');
+        revenueContent = document.getElementById('revenueContent');
+        const closeBtn = document.getElementById('closeRevenueModalBtn');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                revenueModal.classList.remove('active');
+            };
+        }
+        if (revenueModal) {
+            revenueModal.addEventListener('click', (e) => {
+                if (e.target === revenueModal) revenueModal.classList.remove('active');
+            });
+        }
+    }
+    if (!revenueModal) return;
+    revenueModal.classList.add('active');
+    revenueContent.innerHTML = '<div style="text-align: center; padding: 30px;"><div class="spin-icon" style="display: inline-block;">↻</div> Loading revenue data...</div>';
+    
+    fetchRevenueTracking()
+        .then(data => {
+            renderRevenueData(data);
+        })
+        .catch(err => {
+            revenueContent.innerHTML = `<div style="color: var(--red); text-align: center; padding: 20px;">❌ ${err.message}</div>`;
+        });
+}
+
+function renderRevenueData(data) {
+    if (!revenueContent) return;
+    const tier = data.tier || userTier;
+    const categories = data.categories || {};
+    const advice = data.advice || {};
+    const actions = data.actions || [];
+    
+    let html = '';
+    
+    const order = ['contacted', 'replied', 'interested', 'ongoing', 'win'];
+    const labels = {
+        contacted: 'Customers Contacted',
+        replied: 'Customers Replied',
+        interested: 'Interested Customers',
+        ongoing: 'Ongoing Conversation',
+        win: 'Win Conversation'
+    };
+    
+    for (const key of order) {
+        const leads = categories[key] || [];
+        const count = leads.length;
+        html += `
+            <div class="revenue-category">
+                <div class="revenue-category-header">
+                    <span class="revenue-category-title">${labels[key]}</span>
+                    <span class="revenue-category-count">${count}</span>
+                </div>
+                <div class="revenue-lead-list">
+                    ${leads.map(lead => `<span class="revenue-lead-name" data-lead-id="${lead.id}" data-lead-name="${escapeHtml(lead.name)}">${escapeHtml(lead.name)}</span>`).join('')}
+                    ${count === 0 ? '<span style="color: var(--text-3); font-size: 11px;">—</span>' : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    if (tier === 'go' || tier === 'pro') {
+        let adviceHtml = '';
+        for (const key of order) {
+            const adviceKey = key + 'Advice';
+            const adviceText = advice[adviceKey];
+            if (adviceText && categories[key] && categories[key].length > 0) {
+                adviceHtml += `<div class="revenue-advice"><strong>${labels[key]}:</strong><br>${escapeHtml(adviceText)}</div>`;
+            }
+        }
+        if (adviceHtml) {
+            html += `<div style="margin: 16px 0 8px;"><strong>🤖 AI Advice</strong></div>${adviceHtml}`;
+        } else {
+            html += `<div class="revenue-advice">No specific advice available for your current leads.</div>`;
+        }
+    }
+    
+    if (tier === 'pro' && actions && actions.length > 0) {
+        html += `<div style="margin: 20px 0 8px;"><strong>⚡ AI Actions (Top ${actions.length})</strong></div>`;
+        html += `<div class="revenue-actions">`;
+        actions.forEach(action => {
+            html += `
+                <div class="revenue-action-item">
+                    <div class="revenue-action-lead">${escapeHtml(action.leadName || 'Lead')}</div>
+                    <div class="revenue-action-text">▶ ${escapeHtml(action.action)}</div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+    
+    if (tier === 'free') {
+        html += `
+            <div class="upgrade-message">
+                <span>✨ Unlock AI Advice – Upgrade to Go or Pro</span>
+                <div><button class="upgrade-button" id="upgradeAdviceBtn">View Plans</button></div>
+            </div>
+        `;
+    } else if (tier === 'go') {
+        html += `
+            <div class="upgrade-message">
+                <span>🚀 Unlock AI Actions – Upgrade to Pro</span>
+                <div><button class="upgrade-button" id="upgradeActionsBtn">View Plans</button></div>
+            </div>
+        `;
+    }
+    
+    revenueContent.innerHTML = html;
+    
+    document.querySelectorAll('.revenue-lead-name').forEach(el => {
+        el.addEventListener('click', () => {
+            const leadId = el.getAttribute('data-lead-id');
+            const leadName = el.getAttribute('data-lead-name');
+            const contact = allContacts.find(c => c.id === leadId);
+            if (contact && typeof openChat === 'function') {
+                closeRevenueModal();
+                openChat(leadId, contact.name, contact.email);
+            } else {
+                alert(`Open chat for ${leadName} not available`);
+            }
+        });
+    });
+    
+    const upgradeAdvice = document.getElementById('upgradeAdviceBtn');
+    if (upgradeAdvice) {
+        upgradeAdvice.onclick = () => {
+            alert('Upgrade to Go or Pro plan to unlock AI Advice.\n\nGo: 30 suggest-follow-up/day, 15 auto-follow-up/day\nPro: 200 suggest-follow-up/day, 100 auto-follow-up/day');
+        };
+    }
+    const upgradeActions = document.getElementById('upgradeActionsBtn');
+    if (upgradeActions) {
+        upgradeActions.onclick = () => {
+            alert('Upgrade to Pro plan to unlock AI Actions.\n\nPro gives you specific actions for your top 20 most promising leads.');
+        };
+    }
+}
+
+function closeRevenueModal() {
+    if (revenueModal) revenueModal.classList.remove('active');
+}
