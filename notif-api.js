@@ -33,7 +33,6 @@ async function loadContacts() {
     }
 }
 
-// UPDATED: sendReply – display backend error message
 async function sendReply(text) {
     if (!text || !currentLeadId) return;
     console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
@@ -66,7 +65,6 @@ async function sendReply(text) {
             document.getElementById('replyText').style.height = '38px';
             openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
         } else {
-            // Use backend error message if available
             const errorMsg = data.message || data.error || JSON.stringify(data.errors);
             alert(`Failed to send: ${errorMsg}`);
         }
@@ -159,7 +157,6 @@ async function markAsRead(leadId) {
 }
 
 // ========== FOLLOW-UP API FUNCTIONS ==========
-
 async function suggestFollowUp(leadId) {
     const res = await fetch(`${BACKEND}/api/leads/${leadId}/suggest-follow-up`, {
         method: 'POST',
@@ -182,4 +179,16 @@ async function getFollowUpStatus(leadId) {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     return await res.json();
-            }
+}
+
+// ========== REVENUE TRACKING API ==========
+async function fetchRevenueTracking() {
+    const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to load revenue data');
+    }
+    return await res.json();
+                      }
