@@ -1350,3 +1350,109 @@ body {
   background: var(--accent);
   box-shadow: 0 0 6px var(--accent), 0 0 12px rgba(200,255,87,0.3);
   }
+
+/* Revenue Tracking Modal */
+.revenue-modal {
+  max-width: 650px !important;
+}
+.revenue-category {
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.revenue-category-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.revenue-category-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-go);
+}
+.revenue-category-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-raised);
+  padding: 2px 6px;
+  border-radius: 12px;
+  color: var(--text-2);
+}
+.revenue-lead-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.revenue-lead-name {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.revenue-lead-name:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: white;
+}
+.revenue-advice {
+  background: rgba(102,221,255,0.08);
+  border-left: 2px solid var(--accent-go);
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 0 8px 8px 0;
+}
+.revenue-actions {
+  margin-top: 20px;
+}
+.revenue-action-item {
+  background: var(--bg-surface);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.revenue-action-lead {
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.revenue-action-text {
+  font-size: 12px;
+  color: var(--text-2);
+}
+.upgrade-message {
+  background: rgba(255,85,85,0.1);
+  border: 1px solid rgba(255,85,85,0.3);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  margin-top: 20px;
+}
+.upgrade-button {
+  margin-top: 10px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.upgrade-button:hover {
+  background: var(--accent-go);
+  }
