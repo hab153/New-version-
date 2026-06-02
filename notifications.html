@@ -277,7 +277,7 @@
     </div>
   </div>
 
-  <!-- NEW MODAL: AUTO-FOLLOW-UP DELAY SELECTION -->
+  <!-- MODAL: AUTO-FOLLOW-UP DELAY SELECTION (with DISABLE button) -->
   <div class="modal-overlay" id="autoFollowUpModal">
     <div class="modal-content" style="max-width: 380px;">
       <div class="modal-header">
@@ -304,9 +304,12 @@
           <button id="applyCustomDelay" class="btn-primary" style="padding:8px 12px;">Apply</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-ghost" onclick="closeAutoFollowUpModal()">Cancel</button>
-        <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button id="disableAutoFollowUpBtn" class="btn-ghost" style="color:#ff5555;">Disable Auto Follow‑up</button>
+        <div>
+          <button class="btn-ghost" onclick="closeAutoFollowUpModal()">Cancel</button>
+          <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
+        </div>
       </div>
     </div>
   </div>
@@ -460,7 +463,7 @@
         };
       }
 
-      // ----- Auto Follow-up: open modal instead of toggling directly -----
+      // ----- Auto Follow-up: open modal (with disable button) -----
       let autoFollowUpEnabled = false;
       async function loadAutoStatus() {
         if (!window.currentLeadId) return;
@@ -479,12 +482,13 @@
         } catch(e) { console.error(e); }
       }
 
-      // ----- Delay selection modal logic -----
+      // ----- Delay selection modal logic (with disable button) -----
       let selectedDelayDays = 3;
       const modal = document.getElementById('autoFollowUpModal');
       const confirmBtn = document.getElementById('confirmAutoFollowUpBtn');
       const customInput = document.getElementById('customDelayDays');
       const applyCustomBtn = document.getElementById('applyCustomDelay');
+      const disableBtn = document.getElementById('disableAutoFollowUpBtn');
 
       function updateModalUI() {
         document.querySelectorAll('.delay-day-btn').forEach(btn => {
@@ -563,7 +567,40 @@
         };
       }
 
-      // Auto Follow-up button click: open modal instead of direct toggle
+      // Disable auto follow-up
+      if (disableBtn) {
+        disableBtn.onclick = async () => {
+          closeAutoFollowUpModal();
+          if (!window.currentLeadId) {
+            alert('Open a chat first.');
+            return;
+          }
+          const leadId = window.currentLeadId;
+          const token = localStorage.getItem('token');
+          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+          try {
+            const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: false })
+            });
+            const data = await res.json();
+            if (data.success) {
+              autoFollowUpEnabled = false;
+              autoStatusSpan.textContent = 'OFF';
+              autoStatusSpan.style.color = '#ff5555';
+              alert('Auto follow-up disabled.');
+            } else {
+              alert(data.message || 'Failed to disable auto follow-up.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Connection error.');
+          }
+        };
+      }
+
+      // Auto Follow-up button click: open modal
       if (autoBtn) {
         autoBtn.onclick = function(e) {
           e.stopPropagation();
@@ -579,7 +616,7 @@
         };
       }
 
-      // Intercept openChat to reload auto-follow-up status when a chat is opened
+      // Intercept openChat to reload auto-follow-up status
       const originalOpenChat = window.openChat;
       if (originalOpenChat) {
         window.openChat = async function(leadId, name, email) {
@@ -607,7 +644,6 @@
         if (submenu && followUpMain && !followUpMain.contains(e.target) && !submenu.contains(e.target)) {
           submenu.style.display = 'none';
         }
-        // Also close modal if clicking outside? Not needed because modal overlay handles it.
       });
     })();
   </script>
@@ -642,4 +678,4 @@
     });
   </script>
 </body>
-      </html>
+              </html>
