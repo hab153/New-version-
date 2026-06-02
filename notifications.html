@@ -64,7 +64,7 @@
       Live
     </div>
 
-    <!-- SIMPLIFIED WORKING MENU -->
+    <!-- SIMPLIFIED WORKING MENU (with Revenue Tracking) -->
     <div style="position: relative; display: inline-block; margin-left: 8px;">
       <button id="menuBtn" style="background: none; border: 1px solid #555; border-radius: 6px; color: white; padding: 6px 10px; cursor: pointer; font-size: 14px;">☰</button>
       <div id="menuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; min-width: 170px; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.6);">
@@ -89,12 +89,18 @@
             <span id="autoStatusSpan" style="margin-left: auto; font-size: 9px; font-weight: bold;">OFF</span>
           </button>
         </div>
+        <!-- Revenue Tracking button (always visible) -->
+        <div style="border-top: 1px solid #333;"></div>
+        <button id="revenueTrackingBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Revenue Tracking
+        </button>
       </div>
     </div>
   </div>
 
   <div class="main-container">
-    <!-- VIEW: LIST -->
+    <!-- VIEW: LIST (unchanged) -->
     <div id="viewList" class="view-list">
       <div class="search-section">
         <div class="search-wrap">
@@ -130,7 +136,7 @@
       </div>
     </div>
 
-    <!-- VIEW: CHAT -->
+    <!-- VIEW: CHAT (unchanged) -->
     <div id="viewChat" class="view-chat">
       <div class="chat-header">
         <button class="back-btn" onclick="closeChat()">
@@ -211,7 +217,7 @@
       </div>
     </div>
 
-    <!-- VIEW: ADMIN -->
+    <!-- VIEW: ADMIN (unchanged) -->
     <div id="viewAdmin" class="view-admin">
       <div class="empty-state">
         <div class="empty-icon">
@@ -227,7 +233,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION -->
+  <!-- BOTTOM NAVIGATION (unchanged) -->
   <nav class="bottom-nav">
     <a href="page.html" class="nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -277,7 +283,7 @@
     </div>
   </div>
 
-  <!-- MODAL: AUTO-FOLLOW-UP DELAY SELECTION (with conditional Off button) -->
+  <!-- MODAL: AUTO-FOLLOW-UP DELAY SELECTION -->
   <div class="modal-overlay" id="autoFollowUpModal">
     <div class="modal-content" style="max-width: 380px;">
       <div class="modal-header">
@@ -314,12 +320,28 @@
     </div>
   </div>
 
-  <!-- External scripts (keep for other functionality) -->
+  <!-- NEW: REVENUE TRACKING MODAL -->
+  <div class="modal-overlay" id="revenueModal">
+    <div class="modal-content revenue-modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h3>Revenue Tracking</h3>
+          <p>AI‑powered analysis of your leads</p>
+        </div>
+        <button class="modal-close" id="closeRevenueModalBtn">×</button>
+      </div>
+      <div id="revenueContent" style="padding: 4px 0 16px;">
+        <div style="text-align: center; padding: 30px;">Loading revenue data...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External scripts -->
   <script src="notif-utils.js"></script>
   <script src="notif-api.js"></script>
   <script src="notif-ui.js"></script>
 
-  <!-- INLINE SCRIPT FOR MENU (with auto-reply blocking and custom delay modal) -->
+  <!-- INLINE SCRIPT (with revenue tracking button handler) -->
   <script>
     (function() {
       const menuBtn = document.getElementById('menuBtn');
@@ -330,6 +352,7 @@
       const autoBtn = document.getElementById('autoFollowUpBtn');
       const autoStatusSpan = document.getElementById('autoStatusSpan');
       const aiHintBtn = document.getElementById('aiHintBtn');
+      const revenueBtn = document.getElementById('revenueTrackingBtn');
 
       // Toggle main dropdown
       if (menuBtn && dropdown) {
@@ -347,12 +370,26 @@
         };
       }
 
-      // Helper to check if auto-reply is enabled (global variable from notif-ui.js)
+      // Revenue Tracking button click
+      if (revenueBtn) {
+        revenueBtn.onclick = function(e) {
+          e.stopPropagation();
+          if (typeof openRevenueTracking === 'function') {
+            openRevenueTracking();
+          } else {
+            console.error('openRevenueTracking not defined');
+            alert('Revenue tracking not available yet.');
+          }
+          if (dropdown) dropdown.style.display = 'none';
+        };
+      }
+
+      // Helper to check if auto-reply is enabled
       function isAutoReplyActive() {
         return typeof isAutoReplyEnabled !== 'undefined' && isAutoReplyEnabled === true;
       }
 
-      // ----- AI HINT (blocked if auto-reply ON) -----
+      // ----- AI HINT (unchanged) -----
       if (aiHintBtn) {
         aiHintBtn.onclick = async function() {
           if (isAutoReplyActive()) {
@@ -419,7 +456,7 @@
         };
       }
 
-      // ----- Suggest Follow-up (blocked if auto-reply ON) -----
+      // ----- Suggest Follow-up (unchanged) -----
       if (suggestBtn) {
         suggestBtn.onclick = async function() {
           if (isAutoReplyActive()) {
@@ -463,7 +500,7 @@
         };
       }
 
-      // ----- Auto Follow-up: open modal (with conditional Off button) -----
+      // ----- Auto Follow-up (unchanged) -----
       let autoFollowUpEnabled = false;
       async function loadAutoStatus() {
         if (!window.currentLeadId) return;
@@ -482,13 +519,12 @@
         } catch(e) { console.error(e); }
       }
 
-      // ----- Delay selection modal logic (with conditional Off button) -----
       let selectedDelayDays = 3;
       const modal = document.getElementById('autoFollowUpModal');
       const confirmBtn = document.getElementById('confirmAutoFollowUpBtn');
       const customInput = document.getElementById('customDelayDays');
       const applyCustomBtn = document.getElementById('applyCustomDelay');
-      const offBtn = document.getElementById('offFollowUpBtn'); // renamed from disableAutoFollowUpBtn
+      const offBtn = document.getElementById('offFollowUpBtn');
       const closeModalBtn = document.getElementById('closeAutoFollowUpModalBtn');
       const cancelBtn = document.getElementById('cancelAutoFollowUpBtn');
 
@@ -503,14 +539,10 @@
         });
         confirmBtn.textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
         confirmBtn.disabled = false;
-        // Show/hide Off button based on current autoFollowUpEnabled (global variable)
-        if (offBtn) {
-          offBtn.style.display = autoFollowUpEnabled ? 'block' : 'none';
-        }
+        if (offBtn) offBtn.style.display = autoFollowUpEnabled ? 'block' : 'none';
       }
 
       function openAutoFollowUpModal() {
-        // First load current status (it may have changed)
         loadAutoStatus().then(() => {
           selectedDelayDays = 3;
           updateModalUI();
@@ -522,7 +554,6 @@
         modal.classList.remove('active');
       }
 
-      // Preset button clicks
       document.querySelectorAll('.delay-day-btn').forEach(btn => {
         btn.onclick = () => {
           selectedDelayDays = parseInt(btn.getAttribute('data-days'));
@@ -530,7 +561,6 @@
         };
       });
 
-      // Apply custom delay
       if (applyCustomBtn) {
         applyCustomBtn.onclick = () => {
           let customVal = parseInt(customInput.value);
@@ -543,7 +573,6 @@
         };
       }
 
-      // Confirm enable auto follow-up with selected delay
       if (confirmBtn) {
         confirmBtn.onclick = async () => {
           closeAutoFollowUpModal();
@@ -576,7 +605,6 @@
         };
       }
 
-      // Off Follow‑up button (disable)
       if (offBtn) {
         offBtn.onclick = async () => {
           closeAutoFollowUpModal();
@@ -609,16 +637,9 @@
         };
       }
 
-      // Close modal via × button
-      if (closeModalBtn) {
-        closeModalBtn.onclick = closeAutoFollowUpModal;
-      }
-      // Close modal via Cancel button
-      if (cancelBtn) {
-        cancelBtn.onclick = closeAutoFollowUpModal;
-      }
+      if (closeModalBtn) closeModalBtn.onclick = closeAutoFollowUpModal;
+      if (cancelBtn) cancelBtn.onclick = closeAutoFollowUpModal;
 
-      // Auto Follow-up button click: open modal
       if (autoBtn) {
         autoBtn.onclick = function(e) {
           e.stopPropagation();
@@ -634,7 +655,6 @@
         };
       }
 
-      // Intercept openChat to reload auto-follow-up status
       const originalOpenChat = window.openChat;
       if (originalOpenChat) {
         window.openChat = async function(leadId, name, email) {
@@ -654,7 +674,6 @@
         }, 100);
       }
 
-      // Close dropdowns when clicking outside
       document.addEventListener('click', function(e) {
         if (menuBtn && dropdown && !menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
           dropdown.style.display = 'none';
@@ -696,4 +715,4 @@
     });
   </script>
 </body>
-      </html>
+        </html>
