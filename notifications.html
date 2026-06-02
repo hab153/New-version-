@@ -320,7 +320,7 @@
     </div>
   </div>
 
-  <!-- NEW: REVENUE TRACKING MODAL -->
+  <!-- REVENUE TRACKING MODAL -->
   <div class="modal-overlay" id="revenueModal">
     <div class="modal-content revenue-modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
       <div class="modal-header">
@@ -336,12 +336,12 @@
     </div>
   </div>
 
-  <!-- External scripts -->
+  <!-- External scripts with cache-busting -->
   <script src="notif-utils.js"></script>
-  <script src="notif-api.js"></script>
-  <script src="notif-ui.js"></script>
+  <script src="notif-api.js?v=2"></script>
+  <script src="notif-ui.js?v=2"></script>
 
-  <!-- INLINE SCRIPT (with revenue tracking button handler) -->
+  <!-- INLINE SCRIPT (with revenue tracking button handler + fallback) -->
   <script>
     (function() {
       const menuBtn = document.getElementById('menuBtn');
@@ -370,15 +370,31 @@
         };
       }
 
-      // Revenue Tracking button click
+      // Revenue Tracking button click – with fallback in case function is not yet loaded
       if (revenueBtn) {
         revenueBtn.onclick = function(e) {
           e.stopPropagation();
           if (typeof openRevenueTracking === 'function') {
             openRevenueTracking();
           } else {
-            console.error('openRevenueTracking not defined');
-            alert('Revenue tracking not available yet.');
+            // Fallback: define the function inline if missing (should not happen after cache clear)
+            console.warn('openRevenueTracking not defined, defining inline fallback');
+            window.openRevenueTracking = function() {
+              const modal = document.getElementById('revenueModal');
+              if (!modal) return;
+              const content = document.getElementById('revenueContent');
+              if (content) content.innerHTML = '<div style="text-align: center; padding: 30px;"><div class="spin-icon" style="display: inline-block;">↻</div> Loading revenue data...</div>';
+              modal.classList.add('active');
+              fetchRevenueTracking()
+                .then(data => {
+                  if (typeof renderRevenueData === 'function') renderRevenueData(data);
+                  else content.innerHTML = '<div style="color: var(--red); text-align: center; padding: 20px;">Render function missing</div>';
+                })
+                .catch(err => {
+                  content.innerHTML = `<div style="color: var(--red); text-align: center; padding: 20px;">❌ ${err.message}</div>`;
+                });
+            };
+            window.openRevenueTracking();
           }
           if (dropdown) dropdown.style.display = 'none';
         };
@@ -715,4 +731,4 @@
     });
   </script>
 </body>
-        </html>
+                </html>
