@@ -560,4 +560,4 @@ function renderRevenueData(data) {
 
 function closeRevenueModal() {
     if (revenueModal) revenueModal.classList.remove('active');
-}
+                            }
