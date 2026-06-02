@@ -285,7 +285,7 @@
           <h3>Auto Follow‑up Delay</h3>
           <p>Choose when to send the first follow‑up</p>
         </div>
-        <button class="modal-close" onclick="closeAutoFollowUpModal()">×</button>
+        <button class="modal-close" id="closeAutoFollowUpModalBtn">×</button>
       </div>
       <div class="modal-field">
         <label>Preset days</label>
@@ -307,7 +307,7 @@
       <div class="modal-footer" style="justify-content: space-between;">
         <button id="disableAutoFollowUpBtn" class="btn-ghost" style="color:#ff5555;">Disable Auto Follow‑up</button>
         <div>
-          <button class="btn-ghost" onclick="closeAutoFollowUpModal()">Cancel</button>
+          <button id="cancelAutoFollowUpBtn" class="btn-ghost">Cancel</button>
           <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
         </div>
       </div>
@@ -489,6 +489,8 @@
       const customInput = document.getElementById('customDelayDays');
       const applyCustomBtn = document.getElementById('applyCustomDelay');
       const disableBtn = document.getElementById('disableAutoFollowUpBtn');
+      const closeModalBtn = document.getElementById('closeAutoFollowUpModalBtn');
+      const cancelBtn = document.getElementById('cancelAutoFollowUpBtn');
 
       function updateModalUI() {
         document.querySelectorAll('.delay-day-btn').forEach(btn => {
@@ -600,6 +602,15 @@
         };
       }
 
+      // Close modal via × button
+      if (closeModalBtn) {
+        closeModalBtn.onclick = closeAutoFollowUpModal;
+      }
+      // Close modal via Cancel button
+      if (cancelBtn) {
+        cancelBtn.onclick = closeAutoFollowUpModal;
+      }
+
       // Auto Follow-up button click: open modal
       if (autoBtn) {
         autoBtn.onclick = function(e) {
@@ -678,4 +689,4 @@
     });
   </script>
 </body>
-              </html>
+            </html>
