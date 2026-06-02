@@ -277,7 +277,7 @@
     </div>
   </div>
 
-  <!-- MODAL: AUTO-FOLLOW-UP DELAY SELECTION (with DISABLE button) -->
+  <!-- MODAL: AUTO-FOLLOW-UP DELAY SELECTION (with conditional Off button) -->
   <div class="modal-overlay" id="autoFollowUpModal">
     <div class="modal-content" style="max-width: 380px;">
       <div class="modal-header">
@@ -305,7 +305,7 @@
         </div>
       </div>
       <div class="modal-footer" style="justify-content: space-between;">
-        <button id="disableAutoFollowUpBtn" class="btn-ghost" style="color:#ff5555;">Disable Auto Follow‑up</button>
+        <button id="offFollowUpBtn" class="btn-ghost" style="color:#ff5555; display: none;">Off Follow‑up</button>
         <div>
           <button id="cancelAutoFollowUpBtn" class="btn-ghost">Cancel</button>
           <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
@@ -463,7 +463,7 @@
         };
       }
 
-      // ----- Auto Follow-up: open modal (with disable button) -----
+      // ----- Auto Follow-up: open modal (with conditional Off button) -----
       let autoFollowUpEnabled = false;
       async function loadAutoStatus() {
         if (!window.currentLeadId) return;
@@ -482,13 +482,13 @@
         } catch(e) { console.error(e); }
       }
 
-      // ----- Delay selection modal logic (with disable button) -----
+      // ----- Delay selection modal logic (with conditional Off button) -----
       let selectedDelayDays = 3;
       const modal = document.getElementById('autoFollowUpModal');
       const confirmBtn = document.getElementById('confirmAutoFollowUpBtn');
       const customInput = document.getElementById('customDelayDays');
       const applyCustomBtn = document.getElementById('applyCustomDelay');
-      const disableBtn = document.getElementById('disableAutoFollowUpBtn');
+      const offBtn = document.getElementById('offFollowUpBtn'); // renamed from disableAutoFollowUpBtn
       const closeModalBtn = document.getElementById('closeAutoFollowUpModalBtn');
       const cancelBtn = document.getElementById('cancelAutoFollowUpBtn');
 
@@ -503,12 +503,19 @@
         });
         confirmBtn.textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
         confirmBtn.disabled = false;
+        // Show/hide Off button based on current autoFollowUpEnabled (global variable)
+        if (offBtn) {
+          offBtn.style.display = autoFollowUpEnabled ? 'block' : 'none';
+        }
       }
 
       function openAutoFollowUpModal() {
-        selectedDelayDays = 3;
-        updateModalUI();
-        modal.classList.add('active');
+        // First load current status (it may have changed)
+        loadAutoStatus().then(() => {
+          selectedDelayDays = 3;
+          updateModalUI();
+          modal.classList.add('active');
+        });
       }
 
       function closeAutoFollowUpModal() {
@@ -569,9 +576,9 @@
         };
       }
 
-      // Disable auto follow-up
-      if (disableBtn) {
-        disableBtn.onclick = async () => {
+      // Off Follow‑up button (disable)
+      if (offBtn) {
+        offBtn.onclick = async () => {
           closeAutoFollowUpModal();
           if (!window.currentLeadId) {
             alert('Open a chat first.');
@@ -689,4 +696,4 @@
     });
   </script>
 </body>
-            </html>
+      </html>
