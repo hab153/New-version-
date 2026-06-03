@@ -615,7 +615,7 @@
           <div class="eyebrow-line right"></div>
         </div>
         <h1 class="page-title">Session <em>Archive.</em></h1>
-        <p class="page-sub">Access your historical prospecting data and outreach logs.</p>
+        <p class="page-sub">Access your historical outreach logs and conversation sessions.</p>
       </div>
 
       <!-- Search -->
@@ -699,7 +699,6 @@
       setInterval(loadNotifCount, 15000);
     });
 
-    /* ── Notification badge ── */
     async function loadNotifCount() {
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -726,7 +725,6 @@
       }
     }
 
-    /* ── Load sessions ── */
     async function loadSessions() {
       try {
         const res = await fetch(`${BACKEND}/api/sessions`, {
@@ -804,4 +802,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
