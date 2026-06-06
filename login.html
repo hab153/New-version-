@@ -3,622 +3,579 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In — Dream Realization</title>
+  <title>Sign In — Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --void:        #0a0a0a;
-      --base:        #121212;
-      --surface:     #1a1a1a;
-      --raised:      #242424;
-      --hover:       #2d2d2d;
-      --border:      rgba(255,255,255,0.08);
-      --border-md:   rgba(255,255,255,0.12);
-      --border-hi:   rgba(255,255,255,0.18);
-      --accent:      #ffffff;
-      --accent-lt:   #f0f0f0;
-      --accent-dim:  rgba(255,255,255,0.06);
-      --accent-glow: rgba(255,255,255,0.1);
-      --text-1:      #f5f5f5;
-      --text-2:      #b0b0b0;
-      --text-3:      #707070;
-      --error:       #ff5555;
-      --error-dim:   rgba(255,85,85,0.10);
-      --success:     #66dd99;
-      --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-      --font-mono:    'Monaco', 'Menlo', monospace;
+      --bg:         #06080F;
+      --surface:    #0C1020;
+      --surface2:   #111828;
+      --border:     rgba(255,255,255,0.07);
+      --border2:    rgba(79,127,255,0.2);
+      --blue:       #4F7FFF;
+      --blue-dim:   rgba(79,127,255,0.12);
+      --blue-glow:  rgba(79,127,255,0.25);
+      --gold:       #C9A84C;
+      --text:       #E8ECF5;
+      --muted:      rgba(232,236,245,0.5);
+      --muted2:     rgba(232,236,245,0.3);
+      --error:      #FF5A5A;
+      --error-dim:  rgba(255,90,90,0.08);
+      --success:    #4ADE80;
+      --font:       'Plus Jakarta Sans', -apple-system, sans-serif;
+      --serif:      'Instrument Serif', Georgia, serif;
     }
 
     html, body {
       height: 100%;
-      background: var(--void);
-      color: var(--text-1);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
       overflow: hidden;
-      font-family: var(--font-display);
     }
 
+    /* ── NOISE + MESH ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.5;
+    }
+
+    .mesh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    }
+    .mesh::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      top: -200px; left: 30%;
+      background: radial-gradient(ellipse, rgba(79,127,255,0.1) 0%, transparent 65%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 0.7; }
+      50%      { opacity: 1; }
+    }
+
+    .dot-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 80%);
+    }
+
+    /* ── LAYOUT ── */
     .page {
       display: flex;
       height: 100vh;
       width: 100vw;
-      animation: pageIn 0.6s ease-out both;
+      position: relative;
+      z-index: 1;
+      animation: pageIn 0.5s ease both;
     }
+    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
 
-    @keyframes pageIn {      
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-
+    /* ── LEFT PANEL ── */
     .panel-left {
-      width: 45%;
+      width: 46%;
       flex-shrink: 0;
-      background: var(--base);
+      background: linear-gradient(135deg, #0A1230 0%, #0C1528 60%, #080D1C 100%);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 48px 56px;
+      padding: 40px 52px;
       position: relative;
       overflow: hidden;
     }
 
+    /* glow orb */
     .panel-left::before {
       content: '';
       position: absolute;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      width: 500px; height: 500px;
+      top: -100px; right: -150px;
+      background: radial-gradient(ellipse, rgba(79,127,255,0.1) 0%, transparent 65%);
       pointer-events: none;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      position: relative;      
-      z-index: 1;
-      animation: fadeUp 0.6s 0.1s both;
-    }
-
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .brand-icon svg { 
-      width: 18px; 
-      height: 18px; 
-      color: #fff;
-    }
-
-    .brand-name {
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--text-1);
-    }
-
-    .art-wrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .art-svg {
-      width: 400px;
-      height: 400px;
-      opacity: 0.08;
-      animation: artSpin 80s linear infinite;
-    }
-
-    @keyframes artSpin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    .panel-quote {
-      position: relative;
-      z-index: 1;
-      animation: fadeUp 0.6s 0.2s both;
-    }
-
-    .quote-line {
-      display: block;
-      width: 40px;
-      height: 1px;
-      background: var(--accent);
-      margin-bottom: 20px;
-      opacity: 0.4;
-    }
-
-    .quote-text {
-      font-family: var(--font-display);
-      font-size: 24px;
-      font-weight: 400;
-      line-height: 1.5;
-      color: var(--text-1);
-      letter-spacing: -0.01em;
-      max-width: 340px;
-    }
-
-    .quote-text em {
-      font-weight: 600;
-      color: var(--accent);
-      font-style: normal;
-    }
-
-    .quote-attr {
-      margin-top: 16px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-3);
-    }
-
-    .panel-right {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 64px;
-      background: var(--void);
-      position: relative;
-    }
-
-    .panel-right::before {
+    .panel-left::after {
       content: '';
       position: absolute;
-      top: 0; right: 0;
       width: 300px; height: 300px;
-      background: radial-gradient(circle at top right, rgba(255,255,255,0.02), transparent 70%);
+      bottom: 40px; left: -60px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.05) 0%, transparent 65%);
       pointer-events: none;
+    }
+
+    /* logo */
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.6s 0.1s both;
+    }
+    .brand-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--blue-dim), rgba(201,168,76,0.1));
+      border: 1px solid var(--border2);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .brand-mark svg { width: 18px; height: 18px; }
+    .brand-name {
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+    .brand-name em {
+      font-style: normal; font-weight: 400;
+      color: var(--muted); font-size: 15px;
+    }
+
+    /* centre art */
+    .panel-art {
+      position: absolute;
+      inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none; z-index: 1;
+    }
+
+    /* mini dashboard preview */
+    .mini-dashboard {
+      width: 340px;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.7s 0.25s both;
+    }
+    .mini-card {
+      background: rgba(13,18,36,0.8);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .mini-topbar {
+      background: rgba(17,24,40,0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .mini-dots { display: flex; gap: 5px; }
+    .mini-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mini-dot:nth-child(1) { background: #FF5F57; }
+    .mini-dot:nth-child(2) { background: #FFBD2E; }
+    .mini-dot:nth-child(3) { background: #28C840; }
+    .mini-tab {
+      font-size: 11px; font-weight: 600; color: rgba(138,171,255,0.8);
+      background: var(--blue-dim); border: 1px solid rgba(79,127,255,0.15);
+      border-radius: 5px; padding: 3px 9px;
+    }
+    .mini-body { padding: 16px; }
+    .mini-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted2); margin-bottom: 10px;
+    }
+    .mini-stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px; margin-bottom: 14px;
+    }
+    .mini-stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 10px;
+      text-align: center;
+    }
+    .mini-stat-val {
+      font-size: 18px; font-weight: 800;
+      letter-spacing: -0.02em; color: var(--text);
+      line-height: 1;
+    }
+    .mini-stat-val span { color: var(--blue); }
+    .mini-stat-lbl { font-size: 9px; color: var(--muted2); margin-top: 3px; }
+    .mini-lead-row {
+      display: flex; align-items: center; gap: 9px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px; margin-bottom: 6px;
+    }
+    .mini-lead-row.active { border-color: var(--border2); background: var(--blue-dim); }
+    .mini-av {
+      width: 24px; height: 24px; border-radius: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+    }
+    .mini-lead-info { flex: 1; }
+    .mini-lead-name { font-size: 11px; font-weight: 700; color: var(--text); }
+    .mini-lead-co { font-size: 10px; color: var(--muted2); }
+    .mini-score {
+      font-size: 10px; font-weight: 700; padding: 2px 6px;
+      border-radius: 4px; background: rgba(79,127,255,0.15); color: #8AABFF;
+    }
+    .mini-score.hi { background: rgba(74,222,128,0.15); color: #4ADE80; }
+
+    /* bottom quote */
+    .panel-bottom {
+      position: relative; z-index: 1;
+      animation: fadeUp 0.6s 0.3s both;
+    }
+    .quote-bar {
+      display: block; width: 28px; height: 1px;
+      background: var(--blue); opacity: 0.5; margin-bottom: 14px;
+    }
+    .quote-text {
+      font-family: var(--serif);
+      font-size: 20px; font-style: italic;
+      color: var(--text); line-height: 1.5;
+      letter-spacing: -0.01em; max-width: 300px;
+    }
+    .quote-text strong {
+      font-style: normal; font-weight: 400;
+      color: #8AABFF;
+    }
+    .quote-attr {
+      margin-top: 10px; font-size: 11px;
+      font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted2);
+    }
+
+    /* ── RIGHT PANEL ── */
+    .panel-right {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 60px;
+      background: var(--bg);
+      position: relative;
     }
 
     .form-card {
-      width: 100%;
-      max-width: 400px;
-      position: relative;
-      z-index: 1;
+      width: 100%; max-width: 400px;
+      position: relative; z-index: 1;
     }
 
     .form-header {
-      margin-bottom: 40px;
+      margin-bottom: 36px;
       animation: fadeUp 0.6s 0.15s both;
     }
-
     .form-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--blue); margin-bottom: 14px;
     }
-
     .form-eyebrow::before {
-      content: '';
-      display: block;
-      width: 20px;
-      height: 1px;      
-      background: var(--accent);
-      opacity: 0.4;
+      content: ''; display: block;
+      width: 18px; height: 1px; background: var(--blue);
     }
-
     .form-title {
-      font-family: var(--font-display);
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.2;
-      color: var(--text-1);
-      letter-spacing: -0.02em;
+      font-size: 32px; font-weight: 800;
+      letter-spacing: -0.025em; line-height: 1.15;
+      color: var(--text);
     }
-
-    .form-title strong {
-      font-weight: 700;
-      color: #fff;
+    .form-title .serif-word {
+      font-family: var(--serif);
+      font-style: italic; font-weight: 400;
+      background: linear-gradient(135deg, #8AABFF, var(--blue));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
     }
-
     .form-sub {
-      margin-top: 12px;
-      font-family: var(--font-display);
-      font-size: 14px;
-      color: var(--text-3);
-      line-height: 1.6;
+      margin-top: 10px; font-size: 14px;
+      color: var(--muted); line-height: 1.6;
     }
 
+    /* fields */
     .fields {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: flex; flex-direction: column; gap: 16px;
       animation: fadeUp 0.6s 0.25s both;
     }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
+    .field { display: flex; flex-direction: column; gap: 7px; }
     .field-label {
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 500;
-      text-transform: capitalize;
-      color: var(--text-2);
-      padding-left: 2px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted2);
       transition: color 0.2s;
     }
-    .field:focus-within .field-label { color: var(--accent); }
+    .field:focus-within .field-label { color: var(--blue); }
 
-    .input-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
+    .input-wrap { position: relative; display: flex; align-items: center; }
     .input-icon {
-      position: absolute;
-      left: 14px;
-      pointer-events: none;
-      color: var(--text-3);
+      position: absolute; left: 13px;
+      pointer-events: none; color: var(--muted2);
+      display: flex; align-items: center;
       transition: color 0.2s;
-      display: flex;
-      align-items: center;
     }
+    .field:focus-within .input-icon { color: var(--blue); }
 
-    .field:focus-within .input-icon { color: var(--accent); }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="email"] {
+    .field-input {
       width: 100%;
-      padding: 12px 14px 12px 42px;
-      background: var(--surface);
-      border: 1px solid var(--border-md);
-      border-radius: 8px;
-      color: var(--text-1);
-      font-family: var(--font-display);
+      padding: 13px 14px 13px 40px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font);
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      caret-color: var(--accent);
-      letter-spacing: -0.01em;
+      transition: all 0.2s;
+      caret-color: var(--blue);
     }
-
-    input::placeholder { color: var(--text-3); }
-
-    input:focus {
-      border-color: rgba(255,255,255,0.25);
-      background: var(--raised);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+    .field-input::placeholder { color: var(--muted2); }
+    .field-input:focus {
+      border-color: var(--blue);
+      background: rgba(79,127,255,0.04);
+      box-shadow: 0 0 0 3px rgba(79,127,255,0.1);
     }
-
-    input.error-field {
-      border-color: rgba(255,85,85,0.35);
+    .field-input.is-error {
+      border-color: rgba(255,90,90,0.35);
       background: var(--error-dim);
     }
 
     .pw-toggle {
-      position: absolute;
-      right: 13px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-3);
-      display: flex;
-      align-items: center;
-      padding: 4px;
-      border-radius: 4px;
+      position: absolute; right: 12px;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted2); display: flex; align-items: center;
+      padding: 4px; border-radius: 5px; outline: none;
       transition: color 0.2s;
-      outline: none;
     }
+    .pw-toggle:hover { color: var(--muted); }
 
-    .pw-toggle:hover { color: var(--text-1); }
-
+    /* options row */
     .options-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 12px 0 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 14px 0 4px;
       animation: fadeUp 0.6s 0.3s both;
     }
-
     .remember-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      font-family: var(--font-display);
-      font-size: 13px;
-      color: var(--text-3);
-      user-select: none;
-      transition: color 0.2s;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-size: 13px; color: var(--muted2);
+      user-select: none; transition: color 0.2s;
     }
-
-    .remember-label:hover { color: var(--text-2); }
-
-    .remember-label input[type="checkbox"] {
-      display: none;
-    }
-
+    .remember-label:hover { color: var(--muted); }
+    .remember-label input { display: none; }
     .checkbox-box {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1.5px solid rgba(255,255,255,0.2);      
-      background: var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-      flex-shrink: 0;
-      padding: 0;
-      pointer-events: none;
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 1.5px solid rgba(79,127,255,0.25);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0;
     }
-
     .remember-label input:checked ~ .checkbox-box {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--blue); border-color: var(--blue);
     }
-
-    .checkbox-check {
-      opacity: 0;
-      transition: opacity 0.15s;
-      font-size: 12px;
-      font-weight: bold;
-      color: #000;
-    }
-
-    .remember-label input:checked ~ .checkbox-box .checkbox-check {
-      opacity: 1;
-    }
+    .checkbox-check { opacity: 0; transition: opacity 0.15s; }
+    .remember-label input:checked ~ .checkbox-box .checkbox-check { opacity: 1; }
 
     .forgot-link {
-      font-family: var(--font-display);
-      font-size: 13px;
-      color: var(--text-3);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s;
+      font-size: 13px; color: var(--muted2);
+      text-decoration: none; transition: color 0.2s;
     }
+    .forgot-link:hover { color: var(--blue); }
 
-    .forgot-link:hover { color: var(--accent); border-bottom-color: var(--accent); }
-
+    /* submit */
     .submit-wrap {
       margin-top: 24px;
       animation: fadeUp 0.6s 0.35s both;
     }
-
     .submit-btn {
-      width: 100%;
-      padding: 13px 24px;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #000;
-      font-family: var(--font-display);
-      font-size: 14px;
-      font-weight: 600;      
-      letter-spacing: -0.01em;
-      text-transform: capitalize;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      outline: none;
-      position: relative;
-      overflow: hidden;
+      width: 100%; padding: 14px 24px;
+      background: var(--blue); border: none; border-radius: 10px;
+      color: #fff; font-family: var(--font);
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; outline: none;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(79,127,255,0.35);
     }
-
     .submit-btn:hover:not(:disabled) {
-      background: var(--accent-lt);
+      background: #6090FF;
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+      box-shadow: 0 8px 30px rgba(79,127,255,0.45);
     }
-
-    .submit-btn:active:not(:disabled) { transform: translateY(0); }
-
-    .submit-btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-      transform: none;
-      box-shadow: none;
-    }
+    .submit-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+    .btn-arrow { transition: transform 0.2s; }
+    .submit-btn:hover:not(:disabled) .btn-arrow { transform: translateX(3px); }
 
     .spinner {
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid rgba(0,0,0,0.2);
-      border-top-color: #000;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin 0.6s linear infinite;
       display: none;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .submit-btn.loading .spinner { display: block; }
-    .submit-btn.loading .btn-text { opacity: 0.7; }
+    .submit-btn.loading .btn-label { opacity: 0.7; }
+    .submit-btn.loading .btn-arrow { display: none; }
 
+    /* messages */
     .msg-box {
-      display: none;
-      align-items: flex-start;
-      gap: 9px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      font-family: var(--font-display);
-      font-size: 13px;
-      line-height: 1.6;
-      margin-top: 16px;
+      display: none; align-items: flex-start; gap: 9px;
+      padding: 12px 14px; border-radius: 10px;
+      font-size: 13px; line-height: 1.6; margin-top: 14px;
       animation: fadeUp 0.25s ease both;
     }
-
-    .msg-box.error  { background: var(--error-dim); border: 1px solid rgba(255,85,85,0.2); color: var(--error); }
-    .msg-box.success{ background: rgba(102, 221, 153, 0.08); border: 1px solid rgba(102, 221, 153, 0.2); color: var(--success); }
-
+    .msg-box.error {
+      background: var(--error-dim);
+      border: 1px solid rgba(255,90,90,0.2);
+      color: var(--error);
+    }
+    .msg-box.success {
+      background: rgba(74,222,128,0.08);
+      border: 1px solid rgba(74,222,128,0.2);
+      color: var(--success);
+    }
     .msg-box.visible { display: flex; }
 
-    .attempt-bar-wrap {
-      margin-top: 8px;
-      display: none;
+    /* attempt bar */
+    .attempt-wrap { margin-top: 10px; display: none; }
+    .attempt-wrap.visible { display: block; }
+    .attempt-meta {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--muted2);
+      margin-bottom: 5px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
     }
-
-    .attempt-bar-wrap.visible { display: block; }
-
-    .attempt-label {
-      display: flex;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-3);
-      margin-bottom: 5px;
+    .attempt-track {
+      height: 2px; background: var(--border);
+      border-radius: 2px; overflow: hidden;
     }
-
-    .attempt-bar {
-      height: 2px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
     .attempt-fill {
-      height: 100%;
-      background: var(--error);      
-      border-radius: 2px;
-      transition: width 0.4s ease;
+      height: 100%; background: var(--error);
+      border-radius: 2px; transition: width 0.4s ease;
     }
 
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 24px 0 20px;
+    /* footer */
+    .form-footer {
+      text-align: center; margin-top: 20px;
+      font-size: 13px; color: var(--muted2);
       animation: fadeUp 0.6s 0.4s both;
     }
-
-    .divider span {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-3);
-      text-transform: uppercase;
-      flex-shrink: 0;
-    }
-
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .form-footer {
-      text-align: center;
-      font-family: var(--font-display);
-      font-size: 13px;
-      color: var(--text-3);
-      animation: fadeUp 0.6s 0.45s both;
-    }
-
     .form-footer a {
-      color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s, color 0.2s;
+      color: var(--blue); text-decoration: none;
+      font-weight: 600; transition: color 0.2s;
     }
-
-    .form-footer a:hover {
-      color: var(--accent-lt);
-      border-color: var(--accent-lt);
-    }
+    .form-footer a:hover { color: #6090FF; text-decoration: underline; }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 860px) {
       .panel-left { display: none; }
       .panel-right { padding: 32px 24px; }
-      .form-card { max-width: 420px; }
+    }
+    @media (max-width: 480px) {
+      .panel-right { padding: 24px 20px; }
+      .form-title { font-size: 26px; }
     }
   </style>
 </head>
 <body>
 
+<div class="mesh"></div>
+<div class="dot-grid"></div>
+
 <div class="page">
 
+  <!-- LEFT PANEL -->
   <aside class="panel-left">
 
-    <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 16 16" fill="none">
-          <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/>
-          <path d="M6 6L10 10M10 6L6 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    <a href="index.html" class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L14.5 9H22L16 13.5L18.5 21L12 16.5L5.5 21L8 13.5L2 9H9.5L12 2Z" fill="url(#lg)" stroke="none"/>
+          <defs>
+            <linearGradient id="lg" x1="2" y1="2" x2="22" y2="22">
+              <stop offset="0%" stop-color="#4F7FFF"/>
+              <stop offset="100%" stop-color="#C9A84C"/>
+            </linearGradient>
+          </defs>
         </svg>
       </div>
-      <span class="brand-name">Dream Realization</span>
+      <span class="brand-name">Skyline <em>AA-1</em></span>
+    </a>
+
+    <div class="panel-art">
+      <div class="mini-dashboard">
+        <div class="mini-card">
+          <div class="mini-topbar">
+            <div class="mini-dots">
+              <div class="mini-dot"></div>
+              <div class="mini-dot"></div>
+              <div class="mini-dot"></div>
+            </div>
+            <div class="mini-tab">Pipeline — Live</div>
+          </div>
+          <div class="mini-body">
+            <div class="mini-label">This week's activity</div>
+            <div class="mini-stats">
+              <div class="mini-stat">
+                <div class="mini-stat-val">47<span></span></div>
+                <div class="mini-stat-lbl">Leads</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-val">31</div>
+                <div class="mini-stat-lbl">Sent</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-val" style="color: var(--success)">68<span style="font-size:10px; color: var(--success)">%</span></div>
+                <div class="mini-stat-lbl">Opens</div>
+              </div>
+            </div>
+            <div class="mini-label">Top Prospects</div>
+            <div class="mini-lead-row active">
+              <div class="mini-av">SC</div>
+              <div class="mini-lead-info">
+                <div class="mini-lead-name">Sarah Chen</div>
+                <div class="mini-lead-co">TechFlow Solutions</div>
+              </div>
+              <div class="mini-score hi">94</div>
+            </div>
+            <div class="mini-lead-row">
+              <div class="mini-av">MW</div>
+              <div class="mini-lead-info">
+                <div class="mini-lead-name">Marcus Webb</div>
+                <div class="mini-lead-co">Growth Partners</div>
+              </div>
+              <div class="mini-score">78</div>
+            </div>
+            <div class="mini-lead-row">
+              <div class="mini-av">PN</div>
+              <div class="mini-lead-info">
+                <div class="mini-lead-name">Priya Nair</div>
+                <div class="mini-lead-co">Nexus Digital</div>
+              </div>
+              <div class="mini-score hi">88</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="art-wrap">
-      <svg class="art-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="200" cy="200" r="180" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
-        <circle cx="200" cy="200" r="140" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
-        <circle cx="200" cy="200" r="100" stroke="currentColor" stroke-width="0.5" opacity="0.15"/>
-        <polygon points="200,30 360,280 40,280" stroke="currentColor" stroke-width="0.6" fill="none" opacity="0.2"/>
-        <line x1="40" y1="200" x2="360" y2="200" stroke="currentColor" stroke-width="0.4" opacity="0.15"/>
-        <line x1="200" y1="40" x2="200" y2="360" stroke="currentColor" stroke-width="0.4" opacity="0.15"/>
-      </svg>
-    </div>
-
-    <div class="panel-quote">
-      <span class="quote-line"></span>
-      <p class="quote-text">
-        Every <em>great dream</em> begins with a single step forward.
-      </p>
-      <p class="quote-attr">Dream Realization Platform</p>
+    <div class="panel-bottom">
+      <span class="quote-bar"></span>
+      <p class="quote-text">Your pipeline is <strong>running 24/7.</strong> Welcome back.</p>
+      <p class="quote-attr">Skyline AA-1 Platform</p>
     </div>
 
   </aside>
 
+  <!-- RIGHT PANEL -->
   <main class="panel-right">
     <div class="form-card">
 
       <div class="form-header">
-        <p class="form-eyebrow">Secure Access</p>
-        <h1 class="form-title">Welcome<br><strong>back</strong></h1>
-        <p class="form-sub">Sign in to your account to continue.</p>
+        <div class="form-eyebrow">Secure Access</div>
+        <h1 class="form-title">Welcome <span class="serif-word">back</span></h1>
+        <p class="form-sub">Sign in to your Skyline account and pick up where you left off.</p>
       </div>
 
       <form id="loginForm" novalidate autocomplete="off">
-
         <div class="fields">
+
           <div class="field">
             <label class="field-label" for="identifier">Email or Username</label>
             <div class="input-wrap">
@@ -628,7 +585,7 @@
                   <path d="M1.5 13.5c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                 </svg>
               </span>
-              <input type="text" id="identifier" placeholder="you@example.com" required autocomplete="username" spellcheck="false" />
+              <input type="text" id="identifier" class="field-input" placeholder="you@company.com" required autocomplete="username" spellcheck="false" />
             </div>
           </div>
 
@@ -642,8 +599,8 @@
                   <circle cx="7.5" cy="10" r="1" fill="currentColor"/>
                 </svg>
               </span>
-              <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
-              <button type="button" class="pw-toggle" id="pwToggle" title="Show/hide password" tabindex="-1">
+              <input type="password" id="password" class="field-input" placeholder="••••••••" required autocomplete="current-password" />
+              <button type="button" class="pw-toggle" id="pwToggle" tabindex="-1">
                 <svg id="eyeIcon" width="15" height="15" viewBox="0 0 15 15" fill="none">
                   <path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/>
                   <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/>
@@ -651,13 +608,16 @@
               </button>
             </div>
           </div>
+
         </div>
 
         <div class="options-row">
           <label class="remember-label">
             <input type="checkbox" id="rememberMe" />
             <span class="checkbox-box">
-              <span class="checkbox-check">✓</span>
+              <svg class="checkbox-check" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <polyline points="1.5 5 4 7.5 8.5 2.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </span>
             <span>Remember me</span>
           </label>
@@ -665,14 +625,17 @@
         </div>
 
         <div class="submit-wrap">
-          <button type="submit" class="submit-btn">
-            <span class="btn-text">Sign In</span>
-            <span class="spinner"></span>
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="btn-label">Sign in to Skyline</span>
+            <div class="spinner"></div>
+            <svg class="btn-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </button>
         </div>
 
         <div id="errorMessage" class="msg-box error">
-          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top:2px">
             <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
             <path d="M10 6v4M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
@@ -680,26 +643,27 @@
         </div>
 
         <div id="successMessage" class="msg-box success">
-          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top:2px">
             <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
             <path d="M7 10l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span id="successText"></span>
         </div>
 
-        <div class="attempt-bar-wrap" id="attemptBar">
-          <div class="attempt-label">
-            <span>failed attempts</span>
-            <span><span id="attemptCount">0</span>/5</span>
+        <div class="attempt-wrap" id="attemptWrap">
+          <div class="attempt-meta">
+            <span>Failed attempts</span>
+            <span><span id="attemptCount">0</span> / 5</span>
           </div>
-          <div class="attempt-bar">
-            <div class="attempt-fill" id="attemptFill"></div>
+          <div class="attempt-track">
+            <div class="attempt-fill" id="attemptFill" style="width:0%"></div>
           </div>
         </div>
+
       </form>
 
       <div class="form-footer">
-        Don't have an account? <a href="index.html">Sign up here</a>
+        Don't have an account? <a href="index.html">Sign up free →</a>
       </div>
 
     </div>
@@ -708,106 +672,102 @@
 </div>
 
 <script>
-    const existingToken = localStorage.getItem('token');
-    if (existingToken) {
-        window.location.href = "page.html";
+  // Redirect if already logged in
+  if (localStorage.getItem('token')) {
+    window.location.href = 'page.html';
+  }
+
+  // Password toggle
+  const pwToggle = document.getElementById('pwToggle');
+  const pwInput  = document.getElementById('password');
+  const eyeIcon  = document.getElementById('eyeIcon');
+
+  pwToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    const show = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    eyeIcon.innerHTML = show
+      ? '<path d="M7.5 3C3.5 3 1 7.5 1 7.5S3.5 12 7.5 12s6.5-4.5 6.5-4.5S11.5 3 7.5 3z" stroke="currentColor" stroke-width="1.2"/><line x1="2" y1="2" x2="13" y2="13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>'
+      : '<path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/>';
+  });
+
+  // Messaging
+  function showError(msg) {
+    document.getElementById('errorText').textContent = msg;
+    document.getElementById('errorMessage').classList.add('visible');
+    document.getElementById('successMessage').classList.remove('visible');
+    document.getElementById('identifier').classList.add('is-error');
+    document.getElementById('password').classList.add('is-error');
+  }
+  function showSuccess(msg) {
+    document.getElementById('successText').textContent = msg;
+    document.getElementById('successMessage').classList.add('visible');
+    document.getElementById('errorMessage').classList.remove('visible');
+  }
+  function clearMessages() {
+    document.getElementById('errorMessage').classList.remove('visible');
+    document.getElementById('successMessage').classList.remove('visible');
+    document.getElementById('identifier').classList.remove('is-error');
+    document.getElementById('password').classList.remove('is-error');
+  }
+
+  // Clear errors on input
+  ['identifier','password'].forEach(id => {
+    document.getElementById(id).addEventListener('input', clearMessages);
+  });
+
+  let loginAttempts = 0;
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('identifier').value.trim();
+    const password   = document.getElementById('password').value;
+    const btn        = document.getElementById('submitBtn');
+
+    clearMessages();
+
+    if (!identifier || !password) {
+      showError('Please enter both email/username and password.');
+      return;
+    }
+    if (loginAttempts >= 5) {
+      showError('Too many failed attempts. Please try again later.');
+      return;
     }
 
-    function showError(msg) {
-        document.getElementById('errorText').textContent = msg;
-        document.getElementById('errorMessage').classList.add('visible');
-        document.getElementById('successMessage').classList.remove('visible');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    try {
+      const res  = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        showSuccess('Login successful — redirecting...');
+        loginAttempts = 0;
+        document.getElementById('attemptWrap').classList.remove('visible');
+        setTimeout(() => { window.location.href = 'page.html'; }, 900);
+      } else {
+        showError(data.message || 'Invalid credentials. Please try again.');
+        loginAttempts++;
+        if (loginAttempts > 0) {
+          document.getElementById('attemptWrap').classList.add('visible');
+          document.getElementById('attemptCount').textContent = loginAttempts;
+          document.getElementById('attemptFill').style.width = (loginAttempts / 5 * 100) + '%';
+        }
+      }
+    } catch {
+      showError('Network error. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
     }
-
-    function showSuccess(msg) {
-        document.getElementById('successText').textContent = msg;
-        document.getElementById('successMessage').classList.add('visible');
-        document.getElementById('errorMessage').classList.remove('visible');
-    }
-
-    function hideMessages() {
-        document.getElementById('errorMessage').classList.remove('visible');
-        document.getElementById('successMessage').classList.remove('visible');
-    }
-
-    const pwToggle = document.getElementById('pwToggle');
-    const pwInput = document.getElementById('password');
-    const eyeIcon = document.getElementById('eyeIcon');
-
-    pwToggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (pwInput.type === 'password') {
-            pwInput.type = 'text';
-            eyeIcon.innerHTML = '<path d="M7.5 3C3.5 3 1 7.5 1 7.5S3.5 12 7.5 12s6.5-4.5 6.5-4.5S11.5 3 7.5 3z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="1.5" stroke="currentColor" stroke-width="1.2"/>';
-        } else {
-            pwInput.type = 'password';
-            eyeIcon.innerHTML = '<path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/>';
-        }
-    });
-
-    let loginAttempts = 0;
-
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const identifier = document.getElementById('identifier').value;
-        const password = document.getElementById('password').value;
-        const submitBtn = document.querySelector('button[type="submit"]');
-
-        hideMessages();
-
-        if (!identifier || !password) {
-            showError("Please enter both email/username and password.");
-            return;
-        }
-
-        if (loginAttempts >= 5) {
-            showError("Too many failed attempts. Please try again later.");
-            document.getElementById('attemptBar').classList.remove('visible');
-            return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
-
-        try {
-            const response = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ identifier, password })
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    showSuccess("Login successful! Redirecting...");
-                    setTimeout(() => {
-                        window.location.href = "page.html";
-                    }, 1000);
-                    loginAttempts = 0;
-                    document.getElementById('attemptBar').classList.remove('visible');
-                } else {
-                    showError("Login failed. Please try again.");
-                    loginAttempts++;
-                }
-            } else {
-                showError(data.message || "Invalid credentials. Please try again.");
-                loginAttempts++;
-                if (loginAttempts > 0) {
-                    document.getElementById('attemptBar').classList.add('visible');
-                    document.getElementById('attemptCount').textContent = loginAttempts;
-                    document.getElementById('attemptFill').style.width = (loginAttempts / 5) * 100 + '%';
-                }
-            }
-        } catch (err) {
-            showError("Network error. Is the server running?");
-            console.error(err);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('loading');
-        }
-    });
+  });
 </script>
-
 </body>
 </html>
