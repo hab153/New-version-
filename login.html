@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* (your existing styles – unchanged) */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -710,7 +711,28 @@
 <script>
     const existingToken = localStorage.getItem('token');
     if (existingToken) {
-        window.location.href = "page.html";
+        // If already logged in, determine redirection based on admin status
+        (async () => {
+            try {
+                const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+                    headers: { 'Authorization': `Bearer ${existingToken}` }
+                });
+                if (res.ok) {
+                    const user = await res.json();
+                    if (user.isAdmin) {
+                        window.location.href = "admin-layer2.html";
+                    } else {
+                        window.location.href = "page.html";
+                    }
+                } else {
+                    localStorage.removeItem('token');
+                    window.location.href = "login.html";
+                }
+            } catch (e) {
+                localStorage.removeItem('token');
+                window.location.href = "login.html";
+            }
+        })();
     }
 
     function showError(msg) {
@@ -781,9 +803,36 @@
                 if (data.token) {
                     localStorage.setItem('token', data.token);
                     showSuccess("Login successful! Redirecting...");
-                    setTimeout(() => {
-                        window.location.href = "page.html";
-                    }, 1000);
+                    
+                    // After successful login, fetch user profile to check if admin
+                    try {
+                        const userRes = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+                            headers: { 'Authorization': `Bearer ${data.token}` }
+                        });
+                        if (userRes.ok) {
+                            const user = await userRes.json();
+                            if (user.isAdmin) {
+                                setTimeout(() => {
+                                    window.location.href = "admin-layer2.html";
+                                }, 1000);
+                            } else {
+                                setTimeout(() => {
+                                    window.location.href = "page.html";
+                                }, 1000);
+                            }
+                        } else {
+                            // fallback – go to page.html
+                            setTimeout(() => {
+                                window.location.href = "page.html";
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        // fallback
+                        setTimeout(() => {
+                            window.location.href = "page.html";
+                        }, 1000);
+                    }
+
                     loginAttempts = 0;
                     document.getElementById('attemptBar').classList.remove('visible');
                 } else {
@@ -810,4 +859,4 @@
 </script>
 
 </body>
-            </html>
+  </html>
