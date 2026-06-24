@@ -30,6 +30,43 @@
       color: black;
       border-color: var(--accent);
     }
+
+    /* ----- ADDED: WhatsApp-style unread badge styling ----- */
+    .contact-item .unread-badge {
+      background: #ff3b30;
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      line-height: 1;
+      border: 1px solid var(--bg-base);
+      box-shadow: 0 1px 4px rgba(255,59,48,0.3);
+      flex-shrink: 0;
+    }
+
+    .contact-item.unread .contact-name {
+      font-weight: 600;
+      color: var(--text-1);
+    }
+
+    .contact-item.unread .contact-preview {
+      font-weight: 500;
+      color: var(--text-1);
+    }
+
+    .contact-item.unread {
+      background: rgba(255,59,48,0.03);
+      border-left: 3px solid #ff3b30;
+    }
+    /* ----- END ADDED ----- */
   </style>
 </head>
 <body>
@@ -100,7 +137,7 @@
   </div>
 
   <div class="main-container">
-    <!-- VIEW: LIST (unchanged) -->
+    <!-- VIEW: LIST -->
     <div id="viewList" class="view-list">
       <div class="search-section">
         <div class="search-wrap">
@@ -136,7 +173,7 @@
       </div>
     </div>
 
-    <!-- VIEW: CHAT (unchanged) -->
+    <!-- VIEW: CHAT -->
     <div id="viewChat" class="view-chat">
       <div class="chat-header">
         <button class="back-btn" onclick="closeChat()">
@@ -217,7 +254,7 @@
       </div>
     </div>
 
-    <!-- VIEW: ADMIN (unchanged) -->
+    <!-- VIEW: ADMIN -->
     <div id="viewAdmin" class="view-admin">
       <div class="empty-state">
         <div class="empty-icon">
@@ -233,7 +270,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION (unchanged) -->
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <a href="page.html" class="nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -867,9 +904,14 @@
     })();
   </script>
 
+  <!-- MAIN INITIALIZATION + ADDED: POLLING FOR LIVE UPDATES -->
   <script>
     // Original initialization
     if (!localStorage.getItem('token')) window.location.href = "login.html";
+    
+    // ---- ADDED: refresh interval for live updates ----
+    let refreshInterval = null;
+    
     document.addEventListener('DOMContentLoaded', async () => {
       try {
           const res = await fetch(`${BACKEND}/api/users/me`, {
@@ -894,7 +936,12 @@
       }
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       loadContacts();
+      
+      // ---- ADDED: refresh every 15 seconds (like WhatsApp) ----
+      refreshInterval = setInterval(() => {
+        loadContacts();
+      }, 15000);
     });
   </script>
 </body>
-                </html>
+  </html>
