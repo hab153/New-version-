@@ -47,7 +47,6 @@ function updateStats(contacts) {
     } else {
         badge.style.display = 'none';
     }
-    // Ensure the list is re-rendered with the latest stats/sorting    renderContacts(contacts);
 }
 
 function renderContacts(contacts) {
@@ -56,36 +55,19 @@ function renderContacts(contacts) {
         list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
         return;
     }
-    
-    // Enhanced Sorting: Unread First, then by Date (Newest First)
     const sorted = [...contacts].sort((a, b) => {
         const aU = (a.unreadCount || 0) > 0;
         const bU = (b.unreadCount || 0) > 0;
-        
-        // Priority 1: Unread messages always on top
         if (aU && !bU) return -1;
         if (!aU && bU) return 1;
-        
-        // Priority 2: Most recent date
-        const dateA = a.lastDate ? new Date(a.lastDate).getTime() : 0;
-        const dateB = b.lastDate ? new Date(b.lastDate).getTime() : 0;
-        return dateB - dateA;
+        return new Date(b.lastDate || 0) - new Date(a.lastDate || 0);
     });
-
     list.innerHTML = sorted.map(c => {
         const unread = c.unreadCount || 0;
         const rating = calculateEngagementScore(c, []);
         let confClass = 'low';
         if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
-        
-        // Format date safely
-        let dateStr = '';
-        if (c.lastDate) {
-            const d = new Date(c.lastDate);
-            dateStr = d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
-        }
-
         return `
             <div class="contact-item ${unread > 0 ? 'unread' : ''}"
                  onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
@@ -93,10 +75,11 @@ function renderContacts(contacts) {
                 <div class="contact-body">
                     <div class="contact-row1">
                         <span class="contact-name">${escapeHtml(c.name)}</span>
-                        <span class="contact-time">${dateStr}</span>
+                        <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
                     </div>
                     <div class="contact-row2">
-                        <span class="contact-preview">${escapeHtml(c.lastMessage || 'No messages yet')}</span>                        <div class="contact-meta">
+                        <span class="contact-preview">${escapeHtml(c.lastMessage || 'No messages yet')}</span>
+                        <div class="contact-meta">
                             ${unread > 0 ? `<span class="unread-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
                             <span class="conf-badge ${confClass}">
                                 ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>
@@ -142,11 +125,11 @@ async function openChat(leadId, name, email) {
     document.getElementById('replyText').style.height = '38px';
     document.getElementById('viewChat').classList.add('active');
 
-    // Optimistic UI Update: Mark as read locally immediately
     const contact = allContacts.find(c => c.id === leadId);
     if (contact && contact.unreadCount > 0) {
-        contact.unreadCount = 0;        // Update stats and re-render list immediately so the badge disappears and sorting updates
+        contact.unreadCount = 0;
         updateStats(allContacts);
+        renderContacts(allContacts);
         markAsRead(leadId);
     }
 
@@ -194,7 +177,8 @@ async function openChat(leadId, name, email) {
 }
 
 function closeChat() {
-    console.log('🔚 [closeChat] Closing chat');    document.getElementById('viewChat').classList.remove('active');
+    console.log('🔚 [closeChat] Closing chat');
+    document.getElementById('viewChat').classList.remove('active');
     currentLeadId = null;
 }
 
@@ -244,6 +228,7 @@ function updateAutoReplyUI() {
         inputArea.classList.remove('hidden');
     }
 }
+
 // ========== FOLLOW‑UP & HINT DROPDOWN ==========
 function toggleFollowUpMenu(event) {
     if (event) event.stopPropagation();
@@ -292,7 +277,8 @@ function updateAutoFollowUpUI() {
     if (autoFollowUpEnabled) {
         btn.classList.add('active');
         statusSpan.textContent = 'ON';
-        statusSpan.style.color = '#66dd99';    } else {
+        statusSpan.style.color = '#66dd99';
+    } else {
         btn.classList.remove('active');
         statusSpan.textContent = 'OFF';
         statusSpan.style.color = '#ff5555';
@@ -341,7 +327,8 @@ async function toggleAutoFollowUp() {
             updateAutoFollowUpUI();
             const msg = autoFollowUpEnabled ?
                 `Auto follow-up enabled. First follow-up scheduled in 3 days.` :
-                `Auto follow-up disabled.`;            alert(msg);
+                `Auto follow-up disabled.`;
+            alert(msg);
         } else {
             alert(result.message || "Failed to toggle auto follow-up.");
         }
@@ -390,7 +377,8 @@ async function triggerHint() {
                     alert("You have reached your daily hint limit (3/3). Upgrade to Go for more hints.");
                 } else if (currentTier === 'go') {
                     alert("You have reached your daily hint limit (20/20). Upgrade to Pro for unlimited hints.");
-                } else {                    alert("An unexpected error occurred. Please try again later.");
+                } else {
+                    alert("An unexpected error occurred. Please try again later.");
                 }
             } else {
                 alert("Failed to get hint.");
@@ -439,7 +427,8 @@ function openRevenueTracking() {
             closeBtn.onclick = () => {
                 revenueModal.classList.remove('active');
             };
-        }        if (revenueModal) {
+        }
+        if (revenueModal) {
             revenueModal.addEventListener('click', (e) => {
                 if (e.target === revenueModal) revenueModal.classList.remove('active');
             });
@@ -488,7 +477,8 @@ function renderRevenueData(data) {
                 <div class="revenue-lead-list">
                     ${leads.map(lead => `<span class="revenue-lead-name" data-lead-id="${lead.id}" data-lead-name="${escapeHtml(lead.name)}">${escapeHtml(lead.name)}</span>`).join('')}
                     ${count === 0 ? '<span style="color: var(--text-3); font-size: 11px;">—</span>' : ''}
-                </div>            </div>
+                </div>
+            </div>
         `;
     }
     
@@ -537,7 +527,8 @@ function renderRevenueData(data) {
             </div>
         `;
     }
-        revenueContent.innerHTML = html;
+    
+    revenueContent.innerHTML = html;
     
     document.querySelectorAll('.revenue-lead-name').forEach(el => {
         el.addEventListener('click', () => {
@@ -569,4 +560,4 @@ function renderRevenueData(data) {
 
 function closeRevenueModal() {
     if (revenueModal) revenueModal.classList.remove('active');
-}
+            }
