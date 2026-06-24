@@ -28,9 +28,7 @@ function switchTab(tab, btn) {
 function updateStats(contacts) {
     allContacts = contacts;
     const total = contacts.length;
-    // Sum all unread counts from all leads to get total unread conversations
-    const unread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-    
+    const unread = contacts.filter(c => (c.unreadCount || 0) > 0).length;
     let high = 0;
     let med = 0;
     contacts.forEach(c => {
@@ -38,41 +36,40 @@ function updateStats(contacts) {
         if (rating.score >= 75) high++;
         else if (rating.score >= 40) med++;
     });
-    
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statUnread').textContent = unread;
     document.getElementById('statHigh').textContent = high;
     document.getElementById('statMed').textContent = med;
-    
     const badge = document.getElementById('leadsTabBadge');
-    if (badge) {
-        if (unread > 0) {
-            badge.textContent = unread > 99 ? '99+' : unread;            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
-        }
+    if (unread > 0) {
+        badge.textContent = unread > 99 ? '99+' : unread;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
     }
+    // Ensure the list is re-rendered with the latest stats/sorting    renderContacts(contacts);
 }
 
 function renderContacts(contacts) {
     const list = document.getElementById('contactList');
-    if (!list) return;
-
     if (contacts.length === 0) {
         list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
         return;
     }
-
-    // Robust Sorting: Unread first, then by most recent date
+    
+    // Enhanced Sorting: Unread First, then by Date (Newest First)
     const sorted = [...contacts].sort((a, b) => {
-        const aUnread = (a.unreadCount || 0) > 0;
-        const bUnread = (b.unreadCount || 0) > 0;
+        const aU = (a.unreadCount || 0) > 0;
+        const bU = (b.unreadCount || 0) > 0;
         
-        if (aUnread && !bUnread) return -1;
-        if (!aUnread && bUnread) return 1;
+        // Priority 1: Unread messages always on top
+        if (aU && !bU) return -1;
+        if (!aU && bU) return 1;
         
-        // If both are unread or both are read, sort by date
-        return new Date(b.lastDate || 0) - new Date(a.lastDate || 0);
+        // Priority 2: Most recent date
+        const dateA = a.lastDate ? new Date(a.lastDate).getTime() : 0;
+        const dateB = b.lastDate ? new Date(b.lastDate).getTime() : 0;
+        return dateB - dateA;
     });
 
     list.innerHTML = sorted.map(c => {
@@ -82,6 +79,13 @@ function renderContacts(contacts) {
         if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
         
+        // Format date safely
+        let dateStr = '';
+        if (c.lastDate) {
+            const d = new Date(c.lastDate);
+            dateStr = d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+        }
+
         return `
             <div class="contact-item ${unread > 0 ? 'unread' : ''}"
                  onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
@@ -89,14 +93,14 @@ function renderContacts(contacts) {
                 <div class="contact-body">
                     <div class="contact-row1">
                         <span class="contact-name">${escapeHtml(c.name)}</span>
-                        <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
+                        <span class="contact-time">${dateStr}</span>
                     </div>
                     <div class="contact-row2">
-                        <span class="contact-preview">${escapeHtml(c.lastMessage || 'No messages yet')}</span>
-                        <div class="contact-meta">
+                        <span class="contact-preview">${escapeHtml(c.lastMessage || 'No messages yet')}</span>                        <div class="contact-meta">
                             ${unread > 0 ? `<span class="unread-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
                             <span class="conf-badge ${confClass}">
-                                ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>                            </span>
+                                ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>
+                            </span>
                             ${c.company ? `<span class="company-tag">${escapeHtml(c.company)}</span>` : ''}
                         </div>
                     </div>
@@ -131,35 +135,23 @@ async function openChat(leadId, name, email) {
         else if (rating.score >= 40) cls = 'med';
         badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${rating.score} ${rating.tier}</span>`;
     }
-    
-    const chatNameEl = document.getElementById('chatName');
-    if(chatNameEl) chatNameEl.innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
-    
-    const chatEmailEl = document.getElementById('chatEmail');
-    if(chatEmailEl) chatEmailEl.innerText = email;
-    
-    const chatAvatarEl = document.getElementById('chatAvatar');
-    if(chatAvatarEl) chatAvatarEl.innerText = getInitials(name);
-    
-    const replyTextEl = document.getElementById('replyText');
-    if(replyTextEl) {
-        replyTextEl.value = '';
-        replyTextEl.style.height = '38px';
-    }    
+    document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
+    document.getElementById('chatEmail').innerText = email;
+    document.getElementById('chatAvatar').innerText = getInitials(name);
+    document.getElementById('replyText').value = '';
+    document.getElementById('replyText').style.height = '38px';
     document.getElementById('viewChat').classList.add('active');
 
+    // Optimistic UI Update: Mark as read locally immediately
     const contact = allContacts.find(c => c.id === leadId);
     if (contact && contact.unreadCount > 0) {
-        contact.unreadCount = 0;
+        contact.unreadCount = 0;        // Update stats and re-render list immediately so the badge disappears and sorting updates
         updateStats(allContacts);
-        renderContacts(allContacts);
         markAsRead(leadId);
     }
 
     const container = document.getElementById('messagesContainer');
-    if(container) {
-        container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
-    }
+    container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
 
     try {
         const data = await fetchConversationDetails(leadId);
@@ -167,49 +159,42 @@ async function openChat(leadId, name, email) {
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
         await loadFollowUpStatus();
-        
         if (data.messages && data.messages.length > 0) {
-             const realRating = calculateEngagementScore(leadData, data.messages);
-             let cls = 'low';
-             if (realRating.score >= 75) cls = 'high';
-             else if (realRating.score >= 40) cls = 'med';
-             if(chatNameEl) chatNameEl.innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
+            const realRating = calculateEngagementScore(leadData, data.messages);
+            let cls = 'low';
+            if (realRating.score >= 75) cls = 'high';
+            else if (realRating.score >= 40) cls = 'med';
+            document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
         }
-        
         if (!data.messages || data.messages.length === 0) {
-            if(container) {
-                container.innerHTML = `<div class="empty-state">
-                        <div class="empty-icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <h3>No messages yet</h3>
-                        <p>Send the first message to start the conversation.</p>
-                    </div>`;
-            }
+            container.innerHTML = `<div class="empty-state">
+                    <div class="empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3>No messages yet</h3>
+                    <p>Send the first message to start the conversation.</p>
+                </div>`;
             return;
         }
-        
-        if(container) {
-            container.innerHTML = data.messages.map(msg => `
-                <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
-                    <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">                        ${escapeHtml(msg.content)}
-                        <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                    </div>
+        container.innerHTML = data.messages.map(msg => `
+            <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
+                <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
+                    ${escapeHtml(msg.content)}
+                    <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                 </div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
-        }
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
     } catch (err) {
         console.error('❌ [openChat] Error loading messages:', err);
-        if(container) container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
     }
 }
 
 function closeChat() {
-    console.log('🔚 [closeChat] Closing chat');
-    document.getElementById('viewChat').classList.remove('active');
+    console.log('🔚 [closeChat] Closing chat');    document.getElementById('viewChat').classList.remove('active');
     currentLeadId = null;
 }
 
@@ -230,8 +215,7 @@ function toggleAutoReply() {
 }
 
 function openInstructionsModal() {
-    const instrText = document.getElementById('instructionsText');
-    if(instrText) instrText.value = autoReplyInstructions;
+    document.getElementById('instructionsText').value = autoReplyInstructions;
     document.getElementById('instructionsModal').classList.add('active');
 }
 
@@ -243,26 +227,23 @@ function closeInstructionsModal() {
 async function handleSaveInstructions() {
     const instructions = document.getElementById('instructionsText').value.trim();
     const success = await saveAutoReplyInstructions(instructions);
-    if (success) closeInstructionsModal();}
+    if (success) closeInstructionsModal();
+}
 
 function updateAutoReplyUI() {
     const toggle = document.getElementById('aiToggle');
     const editBtn = document.getElementById('editDetailsBtn');
     const inputArea = document.getElementById('replyInputArea');
-    
-    if (toggle && editBtn && inputArea) {
-        if (isAutoReplyEnabled) {
-            toggle.classList.add('active');
-            editBtn.style.display = 'flex';
-            inputArea.classList.add('hidden');
-        } else {
-            toggle.classList.remove('active');
-            editBtn.style.display = 'none';
-            inputArea.classList.remove('hidden');
-        }
+    if (isAutoReplyEnabled) {
+        toggle.classList.add('active');
+        editBtn.style.display = 'flex';
+        inputArea.classList.add('hidden');
+    } else {
+        toggle.classList.remove('active');
+        editBtn.style.display = 'none';
+        inputArea.classList.remove('hidden');
     }
 }
-
 // ========== FOLLOW‑UP & HINT DROPDOWN ==========
 function toggleFollowUpMenu(event) {
     if (event) event.stopPropagation();
@@ -292,13 +273,14 @@ function toggleHintMenu() {
 
 // ========== FOLLOW‑UP UI FUNCTIONS ==========
 async function loadFollowUpStatus() {
-    if (!currentLeadId) return;    try {
+    if (!currentLeadId) return;
+    try {
         const status = await getFollowUpStatus(currentLeadId);
-        window.autoFollowUpEnabled = status.autoFollowUpEnabled;
+        autoFollowUpEnabled = status.autoFollowUpEnabled;
         updateAutoFollowUpUI();
     } catch (err) {
         console.error('Failed to load follow-up status:', err);
-        window.autoFollowUpEnabled = false;
+        autoFollowUpEnabled = false;
         updateAutoFollowUpUI();
     }
 }
@@ -307,18 +289,13 @@ function updateAutoFollowUpUI() {
     const btn = document.getElementById('autoFollowUpBtn');
     const statusSpan = document.getElementById('autoFollowUpStatus');
     if (!btn) return;
-    if (window.autoFollowUpEnabled) {
+    if (autoFollowUpEnabled) {
         btn.classList.add('active');
-        if(statusSpan) {
-            statusSpan.textContent = 'ON';
-            statusSpan.style.color = '#66dd99';
-        }
-    } else {
+        statusSpan.textContent = 'ON';
+        statusSpan.style.color = '#66dd99';    } else {
         btn.classList.remove('active');
-        if(statusSpan) {
-            statusSpan.textContent = 'OFF';
-            statusSpan.style.color = '#ff5555';
-        }
+        statusSpan.textContent = 'OFF';
+        statusSpan.style.color = '#ff5555';
     }
 }
 
@@ -341,7 +318,8 @@ async function suggestFollowUp() {
             autoResize(textArea);
             textArea.focus();
         } else {
-            alert(result.message || "Failed to generate follow-up suggestion.");        }
+            alert(result.message || "Failed to generate follow-up suggestion.");
+        }
     } catch (err) {
         console.error(err);
         alert("Connection error. Please try again.");
@@ -363,8 +341,7 @@ async function toggleAutoFollowUp() {
             updateAutoFollowUpUI();
             const msg = autoFollowUpEnabled ?
                 `Auto follow-up enabled. First follow-up scheduled in 3 days.` :
-                `Auto follow-up disabled.`;
-            alert(msg);
+                `Auto follow-up disabled.`;            alert(msg);
         } else {
             alert(result.message || "Failed to toggle auto follow-up.");
         }
@@ -387,10 +364,9 @@ async function triggerHint() {
     }
     console.log(`💡 [triggerHint] Requesting hint for lead ${currentLeadId}`);
     const btn = document.getElementById('hintMenuBtn');
-    const originalContent = btn ? btn.innerHTML : '';
-    
-    if(btn) btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-        try {
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+    try {
         const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -414,8 +390,7 @@ async function triggerHint() {
                     alert("You have reached your daily hint limit (3/3). Upgrade to Go for more hints.");
                 } else if (currentTier === 'go') {
                     alert("You have reached your daily hint limit (20/20). Upgrade to Pro for unlimited hints.");
-                } else {
-                    alert("An unexpected error occurred. Please try again later.");
+                } else {                    alert("An unexpected error occurred. Please try again later.");
                 }
             } else {
                 alert("Failed to get hint.");
@@ -425,11 +400,9 @@ async function triggerHint() {
 
         if (suggestData.suggestion) {
             const textArea = document.getElementById('replyText');
-            if(textArea) {
-                textArea.value = suggestData.suggestion;
-                autoResize(textArea);
-                textArea.focus();
-            }
+            textArea.value = suggestData.suggestion;
+            autoResize(textArea);
+            textArea.focus();
             console.log('✅ [triggerHint] Hint applied');
         } else {
             console.warn('⚠️ [triggerHint] No suggestion returned');
@@ -438,8 +411,9 @@ async function triggerHint() {
         console.error('❌ [triggerHint] Error:', error);
         alert("Failed to get hint.");
     } finally {
-        if(btn) btn.innerHTML = originalContent;
-    }}
+        btn.innerHTML = originalContent;
+    }
+}
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
@@ -465,8 +439,7 @@ function openRevenueTracking() {
             closeBtn.onclick = () => {
                 revenueModal.classList.remove('active');
             };
-        }
-        if (revenueModal) {
+        }        if (revenueModal) {
             revenueModal.addEventListener('click', (e) => {
                 if (e.target === revenueModal) revenueModal.classList.remove('active');
             });
@@ -488,7 +461,8 @@ function openRevenueTracking() {
 function renderRevenueData(data) {
     if (!revenueContent) return;
     const tier = data.tier || userTier;
-    const categories = data.categories || {};    const advice = data.advice || {};
+    const categories = data.categories || {};
+    const advice = data.advice || {};
     const actions = data.actions || [];
     
     let html = '';
@@ -514,8 +488,7 @@ function renderRevenueData(data) {
                 <div class="revenue-lead-list">
                     ${leads.map(lead => `<span class="revenue-lead-name" data-lead-id="${lead.id}" data-lead-name="${escapeHtml(lead.name)}">${escapeHtml(lead.name)}</span>`).join('')}
                     ${count === 0 ? '<span style="color: var(--text-3); font-size: 11px;">—</span>' : ''}
-                </div>
-            </div>
+                </div>            </div>
         `;
     }
     
@@ -537,7 +510,8 @@ function renderRevenueData(data) {
     
     if (tier === 'pro' && actions && actions.length > 0) {
         html += `<div style="margin: 20px 0 8px;"><strong>⚡ AI Actions (Top ${actions.length})</strong></div>`;
-        html += `<div class="revenue-actions">`;        actions.forEach(action => {
+        html += `<div class="revenue-actions">`;
+        actions.forEach(action => {
             html += `
                 <div class="revenue-action-item">
                     <div class="revenue-action-lead">${escapeHtml(action.leadName || 'Lead')}</div>
@@ -563,8 +537,7 @@ function renderRevenueData(data) {
             </div>
         `;
     }
-    
-    revenueContent.innerHTML = html;
+        revenueContent.innerHTML = html;
     
     document.querySelectorAll('.revenue-lead-name').forEach(el => {
         el.addEventListener('click', () => {
@@ -586,7 +559,8 @@ function renderRevenueData(data) {
             alert('Upgrade to Go or Pro plan to unlock AI Advice.\n\nGo: 30 suggest-follow-up/day, 15 auto-follow-up/day\nPro: 200 suggest-follow-up/day, 100 auto-follow-up/day');
         };
     }
-    const upgradeActions = document.getElementById('upgradeActionsBtn');    if (upgradeActions) {
+    const upgradeActions = document.getElementById('upgradeActionsBtn');
+    if (upgradeActions) {
         upgradeActions.onclick = () => {
             alert('Upgrade to Pro plan to unlock AI Actions.\n\nPro gives you specific actions for your top 20 most promising leads.');
         };
@@ -595,4 +569,4 @@ function renderRevenueData(data) {
 
 function closeRevenueModal() {
     if (revenueModal) revenueModal.classList.remove('active');
-                                   }
+}
