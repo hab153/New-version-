@@ -64,6 +64,9 @@ async function sendReply(text) {
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
             openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
+            // ---- ADDED: refresh contact list to update last message and order ----
+            loadContacts();
+            // ---- END ADDED ----
         } else {
             const errorMsg = data.message || data.error || JSON.stringify(data.errors);
             alert(`Failed to send: ${errorMsg}`);
@@ -191,4 +194,4 @@ async function fetchRevenueTracking() {
         throw new Error(err.message || 'Failed to load revenue data');
     }
     return await res.json();
-    }
+            }
