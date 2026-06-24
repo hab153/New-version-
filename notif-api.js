@@ -22,13 +22,17 @@ async function loadContacts() {
         }
         const contacts = await res.json();
         console.log(`✅ [loadContacts] Received ${contacts.length} contacts`);
+        
+        // Ensure stats and rendering happen after data is fully received
         updateStats(contacts);
         renderContacts(contacts);
         return contacts;
     } catch (err) {
         console.error('❌ [loadContacts] Error:', err);
-        document.getElementById('contactList').innerHTML =
-            '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
+        const list = document.getElementById('contactList');
+        if (list) {
+            list.innerHTML = '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
+        }
         return [];
     }
 }
@@ -37,13 +41,13 @@ async function sendReply(text) {
     if (!text || !currentLeadId) return;
     console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
     const btn = document.getElementById('sendBtn');
-    btn.disabled = true;
+    if (btn) btn.disabled = true;
+    
     const payload = {
         leads: [{ 
             name: window.currentLeadName, 
             email: window.currentLeadEmail, 
-            company: '',
-            messages: [{ subject: "Re: Conversation", body: text }] 
+            company: '',            messages: [{ subject: "Re: Conversation", body: text }] 
         }]
     };
     try {
@@ -54,16 +58,21 @@ async function sendReply(text) {
         });
         const data = await res.json();
         console.log(`📤 [sendReply] Response status: ${res.status}`);
+        
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
             localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
             alert("⚠️ Email session expired. Please reconnect.");
             window.location.href = 'dashboard.html?connect=true';
             return;
         }
+        
         if (data.success) {
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
+            // Refresh chat to show the sent message
             openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
+            // Also refresh the main list to update "lastMessage" and "lastDate"
+            loadContacts();
         } else {
             const errorMsg = data.message || data.error || JSON.stringify(data.errors);
             alert(`Failed to send: ${errorMsg}`);
@@ -74,7 +83,7 @@ async function sendReply(text) {
         alert("Connection error. Message saved.");
         window.location.href = 'dashboard.html?connect=true';
     } finally {
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
@@ -87,8 +96,7 @@ async function saveAutoReplyInstructions(instructions) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ enabled: true, instructions })
         });
-        if (res.ok) {
-            isAutoReplyEnabled = true;
+        if (res.ok) {            isAutoReplyEnabled = true;
             autoReplyInstructions = instructions;
             updateAutoReplyUI();
             console.log('✅ [saveAutoReplyInstructions] Success');
@@ -137,7 +145,6 @@ async function renameCustomer(newName) {
         }
     }
 }
-
 async function fetchConversationDetails(leadId) {
     console.log(`📡 [fetchConversationDetails] Fetching details for lead ${leadId}`);
     const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
@@ -150,10 +157,16 @@ async function fetchConversationDetails(leadId) {
 
 async function markAsRead(leadId) {
     console.log(`👁️ [markAsRead] Marking lead ${leadId} as read`);
-    fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    }).catch(err => console.error('❌ [markAsRead] Error:', err));
+    try {
+        await fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        // Optional: Trigger a refresh of the contact list to ensure sorting updates
+        // loadContacts(); 
+    } catch (err) {
+        console.error('❌ [markAsRead] Error:', err);
+    }
 }
 
 // ========== FOLLOW-UP API FUNCTIONS ==========
@@ -181,8 +194,7 @@ async function getFollowUpStatus(leadId) {
     return await res.json();
 }
 
-// ========== REVENUE TRACKING API ==========
-async function fetchRevenueTracking() {
+// ========== REVENUE TRACKING API ==========async function fetchRevenueTracking() {
     const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -191,4 +203,4 @@ async function fetchRevenueTracking() {
         throw new Error(err.message || 'Failed to load revenue data');
     }
     return await res.json();
-                     }
+            }
