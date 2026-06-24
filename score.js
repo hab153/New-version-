@@ -47,7 +47,8 @@ function calculateLeadScore(lead) {
 
     // 3. Company & Source (Max 30)
     if (lead.company && lead.company.length > 2) score += 10;
-    if (lead.industry && lead.industry.length > 2) score += 10;        if (lead.source === 'linkedin' || lead.source === 'official_website') {
+    if (lead.industry && lead.industry.length > 2) score += 10;    
+    if (lead.source === 'linkedin' || lead.source === 'official_website') {
         score += 10;
         reasons.push("High-Quality Source");
     } else {
@@ -95,8 +96,8 @@ function calculateEngagementScore(lead, messages = []) {
             score += 25;
             reasons.push("Active Recently");
         } else if (hoursSinceLastMsg < 168) { // 1 week
-            score += 10;            
-            reasons.push("Active This Week");        }
+            score += 10;            reasons.push("Active This Week");
+        }
     }
 
     // 2. Message Volume (Max 30 points)
@@ -145,8 +146,9 @@ function calculateEngagementScore(lead, messages = []) {
         tier = 'Inactive';
         color = '#707070'; // Gray/Text-3
     }
-    return { score, tier, color, reasons };}
+    return { score, tier, color, reasons };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { calculateLeadScore, calculateEngagementScore };
-        }
+    }
