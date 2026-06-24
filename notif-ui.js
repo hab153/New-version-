@@ -28,7 +28,7 @@ function switchTab(tab, btn) {
 function updateStats(contacts) {
     allContacts = contacts;
     const total = contacts.length;
-    // Ensure we count all unread messages from all leads
+    // Sum all unread counts from all leads to get total unread conversations
     const unread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
     
     let high = 0;
@@ -45,10 +45,12 @@ function updateStats(contacts) {
     document.getElementById('statMed').textContent = med;
     
     const badge = document.getElementById('leadsTabBadge');
-    if (unread > 0) {
-        badge.textContent = unread > 99 ? '99+' : unread;
-        badge.style.display = 'flex';    } else {
-        badge.style.display = 'none';
+    if (badge) {
+        if (unread > 0) {
+            badge.textContent = unread > 99 ? '99+' : unread;            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
     }
 }
 
@@ -94,9 +96,9 @@ function renderContacts(contacts) {
                         <div class="contact-meta">
                             ${unread > 0 ? `<span class="unread-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
                             <span class="conf-badge ${confClass}">
-                                ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>
-                            </span>
-                            ${c.company ? `<span class="company-tag">${escapeHtml(c.company)}</span>` : ''}                        </div>
+                                ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>                            </span>
+                            ${c.company ? `<span class="company-tag">${escapeHtml(c.company)}</span>` : ''}
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -129,23 +131,35 @@ async function openChat(leadId, name, email) {
         else if (rating.score >= 40) cls = 'med';
         badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${rating.score} ${rating.tier}</span>`;
     }
-    document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
-    document.getElementById('chatEmail').innerText = email;
-    document.getElementById('chatAvatar').innerText = getInitials(name);
-    document.getElementById('replyText').value = '';
-    document.getElementById('replyText').style.height = '38px';
+    
+    const chatNameEl = document.getElementById('chatName');
+    if(chatNameEl) chatNameEl.innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
+    
+    const chatEmailEl = document.getElementById('chatEmail');
+    if(chatEmailEl) chatEmailEl.innerText = email;
+    
+    const chatAvatarEl = document.getElementById('chatAvatar');
+    if(chatAvatarEl) chatAvatarEl.innerText = getInitials(name);
+    
+    const replyTextEl = document.getElementById('replyText');
+    if(replyTextEl) {
+        replyTextEl.value = '';
+        replyTextEl.style.height = '38px';
+    }    
     document.getElementById('viewChat').classList.add('active');
 
     const contact = allContacts.find(c => c.id === leadId);
     if (contact && contact.unreadCount > 0) {
         contact.unreadCount = 0;
-        // Update UI immediately to reflect read status
         updateStats(allContacts);
         renderContacts(allContacts);
         markAsRead(leadId);
     }
 
-    const container = document.getElementById('messagesContainer');    container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
+    const container = document.getElementById('messagesContainer');
+    if(container) {
+        container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
+    }
 
     try {
         const data = await fetchConversationDetails(leadId);
@@ -155,38 +169,41 @@ async function openChat(leadId, name, email) {
         await loadFollowUpStatus();
         
         if (data.messages && data.messages.length > 0) {
-            const realRating = calculateEngagementScore(leadData, data.messages);
-            let cls = 'low';
-            if (realRating.score >= 75) cls = 'high';
-            else if (realRating.score >= 40) cls = 'med';
-            document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
+             const realRating = calculateEngagementScore(leadData, data.messages);
+             let cls = 'low';
+             if (realRating.score >= 75) cls = 'high';
+             else if (realRating.score >= 40) cls = 'med';
+             if(chatNameEl) chatNameEl.innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
         }
         
         if (!data.messages || data.messages.length === 0) {
-            container.innerHTML = `<div class="empty-state">
-                    <div class="empty-icon">
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                    <h3>No messages yet</h3>
-                    <p>Send the first message to start the conversation.</p>
-                </div>`;
+            if(container) {
+                container.innerHTML = `<div class="empty-state">
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>No messages yet</h3>
+                        <p>Send the first message to start the conversation.</p>
+                    </div>`;
+            }
             return;
         }
         
-        container.innerHTML = data.messages.map(msg => `
-            <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
-                <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
-                    ${escapeHtml(msg.content)}
-                    <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+        if(container) {
+            container.innerHTML = data.messages.map(msg => `
+                <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
+                    <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">                        ${escapeHtml(msg.content)}
+                        <div class="message-time">${new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                    </div>
                 </div>
-            </div>
-        `).join('');
-        container.scrollTop = container.scrollHeight;
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
     } catch (err) {
         console.error('❌ [openChat] Error loading messages:', err);
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
+        if(container) container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
     }
 }
 
@@ -195,6 +212,7 @@ function closeChat() {
     document.getElementById('viewChat').classList.remove('active');
     currentLeadId = null;
 }
+
 // ========== AUTO‑REPLY ==========
 function toggleAutoReply() {
     console.log(`🤖 [toggleAutoReply] Current isAutoReplyEnabled=${isAutoReplyEnabled}`);
@@ -212,7 +230,8 @@ function toggleAutoReply() {
 }
 
 function openInstructionsModal() {
-    document.getElementById('instructionsText').value = autoReplyInstructions;
+    const instrText = document.getElementById('instructionsText');
+    if(instrText) instrText.value = autoReplyInstructions;
     document.getElementById('instructionsModal').classList.add('active');
 }
 
@@ -224,26 +243,29 @@ function closeInstructionsModal() {
 async function handleSaveInstructions() {
     const instructions = document.getElementById('instructionsText').value.trim();
     const success = await saveAutoReplyInstructions(instructions);
-    if (success) closeInstructionsModal();
-}
+    if (success) closeInstructionsModal();}
 
 function updateAutoReplyUI() {
     const toggle = document.getElementById('aiToggle');
     const editBtn = document.getElementById('editDetailsBtn');
     const inputArea = document.getElementById('replyInputArea');
-    if (isAutoReplyEnabled) {
-        toggle.classList.add('active');
-        editBtn.style.display = 'flex';
-        inputArea.classList.add('hidden');
-    } else {
-        toggle.classList.remove('active');
-        editBtn.style.display = 'none';
-        inputArea.classList.remove('hidden');
+    
+    if (toggle && editBtn && inputArea) {
+        if (isAutoReplyEnabled) {
+            toggle.classList.add('active');
+            editBtn.style.display = 'flex';
+            inputArea.classList.add('hidden');
+        } else {
+            toggle.classList.remove('active');
+            editBtn.style.display = 'none';
+            inputArea.classList.remove('hidden');
+        }
     }
 }
 
 // ========== FOLLOW‑UP & HINT DROPDOWN ==========
-function toggleFollowUpMenu(event) {    if (event) event.stopPropagation();
+function toggleFollowUpMenu(event) {
+    if (event) event.stopPropagation();
     const dropdown = document.getElementById('followUpDropdown');
     if (!dropdown) return;
     const isOpen = dropdown.classList.contains('show');
@@ -270,14 +292,13 @@ function toggleHintMenu() {
 
 // ========== FOLLOW‑UP UI FUNCTIONS ==========
 async function loadFollowUpStatus() {
-    if (!currentLeadId) return;
-    try {
+    if (!currentLeadId) return;    try {
         const status = await getFollowUpStatus(currentLeadId);
-        autoFollowUpEnabled = status.autoFollowUpEnabled;
+        window.autoFollowUpEnabled = status.autoFollowUpEnabled;
         updateAutoFollowUpUI();
     } catch (err) {
         console.error('Failed to load follow-up status:', err);
-        autoFollowUpEnabled = false;
+        window.autoFollowUpEnabled = false;
         updateAutoFollowUpUI();
     }
 }
@@ -286,13 +307,18 @@ function updateAutoFollowUpUI() {
     const btn = document.getElementById('autoFollowUpBtn');
     const statusSpan = document.getElementById('autoFollowUpStatus');
     if (!btn) return;
-    if (autoFollowUpEnabled) {
+    if (window.autoFollowUpEnabled) {
         btn.classList.add('active');
-        statusSpan.textContent = 'ON';
-        statusSpan.style.color = '#66dd99';
+        if(statusSpan) {
+            statusSpan.textContent = 'ON';
+            statusSpan.style.color = '#66dd99';
+        }
     } else {
         btn.classList.remove('active');
-        statusSpan.textContent = 'OFF';        statusSpan.style.color = '#ff5555';
+        if(statusSpan) {
+            statusSpan.textContent = 'OFF';
+            statusSpan.style.color = '#ff5555';
+        }
     }
 }
 
@@ -315,8 +341,7 @@ async function suggestFollowUp() {
             autoResize(textArea);
             textArea.focus();
         } else {
-            alert(result.message || "Failed to generate follow-up suggestion.");
-        }
+            alert(result.message || "Failed to generate follow-up suggestion.");        }
     } catch (err) {
         console.error(err);
         alert("Connection error. Please try again.");
@@ -341,7 +366,8 @@ async function toggleAutoFollowUp() {
                 `Auto follow-up disabled.`;
             alert(msg);
         } else {
-            alert(result.message || "Failed to toggle auto follow-up.");        }
+            alert(result.message || "Failed to toggle auto follow-up.");
+        }
     } catch (err) {
         console.error(err);
         alert("Connection error. Please try again.");
@@ -361,9 +387,10 @@ async function triggerHint() {
     }
     console.log(`💡 [triggerHint] Requesting hint for lead ${currentLeadId}`);
     const btn = document.getElementById('hintMenuBtn');
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-    try {
+    const originalContent = btn ? btn.innerHTML : '';
+    
+    if(btn) btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+        try {
         const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -390,16 +417,19 @@ async function triggerHint() {
                 } else {
                     alert("An unexpected error occurred. Please try again later.");
                 }
-            } else {                alert("Failed to get hint.");
+            } else {
+                alert("Failed to get hint.");
             }
             return;
         }
 
         if (suggestData.suggestion) {
             const textArea = document.getElementById('replyText');
-            textArea.value = suggestData.suggestion;
-            autoResize(textArea);
-            textArea.focus();
+            if(textArea) {
+                textArea.value = suggestData.suggestion;
+                autoResize(textArea);
+                textArea.focus();
+            }
             console.log('✅ [triggerHint] Hint applied');
         } else {
             console.warn('⚠️ [triggerHint] No suggestion returned');
@@ -408,9 +438,8 @@ async function triggerHint() {
         console.error('❌ [triggerHint] Error:', error);
         alert("Failed to get hint.");
     } finally {
-        btn.innerHTML = originalContent;
-    }
-}
+        if(btn) btn.innerHTML = originalContent;
+    }}
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
@@ -439,7 +468,8 @@ function openRevenueTracking() {
         }
         if (revenueModal) {
             revenueModal.addEventListener('click', (e) => {
-                if (e.target === revenueModal) revenueModal.classList.remove('active');            });
+                if (e.target === revenueModal) revenueModal.classList.remove('active');
+            });
         }
     }
     if (!revenueModal) return;
@@ -458,8 +488,7 @@ function openRevenueTracking() {
 function renderRevenueData(data) {
     if (!revenueContent) return;
     const tier = data.tier || userTier;
-    const categories = data.categories || {};
-    const advice = data.advice || {};
+    const categories = data.categories || {};    const advice = data.advice || {};
     const actions = data.actions || [];
     
     let html = '';
@@ -488,7 +517,8 @@ function renderRevenueData(data) {
                 </div>
             </div>
         `;
-    }    
+    }
+    
     if (tier === 'go' || tier === 'pro') {
         let adviceHtml = '';
         for (const key of order) {
@@ -507,8 +537,7 @@ function renderRevenueData(data) {
     
     if (tier === 'pro' && actions && actions.length > 0) {
         html += `<div style="margin: 20px 0 8px;"><strong>⚡ AI Actions (Top ${actions.length})</strong></div>`;
-        html += `<div class="revenue-actions">`;
-        actions.forEach(action => {
+        html += `<div class="revenue-actions">`;        actions.forEach(action => {
             html += `
                 <div class="revenue-action-item">
                     <div class="revenue-action-lead">${escapeHtml(action.leadName || 'Lead')}</div>
@@ -537,7 +566,8 @@ function renderRevenueData(data) {
     
     revenueContent.innerHTML = html;
     
-    document.querySelectorAll('.revenue-lead-name').forEach(el => {        el.addEventListener('click', () => {
+    document.querySelectorAll('.revenue-lead-name').forEach(el => {
+        el.addEventListener('click', () => {
             const leadId = el.getAttribute('data-lead-id');
             const leadName = el.getAttribute('data-lead-name');
             const contact = allContacts.find(c => c.id === leadId);
@@ -556,8 +586,7 @@ function renderRevenueData(data) {
             alert('Upgrade to Go or Pro plan to unlock AI Advice.\n\nGo: 30 suggest-follow-up/day, 15 auto-follow-up/day\nPro: 200 suggest-follow-up/day, 100 auto-follow-up/day');
         };
     }
-    const upgradeActions = document.getElementById('upgradeActionsBtn');
-    if (upgradeActions) {
+    const upgradeActions = document.getElementById('upgradeActionsBtn');    if (upgradeActions) {
         upgradeActions.onclick = () => {
             alert('Upgrade to Pro plan to unlock AI Actions.\n\nPro gives you specific actions for your top 20 most promising leads.');
         };
@@ -566,4 +595,4 @@ function renderRevenueData(data) {
 
 function closeRevenueModal() {
     if (revenueModal) revenueModal.classList.remove('active');
-    }
+                                   }
