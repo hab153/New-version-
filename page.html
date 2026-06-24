@@ -427,7 +427,6 @@
   <a href="history.html" class="nav-item" aria-label="History">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg>
   </a>
-  <!-- FIX: changed href to javascript:void(0) to prevent navigation -->
   <a href="javascript:void(0)" class="nav-item" id="navNotifBtn" aria-label="Notifications">
     <div class="nav-badge"></div>
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -437,17 +436,16 @@
   </a>
 </nav>
 
-<!-- ========== NOTIFICATION PANEL (ADDED) ========== -->
+<!-- Notification Panel -->
 <div id="notifPanel" style="display:none; position:fixed; bottom:80px; right:16px; width:340px; max-height:60vh; background:var(--surface); border:1px solid var(--br-md); border-radius:var(--r-xl); box-shadow:0 20px 60px rgba(0,0,0,0.9); z-index:9999; overflow:hidden; animation:cardIn 0.3s ease both;">
   <div style="padding:14px 18px; border-bottom:1px solid var(--br-dim); display:flex; justify-content:space-between; align-items:center;">
     <span style="font-family:var(--display); font-size:16px; font-weight:400; color:var(--gold-pale);">New Replies</span>
     <button onclick="closeNotifPanel()" style="background:none; border:none; color:var(--t3); cursor:pointer; font-size:16px;">✕</button>
   </div>
   <div id="notifList" style="overflow-y:auto; max-height:calc(60vh - 56px); padding:4px 0;">
-    <div style="padding:20px; text-align:center; color:var(--t3); font-family:var(--mono); font-size:11px;">No new messages</div>
+    <div style="padding:20px; text-align:center; color:var(--t3); font-family:var(--mono); font-size:11px;">Loading…</div>
   </div>
 </div>
-<!-- ========== END ADDED ========== -->
 
 <script>
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -470,7 +468,6 @@
     document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
     document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
     
-    // FIX: notification button click – now properly opens panel
     const navNotifBtn = document.getElementById('navNotifBtn');
     if (navNotifBtn) {
       navNotifBtn.addEventListener('click', (e) => {
@@ -506,12 +503,13 @@
       inputBar.classList.add('active');
       await loadSession();
     }
-    // Start live notification polling
-    loadNotifContacts();
+    // Initial load of notification data
+    await loadNotifContacts();
+    // Poll every 10 seconds
     setInterval(loadNotifContacts, 10000);
   });
 
-  // ========== ADDED: LIVE NOTIFICATION LOGIC ==========
+  // ========== NOTIFICATION LOGIC (IMPROVED) ==========
   let notifContacts = [];
   let notifPanelOpen = false;
 
@@ -520,18 +518,27 @@
       const res = await fetch(`${BACKEND}/api/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to load conversations');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const contacts = await res.json();
+      console.log('📩 [notif] Loaded contacts:', contacts.length, 'first:', contacts[0]);
       notifContacts = contacts;
       updateNotifBadge(contacts);
       if (notifPanelOpen) renderNotifPanel(contacts);
     } catch (err) {
-      console.warn('⚠️ [notif] Could not load contacts:', err);
+      console.error('❌ [notif] Failed to load:', err);
+      if (notifPanelOpen) {
+        document.getElementById('notifList').innerHTML = 
+          `<div style="padding:20px; text-align:center; color:var(--rose); font-size:12px;">⚠️ Failed to load</div>`;
+      }
     }
   }
 
   function updateNotifBadge(contacts) {
-    const totalUnread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+    const totalUnread = contacts.reduce((sum, c) => {
+      // fallback: try unread or unreadCount
+      const count = c.unreadCount !== undefined ? c.unreadCount : (c.unread || 0);
+      return sum + count;
+    }, 0);
     const badge = document.querySelector('.nav-item#navNotifBtn .nav-badge');
     const btn = document.getElementById('navNotifBtn');
     if (!badge || !btn) return;
@@ -547,8 +554,12 @@
   function renderNotifPanel(contacts) {
     const list = document.getElementById('notifList');
     if (!list) return;
-    const unread = contacts.filter(c => (c.unreadCount || 0) > 0)
-      .sort((a, b) => new Date(b.lastDate || 0) - new Date(a.lastDate || 0));
+    // Filter unread using fallback key
+    const unread = contacts.filter(c => {
+      const count = c.unreadCount !== undefined ? c.unreadCount : (c.unread || 0);
+      return count > 0;
+    }).sort((a, b) => new Date(b.lastDate || 0) - new Date(a.lastDate || 0));
+    
     if (unread.length === 0) {
       list.innerHTML = `<div style="padding:20px; text-align:center; color:var(--t3); font-family:var(--mono); font-size:11px;">✨ All caught up</div>`;
       return;
@@ -562,7 +573,7 @@
           <div style="flex:1; min-width:0;">
             <div style="display:flex; justify-content:space-between; align-items:baseline;">
               <strong style="color:var(--gold-pale); font-size:13px;">${escapeHtml(c.name)}</strong>
-              <span style="font-family:var(--mono); font-size:9px; color:var(--t3);">${c.unreadCount > 1 ? c.unreadCount+' new' : 'new'}</span>
+              <span style="font-family:var(--mono); font-size:9px; color:var(--t3);">${(c.unreadCount || c.unread || 0) > 1 ? (c.unreadCount || c.unread || 0)+' new' : 'new'}</span>
             </div>
             <div style="font-size:12px; color:var(--t2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(preview)}</div>
           </div>
@@ -580,9 +591,14 @@
     const panel = document.getElementById('notifPanel');
     if (notifPanelOpen) {
       panel.style.display = 'block';
-      // Load fresh data if not yet loaded
-      if (notifContacts.length === 0) loadNotifContacts();
-      else renderNotifPanel(notifContacts);
+      // Force refresh data
+      loadNotifContacts().then(() => {
+        // if still no contacts, show loading message
+        if (notifContacts.length === 0) {
+          document.getElementById('notifList').innerHTML = 
+            `<div style="padding:20px; text-align:center; color:var(--t3); font-family:var(--mono); font-size:11px;">No conversations found</div>`;
+        }
+      });
     } else {
       panel.style.display = 'none';
     }
@@ -602,20 +618,18 @@
     }
   });
 
-  // Helper: get initials
   function getInitials(name) {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   }
 
-  // Escape HTML (already defined, but keep for safety)
   function escapeHtml(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-  // ========== END ADDED ==========
+  // ========== END NOTIFICATION LOGIC ==========
 
-  // ----- existing functions below (unchanged) -----
+  // ----- existing functions (unchanged) -----
   async function loadNotifCount() {
     try {
       const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -861,4 +875,4 @@
   function clearChat() { window.location.href = window.location.pathname; }
 </script>
 </body>
-                </html>
+  </html>
