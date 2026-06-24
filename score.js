@@ -82,6 +82,7 @@ function calculateEngagementScore(lead, messages = []) {
     const reasons = [];
 
     // 1. Recency of Interaction (Max 40 points)
+    // If the last message was within the last 24 hours, high score.
     if (lead.lastDate) {
         const lastMsgTime = new Date(lead.lastDate).getTime();
         const now = new Date().getTime();
@@ -95,10 +96,11 @@ function calculateEngagementScore(lead, messages = []) {
             reasons.push("Active Recently");
         } else if (hoursSinceLastMsg < 168) { // 1 week
             score += 10;            
-            reasons.push("Active This Week");
-        }    }
+            reasons.push("Active This Week");        }
+    }
 
     // 2. Message Volume (Max 30 points)
+    // More messages indicate higher interest.
     const msgCount = messages.length || lead.messageCount || 0;
     if (msgCount > 10) {
         score += 30;
@@ -112,6 +114,7 @@ function calculateEngagementScore(lead, messages = []) {
     }
 
     // 3. Conversation Balance (Max 30 points)
+    // Check if both parties are speaking.
     if (messages.length > 0) {
         const leadMsgs = messages.filter(m => m.from === 'lead').length;
         const aiMsgs = messages.filter(m => m.from === 'ai').length;
@@ -142,8 +145,8 @@ function calculateEngagementScore(lead, messages = []) {
         tier = 'Inactive';
         color = '#707070'; // Gray/Text-3
     }
-    return { score, tier, color, reasons };
-}
+    return { score, tier, color, reasons };}
 
-if (typeof module !== 'undefined' && module.exports) {    module.exports = { calculateLeadScore, calculateEngagementScore };
-    }
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { calculateLeadScore, calculateEngagementScore };
+        }
