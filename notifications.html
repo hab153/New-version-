@@ -31,25 +31,33 @@
       border-color: var(--accent);
     }
 
-    /* ----- ADDED: WhatsApp-style unread badge styling ----- */
+    /* ============================================================ */
+    /* WHATSAPP-STYLE UNREAD BADGE – PER CONTACT                    */
+    /* ============================================================ */
     .contact-item .unread-badge {
-      background: #ff3b30;
-      color: white;
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 600;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 5px;
+      background: #ff3b30;        /* WhatsApp red */
+      color: #ffffff;
+      font-family: var(--font-mono, 'Monaco', 'Menlo', monospace);
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
       border-radius: 10px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       margin-left: 6px;
       line-height: 1;
-      border: 1px solid var(--bg-base);
+      border: 1px solid var(--bg-base, #121212);
       box-shadow: 0 1px 4px rgba(255,59,48,0.3);
       flex-shrink: 0;
+    }
+
+    /* Highlight the entire row when unread */
+    .contact-item.unread {
+      background: rgba(255,59,48,0.04);
+      border-left: 3px solid #ff3b30;
     }
 
     .contact-item.unread .contact-name {
@@ -62,11 +70,15 @@
       color: var(--text-1);
     }
 
-    .contact-item.unread {
-      background: rgba(255,59,48,0.03);
-      border-left: 3px solid #ff3b30;
+    .contact-item.unread .contact-time {
+      color: var(--accent);
     }
-    /* ----- END ADDED ----- */
+
+    /* Stats row unread count (top bar) – keep as is */
+    .stat-chip-val.red {
+      color: var(--red);
+    }
+    /* ============================================================ */
   </style>
 </head>
 <body>
@@ -904,7 +916,7 @@
     })();
   </script>
 
-  <!-- MAIN INITIALIZATION + ADDED: POLLING FOR LIVE UPDATES -->
+  <!-- MAIN INITIALIZATION + POLLING FOR LIVE UPDATES -->
   <script>
     // Original initialization
     if (!localStorage.getItem('token')) window.location.href = "login.html";
@@ -937,11 +949,11 @@
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       loadContacts();
       
-      // ---- ADDED: refresh every 15 seconds (like WhatsApp) ----
+      // ---- REFRESH EVERY 10 SECONDS (WhatsApp-like speed) ----
       refreshInterval = setInterval(() => {
         loadContacts();
-      }, 15000);
+      }, 10000);
     });
   </script>
 </body>
-  </html>
+          </html>
