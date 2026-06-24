@@ -47,7 +47,8 @@ async function sendReply(text) {
         }]
     };
     try {
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {            method: 'POST',
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(payload)
         });
@@ -96,7 +97,8 @@ async function saveAutoReplyInstructions(instructions) {
             alert("Failed to save.");
             return false;
         }
-    } catch (err) {        console.error('❌ [saveAutoReplyInstructions] Error:', err);
+    } catch (err) {
+        console.error('❌ [saveAutoReplyInstructions] Error:', err);
         alert("Connection error.");
         return false;
     }
@@ -145,6 +147,7 @@ async function fetchConversationDetails(leadId) {
     console.log(`✅ [fetchConversationDetails] Received ${data.messages?.length || 0} messages`);
     return data;
 }
+
 async function markAsRead(leadId) {
     console.log(`👁️ [markAsRead] Marking lead ${leadId} as read`);
     fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
