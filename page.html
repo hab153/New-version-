@@ -435,6 +435,19 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </a>
 </nav>
+
+<!-- ========== ADDED: NOTIFICATION PANEL ========== -->
+<div id="notifPanel" style="display:none; position:fixed; bottom:80px; right:16px; width:340px; max-height:60vh; background:var(--surface); border:1px solid var(--br-md); border-radius:var(--r-xl); box-shadow:0 20px 60px rgba(0,0,0,0.8); z-index:999; overflow:hidden; animation:cardIn 0.3s ease both;">
+  <div style="padding:14px 18px; border-bottom:1px solid var(--br-dim); display:flex; justify-content:space-between; align-items:center;">
+    <span style="font-family:var(--display); font-size:16px; font-weight:400; color:var(--gold-pale);">New Replies</span>
+    <button onclick="closeNotifPanel()" style="background:none; border:none; color:var(--t3); cursor:pointer; font-size:16px;">✕</button>
+  </div>
+  <div id="notifList" style="overflow-y:auto; max-height:calc(60vh - 56px); padding:4px 0;">
+    <div style="padding:20px; text-align:center; color:var(--t3); font-family:var(--mono); font-size:11px;">No new messages</div>
+  </div>
+</div>
+<!-- ========== END ADDED ========== -->
+
 <script>
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
   const token = localStorage.getItem('token');
@@ -457,11 +470,11 @@
     document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
     const navNotifBtn = document.getElementById('navNotifBtn');
     if (navNotifBtn) {
-      navNotifBtn.addEventListener('click', () => {
-        localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || 0);
-        updateBadge(0);
+      navNotifBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // override navigation
+        toggleNotifPanel();
       });
+      // Also update badge on load
     }
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
@@ -488,7 +501,115 @@
       chatArea.classList.add('active');
       inputBar.classList.add('active');
       await loadSession();
-    }  });
+    }
+    // Start live notification polling
+    loadNotifContacts();
+    setInterval(loadNotifContacts, 10000);
+  });
+
+  // ========== ADDED: LIVE NOTIFICATION LOGIC ==========
+  let notifContacts = [];
+  let notifPanelOpen = false;
+
+  async function loadNotifContacts() {
+    try {
+      const res = await fetch(`${BACKEND}/api/conversations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load conversations');
+      const contacts = await res.json();
+      notifContacts = contacts;
+      updateNotifBadge(contacts);
+      if (notifPanelOpen) renderNotifPanel(contacts);
+    } catch (err) {
+      console.warn('⚠️ [notif] Could not load contacts:', err);
+    }
+  }
+
+  function updateNotifBadge(contacts) {
+    const totalUnread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+    const badge = document.querySelector('.nav-item#navNotifBtn .nav-badge');
+    const btn = document.getElementById('navNotifBtn');
+    if (!badge || !btn) return;
+    if (totalUnread > 0) {
+      btn.classList.add('has-notifs');
+      badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
+    } else {
+      btn.classList.remove('has-notifs');
+      badge.textContent = '';
+    }
+  }
+
+  function renderNotifPanel(contacts) {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    const unread = contacts.filter(c => (c.unreadCount || 0) > 0)
+      .sort((a, b) => new Date(b.lastDate || 0) - new Date(a.lastDate || 0));
+    if (unread.length === 0) {
+      list.innerHTML = `<div style="padding:20px; text-align:center; color:var(--t3); font-family:var(--mono); font-size:11px;">✨ All caught up</div>`;
+      return;
+    }
+    list.innerHTML = unread.map(c => {
+      const preview = c.lastMessage ? c.lastMessage.slice(0, 60) + (c.lastMessage.length > 60 ? '…' : '') : 'No message';
+      return `
+        <div onclick="openLeadChat('${c.id}')" style="display:flex; align-items:center; gap:12px; padding:10px 16px; border-bottom:1px solid var(--br-dim); cursor:pointer; transition:background 0.15s;" 
+             onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">
+          <div style="width:32px; height:32px; border-radius:50%; background:var(--gold); color:#0d0a04; display:flex; align-items:center; justify-content:center; font-weight:600; flex-shrink:0;">${getInitials(c.name)}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <strong style="color:var(--gold-pale); font-size:13px;">${escapeHtml(c.name)}</strong>
+              <span style="font-family:var(--mono); font-size:9px; color:var(--t3);">${c.unreadCount > 1 ? c.unreadCount+' new' : 'new'}</span>
+            </div>
+            <div style="font-size:12px; color:var(--t2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(preview)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function openLeadChat(leadId) {
+    window.location.href = `dashboard.html?openLead=${leadId}`;
+  }
+
+  function toggleNotifPanel() {
+    notifPanelOpen = !notifPanelOpen;
+    const panel = document.getElementById('notifPanel');
+    if (notifPanelOpen) {
+      panel.style.display = 'block';
+      renderNotifPanel(notifContacts);
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+
+  function closeNotifPanel() {
+    notifPanelOpen = false;
+    document.getElementById('notifPanel').style.display = 'none';
+  }
+
+  // Close panel when clicking outside
+  document.addEventListener('click', function(e) {
+    const panel = document.getElementById('notifPanel');
+    const btn = document.getElementById('navNotifBtn');
+    if (notifPanelOpen && panel && !panel.contains(e.target) && !btn?.contains(e.target)) {
+      closeNotifPanel();
+    }
+  });
+
+  // Helper: get initials
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // Escape HTML (already defined, but keep for safety)
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  // ========== END ADDED ==========
+
+  // ----- existing functions below (unchanged) -----
   async function loadNotifCount() {
     try {
       const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -537,7 +658,8 @@
     msgInput.value = '';
     msgInput.style.height = 'auto';
     updateSend();
-    await fetchResponse(text);  }
+    await fetchResponse(text);
+  }
   async function fetchResponse(message) {
     isTyping = true;
     updateSend();
@@ -586,7 +708,8 @@
         if (msgs?.length) {
           document.getElementById('msgContainer').innerHTML = '';
           for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';            appendMsg(role, m.content);
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            appendMsg(role, m.content);
             conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
           }
           scrollDown();
@@ -635,7 +758,8 @@
     s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
     s = s.replace(/\n/g, '<br>');
     return s;
-  }  function renderReview(leads) {
+  }
+  function renderReview(leads) {
     const list = document.getElementById('emailList');
     list.innerHTML = '';
     leads.forEach((lead, i) => {
@@ -684,7 +808,8 @@
         window.location.href = 'dashboard.html?connect=true';
         return;
       }
-      if (data.success) {        alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
+      if (data.success) {
+        alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
         appendMsg('ai', '✅ Emails sent! Track replies in Dashboard.');
         closeReview();
         setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
@@ -730,5 +855,4 @@
   function clearChat() { window.location.href = window.location.pathname; }
 </script>
 </body>
-  </html>
-  
+      </html>
