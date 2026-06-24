@@ -592,4 +592,4 @@ function stopAutoRefresh() {
         refreshInterval = null;
         console.log('🔄 [stopAutoRefresh] Auto-refresh stopped');
     }
-            }
+}
