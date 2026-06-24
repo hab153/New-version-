@@ -28,7 +28,9 @@ function switchTab(tab, btn) {
 function updateStats(contacts) {
     allContacts = contacts;
     const total = contacts.length;
-    const unread = contacts.filter(c => (c.unreadCount || 0) > 0).length;
+    // Ensure we count all unread messages from all leads
+    const unread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+    
     let high = 0;
     let med = 0;
     contacts.forEach(c => {
@@ -36,38 +38,48 @@ function updateStats(contacts) {
         if (rating.score >= 75) high++;
         else if (rating.score >= 40) med++;
     });
+    
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statUnread').textContent = unread;
     document.getElementById('statHigh').textContent = high;
     document.getElementById('statMed').textContent = med;
+    
     const badge = document.getElementById('leadsTabBadge');
     if (unread > 0) {
         badge.textContent = unread > 99 ? '99+' : unread;
-        badge.style.display = 'flex';
-    } else {
+        badge.style.display = 'flex';    } else {
         badge.style.display = 'none';
     }
 }
 
 function renderContacts(contacts) {
     const list = document.getElementById('contactList');
+    if (!list) return;
+
     if (contacts.length === 0) {
         list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
         return;
     }
+
+    // Robust Sorting: Unread first, then by most recent date
     const sorted = [...contacts].sort((a, b) => {
-        const aU = (a.unreadCount || 0) > 0;
-        const bU = (b.unreadCount || 0) > 0;
-        if (aU && !bU) return -1;
-        if (!aU && bU) return 1;
+        const aUnread = (a.unreadCount || 0) > 0;
+        const bUnread = (b.unreadCount || 0) > 0;
+        
+        if (aUnread && !bUnread) return -1;
+        if (!aUnread && bUnread) return 1;
+        
+        // If both are unread or both are read, sort by date
         return new Date(b.lastDate || 0) - new Date(a.lastDate || 0);
     });
+
     list.innerHTML = sorted.map(c => {
         const unread = c.unreadCount || 0;
         const rating = calculateEngagementScore(c, []);
         let confClass = 'low';
         if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
+        
         return `
             <div class="contact-item ${unread > 0 ? 'unread' : ''}"
                  onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
@@ -84,8 +96,7 @@ function renderContacts(contacts) {
                             <span class="conf-badge ${confClass}">
                                 ${rating.score} <span style="opacity:0.7; font-weight:400;">${rating.tier}</span>
                             </span>
-                            ${c.company ? `<span class="company-tag">${escapeHtml(c.company)}</span>` : ''}
-                        </div>
+                            ${c.company ? `<span class="company-tag">${escapeHtml(c.company)}</span>` : ''}                        </div>
                     </div>
                 </div>
             </div>`;
@@ -128,13 +139,13 @@ async function openChat(leadId, name, email) {
     const contact = allContacts.find(c => c.id === leadId);
     if (contact && contact.unreadCount > 0) {
         contact.unreadCount = 0;
+        // Update UI immediately to reflect read status
         updateStats(allContacts);
         renderContacts(allContacts);
         markAsRead(leadId);
     }
 
-    const container = document.getElementById('messagesContainer');
-    container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
+    const container = document.getElementById('messagesContainer');    container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
 
     try {
         const data = await fetchConversationDetails(leadId);
@@ -142,6 +153,7 @@ async function openChat(leadId, name, email) {
         autoReplyInstructions = data.lead.autoReplyInstructions || "";
         updateAutoReplyUI();
         await loadFollowUpStatus();
+        
         if (data.messages && data.messages.length > 0) {
             const realRating = calculateEngagementScore(leadData, data.messages);
             let cls = 'low';
@@ -149,6 +161,7 @@ async function openChat(leadId, name, email) {
             else if (realRating.score >= 40) cls = 'med';
             document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
         }
+        
         if (!data.messages || data.messages.length === 0) {
             container.innerHTML = `<div class="empty-state">
                     <div class="empty-icon">
@@ -161,6 +174,7 @@ async function openChat(leadId, name, email) {
                 </div>`;
             return;
         }
+        
         container.innerHTML = data.messages.map(msg => `
             <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
                 <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
@@ -181,7 +195,6 @@ function closeChat() {
     document.getElementById('viewChat').classList.remove('active');
     currentLeadId = null;
 }
-
 // ========== AUTO‑REPLY ==========
 function toggleAutoReply() {
     console.log(`🤖 [toggleAutoReply] Current isAutoReplyEnabled=${isAutoReplyEnabled}`);
@@ -230,8 +243,7 @@ function updateAutoReplyUI() {
 }
 
 // ========== FOLLOW‑UP & HINT DROPDOWN ==========
-function toggleFollowUpMenu(event) {
-    if (event) event.stopPropagation();
+function toggleFollowUpMenu(event) {    if (event) event.stopPropagation();
     const dropdown = document.getElementById('followUpDropdown');
     if (!dropdown) return;
     const isOpen = dropdown.classList.contains('show');
@@ -280,8 +292,7 @@ function updateAutoFollowUpUI() {
         statusSpan.style.color = '#66dd99';
     } else {
         btn.classList.remove('active');
-        statusSpan.textContent = 'OFF';
-        statusSpan.style.color = '#ff5555';
+        statusSpan.textContent = 'OFF';        statusSpan.style.color = '#ff5555';
     }
 }
 
@@ -330,8 +341,7 @@ async function toggleAutoFollowUp() {
                 `Auto follow-up disabled.`;
             alert(msg);
         } else {
-            alert(result.message || "Failed to toggle auto follow-up.");
-        }
+            alert(result.message || "Failed to toggle auto follow-up.");        }
     } catch (err) {
         console.error(err);
         alert("Connection error. Please try again.");
@@ -380,8 +390,7 @@ async function triggerHint() {
                 } else {
                     alert("An unexpected error occurred. Please try again later.");
                 }
-            } else {
-                alert("Failed to get hint.");
+            } else {                alert("Failed to get hint.");
             }
             return;
         }
@@ -430,8 +439,7 @@ function openRevenueTracking() {
         }
         if (revenueModal) {
             revenueModal.addEventListener('click', (e) => {
-                if (e.target === revenueModal) revenueModal.classList.remove('active');
-            });
+                if (e.target === revenueModal) revenueModal.classList.remove('active');            });
         }
     }
     if (!revenueModal) return;
@@ -480,8 +488,7 @@ function renderRevenueData(data) {
                 </div>
             </div>
         `;
-    }
-    
+    }    
     if (tier === 'go' || tier === 'pro') {
         let adviceHtml = '';
         for (const key of order) {
@@ -530,8 +537,7 @@ function renderRevenueData(data) {
     
     revenueContent.innerHTML = html;
     
-    document.querySelectorAll('.revenue-lead-name').forEach(el => {
-        el.addEventListener('click', () => {
+    document.querySelectorAll('.revenue-lead-name').forEach(el => {        el.addEventListener('click', () => {
             const leadId = el.getAttribute('data-lead-id');
             const leadName = el.getAttribute('data-lead-name');
             const contact = allContacts.find(c => c.id === leadId);
@@ -560,4 +566,4 @@ function renderRevenueData(data) {
 
 function closeRevenueModal() {
     if (revenueModal) revenueModal.classList.remove('active');
-                            }
+    }
