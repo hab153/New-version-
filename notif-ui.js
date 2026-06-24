@@ -68,13 +68,18 @@ function renderContacts(contacts) {
         let confClass = 'low';
         if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
+        // ---- ADDED: blue dot and bold name for unread ----
+        const unreadDot = unread > 0 ? `<span class="unread-dot" style="display:inline-block; width:8px; height:8px; background:#4a9eff; border-radius:50%; margin-left:6px; flex-shrink:0;"></span>` : '';
+        const nameStyle = unread > 0 ? 'font-weight:700;' : 'font-weight:400;';
+        // ---- END ADDED ----
         return `
             <div class="contact-item ${unread > 0 ? 'unread' : ''}"
                  onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
                 <div class="contact-avatar">${getInitials(c.name)}</div>
                 <div class="contact-body">
                     <div class="contact-row1">
-                        <span class="contact-name">${escapeHtml(c.name)}</span>
+                        <!-- MODIFIED: added inline style and unreadDot -->
+                        <span class="contact-name" style="${nameStyle}">${escapeHtml(c.name)}${unreadDot}</span>
                         <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
                     </div>
                     <div class="contact-row2">
@@ -560,4 +565,31 @@ function renderRevenueData(data) {
 
 function closeRevenueModal() {
     if (revenueModal) revenueModal.classList.remove('active');
+}
+
+// ========== ADDED: AUTO-REFRESH FOR LIVE UPDATES ==========
+let refreshInterval = null;
+
+/**
+ * Start auto-refreshing the contact list to pick up new messages.
+ * Call this from page.html after initial load, e.g. startAutoRefresh(15);
+ * @param {number} intervalSeconds - How often to refresh (default 15)
+ */
+function startAutoRefresh(intervalSeconds = 15) {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
+        // Only refresh if page is visible to save resources
+        if (document.visibilityState === 'visible') {
+            loadContacts();
+        }
+    }, intervalSeconds * 1000);
+    console.log(`🔄 [startAutoRefresh] Auto-refresh started (every ${intervalSeconds}s)`);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+        console.log('🔄 [stopAutoRefresh] Auto-refresh stopped');
+    }
             }
