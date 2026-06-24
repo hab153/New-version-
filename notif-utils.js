@@ -1,4 +1,17 @@
-// ========== UTILITY FUNCTIONS ==========
+// ========== UTILITY FUNCTIONS (MUST BE DEFINED FIRST) ==========
+function calculateEngagementScore(lead, messages) {
+    // Simple scoring – adjust as needed
+    let score = 50;
+    let tier = 'MED';
+    if (lead && lead.status === 'Replied') score = 70;
+    else if (lead && lead.status === 'Contacted') score = 40;
+    if (messages && messages.length > 10) score += 10;
+    if (score >= 75) tier = 'HIGH';
+    else if (score >= 40) tier = 'MED';
+    else tier = 'LOW';
+    return { score, tier };
+}
+
 function getInitials(name) {
     if (!name) return '?';
     return name.charAt(0).toUpperCase();
@@ -6,12 +19,10 @@ function getInitials(name) {
 
 function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>"']/g, function(m) {
+    return str.replace(/[&<>]/g, function(m) {
         if (m === '&') return '&amp;';
         if (m === '<') return '&lt;';
         if (m === '>') return '&gt;';
-        if (m === '"') return '&quot;';
-        if (m === "'") return '&#039;';
         return m;
     });
 }
@@ -24,17 +35,11 @@ function autoResize(textarea) {
 
 // ========== GLOBAL UI STATE ==========
 let allContacts = [];
-let userTier = 'free'; 
-let currentLeadId = null;
-let isAutoReplyEnabled = false;
-let autoReplyInstructions = "";
+let userTier = 'free'; // Default to lowercase to match DB
 
-// ========== UI CORE FUNCTIONS ==========
+// ========== UI FUNCTIONS ==========
 function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { 
-      e.preventDefault(); 
-      sendReply(document.getElementById('replyText').value.trim()); 
-  }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(document.getElementById('replyText').value.trim()); }
 }
 
 function switchTab(tab, btn) {
@@ -47,14 +52,14 @@ function switchTab(tab, btn) {
   } else {
     document.getElementById('viewList').classList.add('hidden');
     document.getElementById('viewAdmin').classList.add('active');
-    closeChat();  }
+    closeChat();
+  }
 }
 
 function updateStats(contacts) {
   allContacts = contacts;
   const total = contacts.length;
-  // Sum all unread counts from all leads
-  const unread = contacts.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+  const unread = contacts.filter(c => (c.unreadCount || 0) > 0).length;
   
   let high = 0;
   let med = 0;
@@ -70,33 +75,26 @@ function updateStats(contacts) {
   document.getElementById('statMed').textContent = med;
 
   const badge = document.getElementById('leadsTabBadge');
-  if (badge) {
-      if (unread > 0) {
-        badge.textContent = unread > 99 ? '99+' : unread;
-        badge.style.display = 'flex';
-      } else {
-        badge.style.display = 'none';
-      }
+  if (unread > 0) {
+    badge.textContent = unread > 99 ? '99+' : unread;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
-function renderContacts(contacts) {
+function renderContacts(contacts) {  
   const list = document.getElementById('contactList');
-  if (!list) return;
-
   if (contacts.length === 0) {
     list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
     return;
   }
-
-  // Robust Sorting: Unread first, then by most recent date
   const sorted = [...contacts].sort((a, b) => {
-    const aUnread = (a.unreadCount || 0) > 0;
-    const bUnread = (b.unreadCount || 0) > 0;
-    
-    if (aUnread && !bUnread) return -1;
-    if (!aUnread && bUnread) return 1;
-        return new Date(b.lastDate || 0) - new Date(a.lastDate || 0);
+    const aU = (a.unreadCount || 0) > 0;
+    const bU = (b.unreadCount || 0) > 0;
+    if (aU && !bU) return -1;
+    if (!aU && bU) return 1;
+    return new Date(b.lastDate || 0) - new Date(a.lastDate || 0);
   });
 
   list.innerHTML = sorted.map(c => {
@@ -141,11 +139,11 @@ function filterContacts(query) {
 }
 
 async function openChat(leadId, name, email) {
-  console.log(`💬 [openChat] Opening chat with ${name} (${leadId})`);
   window.currentLeadId = leadId;
   window.currentLeadName = name;
   window.currentLeadEmail = email;
   currentLeadId = leadId;
+
   const leadData = allContacts.find(l => l.id === leadId);
   let badgeHtml = '';
   if (leadData) {
@@ -155,22 +153,12 @@ async function openChat(leadId, name, email) {
     else if (rating.score >= 40) cls = 'med';
     badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${rating.score} ${rating.tier}</span>`;
   }
-  
-  const chatNameEl = document.getElementById('chatName');
-  if(chatNameEl) chatNameEl.innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
-  
-  const chatEmailEl = document.getElementById('chatEmail');
-  if(chatEmailEl) chatEmailEl.innerText = email;
-  
-  const chatAvatarEl = document.getElementById('chatAvatar');
-  if(chatAvatarEl) chatAvatarEl.innerText = getInitials(name);
-  
-  const replyTextEl = document.getElementById('replyText');
-  if(replyTextEl) {
-      replyTextEl.value = '';
-      replyTextEl.style.height = '38px';
-  }
-  
+
+  document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
+  document.getElementById('chatEmail').innerText = email;
+  document.getElementById('chatAvatar').innerText = getInitials(name);
+  document.getElementById('replyText').value = '';
+  document.getElementById('replyText').style.height = '38px';
   document.getElementById('viewChat').classList.add('active');
 
   const contact = allContacts.find(c => c.id === leadId);
@@ -182,27 +170,23 @@ async function openChat(leadId, name, email) {
   }
 
   const container = document.getElementById('messagesContainer');
-  if(container) {
-      container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
-  }
+  container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
 
   try {
     const data = await fetchConversationDetails(leadId);
     isAutoReplyEnabled = data.lead.autoReplyEnabled || false;
     autoReplyInstructions = data.lead.autoReplyInstructions || "";
     updateAutoReplyUI();
-    await loadFollowUpStatus();
     
     if (data.messages && data.messages.length > 0) {
-         const realRating = calculateEngagementScore(leadData, data.messages);         let cls = 'low';
+         const realRating = calculateEngagementScore(leadData, data.messages);
+         let cls = 'low';
          if (realRating.score >= 75) cls = 'high';
          else if (realRating.score >= 40) cls = 'med';
-         if(chatNameEl) chatNameEl.innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
+         document.getElementById('chatName').innerHTML = `${escapeHtml(name)} <span class="conf-badge ${cls}" style="margin-left:6px; font-size:8px;">${realRating.score} ${realRating.tier}</span>`;
     }
-    
     if (!data.messages || data.messages.length === 0) {
-      if(container) {
-          container.innerHTML = `
+      container.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none">
@@ -212,12 +196,9 @@ async function openChat(leadId, name, email) {
           <h3>No messages yet</h3>
           <p>Send the first message to start the conversation.</p>
         </div>`;
-      }
       return;
     }
-    
-    if(container) {
-        container.innerHTML = data.messages.map(msg => `
+    container.innerHTML = data.messages.map(msg => `
       <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
         <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
           ${escapeHtml(msg.content)}
@@ -226,10 +207,8 @@ async function openChat(leadId, name, email) {
       </div>
     `).join('');
     container.scrollTop = container.scrollHeight;
-    }
   } catch (err) {
-    console.error('❌ [openChat] Error:', err);
-    if(container) container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
   }
 }
 
@@ -238,12 +217,13 @@ function closeChat() {
   currentLeadId = null;
 }
 
-// ========== AUTO-REPLY & FOLLOW-UP UI ==========
+// UPDATED: Auto-reply toggle with free plan check (NO redirect)
 function toggleAutoReply() {
   const tier = (userTier || 'free').toLowerCase();
   if (tier === 'free') {
     alert("Auto-reply is not available on the Free plan. Upgrade to Go or Pro to use AI auto-replies.");
-    return;  }
+    return;
+  }
   if (isAutoReplyEnabled) {
     isAutoReplyEnabled = false;
     saveAutoReplyStatus();
@@ -253,8 +233,7 @@ function toggleAutoReply() {
 }
 
 function openInstructionsModal() {
-  const instrText = document.getElementById('instructionsText');
-  if(instrText) instrText.value = autoReplyInstructions;
+  document.getElementById('instructionsText').value = autoReplyInstructions;
   document.getElementById('instructionsModal').classList.add('active');
 }
 
@@ -274,60 +253,48 @@ function updateAutoReplyUI() {
   const editBtn = document.getElementById('editDetailsBtn');
   const inputArea = document.getElementById('replyInputArea');
   
-  if (toggle && editBtn && inputArea) {
-      if (isAutoReplyEnabled) {
-        toggle.classList.add('active');
-        editBtn.style.display = 'flex';
-        inputArea.classList.add('hidden');
-      } else {
-        toggle.classList.remove('active');
-        editBtn.style.display = 'none';
-        inputArea.classList.remove('hidden');
-      }
+  if (isAutoReplyEnabled) {
+    toggle.classList.add('active');
+    editBtn.style.display = 'flex';
+    inputArea.classList.add('hidden');
+  } else {
+    toggle.classList.remove('active');
+    editBtn.style.display = 'none';
+    inputArea.classList.remove('hidden');
   }
 }
 
-async function loadFollowUpStatus() {
-    if (!currentLeadId) return;
-    try {
-        const status = await getFollowUpStatus(currentLeadId);
-        window.autoFollowUpEnabled = status.autoFollowUpEnabled;
-        updateAutoFollowUpUI();    } catch (err) {
-        console.error('Failed to load follow-up status:', err);
-        window.autoFollowUpEnabled = false;
-        updateAutoFollowUpUI();
-    }
-}
+// ─── HINT MENU LOGIC ───
 
-function updateAutoFollowUpUI() {
-    const btn = document.getElementById('autoFollowUpBtn');
-    const statusSpan = document.getElementById('autoFollowUpStatus');
-    if (!btn) return;
-    if (window.autoFollowUpEnabled) {
-        btn.classList.add('active');
-        if(statusSpan) {
-            statusSpan.textContent = 'ON';
-            statusSpan.style.color = '#66dd99';
-        }
-    } else {
-        btn.classList.remove('active');
-        if(statusSpan) {
-            statusSpan.textContent = 'OFF';
-            statusSpan.style.color = '#ff5555';
-        }
-    }
-}
-
-// ========== HINTS ==========
 function toggleHintMenu() {
   const dropdown = document.getElementById('hintDropdown');
-  if(dropdown) dropdown.classList.toggle('show');
+  const hintItem = document.querySelector('.hint-item');
+  const tierBadge = document.getElementById('hintTierBadge');
+  
+  const currentTier = (userTier || 'free').toLowerCase();
+
+  if (tierBadge) {
+    if (currentTier === 'free') {
+      tierBadge.textContent = 'GO';
+      tierBadge.style.display = 'inline-block';
+    } else {
+      tierBadge.style.display = 'none';
+    }
+  }
+
+  if (isAutoReplyEnabled) {
+    if (hintItem) hintItem.classList.add('disabled-hint');
+  } else {
+    if (hintItem) hintItem.classList.remove('disabled-hint');
+  }  
+  dropdown.classList.toggle('show');
 }
 
+// UPDATED: Hint trigger with backend message (NO redirect for free users)
 async function triggerHint() {
   if (isAutoReplyEnabled) return;
-  const dropdown = document.getElementById('hintDropdown');
-  if(dropdown) dropdown.classList.remove('show');
+
+  document.getElementById('hintDropdown').classList.remove('show');
   
   if (!currentLeadId) {
     alert("Open a chat first to get a hint.");
@@ -335,13 +302,14 @@ async function triggerHint() {
   }
 
   const btn = document.getElementById('hintMenuBtn');
-  const originalContent = btn ? btn.innerHTML : '';
+  const originalContent = btn.innerHTML;
   
-  if(btn) btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  btn.innerHTML = `<svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
   
   try {
     const res = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }    });
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const data = await res.json();
     const messages = data.messages || [];    
     if (messages.length === 0) {
@@ -362,7 +330,8 @@ async function triggerHint() {
     
     if (!suggestRes.ok) {
       if (suggestRes.status === 403) {
-        alert(suggestData.message || "Daily limit reached.");
+        // Show backend message – NO redirect for any plan
+        alert(suggestData.message);
       } else {
         alert("Failed to get hint.");
       }
@@ -371,23 +340,22 @@ async function triggerHint() {
     
     if (suggestData.suggestion) {
       const textArea = document.getElementById('replyText');
-      if(textArea) {
-          textArea.value = suggestData.suggestion;
-          autoResize(textArea);
-          textArea.focus();
-      }
+      textArea.value = suggestData.suggestion;
+      autoResize(textArea);
+      textArea.focus();
     }
   } catch (error) {
     console.error(error);
     alert("Connection error.");
   } finally {
-    if(btn) btn.innerHTML = originalContent;
+    btn.innerHTML = originalContent;
   }
 }
 
 document.addEventListener('click', function(event) {
   const menu = document.querySelector('.hint-menu-wrap');
   const dropdown = document.getElementById('hintDropdown');
-  if (menu && !menu.contains(event.target) && dropdown && dropdown.classList.contains('show')) {
+  if (menu && !menu.contains(event.target) && dropdown.classList.contains('show')) {
     dropdown.classList.remove('show');
-  }});
+  }
+});
