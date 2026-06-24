@@ -10,19 +10,10 @@ let autoReplyInstructions = "";
 
 async function loadContacts() {
     console.log('📡 [loadContacts] Fetching /api/conversations...');
-    
-    // Create an abort controller for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
     try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            signal: controller.signal
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-        
-        clearTimeout(timeoutId);
-
         console.log(`📡 [loadContacts] Response status: ${res.status}`);
         if (!res.ok) {
             const text = await res.text();
@@ -31,31 +22,22 @@ async function loadContacts() {
         }
         const contacts = await res.json();
         console.log(`✅ [loadContacts] Received ${contacts.length} contacts`);
-        
         updateStats(contacts);
         renderContacts(contacts);
         return contacts;
     } catch (err) {
-        clearTimeout(timeoutId);
         console.error('❌ [loadContacts] Error:', err);
-        
-        const list = document.getElementById('contactList');
-        if (list) {
-            if (err.name === 'AbortError') {
-                list.innerHTML = '<div style="padding:28px; text-align:center; color:var(--rose); font-family:var(--font-mono); font-size:11px;">SERVER TIMEOUT · CHECK CONNECTION</div>';
-            } else {
-                list.innerHTML = '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
-            }
-        }
-        return [];    }
+        document.getElementById('contactList').innerHTML =
+            '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
+        return [];
+    }
 }
 
 async function sendReply(text) {
     if (!text || !currentLeadId) return;
     console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
     const btn = document.getElementById('sendBtn');
-    if (btn) btn.disabled = true;
-    
+    btn.disabled = true;
     const payload = {
         leads: [{ 
             name: window.currentLeadName, 
@@ -65,28 +47,22 @@ async function sendReply(text) {
         }]
     };
     try {
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-            method: 'POST',
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {            method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(payload)
         });
         const data = await res.json();
         console.log(`📤 [sendReply] Response status: ${res.status}`);
-        
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
             localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
             alert("⚠️ Email session expired. Please reconnect.");
             window.location.href = 'dashboard.html?connect=true';
             return;
         }
-        
         if (data.success) {
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
-            // Refresh chat to show the sent message
             openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
-            // Also refresh the main list to update "lastMessage" and "lastDate"
-            loadContacts();
         } else {
             const errorMsg = data.message || data.error || JSON.stringify(data.errors);
             alert(`Failed to send: ${errorMsg}`);
@@ -96,7 +72,8 @@ async function sendReply(text) {
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
         alert("Connection error. Message saved.");
         window.location.href = 'dashboard.html?connect=true';
-    } finally {        if (btn) btn.disabled = false;
+    } finally {
+        btn.disabled = false;
     }
 }
 
@@ -119,8 +96,7 @@ async function saveAutoReplyInstructions(instructions) {
             alert("Failed to save.");
             return false;
         }
-    } catch (err) {
-        console.error('❌ [saveAutoReplyInstructions] Error:', err);
+    } catch (err) {        console.error('❌ [saveAutoReplyInstructions] Error:', err);
         alert("Connection error.");
         return false;
     }
@@ -145,7 +121,8 @@ async function renameCustomer(newName) {
         console.log(`✏️ [renameCustomer] Renaming lead ${currentLeadId} to ${newName}`);
         try {
             await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
-                method: 'PUT',                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ newName })
             });
             window.currentLeadName = newName;
@@ -168,17 +145,12 @@ async function fetchConversationDetails(leadId) {
     console.log(`✅ [fetchConversationDetails] Received ${data.messages?.length || 0} messages`);
     return data;
 }
-
 async function markAsRead(leadId) {
     console.log(`👁️ [markAsRead] Marking lead ${leadId} as read`);
-    try {
-        await fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-    } catch (err) {
-        console.error('❌ [markAsRead] Error:', err);
-    }
+    fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).catch(err => console.error('❌ [markAsRead] Error:', err));
 }
 
 // ========== FOLLOW-UP API FUNCTIONS ==========
@@ -194,7 +166,8 @@ async function toggleAutoFollowUp(leadId, enabled) {
     const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled })    });
+        body: JSON.stringify({ enabled })
+    });
     return await res.json();
 }
 
@@ -215,4 +188,4 @@ async function fetchRevenueTracking() {
         throw new Error(err.message || 'Failed to load revenue data');
     }
     return await res.json();
-            }
+    }
