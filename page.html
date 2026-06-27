@@ -103,74 +103,55 @@
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* MODE SELECTOR - Small, sleek, centered like DeepSeek */
+    /* MODE SELECTOR - Small, sleek, at the TOP of content area */
     #modeSelector {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       display: flex;
-      gap: 16px;
+      gap: 12px;
+      justify-content: center;
+      padding: 16px 20px 8px 20px;
+      flex-shrink: 0;
       z-index: 20;
       transition: opacity 0.4s ease, transform 0.4s ease;
+      position: relative;
     }
     #modeSelector.hidden {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.96);
+      transform: scale(0.96);
       pointer-events: none;
+      height: 0;
+      padding: 0;
+      overflow: hidden;
     }
     .mode-btn {
-      padding: 14px 28px;
+      padding: 10px 22px;
       border-radius: var(--r-lg);
       border: 1px solid var(--br-dim);
       background: rgba(26,26,26,0.85);
       backdrop-filter: blur(12px);
       color: var(--t2);
       font-family: var(--ui);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
       display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      gap: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
       letter-spacing: 0.02em;
       position: relative;
       overflow: hidden;
     }
     .mode-btn .mode-icon {
-      font-size: 18px;
+      font-size: 16px;
       line-height: 1;
     }
     .mode-btn .mode-label {
       font-size: 13px;
       color: var(--t1);
     }
-    .mode-btn .mode-sub {
-      display: none;
-    }
-    .mode-btn:hover {
-      border-color: var(--br-hi);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }
-    .mode-btn.lead-mode {
-      border-color: rgba(201,168,76,0.2);
-    }
-    .mode-btn.lead-mode:hover {
-      border-color: rgba(201,168,76,0.5);
-      box-shadow: 0 8px 32px rgba(201,168,76,0.08);
-    }
-    .mode-btn.assistant-mode {
-      border-color: rgba(102,221,255,0.15);
-    }
-    .mode-btn.assistant-mode:hover {
-      border-color: rgba(102,221,255,0.4);
-      box-shadow: 0 8px 32px rgba(102,221,255,0.06);
-    }
     .mode-btn .mode-badge {
-      font-size: 9px;
+      font-size: 8px;
       background: rgba(255,255,255,0.06);
       padding: 2px 8px;
       border-radius: 10px;
@@ -178,9 +159,28 @@
       font-weight: 400;
       letter-spacing: 0.04em;
     }
+    .mode-btn:hover {
+      border-color: var(--br-hi);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .mode-btn.lead-mode {
+      border-color: rgba(201,168,76,0.2);
+    }
+    .mode-btn.lead-mode:hover {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 4px 16px rgba(201,168,76,0.08);
+    }
+    .mode-btn.assistant-mode {
+      border-color: rgba(102,221,255,0.15);
+    }
+    .mode-btn.assistant-mode:hover {
+      border-color: rgba(102,221,255,0.4);
+      box-shadow: 0 4px 16px rgba(102,221,255,0.06);
+    }
 
     /* MODE CONTAINERS */
-    .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; }
+    .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; overflow: hidden; }
     .mode-container.active { display: flex; }
 
     /* LEAD CONTAINER - override input visibility */
@@ -196,8 +196,8 @@
     #assistantContainer .input-bar.active { display: block !important; }
     #assistantContainer .chat-area .msg-row { padding: 4px 16px; }
 
-    /* Setup wizard - hidden when mode is selected */
-    #setupWizard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; overflow-y: auto; position: relative; z-index: 1; }
+    /* Setup wizard - centered below mode selector */
+    #setupWizard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px 24px; overflow-y: auto; position: relative; z-index: 1; }
     #setupWizard.hidden { display: none; }
 
     .wizard-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
@@ -405,6 +405,7 @@
       .msg-row.ai .bubble { font-size: 12px; } .topbar { padding: 0 32px; } .input-bar { padding: 14px 12% 16px; }
       .bottom-nav { padding: 0 24%; } #reviewPanel { padding: 20px 12%; } .status-bar { padding: 0 32px; }
       #assistantContainer .chat-area .msg-row { padding: 4px 12%; }
+      #modeSelector { padding: 20px 20px 12px 20px; gap: 16px; }
     }
     @media (min-width: 600px) and (max-width: 1023px) {
       .msg-row { padding: 4px 8%; } .bubble { max-width: 66%; } .topbar { padding: 0 22px; } .input-bar { padding: 12px 8% 14px; } .bottom-nav { padding: 0 6%; }
@@ -413,15 +414,17 @@
     @media (max-width: 375px) {
       .brand-name { font-size: 16px; } .brand-sub { display: none; } .icon-btn { width: 30px; height: 30px; } .bubble { max-width: 88%; }
       :root { --nav-h: 62px; } .wizard-body { padding: 22px 18px 24px; } .form-row { grid-template-columns: 1fr; } .wizard-heading { font-size: 24px; }
-      .mode-btn { padding: 10px 18px; font-size: 12px; gap: 6px; }
-      .mode-btn .mode-icon { font-size: 15px; }
+      .mode-btn { padding: 8px 14px; font-size: 12px; gap: 5px; }
+      .mode-btn .mode-icon { font-size: 14px; }
+      #modeSelector { padding: 10px 12px 4px 12px; gap: 8px; }
     }
     @media (max-height: 500px) and (orientation: landscape) {
       :root { --top-h: 46px; --nav-h: 52px; --bar-h: 26px; } .chat-area { padding: 8px 0 4px; } .input-bar { padding: 8px 14px 10px; }
       .nav-item.nav-home .home-wrap { width: 38px; height: 38px; border-radius: 10px; } .wizard-body { padding: 16px 18px 20px; }
-      #modeSelector { gap: 12px; }
-      .mode-btn { padding: 8px 16px; font-size: 12px; gap: 6px; }
-      .mode-btn .mode-icon { font-size: 14px; }
+      #modeSelector { padding: 8px 16px 4px 16px; gap: 10px; }
+      .mode-btn { padding: 6px 14px; font-size: 11px; gap: 5px; }
+      .mode-btn .mode-icon { font-size: 13px; }
+      #setupWizard { padding: 4px 16px 12px; }
     }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
@@ -461,22 +464,22 @@
   ↑ New reply detected — tap to open Dashboard
 </div>
 
-<!-- MODE SELECTOR - Small, sleek, centered -->
-<div id="modeSelector">
-  <button class="mode-btn lead-mode" data-mode="lead">
-    <span class="mode-icon">⚡</span>
-    <span class="mode-label">Lead</span>
-    <span class="mode-badge">Search</span>
-  </button>
-  <button class="mode-btn assistant-mode" data-mode="assistant">
-    <span class="mode-icon">🤖</span>
-    <span class="mode-label">Assistant</span>
-    <span class="mode-badge">Chat</span>
-  </button>
-</div>
-
 <!-- LEAD MODE CONTAINER -->
 <div id="leadContainer" class="mode-container active">
+  <!-- MODE SELECTOR - At the top, above the wizard -->
+  <div id="modeSelector">
+    <button class="mode-btn lead-mode active" data-mode="lead">
+      <span class="mode-icon">⚡</span>
+      <span class="mode-label">Lead</span>
+      <span class="mode-badge">Search</span>
+    </button>
+    <button class="mode-btn assistant-mode" data-mode="assistant">
+      <span class="mode-icon">🤖</span>
+      <span class="mode-label">Assistant</span>
+      <span class="mode-badge">Chat</span>
+    </button>
+  </div>
+
   <div id="setupWizard">
     <div class="wizard-eyebrow">
       <div class="eyebrow-line"></div>
@@ -558,6 +561,20 @@
 
 <!-- ASSISTANT MODE CONTAINER -->
 <div id="assistantContainer" class="mode-container">
+  <!-- MODE SELECTOR - Also at the top for assistant -->
+  <div id="assistantModeSelector" style="display:flex; gap:12px; justify-content:center; padding:16px 20px 8px 20px; flex-shrink:0; position:relative; z-index:20;">
+    <button class="mode-btn lead-mode" data-mode="lead" onclick="switchMode('lead')">
+      <span class="mode-icon">⚡</span>
+      <span class="mode-label">Lead</span>
+      <span class="mode-badge">Search</span>
+    </button>
+    <button class="mode-btn assistant-mode active" data-mode="assistant" onclick="switchMode('assistant')">
+      <span class="mode-icon">🤖</span>
+      <span class="mode-label">Assistant</span>
+      <span class="mode-badge">Chat</span>
+    </button>
+  </div>
+
   <div class="chat-area active" id="assistantChatArea">
     <div id="assistantMsgContainer">
       <div class="msg-row ai">
@@ -617,6 +634,7 @@
 
   // ----- DOM REFS -----
   const modeSelector = document.getElementById('modeSelector');
+  const assistantModeSelector = document.getElementById('assistantModeSelector');
   const leadContainer = document.getElementById('leadContainer');
   const assistantContainer = document.getElementById('assistantContainer');
   const setupWizard = document.getElementById('setupWizard');
@@ -636,21 +654,17 @@
   const statusText = document.getElementById('statusText');
   const statusBar = document.getElementById('statusBar');
 
-  // ----- MODE SWITCHING - buttons stay visible until message sent -----
-  document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      // Don't switch if chat is already active (message sent)
-      if (isChatActive) return;
-      const mode = this.dataset.mode;
-      switchMode(mode);
-    });
-  });
-
-  function switchMode(mode) {
+  // ----- MODE SWITCHING -----
+  window.switchMode = function(mode) {
+    if (isChatActive) return;
     currentMode = mode;
-    // Don't hide mode selector - keep it visible until message is sent
-    // modeSelector stays visible
+    
+    // Hide both mode selectors
+    modeSelector.classList.add('hidden');
+    assistantModeSelector.style.display = 'none';
+    
     document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+    
     if (mode === 'lead') {
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
@@ -658,13 +672,27 @@
       leadInputBar.classList.add('lead-active');
       leadInputBar.classList.remove('lead-hidden');
       reviewPanel.style.display = 'none';
+      // Show lead mode selector
+      modeSelector.classList.remove('hidden');
     } else {
       assistantContainer.classList.add('active');
+      assistantModeSelector.style.display = 'flex';
       if (assistantMsgContainer.children.length === 0) {
         addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       }
     }
-  }
+  };
+
+  // Lead mode buttons
+  document.querySelectorAll('#modeSelector .mode-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (isChatActive) return;
+      const mode = this.dataset.mode;
+      switchMode(mode);
+    });
+  });
+
+  // Assistant mode buttons (already have onclick)
 
   // ----- LEAD MODE -----
   document.getElementById('targetForm').addEventListener('submit', async function(e) {
@@ -705,14 +733,11 @@
     isChatActive = true;
     isTyping = true;
 
-    // HIDE mode selector ONLY when sending message
+    // HIDE mode selector
     modeSelector.classList.add('hidden');
 
-    // Hide setup wizard and show chat
     setupWizard.style.display = 'none';
     leadChatArea.classList.add('active');
-
-    // HIDE INPUT BAR - single request mode
     leadInputBar.classList.remove('lead-active');
     leadInputBar.classList.add('lead-hidden');
 
@@ -891,10 +916,10 @@
     if (isTyping) return;
     isTyping = true;
 
-    // HIDE mode selector ONLY when sending message
     if (!isChatActive) {
       isChatActive = true;
       modeSelector.classList.add('hidden');
+      assistantModeSelector.style.display = 'none';
     }
 
     addAssistantMessage('user', message);
@@ -1050,7 +1075,7 @@
       isTyping = false;
       assistantMsgContainer.innerHTML = '';
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
-      modeSelector.classList.remove('hidden');
+      assistantModeSelector.style.display = 'flex';
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       assistantContainer.classList.add('active');
     }
@@ -1075,7 +1100,7 @@
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       isChatActive = false;
       isTyping = false;
-      modeSelector.classList.remove('hidden');
+      assistantModeSelector.style.display = 'flex';
     }
   });
 
@@ -1119,4 +1144,4 @@
   }
 </script>
 </body>
-        </html>
+                                                    </html>
