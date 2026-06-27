@@ -103,49 +103,81 @@
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* MODE SELECTOR - Centered on page */
+    /* MODE SELECTOR - Small, sleek, centered like DeepSeek */
     #modeSelector {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       display: flex;
-      gap: 30px;
+      gap: 16px;
       z-index: 20;
-      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: opacity 0.4s ease, transform 0.4s ease;
     }
     #modeSelector.hidden {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.92);
+      transform: translate(-50%, -50%) scale(0.96);
       pointer-events: none;
     }
     .mode-btn {
-      padding: 32px 48px;
-      border-radius: var(--r-xl);
-      border: 1px solid var(--br-md);
-      background: var(--surface);
-      color: var(--t1);
-      font-family: var(--display);
-      font-size: 24px;
-      font-weight: 400;
+      padding: 14px 28px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--br-dim);
+      background: rgba(26,26,26,0.85);
+      backdrop-filter: blur(12px);
+      color: var(--t2);
+      font-family: var(--ui);
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      min-width: 200px;
-      text-align: center;
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      letter-spacing: 0.02em;
       position: relative;
       overflow: hidden;
-      letter-spacing: 0.04em;
-      background: rgba(26,26,26,0.92);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     }
-    .mode-btn .mode-icon { display: block; font-size: 36px; margin-bottom: 12px; }
-    .mode-btn .mode-label { display: block; font-size: 16px; color: var(--t2); font-weight: 300; margin-top: 4px; font-family: var(--ui); letter-spacing: 0.08em; }
-    .mode-btn .mode-sub { display: block; font-size: 10px; color: var(--t3); margin-top: 8px; font-family: var(--mono); letter-spacing: 0.10em; text-transform: uppercase; }
-    .mode-btn.lead-mode { border-color: rgba(201,168,76,0.25); }
-    .mode-btn.lead-mode:hover { border-color: rgba(201,168,76,0.6); transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 48px rgba(201,168,76,0.15), 0 0 0 1px rgba(201,168,76,0.2); }
-    .mode-btn.assistant-mode { border-color: rgba(102,221,255,0.2); }
-    .mode-btn.assistant-mode:hover { border-color: rgba(102,221,255,0.5); transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 48px rgba(102,221,255,0.10), 0 0 0 1px rgba(102,221,255,0.15); }
+    .mode-btn .mode-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .mode-btn .mode-label {
+      font-size: 13px;
+      color: var(--t1);
+    }
+    .mode-btn .mode-sub {
+      display: none;
+    }
+    .mode-btn:hover {
+      border-color: var(--br-hi);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .mode-btn.lead-mode {
+      border-color: rgba(201,168,76,0.2);
+    }
+    .mode-btn.lead-mode:hover {
+      border-color: rgba(201,168,76,0.5);
+      box-shadow: 0 8px 32px rgba(201,168,76,0.08);
+    }
+    .mode-btn.assistant-mode {
+      border-color: rgba(102,221,255,0.15);
+    }
+    .mode-btn.assistant-mode:hover {
+      border-color: rgba(102,221,255,0.4);
+      box-shadow: 0 8px 32px rgba(102,221,255,0.06);
+    }
+    .mode-btn .mode-badge {
+      font-size: 9px;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: var(--t3);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
 
     /* MODE CONTAINERS */
     .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; }
@@ -368,10 +400,6 @@
     }
     .nav-item.has-notifs .nav-badge { display: flex; }
 
-    /* New Chat / Clear buttons become New Search in lead mode */
-    #newSearchBtn { display: none; }
-    #newSearchBtn.visible { display: flex; }
-
     @media (min-width: 1024px) {
       .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
       .msg-row.ai .bubble { font-size: 12px; } .topbar { padding: 0 32px; } .input-bar { padding: 14px 12% 16px; }
@@ -385,15 +413,15 @@
     @media (max-width: 375px) {
       .brand-name { font-size: 16px; } .brand-sub { display: none; } .icon-btn { width: 30px; height: 30px; } .bubble { max-width: 88%; }
       :root { --nav-h: 62px; } .wizard-body { padding: 22px 18px 24px; } .form-row { grid-template-columns: 1fr; } .wizard-heading { font-size: 24px; }
-      .mode-btn { padding: 20px 24px; min-width: 140px; font-size: 18px; }
-      .mode-btn .mode-icon { font-size: 28px; }
+      .mode-btn { padding: 10px 18px; font-size: 12px; gap: 6px; }
+      .mode-btn .mode-icon { font-size: 15px; }
     }
     @media (max-height: 500px) and (orientation: landscape) {
       :root { --top-h: 46px; --nav-h: 52px; --bar-h: 26px; } .chat-area { padding: 8px 0 4px; } .input-bar { padding: 8px 14px 10px; }
       .nav-item.nav-home .home-wrap { width: 38px; height: 38px; border-radius: 10px; } .wizard-body { padding: 16px 18px 20px; }
-      .mode-btn { padding: 14px 20px; min-width: 120px; font-size: 16px; }
-      .mode-btn .mode-icon { font-size: 22px; margin-bottom: 6px; }
-      #modeSelector { gap: 16px; }
+      #modeSelector { gap: 12px; }
+      .mode-btn { padding: 8px 16px; font-size: 12px; gap: 6px; }
+      .mode-btn .mode-icon { font-size: 14px; }
     }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
@@ -433,17 +461,17 @@
   ↑ New reply detected — tap to open Dashboard
 </div>
 
-<!-- MODE SELECTOR -->
+<!-- MODE SELECTOR - Small, sleek, centered -->
 <div id="modeSelector">
   <button class="mode-btn lead-mode" data-mode="lead">
     <span class="mode-icon">⚡</span>
-    <span class="mode-label">Lead Generation</span>
-    <span class="mode-sub">Find &amp; reach decision-makers</span>
+    <span class="mode-label">Lead</span>
+    <span class="mode-badge">Search</span>
   </button>
   <button class="mode-btn assistant-mode" data-mode="assistant">
     <span class="mode-icon">🤖</span>
     <span class="mode-label">Assistant</span>
-    <span class="mode-sub">Your personal business AI</span>
+    <span class="mode-badge">Chat</span>
   </button>
 </div>
 
@@ -608,9 +636,10 @@
   const statusText = document.getElementById('statusText');
   const statusBar = document.getElementById('statusBar');
 
-  // ----- MODE SWITCHING -----
+  // ----- MODE SWITCHING - buttons stay visible until message sent -----
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', function() {
+      // Don't switch if chat is already active (message sent)
       if (isChatActive) return;
       const mode = this.dataset.mode;
       switchMode(mode);
@@ -619,7 +648,8 @@
 
   function switchMode(mode) {
     currentMode = mode;
-    modeSelector.classList.add('hidden');
+    // Don't hide mode selector - keep it visible until message is sent
+    // modeSelector stays visible
     document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
     if (mode === 'lead') {
       leadContainer.classList.add('active');
@@ -630,7 +660,6 @@
       reviewPanel.style.display = 'none';
     } else {
       assistantContainer.classList.add('active');
-      // Show welcome message if empty
       if (assistantMsgContainer.children.length === 0) {
         addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       }
@@ -676,7 +705,7 @@
     isChatActive = true;
     isTyping = true;
 
-    // Hide mode selector
+    // HIDE mode selector ONLY when sending message
     modeSelector.classList.add('hidden');
 
     // Hide setup wizard and show chat
@@ -687,10 +716,7 @@
     leadInputBar.classList.remove('lead-active');
     leadInputBar.classList.add('lead-hidden');
 
-    // Add user message
     addLeadMessage('user', message);
-
-    // Show typing
     showLeadTyping('Searching for leads…');
 
     try {
@@ -711,7 +737,6 @@
         }
         if (data.history) conversationHistory = data.history;
 
-        // Check if response contains leads (JSON array)
         try {
           const parsed = JSON.parse(data.reply);
           if (Array.isArray(parsed)) {
@@ -731,7 +756,6 @@
       addLeadMessage('ai', '🔌 Connection error — check your network and try again.');
     } finally {
       isTyping = false;
-      // Input stays hidden - single request mode
     }
   }
 
@@ -769,7 +793,7 @@
     leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
   }
 
-  // ----- REVIEW PANEL (unchanged from original) -----
+  // ----- REVIEW PANEL -----
   function renderReview(leads) {
     emailList.innerHTML = '';
     leads.forEach((lead, i) => {
@@ -867,7 +891,7 @@
     if (isTyping) return;
     isTyping = true;
 
-    // Hide mode selector if first message
+    // HIDE mode selector ONLY when sending message
     if (!isChatActive) {
       isChatActive = true;
       modeSelector.classList.add('hidden');
@@ -1007,7 +1031,6 @@
   // ----- NEW CHAT / CLEAR -----
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
-      // Reset lead mode
       isChatActive = false;
       isTyping = false;
       leadMsgContainer.innerHTML = '';
@@ -1023,7 +1046,6 @@
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       leadContainer.classList.add('active');
     } else {
-      // Reset assistant mode
       isChatActive = false;
       isTyping = false;
       assistantMsgContainer.innerHTML = '';
@@ -1059,7 +1081,6 @@
 
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
-    // Check session param
     const sessionParam = new URLSearchParams(window.location.search).get('session');
     if (sessionParam) {
       currentSessionId = sessionParam;
@@ -1098,4 +1119,4 @@
   }
 </script>
 </body>
-      </html>
+        </html>
