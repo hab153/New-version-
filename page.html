@@ -47,7 +47,8 @@
     .status-pip { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; animation: pip 2.8s ease-in-out infinite; }
     @keyframes pip { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(0.6); } }
     .status-bar a { color: var(--gold); text-decoration: none; opacity: 0.9; transition: opacity 0.2s; }
-    .status-bar a:hover { opacity: 1; text-decoration: underline; }    .topbar {
+    .status-bar a:hover { opacity: 1; text-decoration: underline; }
+    .topbar {
       height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between;
       background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; backdrop-filter: blur(20px);
     }
@@ -96,11 +97,77 @@
     .reply-notif {
       display: none; padding: 8px 20px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-align: center; cursor: pointer;
       background: linear-gradient(90deg, rgba(201,168,76,0.04), rgba(201,168,76,0.08), rgba(201,168,76,0.04));
-      border-bottom: 1px solid rgba(201,168,76,0.14); color: var(--gold); animation: slideDown 0.3s ease; flex-shrink: 0; position: relative; z-index: 8; transition: background 0.2s;    }
+      border-bottom: 1px solid rgba(201,168,76,0.14); color: var(--gold); animation: slideDown 0.3s ease; flex-shrink: 0; position: relative; z-index: 8; transition: background 0.2s;
+    }
     .reply-notif:hover { background: linear-gradient(90deg, rgba(201,168,76,0.06), rgba(201,168,76,0.12), rgba(201,168,76,0.06)); }
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* MODE SELECTOR - Centered on page */
+    #modeSelector {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 30px;
+      z-index: 20;
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #modeSelector.hidden {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.92);
+      pointer-events: none;
+    }
+    .mode-btn {
+      padding: 32px 48px;
+      border-radius: var(--r-xl);
+      border: 1px solid var(--br-md);
+      background: var(--surface);
+      color: var(--t1);
+      font-family: var(--display);
+      font-size: 24px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      min-width: 200px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.04em;
+      background: rgba(26,26,26,0.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+    .mode-btn .mode-icon { display: block; font-size: 36px; margin-bottom: 12px; }
+    .mode-btn .mode-label { display: block; font-size: 16px; color: var(--t2); font-weight: 300; margin-top: 4px; font-family: var(--ui); letter-spacing: 0.08em; }
+    .mode-btn .mode-sub { display: block; font-size: 10px; color: var(--t3); margin-top: 8px; font-family: var(--mono); letter-spacing: 0.10em; text-transform: uppercase; }
+    .mode-btn.lead-mode { border-color: rgba(201,168,76,0.25); }
+    .mode-btn.lead-mode:hover { border-color: rgba(201,168,76,0.6); transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 48px rgba(201,168,76,0.15), 0 0 0 1px rgba(201,168,76,0.2); }
+    .mode-btn.assistant-mode { border-color: rgba(102,221,255,0.2); }
+    .mode-btn.assistant-mode:hover { border-color: rgba(102,221,255,0.5); transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 48px rgba(102,221,255,0.10), 0 0 0 1px rgba(102,221,255,0.15); }
+
+    /* MODE CONTAINERS */
+    .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; }
+    .mode-container.active { display: flex; }
+
+    /* LEAD CONTAINER - override input visibility */
+    #leadContainer .input-bar { display: none !important; }
+    #leadContainer .input-bar.lead-active { display: block !important; }
+    #leadContainer .input-bar.lead-hidden { display: none !important; }
+
+    /* ASSISTANT CONTAINER */
+    #assistantContainer { flex: 1; display: none; flex-direction: column; height: 100%; background: var(--void); }
+    #assistantContainer.active { display: flex; }
+    #assistantContainer .chat-area { display: flex !important; flex: 1; overflow-y: auto; padding: 24px 16px 10px; flex-direction: column; }
+    #assistantContainer .input-bar { display: block !important; flex-shrink: 0; }
+    #assistantContainer .input-bar.active { display: block !important; }
+    #assistantContainer .chat-area .msg-row { padding: 4px 16px; }
+
+    /* Setup wizard - hidden when mode is selected */
     #setupWizard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; overflow-y: auto; position: relative; z-index: 1; }
+    #setupWizard.hidden { display: none; }
+
     .wizard-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
     .eyebrow-line { width: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
     .eyebrow-line.right { background: linear-gradient(90deg, var(--gold), transparent); }
@@ -145,9 +212,11 @@
       display: flex; align-items: center; justify-content: center; gap: 9px; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden;
     }
     .launch-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%); pointer-events: none; }
-    .launch-btn::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.2); }    .launch-btn:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,76,0.35), 0 0 0 1px rgba(201,168,76,0.4); }
+    .launch-btn::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.2); }
+    .launch-btn:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,76,0.35), 0 0 0 1px rgba(201,168,76,0.4); }
     .launch-btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(201,168,76,0.2); }
     .launch-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+
     .chat-area {
       flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 0 10px; display: none; flex-direction: column;
       scroll-behavior: smooth; position: relative; z-index: 1;
@@ -156,6 +225,7 @@
     .chat-area::-webkit-scrollbar { width: 2px; }
     .chat-area::-webkit-scrollbar-track { background: transparent; }
     .chat-area::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
+
     .msg-row { display: flex; padding: 4px 16px; animation: msgIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
     @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .msg-row.user { justify-content: flex-end; }
@@ -183,6 +253,7 @@
     .bubble-wrap { display: flex; flex-direction: column; }
     .msg-time { font-family: var(--mono); font-size: 8px; color: var(--t3); margin-top: 5px; letter-spacing: 0.06em; }
     .msg-row.user .msg-time { text-align: right; }
+
     .typing-row { display: flex; padding: 4px 16px; gap: 10px; align-items: flex-start; animation: msgIn 0.22s ease both; }
     .typing-bubble {
       background: var(--surface); border: 1px solid var(--br-dim); border-left: 2px solid rgba(201,168,76,0.25);
@@ -194,7 +265,9 @@
     .t-dot:nth-child(2) { animation-delay: 0.16s; }
     .t-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes tdot { 0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); } 30% { transform: translateY(-6px) scale(1.2); background: var(--gold); } }
-    #reviewPanel {      display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px; max-height: 48vh;
+
+    #reviewPanel {
+      display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px; max-height: 48vh;
       overflow-y: auto; flex-shrink: 0; position: relative; z-index: 6;
     }
     #reviewPanel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), rgba(201,168,76,0.5), rgba(201,168,76,0.3), transparent); }
@@ -232,6 +305,7 @@
     .send-all::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%); pointer-events: none; }
     .send-all:hover { background: var(--gold-bright); box-shadow: 0 6px 22px rgba(201,168,76,0.3); transform: translateY(-1px); }
     .send-all:disabled { background: var(--hover); color: var(--t3); cursor: not-allowed; transform: none; box-shadow: none; }
+
     .input-bar { padding: 12px 16px 14px; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; display: none; position: relative; z-index: 5; }
     .input-bar.active { display: block; }
     .input-shell {
@@ -243,7 +317,8 @@
       background: linear-gradient(135deg, rgba(201,168,76,0), rgba(201,168,76,0)); transition: background 0.3s; pointer-events: none; z-index: -1;
     }
     .input-shell:focus-within { border-color: rgba(201,168,76,0.28); box-shadow: 0 0 0 3px rgba(201,168,76,0.05), 0 8px 24px rgba(0,0,0,0.3); }
-    .msg-ta {      flex: 1; background: transparent; border: none; outline: none; resize: none; color: var(--t1); font-family: var(--ui);
+    .msg-ta {
+      flex: 1; background: transparent; border: none; outline: none; resize: none; color: var(--t1); font-family: var(--ui);
       font-size: 13.5px; font-weight: 400; min-height: 22px; max-height: 130px; caret-color: var(--gold); line-height: 1.55;
     }
     .msg-ta::placeholder { color: var(--t3); }
@@ -258,6 +333,7 @@
     .input-foot { display: flex; justify-content: space-between; margin-top: 7px; padding: 0 4px; }
     .input-tag { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--t3); }
     .char-ct { font-family: var(--mono); font-size: 7.5px; color: var(--t3); }
+
     .bottom-nav {
       height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base);
       border-top: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; padding: 0 8px;
@@ -291,20 +367,33 @@
       font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(184,92,92,0.4);
     }
     .nav-item.has-notifs .nav-badge { display: flex; }
+
+    /* New Chat / Clear buttons become New Search in lead mode */
+    #newSearchBtn { display: none; }
+    #newSearchBtn.visible { display: flex; }
+
     @media (min-width: 1024px) {
-      .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }      .msg-row.ai .bubble { font-size: 12px; } .topbar { padding: 0 32px; } .input-bar { padding: 14px 12% 16px; }
+      .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
+      .msg-row.ai .bubble { font-size: 12px; } .topbar { padding: 0 32px; } .input-bar { padding: 14px 12% 16px; }
       .bottom-nav { padding: 0 24%; } #reviewPanel { padding: 20px 12%; } .status-bar { padding: 0 32px; }
+      #assistantContainer .chat-area .msg-row { padding: 4px 12%; }
     }
     @media (min-width: 600px) and (max-width: 1023px) {
       .msg-row { padding: 4px 8%; } .bubble { max-width: 66%; } .topbar { padding: 0 22px; } .input-bar { padding: 12px 8% 14px; } .bottom-nav { padding: 0 6%; }
+      #assistantContainer .chat-area .msg-row { padding: 4px 8%; }
     }
     @media (max-width: 375px) {
       .brand-name { font-size: 16px; } .brand-sub { display: none; } .icon-btn { width: 30px; height: 30px; } .bubble { max-width: 88%; }
       :root { --nav-h: 62px; } .wizard-body { padding: 22px 18px 24px; } .form-row { grid-template-columns: 1fr; } .wizard-heading { font-size: 24px; }
+      .mode-btn { padding: 20px 24px; min-width: 140px; font-size: 18px; }
+      .mode-btn .mode-icon { font-size: 28px; }
     }
     @media (max-height: 500px) and (orientation: landscape) {
       :root { --top-h: 46px; --nav-h: 52px; --bar-h: 26px; } .chat-area { padding: 8px 0 4px; } .input-bar { padding: 8px 14px 10px; }
       .nav-item.nav-home .home-wrap { width: 38px; height: 38px; border-radius: 10px; } .wizard-body { padding: 16px 18px 20px; }
+      .mode-btn { padding: 14px 20px; min-width: 120px; font-size: 16px; }
+      .mode-btn .mode-icon { font-size: 22px; margin-bottom: 6px; }
+      #modeSelector { gap: 16px; }
     }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
@@ -341,83 +430,131 @@
   <span id="statusText">Checking email connection…</span>
 </div>
 <div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
-  ↑ New reply detected — tap to open Dashboard</div>
-<div id="setupWizard">
-  <div class="wizard-eyebrow">
-    <div class="eyebrow-line"></div>
-    <span class="eyebrow-text">Prospecting Engine · v2</span>
-    <div class="eyebrow-line right"></div>
-  </div>
-  <div class="wizard-card">
-    <div class="wizard-card-bar"></div>
-    <div class="wizard-body">
-      <h2 class="wizard-heading">Define your <em>target.</em></h2>
-      <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
-      <div class="wizard-divider">
-        <div class="wizard-divider-line"></div>
-        <span class="wizard-divider-text">Search Parameters</span>
-        <div class="wizard-divider-line"></div>
-      </div>
-      <form id="targetForm" autocomplete="off">
-        <div class="form-stack">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label" for="industry">Industry</label>
-              <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
-            </div>
-            <div class="form-field">
-              <label class="field-label" for="region">Region</label>
-              <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label" for="companySize">Company size</label>
-              <select id="companySize" class="field-input">
-                <option value="Any">Any size</option>
-                <option value="1-10">1–10</option>
-                <option value="11-50">11–50</option>
-                <option value="51-200">51–200</option>
-                <option value="201-500">201–500</option>
-                <option value="500+">500+</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="field-label" for="jobTitle">Job title</label>
-              <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
-            </div>
-          </div>
+  ↑ New reply detected — tap to open Dashboard
+</div>
+
+<!-- MODE SELECTOR -->
+<div id="modeSelector">
+  <button class="mode-btn lead-mode" data-mode="lead">
+    <span class="mode-icon">⚡</span>
+    <span class="mode-label">Lead Generation</span>
+    <span class="mode-sub">Find &amp; reach decision-makers</span>
+  </button>
+  <button class="mode-btn assistant-mode" data-mode="assistant">
+    <span class="mode-icon">🤖</span>
+    <span class="mode-label">Assistant</span>
+    <span class="mode-sub">Your personal business AI</span>
+  </button>
+</div>
+
+<!-- LEAD MODE CONTAINER -->
+<div id="leadContainer" class="mode-container active">
+  <div id="setupWizard">
+    <div class="wizard-eyebrow">
+      <div class="eyebrow-line"></div>
+      <span class="eyebrow-text">Prospecting Engine · v2</span>
+      <div class="eyebrow-line right"></div>
+    </div>
+    <div class="wizard-card">
+      <div class="wizard-card-bar"></div>
+      <div class="wizard-body">
+        <h2 class="wizard-heading">Define your <em>target.</em></h2>
+        <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
+        <div class="wizard-divider">
+          <div class="wizard-divider-line"></div>
+          <span class="wizard-divider-text">Search Parameters</span>
+          <div class="wizard-divider-line"></div>
         </div>
-        <button type="submit" class="launch-btn" id="launchBtn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          Start Search        </button>
-      </form>
+        <form id="targetForm" autocomplete="off">
+          <div class="form-stack">
+            <div class="form-row">
+              <div class="form-field">
+                <label class="field-label" for="industry">Industry</label>
+                <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="region">Region</label>
+                <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="field-label" for="companySize">Company size</label>
+                <select id="companySize" class="field-input">
+                  <option value="Any">Any size</option>
+                  <option value="1-10">1–10</option>
+                  <option value="11-50">11–50</option>
+                  <option value="51-200">51–200</option>
+                  <option value="201-500">201–500</option>
+                  <option value="500+">500+</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="jobTitle">Job title</label>
+                <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="launch-btn" id="launchBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            Start Search
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="chat-area" id="leadChatArea">
+    <div id="leadMsgContainer"></div>
+  </div>
+  <div id="reviewPanel">
+    <div class="rv-header">
+      <span class="rv-title">Review Generated Emails</span>
+      <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
+    </div>
+    <div id="emailList"></div>
+    <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect &amp; Send All</button>
+  </div>
+  <div class="input-bar lead-active" id="leadInputBar">
+    <div class="input-shell">
+      <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
+      <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+    <div class="input-foot">
+      <span class="input-tag">Lead Search</span>
+      <span class="char-ct" id="leadCharCount"></span>
     </div>
   </div>
 </div>
-<div class="chat-area" id="chatArea">
-  <div id="msgContainer"></div>
-</div>
-<div id="reviewPanel">
-  <div class="rv-header">
-    <span class="rv-title">Review Generated Emails</span>
-    <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
+
+<!-- ASSISTANT MODE CONTAINER -->
+<div id="assistantContainer" class="mode-container">
+  <div class="chat-area active" id="assistantChatArea">
+    <div id="assistantMsgContainer">
+      <div class="msg-row ai">
+        <div class="av">AI</div>
+        <div class="bubble-wrap">
+          <div class="bubble">👋 Hello! I'm your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!</div>
+          <div class="msg-time">Just now</div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div id="emailList"></div>
-  <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect & Send All</button>
-</div>
-<div class="input-bar" id="inputBar">
-  <div class="input-shell">
-    <textarea class="msg-ta" id="msgInput" rows="1" placeholder="Ask anything about your outreach…" aria-label="Message"></textarea>
-    <button class="send-btn" id="sendBtn" disabled aria-label="Send">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-    </button>
-  </div>
-  <div class="input-foot">
-    <span class="input-tag">Skyline AA-1</span>
-    <span class="char-ct" id="charCount"></span>
+  <div class="input-bar active" id="assistantInputBar">
+    <div class="input-shell">
+      <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
+      <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+    <div class="input-foot">
+      <span class="input-tag">Assistant</span>
+      <span class="char-ct" id="assistantCharCount"></span>
+    </div>
   </div>
 </div>
+
 <nav class="bottom-nav" aria-label="Main navigation">
   <a href="page.html" class="nav-item nav-home active" aria-label="Home">
     <div class="home-wrap">
@@ -427,7 +564,6 @@
   <a href="history.html" class="nav-item" aria-label="History">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg>
   </a>
-  <!-- NOTIFICATIONS: navigates to notifications.html -->
   <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
     <div class="nav-badge"></div>
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -441,116 +577,122 @@
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
   const token = localStorage.getItem('token');
   if (!token) window.location.href = 'login.html';
-  let currentSessionId = new URLSearchParams(window.location.search).get('session');  let conversationHistory = [];
+
+  // ----- STATE -----
+  let currentMode = 'lead';
+  let isChatActive = false;
   let isTyping = false;
+  let currentSessionId = null;
+  let conversationHistory = [];
   let currentGeneratedLeads = [];
   let notifInterval = null;
-  let statusInterval = null;
-  let chatArea, msgInput, sendBtn, charCount, planChip, setupWizard, inputBar;
-  document.addEventListener('DOMContentLoaded', async () => {
-    chatArea = document.getElementById('chatArea');
-    msgInput = document.getElementById('msgInput');
-    sendBtn = document.getElementById('sendBtn');
-    charCount = document.getElementById('charCount');
-    planChip = document.getElementById('planChip');
-    setupWizard = document.getElementById('setupWizard');
-    inputBar = document.getElementById('inputBar');
-    document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
-    document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
-    
-    // No override – the link goes to notifications.html naturally
-    
-    loadNotifCount();
-    notifInterval = setInterval(loadNotifCount, 15000);
-    msgInput.addEventListener('input', onInput);
-    msgInput.addEventListener('keydown', onKeydown);
-    sendBtn.addEventListener('click', sendMessage);
-    await checkPlan();
-    updateStatus();
-    document.getElementById('targetForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const industry = document.getElementById('industry').value.trim();
-      const region = document.getElementById('region').value.trim();
-      const companySize = document.getElementById('companySize').value;
-      const jobTitle = document.getElementById('jobTitle').value.trim();
-      const msg = `Find me ${jobTitle}s in the ${industry} industry, located in ${region}. Company size: ${companySize}.`;
-      setupWizard.style.display = 'none';
-      chatArea.classList.add('active');
-      inputBar.classList.add('active');
-      appendMsg('user', msg);
-      await fetchResponse(msg);
+
+  // ----- DOM REFS -----
+  const modeSelector = document.getElementById('modeSelector');
+  const leadContainer = document.getElementById('leadContainer');
+  const assistantContainer = document.getElementById('assistantContainer');
+  const setupWizard = document.getElementById('setupWizard');
+  const leadChatArea = document.getElementById('leadChatArea');
+  const leadMsgContainer = document.getElementById('leadMsgContainer');
+  const leadInputBar = document.getElementById('leadInputBar');
+  const leadMsgInput = document.getElementById('leadMsgInput');
+  const leadSendBtn = document.getElementById('leadSendBtn');
+  const leadCharCount = document.getElementById('leadCharCount');
+  const reviewPanel = document.getElementById('reviewPanel');
+  const emailList = document.getElementById('emailList');
+  const assistantMsgContainer = document.getElementById('assistantMsgContainer');
+  const assistantMsgInput = document.getElementById('assistantMsgInput');
+  const assistantSendBtn = document.getElementById('assistantSendBtn');
+  const assistantCharCount = document.getElementById('assistantCharCount');
+  const planChip = document.getElementById('planChip');
+  const statusText = document.getElementById('statusText');
+  const statusBar = document.getElementById('statusBar');
+
+  // ----- MODE SWITCHING -----
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (isChatActive) return;
+      const mode = this.dataset.mode;
+      switchMode(mode);
     });
-    if (currentSessionId) {
-      setupWizard.style.display = 'none';
-      chatArea.classList.add('active');
-      inputBar.classList.add('active');
-      await loadSession();
+  });
+
+  function switchMode(mode) {
+    currentMode = mode;
+    modeSelector.classList.add('hidden');
+    document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+    if (mode === 'lead') {
+      leadContainer.classList.add('active');
+      setupWizard.style.display = 'flex';
+      leadChatArea.classList.remove('active');
+      leadInputBar.classList.add('lead-active');
+      leadInputBar.classList.remove('lead-hidden');
+      reviewPanel.style.display = 'none';
+    } else {
+      assistantContainer.classList.add('active');
+      // Show welcome message if empty
+      if (assistantMsgContainer.children.length === 0) {
+        addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+      }
+    }
+  }
+
+  // ----- LEAD MODE -----
+  document.getElementById('targetForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (isChatActive) return;
+    const industry = document.getElementById('industry').value.trim();
+    const region = document.getElementById('region').value.trim();
+    const companySize = document.getElementById('companySize').value;
+    const jobTitle = document.getElementById('jobTitle').value.trim();
+    const msg = `Find me ${jobTitle}s in the ${industry} industry, located in ${region}. Company size: ${companySize}.`;
+    startLeadSearch(msg);
+  });
+
+  leadMsgInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+    leadSendBtn.disabled = !this.value.trim() || isTyping;
+    leadCharCount.textContent = this.value.length || '';
+  });
+
+  leadMsgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!leadSendBtn.disabled) {
+        const msg = this.value.trim();
+        if (msg) startLeadSearch(msg);
+      }
     }
   });
 
-  // ----- NOTIFICATION BADGE (live) -----
-  async function loadNotifCount() {
-    try {
-      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        const count = data.count || 0;
-        localStorage.setItem('lastKnownNotifCount', count);
-        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-        updateBadge(count > seen ? count : 0);
-      }
-    } catch {}
-  }
-  function updateBadge(count) {
-    const item = document.getElementById('navNotifBtn');
-    const badge = item?.querySelector('.nav-badge');
-    if (!item || !badge) return;
-    if (count > 0) {
-      item.classList.add('has-notifs');
-      badge.textContent = count > 9 ? '9+' : count;
-    } else {
-      item.classList.remove('has-notifs');
-      badge.textContent = '';
-    }
-  }
-  // ----- end notification badge -----
+  leadSendBtn.addEventListener('click', function() {
+    const msg = leadMsgInput.value.trim();
+    if (msg && !this.disabled) startLeadSearch(msg);
+  });
 
-  async function updateStatus() {
-    const bar = document.getElementById('statusBar');
-    const txt = document.getElementById('statusText');
-    try {
-      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const user = await res.json();
-        if (user.nylasIntegration?.isConnected) {
-          bar.className = 'status-bar connected';
-          txt.innerHTML = `Email connected · <a href="dashboard.html">Manage →</a>`;
-        } else {
-          bar.className = 'status-bar disconnected';
-          txt.innerHTML = `No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
-        }
-      }
-    } catch {}
-  }
-  async function sendMessage() {
-    const text = msgInput.value.trim();
-    if (!text || isTyping) return;
-    appendMsg('user', text);
-    msgInput.value = '';
-    msgInput.style.height = 'auto';
-    updateSend();
-    await fetchResponse(text);
-  }
-  async function fetchResponse(message) {
+  async function startLeadSearch(message) {
+    if (isChatActive || isTyping) return;
+    isChatActive = true;
     isTyping = true;
-    updateSend();
-    const steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
-    let si = 0;
-    showTyping(steps[0]);
-    statusInterval = setInterval(() => {
-      si++;
-      if (si < steps.length) showTyping(steps[si]);
-    }, 2500);
+
+    // Hide mode selector
+    modeSelector.classList.add('hidden');
+
+    // Hide setup wizard and show chat
+    setupWizard.style.display = 'none';
+    leadChatArea.classList.add('active');
+
+    // HIDE INPUT BAR - single request mode
+    leadInputBar.classList.remove('lead-active');
+    leadInputBar.classList.add('lead-hidden');
+
+    // Add user message
+    addLeadMessage('user', message);
+
+    // Show typing
+    showLeadTyping('Searching for leads…');
+
     try {
       const res = await fetch(`${BACKEND}/api/chat`, {
         method: 'POST',
@@ -558,8 +700,8 @@
         body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
       });
       const data = await res.json();
-      clearInterval(statusInterval);
-      hideTyping();
+      hideLeadTyping();
+
       if (res.ok) {
         if (data.sessionId && !currentSessionId) {
           currentSessionId = data.sessionId;
@@ -568,91 +710,84 @@
           window.history.pushState({}, '', url);
         }
         if (data.history) conversationHistory = data.history;
-        appendMsg('ai', data.reply || "Request received. How can I help further?");
+
+        // Check if response contains leads (JSON array)
+        try {
+          const parsed = JSON.parse(data.reply);
+          if (Array.isArray(parsed)) {
+            currentGeneratedLeads = parsed;
+            renderReview(parsed);
+            addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the emails below.`);
+            return;
+          }
+        } catch {}
+
+        addLeadMessage('ai', data.reply || 'Request received. How can I help further?');
       } else {
-        appendMsg('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
+        addLeadMessage('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
       }
     } catch {
-      clearInterval(statusInterval);
-      hideTyping();
-      appendMsg('ai', '🔌 Connection error — check your network and try again.');
+      hideLeadTyping();
+      addLeadMessage('ai', '🔌 Connection error — check your network and try again.');
     } finally {
       isTyping = false;
-      updateSend();
+      // Input stays hidden - single request mode
     }
   }
-  async function loadSession() {
-    try {
-      const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const msgs = await res.json();
-        if (msgs?.length) {
-          document.getElementById('msgContainer').innerHTML = '';
-          for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            appendMsg(role, m.content);
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
-          }
-          scrollDown();
-        }
-      }
-    } catch {}
-  }
-  async function checkPlan() {
-    try {
-      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-cache' });
-      if (res.ok) {
-        const user = await res.json();
-        const p = user.subscriptionTier || 'free';
-        planChip.className = `plan-chip ${p}`;
-        planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-      }
-    } catch {}
-  }
-  function appendMsg(role, content) {
-    const container = document.getElementById('msgContainer');
-    if (!container) return;
-    if (role === 'ai' && content.trimStart().startsWith('[')) {
-      try {
-        const leads = JSON.parse(content);
-        currentGeneratedLeads = leads;
-        renderReview(leads);
-        const row = document.createElement('div');
-        row.className = 'msg-row ai';
-        row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">📊 Found <strong>${leads.length}</strong> lead${leads.length !== 1 ? 's' : ''}. Review the emails below.</div><div class="msg-time">${now()}</div></div>`;
-        container.appendChild(row);
-        scrollDown();
-        return;
-      } catch {}
-    }
+
+  function addLeadMessage(role, content) {
+    const container = leadMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : esc(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${now()}</div></div>`;
+    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
-    scrollDown();
+    scrollLeadDown();
   }
-  function formatAI(text) {
-    let s = esc(text);
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-    s = s.replace(/\n/g, '<br>');
-    return s;
+
+  function showLeadTyping(label = 'Thinking…') {
+    let row = document.getElementById('leadTypingRow');
+    if (row) {
+      const lbl = row.querySelector('.t-label');
+      if (lbl) lbl.textContent = label;
+      scrollLeadDown();
+      return;
+    }
+    row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'leadTypingRow';
+    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+    leadMsgContainer.appendChild(row);
+    scrollLeadDown();
   }
+
+  function hideLeadTyping() {
+    document.getElementById('leadTypingRow')?.remove();
+  }
+
+  function scrollLeadDown() {
+    leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
+  }
+
+  // ----- REVIEW PANEL (unchanged from original) -----
   function renderReview(leads) {
-    const list = document.getElementById('emailList');
-    list.innerHTML = '';
+    emailList.innerHTML = '';
     leads.forEach((lead, i) => {
       const d = document.createElement('div');
       d.className = 'lead-card';
-      d.innerHTML = `<div class="lead-name">${esc(lead.name)} · ${esc(lead.company)}</div><div class="lead-email-guess">${esc(lead.email)}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${esc(lead.email)}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${esc(lead.messages[0].subject)}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${esc(lead.messages[0].body)}</textarea></div>`;
-      list.appendChild(d);
+      const subj = lead.messages?.[0]?.subject || 'Hello from Skyline';
+      const body = lead.messages?.[0]?.body || '';
+      d.innerHTML = `<div class="lead-name">${escapeHtml(lead.name)} · ${escapeHtml(lead.company)}</div><div class="lead-email-guess">${escapeHtml(lead.email)}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${escapeHtml(lead.email)}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${escapeHtml(subj)}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${escapeHtml(body)}</textarea></div>`;
+      emailList.appendChild(d);
     });
-    document.getElementById('reviewPanel').style.display = 'block';
-    scrollDown();
+    reviewPanel.style.display = 'block';
+    scrollLeadDown();
   }
-  function closeReview() { document.getElementById('reviewPanel').style.display = 'none'; }
+
+  function closeReview() {
+    reviewPanel.style.display = 'none';
+  }
+
   async function submitBatch() {
     const btn = document.getElementById('sendAllBtn');
     const orig = btn.textContent;
@@ -691,7 +826,7 @@
       }
       if (data.success) {
         alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
-        appendMsg('ai', '✅ Emails sent! Track replies in Dashboard.');
+        addLeadMessage('ai', '✅ Emails sent! Track replies in Dashboard.');
         closeReview();
         setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
       } else {
@@ -704,36 +839,263 @@
       btn.disabled = false;
     }
   }
-  function showTyping(label = 'Thinking…') {
-    let row = document.getElementById('typingRow');
+
+  // ----- ASSISTANT MODE -----
+  assistantMsgInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+    assistantSendBtn.disabled = !this.value.trim() || isTyping;
+    assistantCharCount.textContent = this.value.length || '';
+  });
+
+  assistantMsgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!assistantSendBtn.disabled) {
+        const msg = this.value.trim();
+        if (msg) sendAssistantMessage(msg);
+      }
+    }
+  });
+
+  assistantSendBtn.addEventListener('click', function() {
+    const msg = assistantMsgInput.value.trim();
+    if (msg && !this.disabled) sendAssistantMessage(msg);
+  });
+
+  async function sendAssistantMessage(message) {
+    if (isTyping) return;
+    isTyping = true;
+
+    // Hide mode selector if first message
+    if (!isChatActive) {
+      isChatActive = true;
+      modeSelector.classList.add('hidden');
+    }
+
+    addAssistantMessage('user', message);
+    assistantMsgInput.value = '';
+    assistantMsgInput.style.height = 'auto';
+    assistantSendBtn.disabled = true;
+
+    showAssistantTyping('Thinking…');
+
+    try {
+      const res = await fetch(`${BACKEND}/api/assistant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json();
+      hideAssistantTyping();
+
+      if (res.ok) {
+        addAssistantMessage('ai', data.response || 'I couldn\'t process that. Please try again.');
+      } else {
+        addAssistantMessage('ai', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
+      }
+    } catch {
+      hideAssistantTyping();
+      addAssistantMessage('ai', '🔌 Connection error — check your network and try again.');
+    } finally {
+      isTyping = false;
+      assistantSendBtn.disabled = !assistantMsgInput.value.trim();
+    }
+  }
+
+  function addAssistantMessage(role, content) {
+    const container = assistantMsgContainer;
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    container.appendChild(row);
+    scrollAssistantDown();
+  }
+
+  function showAssistantTyping(label = 'Thinking…') {
+    let row = document.getElementById('assistantTypingRow');
     if (row) {
       const lbl = row.querySelector('.t-label');
       if (lbl) lbl.textContent = label;
-      scrollDown();
+      scrollAssistantDown();
       return;
     }
-    const c = document.getElementById('msgContainer');
-    if (!c) return;
     row = document.createElement('div');
     row.className = 'typing-row';
-    row.id = 'typingRow';
+    row.id = 'assistantTypingRow';
     row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    c.appendChild(row);
-    scrollDown();
+    assistantMsgContainer.appendChild(row);
+    scrollAssistantDown();
   }
-  function hideTyping() { document.getElementById('typingRow')?.remove(); }
-  function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"'); }
-  function now() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-  function scrollDown() { chatArea?.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
-  function updateSend() { sendBtn.disabled = !msgInput.value.trim() || isTyping; }
-  function onInput() {
-    msgInput.style.height = 'auto';
-    msgInput.style.height = Math.min(msgInput.scrollHeight, 130) + 'px';
-    updateSend();
-    charCount.textContent = msgInput.value.length || '';
+
+  function hideAssistantTyping() {
+    document.getElementById('assistantTypingRow')?.remove();
   }
-  function onKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); } }
-  function clearChat() { window.location.href = window.location.pathname; }
+
+  function scrollAssistantDown() {
+    const area = document.getElementById('assistantChatArea');
+    area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+  }
+
+  // ----- UTILITY FUNCTIONS -----
+  function formatAI(text) {
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+    s = s.replace(/\n/g, '<br>');
+    return s;
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // ----- NOTIFICATION BADGE -----
+  async function loadNotifCount() {
+    try {
+      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        const count = data.count || 0;
+        localStorage.setItem('lastKnownNotifCount', count);
+        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+        updateBadge(count > seen ? count : 0);
+      }
+    } catch {}
+  }
+
+  function updateBadge(count) {
+    const item = document.getElementById('navNotifBtn');
+    const badge = item?.querySelector('.nav-badge');
+    if (!item || !badge) return;
+    if (count > 0) {
+      item.classList.add('has-notifs');
+      badge.textContent = count > 9 ? '9+' : count;
+    } else {
+      item.classList.remove('has-notifs');
+      badge.textContent = '';
+    }
+  }
+
+  // ----- STATUS & PLAN -----
+  async function updateStatus() {
+    try {
+      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const user = await res.json();
+        if (user.nylasIntegration?.isConnected) {
+          statusBar.className = 'status-bar connected';
+          statusText.innerHTML = `Email connected · <a href="dashboard.html">Manage →</a>`;
+        } else {
+          statusBar.className = 'status-bar disconnected';
+          statusText.innerHTML = `No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
+        }
+        const p = user.subscriptionTier || 'free';
+        planChip.className = `plan-chip ${p}`;
+        planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+      }
+    } catch {}
+  }
+
+  // ----- NEW CHAT / CLEAR -----
+  document.getElementById('newChatBtn').addEventListener('click', function() {
+    if (currentMode === 'lead') {
+      // Reset lead mode
+      isChatActive = false;
+      isTyping = false;
+      leadMsgContainer.innerHTML = '';
+      reviewPanel.style.display = 'none';
+      setupWizard.style.display = 'flex';
+      leadChatArea.classList.remove('active');
+      leadInputBar.classList.add('lead-active');
+      leadInputBar.classList.remove('lead-hidden');
+      currentGeneratedLeads = [];
+      conversationHistory = [];
+      currentSessionId = null;
+      modeSelector.classList.remove('hidden');
+      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+      leadContainer.classList.add('active');
+    } else {
+      // Reset assistant mode
+      isChatActive = false;
+      isTyping = false;
+      assistantMsgContainer.innerHTML = '';
+      addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+      modeSelector.classList.remove('hidden');
+      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+      assistantContainer.classList.add('active');
+    }
+  });
+
+  document.getElementById('clearSessionBtn').addEventListener('click', function() {
+    if (currentMode === 'lead') {
+      leadMsgContainer.innerHTML = '';
+      reviewPanel.style.display = 'none';
+      setupWizard.style.display = 'flex';
+      leadChatArea.classList.remove('active');
+      leadInputBar.classList.add('lead-active');
+      leadInputBar.classList.remove('lead-hidden');
+      currentGeneratedLeads = [];
+      conversationHistory = [];
+      currentSessionId = null;
+      isChatActive = false;
+      isTyping = false;
+      modeSelector.classList.remove('hidden');
+    } else {
+      assistantMsgContainer.innerHTML = '';
+      addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+      isChatActive = false;
+      isTyping = false;
+      modeSelector.classList.remove('hidden');
+    }
+  });
+
+  // ----- INIT -----
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Check session param
+    const sessionParam = new URLSearchParams(window.location.search).get('session');
+    if (sessionParam) {
+      currentSessionId = sessionParam;
+      modeSelector.classList.add('hidden');
+      isChatActive = true;
+      setupWizard.style.display = 'none';
+      leadChatArea.classList.add('active');
+      leadInputBar.classList.add('lead-hidden');
+      leadInputBar.classList.remove('lead-active');
+      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+      leadContainer.classList.add('active');
+      await loadLeadSession(sessionParam);
+    }
+
+    await updateStatus();
+    loadNotifCount();
+    notifInterval = setInterval(loadNotifCount, 15000);
+  });
+
+  async function loadLeadSession(sessionId) {
+    try {
+      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const msgs = await res.json();
+        if (msgs?.length) {
+          leadMsgContainer.innerHTML = '';
+          for (const m of msgs) {
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            addLeadMessage(role, m.content);
+            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
+          }
+          scrollLeadDown();
+        }
+      }
+    } catch {}
+  }
 </script>
 </body>
-        </html>
+      </html>
