@@ -64,7 +64,6 @@
       flex-direction: column;
     }
 
-    /* Atmospheric background */
     body::before {
       content: '';
       position: fixed;
@@ -87,9 +86,6 @@
       background-size: 180px;
     }
 
-    /* ──────────────────────────────────
-       TOPBAR
-    ────────────────────────────────── */
     .topbar {
       height: var(--top-h);
       padding: 0 18px;
@@ -191,7 +187,7 @@
     .back-link:hover { color: var(--gold); border-color: var(--br-md); }
 
     /* ──────────────────────────────────
-       MAIN STAGE – LIST VIEW
+       ARCHIVE VIEW
     ────────────────────────────────── */
     .archive-stage {
       flex: 1;
@@ -208,7 +204,6 @@
       margin: 0 auto;
     }
 
-    /* Page heading */
     .page-heading {
       margin-bottom: 28px;
       animation: fadeUp 0.4s 0.05s ease both;
@@ -251,7 +246,6 @@
       line-height: 1.55;
     }
 
-    /* ── Search bar ── */
     .search-wrap {
       margin-bottom: 24px;
       animation: fadeUp 0.4s 0.1s ease both;
@@ -306,7 +300,6 @@
       transition: color 0.2s;
     }
 
-    /* ── Session grid ── */
     .session-grid {
       display: flex;
       flex-direction: column;
@@ -392,7 +385,6 @@
       transform: translateX(3px);
     }
 
-    /* ── Empty state ── */
     .empty-state {
       text-align: center;
       padding: 56px 24px;
@@ -422,18 +414,61 @@
     }
 
     /* ──────────────────────────────────
-       CHAT VIEW (when session is opened)
+       CHAT VIEW
     ────────────────────────────────── */
     #chatView {
       display: none;
       flex-direction: column;
-      height: 100%;
       flex: 1;
+      height: 100%;
       position: relative;
       z-index: 1;
     }
     #chatView.active {
       display: flex;
+    }
+
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--br-dim);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      background: var(--base);
+    }
+    .chat-header .back-btn {
+      background: none;
+      border: 1px solid var(--br-dim);
+      color: var(--t2);
+      padding: 6px 14px;
+      border-radius: var(--r-sm);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .chat-header .back-btn:hover {
+      color: var(--gold);
+      border-color: var(--br-md);
+    }
+    .chat-header .chat-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--t1);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-header .chat-badge {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--t3);
+      padding: 2px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--br-dim);
     }
 
     .chat-area {
@@ -525,7 +560,6 @@
     }
     .msg-row.user .msg-time { text-align: right; }
 
-    /* Typing indicator */
     .typing-row {
       display: flex;
       padding: 4px 0;
@@ -561,7 +595,6 @@
       30% { transform: translateY(-6px) scale(1.2); background: var(--gold); }
     }
 
-    /* Input bar for chat view */
     .input-bar {
       padding: 12px 16px 14px;
       background: var(--base);
@@ -647,50 +680,6 @@
       font-family: var(--mono);
       font-size: 7.5px;
       color: var(--t3);
-    }
-
-    /* Back to list button in chat view */
-    .chat-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--br-dim);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-      background: var(--base);
-    }
-    .chat-header .back-btn {
-      background: none;
-      border: 1px solid var(--br-dim);
-      color: var(--t2);
-      padding: 6px 14px;
-      border-radius: var(--r-sm);
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      transition: color 0.2s, border-color 0.2s;
-    }
-    .chat-header .back-btn:hover {
-      color: var(--gold);
-      border-color: var(--br-md);
-    }
-    .chat-header .chat-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--t1);
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .chat-header .chat-badge {
-      font-family: var(--mono);
-      font-size: 8px;
-      color: var(--t3);
-      padding: 2px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--br-dim);
     }
 
     /* ──────────────────────────────────
@@ -780,16 +769,14 @@
       font-family: var(--mono);
       font-size: 7px;
       font-weight: 600;
-      align-items: center; justify-content: center;
+      align-items: center;
+      justify-content: center;
       padding: 0 3px;
       z-index: 2;
       box-shadow: 0 2px 6px rgba(255,85,85,0.3);
     }
     .nav-item.has-notifs .nav-badge { display: flex; }
 
-    /* ──────────────────────────────────
-       ANIMATIONS
-    ────────────────────────────────── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
@@ -817,9 +804,6 @@
       50% { opacity: 0.45; }
     }
 
-    /* ──────────────────────────────────
-       RESPONSIVE
-    ────────────────────────────────── */
     @media (min-width: 768px) {
       .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); }
       .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
@@ -841,11 +825,8 @@
       .bubble { max-width: 88%; }
     }
 
-    /* Hide archive view when chat view is active */
     #archiveView.hidden { display: none; }
-
     #archiveView { display: block; }
-    #archiveView.hidden { display: none; }
   </style>
 </head>
 <body>
@@ -908,19 +889,16 @@
 
   <!-- ==================== CHAT VIEW ==================== -->
   <div id="chatView">
-    <!-- Chat header -->
     <div class="chat-header">
       <button class="back-btn" id="backToListBtn">← Back</button>
       <span class="chat-title" id="chatTitle">Loading...</span>
       <span class="chat-badge" id="chatBadge">assistant</span>
     </div>
 
-    <!-- Messages -->
     <div class="chat-area" id="chatArea">
       <div id="msgContainer"></div>
     </div>
 
-    <!-- Input bar -->
     <div class="input-bar" id="inputBar">
       <div class="input-shell">
         <textarea class="msg-ta" id="msgInput" rows="1" placeholder="Continue the conversation…" aria-label="Message"></textarea>
@@ -1004,11 +982,10 @@
     // ----- SHOW/HIDE VIEWS -----
     function showArchiveView() {
       archiveView.classList.remove('hidden');
-      chatView.classList.remove('active');
       archiveView.style.display = 'block';
+      chatView.classList.remove('active');
       chatView.style.display = 'none';
       topbarLabel.textContent = 'Session Archive';
-      // Re-render sessions in case we modified anything
       renderSessions(allSessions);
     }
 
@@ -1021,18 +998,24 @@
       chatTitle.textContent = sessionTitle || 'Conversation';
       currentSessionId = sessionId;
       isAssistant = (sessionId === 'assistant');
+
       // Show/hide input bar based on assistant
       if (isAssistant) {
         inputBar.classList.add('active');
+        inputBar.style.display = 'block';
         inputTag.textContent = 'Assistant';
         chatBadge.textContent = 'assistant';
         msgInput.placeholder = 'Ask your assistant…';
+        sendBtn.disabled = !msgInput.value.trim();
       } else {
         inputBar.classList.remove('active');
+        inputBar.style.display = 'none';
         inputTag.textContent = 'Lead Archive';
         chatBadge.textContent = 'lead';
         msgInput.placeholder = 'This is a lead session – read only';
+        sendBtn.disabled = true;
       }
+
       // Load messages
       loadSessionMessages(sessionId);
     }
@@ -1066,7 +1049,8 @@
           }
         }
 
-      } catch {
+      } catch (err) {
+        console.error('loadSessions error:', err);
         sessionGrid.innerHTML = `
           <div class="error-state">
             <div class="error-icon">
@@ -1117,7 +1101,6 @@
           </div>`;
         card.addEventListener('click', () => {
           showChatView(session._id, session.title);
-          // Update URL without reload
           const url = new URL(window.location);
           url.searchParams.set('session', session._id);
           window.history.pushState({}, '', url);
@@ -1129,36 +1112,48 @@
     // ----- LOAD SESSION MESSAGES -----
     async function loadSessionMessages(sessionId) {
       msgContainer.innerHTML = '';
+      // Show loading message
+      const loadingRow = document.createElement('div');
+      loadingRow.className = 'msg-row ai';
+      loadingRow.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">Loading messages...</div><div class="msg-time">Just now</div></div>`;
+      msgContainer.appendChild(loadingRow);
+
       try {
         const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Failed');
+        if (!res.ok) throw new Error('Failed to load messages');
+
         const msgs = await res.json();
-        if (msgs && msgs.length) {
+        // Clear loading message
+        msgContainer.innerHTML = '';
+
+        if (msgs && msgs.length > 0) {
           for (const m of msgs) {
             const role = m.role === 'ai' ? 'ai' : 'user';
             appendMessage(role, m.content);
           }
         } else {
-          appendMessage('ai', 'No messages in this session.');
+          appendMessage('ai', 'No messages found in this session.');
         }
         scrollDown();
-      } catch {
-        appendMessage('ai', '⚠️ Could not load session history.');
+      } catch (err) {
+        console.error('loadSessionMessages error:', err);
+        msgContainer.innerHTML = '';
+        appendMessage('ai', '⚠️ Could not load session history. Please try again.');
       }
     }
 
     function appendMessage(role, content) {
       const row = document.createElement('div');
       row.className = `msg-row ${role}`;
-      const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+      const html = role === 'ai' ? formatAI(content) : escapeHTML(content);
       row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
       msgContainer.appendChild(row);
     }
 
     function formatAI(text) {
-      let s = escapeHtml(text);
+      let s = escapeHTML(text);
       s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
       s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
       s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
@@ -1167,6 +1162,7 @@
     }
 
     function escapeHTML(str) {
+      if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
@@ -1176,7 +1172,9 @@
 
     function scrollDown() {
       const area = document.getElementById('chatArea');
-      area.scrollTop = area.scrollHeight;
+      setTimeout(() => {
+        area.scrollTop = area.scrollHeight;
+      }, 50);
     }
 
     // ----- SEND MESSAGE (only for assistant) -----
@@ -1241,18 +1239,22 @@
     msgInput.addEventListener('input', function() {
       this.style.height = 'auto';
       this.style.height = Math.min(this.scrollHeight, 130) + 'px';
-      sendBtn.disabled = !this.value.trim() || isTyping;
+      if (isAssistant) {
+        sendBtn.disabled = !this.value.trim() || isTyping;
+      }
       charCount.textContent = this.value.length || '';
     });
 
     msgInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        if (!sendBtn.disabled) sendMessage();
+        if (!sendBtn.disabled && isAssistant) sendMessage();
       }
     });
 
-    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('click', function() {
+      if (isAssistant) sendMessage();
+    });
 
     // ----- BACK BUTTON -----
     backToListBtn.addEventListener('click', function() {
@@ -1305,11 +1307,9 @@
 
     // ----- INIT -----
     document.addEventListener('DOMContentLoaded', function() {
-      // Check URL for session param first
       const params = new URLSearchParams(window.location.search);
       const sessionParam = params.get('session');
 
-      // Load sessions, then if session param exists, open it
       loadSessions().then(() => {
         if (sessionParam) {
           const session = allSessions.find(s => s._id === sessionParam);
@@ -1322,7 +1322,6 @@
       loadNotifCount();
       setInterval(loadNotifCount, 15000);
 
-      // Mark notifications as seen when clicking the bell
       document.getElementById('navNotifBtn').addEventListener('click', function() {
         localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
         updateBadge(0);
