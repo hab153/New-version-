@@ -336,6 +336,18 @@
       box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
     }
     .session-card:hover::before { opacity: 1; }
+    .session-card.pinned {
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.03);
+    }
+    .session-card.pinned::after {
+      content: '📌';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 12px;
+      opacity: 0.5;
+    }
 
     .card-content { flex: 1; min-width: 0; }
     .card-title {
@@ -348,6 +360,7 @@
       text-overflow: ellipsis;
       letter-spacing: 0.01em;
       transition: color 0.2s;
+      padding-right: 20px;
     }
     .session-card:hover .card-title { color: var(--gold-pale); }
 
@@ -359,16 +372,36 @@
       font-size: 10px;
       color: var(--t3);
       letter-spacing: 0.04em;
+      flex-wrap: wrap;
+      gap: 4px 8px;
     }
     .meta-dot {
       width: 2px; height: 2px;
       border-radius: 50%;
       background: var(--t3);
-      margin: 0 8px;
       flex-shrink: 0;
       opacity: 0.5;
     }
     .meta-date { color: var(--t2); }
+
+    .type-badge {
+      font-size: 7px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .type-badge.lead {
+      background: rgba(255,255,255,0.08);
+      color: var(--t2);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .type-badge.assistant {
+      background: rgba(102,221,255,0.12);
+      color: var(--sky);
+      border: 1px solid rgba(102,221,255,0.2);
+    }
 
     .card-arrow {
       color: var(--t3);
@@ -435,6 +468,139 @@
       color: var(--t3);
       font-family: var(--mono);
       letter-spacing: 0.04em;
+    }
+
+    /* ----- CONTEXT MENU ----- */
+    #contextMenu {
+      display: none;
+      position: fixed;
+      background: var(--surface);
+      border: 1px solid var(--br-md);
+      border-radius: var(--r-md);
+      padding: 6px 0;
+      z-index: 100;
+      min-width: 160px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    #contextMenu .ctx-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 18px;
+      background: transparent;
+      border: none;
+      color: var(--t2);
+      font-family: var(--ui);
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-align: left;
+    }
+    #contextMenu .ctx-btn:hover {
+      background: var(--hover);
+      color: var(--t1);
+    }
+    #contextMenu .ctx-btn.danger {
+      color: var(--rose);
+    }
+    #contextMenu .ctx-btn.danger:hover {
+      background: rgba(255,85,85,0.1);
+    }
+    #contextMenu .ctx-divider {
+      height: 1px;
+      background: var(--br-dim);
+      margin: 4px 12px;
+    }
+
+    /* ----- RENAME MODAL ----- */
+    #renameModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    #renameModal.active {
+      display: flex;
+    }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--br-md);
+      border-radius: var(--r-xl);
+      padding: 28px;
+      max-width: 400px;
+      width: 90%;
+      animation: modalIn 0.25s ease both;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.94) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-box h3 {
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: 20px;
+      color: var(--t1);
+      margin-bottom: 6px;
+    }
+    .modal-box .modal-sub {
+      font-size: 12px;
+      color: var(--t3);
+      margin-bottom: 18px;
+      font-family: var(--mono);
+      letter-spacing: 0.04em;
+    }
+    .modal-box .field-input {
+      width: 100%;
+      background: var(--raised);
+      border: 1px solid var(--br-dim);
+      border-radius: var(--r-sm);
+      padding: 11px 13px;
+      color: var(--t1);
+      font-family: var(--ui);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      margin-bottom: 16px;
+    }
+    .modal-box .field-input:focus {
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+    }
+    .modal-box .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-box .modal-actions button {
+      padding: 8px 20px;
+      border-radius: var(--r-sm);
+      font-family: var(--ui);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-box .modal-actions .btn-cancel {
+      background: var(--raised);
+      color: var(--t2);
+      border: 1px solid var(--br-dim);
+    }
+    .modal-box .modal-actions .btn-cancel:hover {
+      background: var(--hover);
+      color: var(--t1);
+    }
+    .modal-box .modal-actions .btn-save {
+      background: var(--gold);
+      color: #0d0a04;
+      border: none;
+    }
+    .modal-box .modal-actions .btn-save:hover {
+      background: var(--gold-bright);
+      box-shadow: 0 4px 16px rgba(255,255,255,0.2);
     }
 
     .bottom-nav {
@@ -608,7 +774,7 @@
           <div class="eyebrow-line right"></div>
         </div>
         <h1 class="page-title">Session <em>Archive.</em></h1>
-        <p class="page-sub">Click any session to open it in the main view.</p>
+        <p class="page-sub">Click to open · Long press or right-click for options.</p>
       </div>
 
       <div class="search-wrap">
@@ -616,7 +782,7 @@
           <div class="search-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           </div>
-          <input type="text" class="search-input" id="searchInput" placeholder="Search by company or title…" autocomplete="off" />
+          <input type="text" class="search-input" id="searchInput" placeholder="Search by title…" autocomplete="off" />
           <div class="count-badge" id="countBadge">—</div>
         </div>
       </div>
@@ -627,6 +793,27 @@
         <div class="skeleton-card"><div class="skel-line title" style="width:76%"></div><div class="skel-line meta"></div></div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- CONTEXT MENU -->
+  <div id="contextMenu">
+    <button class="ctx-btn" data-action="rename">✏️ Rename</button>
+    <button class="ctx-btn" data-action="pin">📌 Pin</button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-btn danger" data-action="delete">🗑️ Delete</button>
+  </div>
+
+  <!-- RENAME MODAL -->
+  <div id="renameModal">
+    <div class="modal-box">
+      <h3>Rename Session</h3>
+      <p class="modal-sub">Give this session a custom name.</p>
+      <input type="text" class="field-input" id="renameInput" placeholder="New session name…" autocomplete="off" />
+      <div class="modal-actions">
+        <button class="btn-cancel" id="renameCancel">Cancel</button>
+        <button class="btn-save" id="renameConfirm">Save</button>
+      </div>
     </div>
   </div>
 
@@ -673,18 +860,18 @@
     if (!token) window.location.href = 'login.html';
 
     let allSessions = [];
+    let contextTargetId = null;
+    let currentRenameId = null;
 
-    document.addEventListener('DOMContentLoaded', function() {
-      loadSessions();
-      loadNotifCount();
-      setInterval(loadNotifCount, 15000);
+    // ----- DOM REFS -----
+    const contextMenu = document.getElementById('contextMenu');
+    const renameModal = document.getElementById('renameModal');
+    const renameInput = document.getElementById('renameInput');
+    const sessionGrid = document.getElementById('sessionGrid');
+    const countBadge = document.getElementById('countBadge');
+    const searchInput = document.getElementById('searchInput');
 
-      document.getElementById('navNotifBtn').addEventListener('click', function() {
-        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
-        updateBadge(0);
-      });
-    });
-
+    // ----- LOAD SESSIONS -----
     async function loadSessions() {
       try {
         const res = await fetch(`${BACKEND}/api/sessions`, {
@@ -693,18 +880,8 @@
         if (!res.ok) throw new Error('Failed');
         allSessions = await res.json();
         renderSessions(allSessions);
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-          const q = e.target.value.toLowerCase();
-          const filtered = allSessions.filter(s =>
-            s.title.toLowerCase().includes(q) ||
-            (s.company && s.company.toLowerCase().includes(q))
-          );
-          renderSessions(filtered);
-        });
-
       } catch {
-        document.getElementById('sessionGrid').innerHTML = `
+        sessionGrid.innerHTML = `
           <div class="error-state">
             <div class="error-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -712,18 +889,16 @@
             <div class="error-title">Archive unavailable</div>
             <div class="error-sub">Failed to connect · Check your network</div>
           </div>`;
-        document.getElementById('countBadge').textContent = '—';
+        countBadge.textContent = '—';
       }
     }
 
     function renderSessions(sessions) {
-      const grid = document.getElementById('sessionGrid');
-      const badge = document.getElementById('countBadge');
-      grid.innerHTML = '';
-      badge.textContent = sessions.length;
+      sessionGrid.innerHTML = '';
+      countBadge.textContent = sessions.length;
 
       if (sessions.length === 0) {
-        grid.innerHTML = `
+        sessionGrid.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -735,34 +910,186 @@
       }
 
       sessions.forEach((session, i) => {
-        const date = new Date(session.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const date = new Date(session.lastUpdated || session.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const card = document.createElement('a');
         card.className = 'session-card';
-        card.href = `page.html?session=${session._id}`;  // <-- REDIRECTS TO page.html
+        card.href = `page.html?session=${session.sessionId || session._id}`;
+        card.dataset.sessionId = session.sessionId || session._id;
         card.style.animationDelay = `${i * 0.04}s`;
         card.style.animation = 'fadeUp 0.35s ease both';
-        const isAssistantSession = session._id === 'assistant';
+
+        if (session.pinned) {
+          card.classList.add('pinned');
+        }
+
+        const isAssistant = (session.type === 'assistant' || session._id === 'assistant');
+        const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
+        const typeClass = isAssistant ? 'assistant' : 'lead';
+
         card.innerHTML = `
           <div class="card-content">
-            <div class="card-title">${escapeHTML(session.title)}</div>
+            <div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div>
             <div class="card-meta">
               <span class="meta-date">${date}</span>
               <span class="meta-dot"></span>
               <span class="meta-count">${session.messageCount || 0} messages</span>
-              ${isAssistantSession ? `<span class="meta-dot"></span><span style="color:var(--sky);font-size:8px;letter-spacing:0.06em;">ASSISTANT</span>` : ''}
+              <span class="meta-dot"></span>
+              <span class="type-badge ${typeClass}">${typeLabel}</span>
+              ${session.pinned ? `<span class="meta-dot"></span><span style="color:var(--gold);font-size:8px;">📌</span>` : ''}
             </div>
           </div>
           <div class="card-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </div>`;
-        grid.appendChild(card);
+
+        // ----- LONG PRESS / RIGHT CLICK -----
+        card.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          showContextMenu(e.clientX, e.clientY, this.dataset.sessionId);
+        });
+
+        let timer;
+        card.addEventListener('touchstart', function(e) {
+          timer = setTimeout(() => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            showContextMenu(touch.clientX, touch.clientY, this.dataset.sessionId);
+          }, 600);
+        });
+        card.addEventListener('touchend', () => clearTimeout(timer));
+        card.addEventListener('touchmove', () => clearTimeout(timer));
+
+        sessionGrid.appendChild(card);
       });
     }
 
-    function escapeHTML(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // ----- CONTEXT MENU -----
+    function showContextMenu(x, y, sessionId) {
+      contextTargetId = sessionId;
+      const menuWidth = 160;
+      const menuHeight = 140;
+      const left = Math.min(x, window.innerWidth - menuWidth - 10);
+      const top = Math.min(y, window.innerHeight - menuHeight - 10);
+      contextMenu.style.left = Math.max(10, left) + 'px';
+      contextMenu.style.top = Math.max(10, top) + 'px';
+      contextMenu.style.display = 'block';
     }
 
+    function hideContextMenu() {
+      contextMenu.style.display = 'none';
+      contextTargetId = null;
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!contextMenu.contains(e.target)) {
+        hideContextMenu();
+      }
+    });
+
+    // ----- CONTEXT MENU ACTIONS -----
+    document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const action = this.dataset.action;
+        const sessionId = contextTargetId;
+        hideContextMenu();
+        if (action === 'rename') openRenameModal(sessionId);
+        else if (action === 'pin') togglePin(sessionId);
+        else if (action === 'delete') deleteSession(sessionId);
+      });
+    });
+
+    // ----- RENAME -----
+    function openRenameModal(sessionId) {
+      currentRenameId = sessionId;
+      const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
+      renameInput.value = session?.name || session?.title || '';
+      renameModal.classList.add('active');
+      renameInput.focus();
+      renameInput.select();
+    }
+
+    document.getElementById('renameCancel').addEventListener('click', function() {
+      renameModal.classList.remove('active');
+      currentRenameId = null;
+    });
+
+    document.getElementById('renameConfirm').addEventListener('click', async function() {
+      const name = renameInput.value.trim();
+      if (!name) return;
+      try {
+        const res = await fetch(`${BACKEND}/api/sessions/${currentRenameId}/rename`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ name })
+        });
+        if (res.ok) {
+          renameModal.classList.remove('active');
+          currentRenameId = null;
+          loadSessions();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Rename failed');
+        }
+      } catch {
+        alert('Connection error');
+      }
+    });
+
+    renameInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('renameConfirm').click();
+      if (e.key === 'Escape') document.getElementById('renameCancel').click();
+    });
+
+    // ----- PIN -----
+    async function togglePin(sessionId) {
+      const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
+      if (!session) return;
+      try {
+        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/pin`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ pinned: !session.pinned })
+        });
+        if (res.ok) {
+          loadSessions();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Failed to pin');
+        }
+      } catch {
+        alert('Connection error');
+      }
+    }
+
+    // ----- DELETE -----
+    async function deleteSession(sessionId) {
+      if (!confirm('Delete this session and all its messages?')) return;
+      try {
+        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          loadSessions();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Delete failed');
+        }
+      } catch {
+        alert('Connection error');
+      }
+    }
+
+    // ----- SEARCH -----
+    searchInput.addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      const filtered = allSessions.filter(s =>
+        (s.name || s.title || '').toLowerCase().includes(q)
+      );
+      renderSessions(filtered);
+    });
+
+    // ----- NOTIFICATIONS -----
     async function loadNotifCount() {
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -788,6 +1115,25 @@
         badge.textContent = '';
       }
     }
+
+    function escapeHTML(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ----- INIT -----
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSessions();
+      loadNotifCount();
+      setInterval(loadNotifCount, 15000);
+
+      document.getElementById('navNotifBtn').addEventListener('click', function() {
+        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
+        updateBadge(0);
+      });
+
+      // Close context menu on scroll
+      document.querySelector('.archive-stage').addEventListener('scroll', hideContextMenu);
+    });
   </script>
 </body>
   </html>
