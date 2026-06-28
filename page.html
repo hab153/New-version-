@@ -752,7 +752,6 @@
           url.searchParams.set('session', data.sessionId);
           window.history.pushState({}, '', url);
 
-          // ----- NEW: Create session in database -----
           try {
             await fetch(`${BACKEND}/api/sessions`, {
               method: 'POST',
@@ -1013,11 +1012,14 @@
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  // ----- LOAD SESSION FROM URL -----
+  // ----- LOAD SESSION FROM URL (FIXED: resets conversationHistory) -----
   async function loadSessionFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session');
     if (!sessionId) return false;
+
+    // ***** FIX: Reset conversation history to prevent merging *****
+    conversationHistory = [];
 
     isSessionLoading = true;
     console.log('[page] Loading session:', sessionId);
