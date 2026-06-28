@@ -751,6 +751,21 @@
           const url = new URL(window.location);
           url.searchParams.set('session', data.sessionId);
           window.history.pushState({}, '', url);
+
+          // ----- NEW: Create session in database -----
+          try {
+            await fetch(`${BACKEND}/api/sessions`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                sessionId: data.sessionId,
+                type: 'lead',
+                name: message.substring(0, 50) || 'Lead Search'
+              })
+            });
+          } catch (sessionErr) {
+            console.error('[page] Failed to create session:', sessionErr);
+          }
         }
         if (data.history) conversationHistory = data.history;
 
@@ -1008,7 +1023,6 @@
     console.log('[page] Loading session:', sessionId);
 
     try {
-      // Fetch session messages
       const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1017,20 +1031,16 @@
       const msgs = await res.json();
       const isAssistantSession = (sessionId === 'assistant');
 
-      // Determine mode based on session
       if (isAssistantSession) {
-        // Switch to assistant mode
         currentMode = 'assistant';
         modeSelector.classList.add('hidden');
         assistantModeSelector.style.display = 'flex';
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
         assistantContainer.classList.add('active');
-        // Show input bar for assistant
         assistantInputBar.classList.add('active');
         assistantInputBar.style.display = 'block';
         assistantMsgInput.placeholder = 'Continue your conversation…';
         assistantSendBtn.disabled = true;
-        // Load messages
         assistantMsgContainer.innerHTML = '';
         if (msgs && msgs.length > 0) {
           for (const m of msgs) {
@@ -1042,20 +1052,16 @@
         }
         scrollAssistantDown();
         isChatActive = true;
-        // Show a "back to new" indicator in the topbar
         document.querySelector('.topbar-label').textContent = 'Assistant Session';
       } else {
-        // Lead session – switch to lead mode
         currentMode = 'lead';
         modeSelector.classList.add('hidden');
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
         leadContainer.classList.add('active');
         setupWizard.style.display = 'none';
         leadChatArea.classList.add('active');
-        // HIDE input bar for lead sessions (single request mode)
         leadInputBar.classList.remove('lead-active');
         leadInputBar.classList.add('lead-hidden');
-        // Load messages
         leadMsgContainer.innerHTML = '';
         if (msgs && msgs.length > 0) {
           for (const m of msgs) {
@@ -1071,7 +1077,6 @@
         document.querySelector('.topbar-label').textContent = 'Lead Session';
       }
 
-      // Set session ID
       currentSessionId = sessionId;
       isSessionLoading = false;
       return true;
@@ -1148,7 +1153,6 @@
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       leadContainer.classList.add('active');
       document.querySelector('.topbar-label').textContent = 'Business Agent';
-      // Remove session from URL
       const url = new URL(window.location);
       url.searchParams.delete('session');
       window.history.pushState({}, '', url);
@@ -1163,7 +1167,6 @@
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
       document.querySelector('.topbar-label').textContent = 'Business Agent';
-      // Remove session from URL
       const url = new URL(window.location);
       url.searchParams.delete('session');
       window.history.pushState({}, '', url);
@@ -1184,7 +1187,6 @@
       isChatActive = false;
       isTyping = false;
       modeSelector.classList.remove('hidden');
-      // Remove session from URL
       const url = new URL(window.location);
       url.searchParams.delete('session');
       window.history.pushState({}, '', url);
@@ -1197,7 +1199,6 @@
       assistantModeSelector.style.display = 'flex';
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
-      // Remove session from URL
       const url = new URL(window.location);
       url.searchParams.delete('session');
       window.history.pushState({}, '', url);
@@ -1207,17 +1208,13 @@
 
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
-    // First, check if there's a session in the URL
     const sessionLoaded = await loadSessionFromUrl();
 
     if (!sessionLoaded) {
-      // Normal page load – show default view
       const sessionParam = new URLSearchParams(window.location.search).get('session');
       if (sessionParam) {
-        // If session param exists but failed to load, still show default
         console.log('[page] Session load failed or not found, showing default');
       }
-      // Ensure default view is shown
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
       modeSelector.classList.remove('hidden');
@@ -1228,7 +1225,6 @@
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
 
-    // Mark notifications as seen when clicking bell
     document.getElementById('navNotifBtn').addEventListener('click', function() {
       localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
       updateBadge(0);
