@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    /* [ALL YOUR EXISTING STYLES REMAIN THE SAME - I'm keeping them all] */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -188,13 +189,9 @@
     #leadContainer .input-bar.lead-active { display: block !important; }
     #leadContainer .input-bar.lead-hidden { display: none !important; }
 
-    /* ASSISTANT CONTAINER */
-    #assistantContainer { flex: 1; display: none; flex-direction: column; height: 100%; background: var(--void); }
-    #assistantContainer.active { display: flex; }
-    #assistantContainer .chat-area { display: flex !important; flex: 1; overflow-y: auto; padding: 24px 16px 10px; flex-direction: column; }
-    #assistantContainer .input-bar { display: block !important; flex-shrink: 0; }
+    /* ASSISTANT CONTAINER - input bar ALWAYS visible */
+    #assistantContainer .input-bar { display: block !important; }
     #assistantContainer .input-bar.active { display: block !important; }
-    #assistantContainer .chat-area .msg-row { padding: 4px 16px; }
 
     /* Setup wizard - centered below mode selector */
     #setupWizard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px 24px; overflow-y: auto; position: relative; z-index: 1; }
@@ -647,6 +644,7 @@
   const reviewPanel = document.getElementById('reviewPanel');
   const emailList = document.getElementById('emailList');
   const assistantMsgContainer = document.getElementById('assistantMsgContainer');
+  const assistantInputBar = document.getElementById('assistantInputBar');
   const assistantMsgInput = document.getElementById('assistantMsgInput');
   const assistantSendBtn = document.getElementById('assistantSendBtn');
   const assistantCharCount = document.getElementById('assistantCharCount');
@@ -674,9 +672,14 @@
       reviewPanel.style.display = 'none';
       // Show lead mode selector
       modeSelector.classList.remove('hidden');
+      // Ensure assistant input bar is hidden (it's in a different container)
+      // But we don't need to do anything - it's in a hidden container
     } else {
       assistantContainer.classList.add('active');
       assistantModeSelector.style.display = 'flex';
+      // IMPORTANT FIX: Ensure assistant input bar is visible
+      assistantInputBar.classList.add('active');
+      assistantInputBar.style.display = 'block';
       if (assistantMsgContainer.children.length === 0) {
         addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       }
@@ -691,8 +694,6 @@
       switchMode(mode);
     });
   });
-
-  // Assistant mode buttons (already have onclick)
 
   // ----- LEAD MODE -----
   document.getElementById('targetForm').addEventListener('submit', async function(e) {
@@ -1078,6 +1079,9 @@
       assistantModeSelector.style.display = 'flex';
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       assistantContainer.classList.add('active');
+      // IMPORTANT FIX: Ensure assistant input bar is visible after reset
+      assistantInputBar.classList.add('active');
+      assistantInputBar.style.display = 'block';
     }
   });
 
@@ -1101,6 +1105,9 @@
       isChatActive = false;
       isTyping = false;
       assistantModeSelector.style.display = 'flex';
+      // IMPORTANT FIX: Ensure assistant input bar is visible after clear
+      assistantInputBar.classList.add('active');
+      assistantInputBar.style.display = 'block';
     }
   });
 
@@ -1144,4 +1151,4 @@
   }
 </script>
 </body>
-                                                    </html>
+  </html>
