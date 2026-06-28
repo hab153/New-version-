@@ -152,7 +152,6 @@
       color: var(--t3);
     }
 
-    /* Page title in header centre */
     .topbar-center {
       position: absolute;
       left: 50%; top: 50%;
@@ -170,8 +169,29 @@
       color: var(--t2);
     }
 
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .back-link {
+      color: var(--t2);
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--br-dim);
+    }
+    .back-link:hover { color: var(--gold); border-color: var(--br-md); }
+
     /* ──────────────────────────────────
-       MAIN STAGE
+       MAIN STAGE – LIST VIEW
     ────────────────────────────────── */
     .archive-stage {
       flex: 1;
@@ -273,7 +293,6 @@
     }
     .search-input::placeholder { color: var(--t3); }
 
-    /* Count badge */
     .count-badge {
       font-family: var(--mono);
       font-size: 9px;
@@ -300,6 +319,7 @@
       border: 1px solid var(--br-dim);
       border-radius: var(--r-md);
       padding: 18px 18px 18px 20px;
+      cursor: pointer;
       text-decoration: none;
       color: inherit;
       transition: border-color 0.22s, background 0.22s, transform 0.18s, box-shadow 0.22s;
@@ -310,7 +330,6 @@
       position: relative;
       overflow: hidden;
     }
-    /* Left accent bar */
     .session-card::before {
       content: '';
       position: absolute;
@@ -329,7 +348,6 @@
     .session-card:hover::before { opacity: 1; }
 
     .card-content { flex: 1; min-width: 0; }
-
     .card-title {
       font-size: 13.5px;
       font-weight: 500;
@@ -361,9 +379,7 @@
       opacity: 0.5;
     }
     .meta-date { color: var(--t2); }
-    .meta-count { }
 
-    /* Arrow */
     .card-arrow {
       color: var(--t3);
       transition: color 0.2s, transform 0.2s;
@@ -405,32 +421,276 @@
       letter-spacing: 0.04em;
     }
 
-    /* ── Error state ── */
-    .error-state {
-      text-align: center;
-      padding: 48px 24px;
+    /* ──────────────────────────────────
+       CHAT VIEW (when session is opened)
+    ────────────────────────────────── */
+    #chatView {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      flex: 1;
+      position: relative;
+      z-index: 1;
     }
-    .error-icon {
-      width: 44px; height: 44px;
-      margin: 0 auto 14px;
-      border: 1px solid rgba(184,92,92,0.3);
-      border-radius: 50%;
-      background: rgba(184,92,92,0.06);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--rose);
+    #chatView.active {
+      display: flex;
     }
-    .error-title {
-      font-family: var(--display);
-      font-size: 17px;
-      font-style: italic;
-      color: var(--rose);
-      margin-bottom: 6px;
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 16px 10px;
+      display: flex;
+      flex-direction: column;
+      scroll-behavior: smooth;
     }
-    .error-sub {
-      font-size: 11px;
-      color: var(--t3);
+    .chat-area::-webkit-scrollbar { width: 2px; }
+    .chat-area::-webkit-scrollbar-track { background: transparent; }
+    .chat-area::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
+
+    .msg-row {
+      display: flex;
+      padding: 4px 0;
+      animation: msgIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.ai { justify-content: flex-start; gap: 10px; align-items: flex-start; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 12px 16px;
+      line-height: 1.7;
+      font-size: 13.5px;
+      word-break: break-word;
+    }
+    .msg-row.user .bubble {
+      background: var(--raised);
+      border: 1px solid var(--br-md);
+      border-radius: var(--r-lg) var(--r-lg) var(--r-xs) var(--r-lg);
+      color: var(--t1);
+      font-weight: 400;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .msg-row.ai .bubble {
+      background: var(--surface);
+      border: 1px solid var(--br-dim);
+      border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-xs);
+      border-left: 2px solid rgba(255,255,255,0.25);
       font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.85;
+      color: #ccc7bb;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+    .msg-row.ai .bubble strong { color: var(--gold-pale); font-weight: 500; }
+    .msg-row.ai .bubble .ai-ul { list-style: none; padding: 5px 0; margin: 0; }
+    .msg-row.ai .bubble .ai-ul li { padding: 3px 0 3px 16px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .msg-row.ai .bubble .ai-ul li:last-child { border-bottom: none; }
+    .msg-row.ai .bubble .ai-ul li::before { content: '▸'; position: absolute; left: 0; color: rgba(255,255,255,0.5); font-size: 9px; top: 5px; }
+
+    .av {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 7px;
+      font-weight: 600;
+      margin-top: 2px;
+      letter-spacing: 0.05em;
+    }
+    .msg-row.ai .av {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+      color: #0d0a04;
+      box-shadow: 0 0 12px rgba(255,255,255,0.25);
+    }
+    .msg-row.user .av {
+      background: var(--raised);
+      border: 1px solid var(--br-md);
+      color: var(--t2);
+    }
+    .bubble-wrap { display: flex; flex-direction: column; }
+    .msg-time {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--t3);
+      margin-top: 5px;
+      letter-spacing: 0.06em;
+    }
+    .msg-row.user .msg-time { text-align: right; }
+
+    /* Typing indicator */
+    .typing-row {
+      display: flex;
+      padding: 4px 0;
+      gap: 10px;
+      align-items: flex-start;
+      animation: msgIn 0.22s ease both;
+    }
+    .typing-bubble {
+      background: var(--surface);
+      border: 1px solid var(--br-dim);
+      border-left: 2px solid rgba(255,255,255,0.25);
+      border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-xs);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--t2);
       letter-spacing: 0.04em;
+    }
+    .t-dots { display: flex; gap: 5px; align-items: center; }
+    .t-dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--t3);
+      animation: tdot 1.2s ease-in-out infinite;
+    }
+    .t-dot:nth-child(2) { animation-delay: 0.16s; }
+    .t-dot:nth-child(3) { animation-delay: 0.32s; }
+    @keyframes tdot {
+      0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); }
+      30% { transform: translateY(-6px) scale(1.2); background: var(--gold); }
+    }
+
+    /* Input bar for chat view */
+    .input-bar {
+      padding: 12px 16px 14px;
+      background: var(--base);
+      border-top: 1px solid var(--br-dim);
+      flex-shrink: 0;
+      display: none;
+      position: relative;
+      z-index: 5;
+    }
+    .input-bar.active { display: block; }
+
+    .input-shell {
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      background: var(--surface);
+      border: 1px solid var(--br-md);
+      border-radius: var(--r-xl);
+      padding: 10px 10px 10px 18px;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      position: relative;
+    }
+    .input-shell:focus-within {
+      border-color: rgba(255,255,255,0.28);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .msg-ta {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      color: var(--t1);
+      font-family: var(--ui);
+      font-size: 13.5px;
+      font-weight: 400;
+      min-height: 22px;
+      max-height: 130px;
+      caret-color: var(--gold);
+      line-height: 1.55;
+    }
+    .msg-ta::placeholder { color: var(--t3); }
+    .send-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--gold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(255,255,255,0.25);
+    }
+    .send-btn:hover:not(:disabled) {
+      background: var(--gold-bright);
+      transform: scale(1.08);
+      box-shadow: 0 4px 18px rgba(255,255,255,0.4);
+    }
+    .send-btn:active:not(:disabled) { transform: scale(0.94); }
+    .send-btn:disabled {
+      background: var(--raised);
+      border: 1px solid var(--br-dim);
+      box-shadow: none;
+      opacity: 0.4;
+      cursor: default;
+    }
+    .input-foot {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      padding: 0 4px;
+    }
+    .input-tag {
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--t3);
+    }
+    .char-ct {
+      font-family: var(--mono);
+      font-size: 7.5px;
+      color: var(--t3);
+    }
+
+    /* Back to list button in chat view */
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--br-dim);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      background: var(--base);
+    }
+    .chat-header .back-btn {
+      background: none;
+      border: 1px solid var(--br-dim);
+      color: var(--t2);
+      padding: 6px 14px;
+      border-radius: var(--r-sm);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .chat-header .back-btn:hover {
+      color: var(--gold);
+      border-color: var(--br-md);
+    }
+    .chat-header .chat-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--t1);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-header .chat-badge {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--t3);
+      padding: 2px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--br-dim);
     }
 
     /* ──────────────────────────────────
@@ -484,7 +744,6 @@
       border-radius: 2px 2px 0 0;
     }
 
-    /* Home button */
     .nav-item.nav-home .home-wrap {
       width: 44px; height: 44px;
       background: rgba(255,255,255,0.1);
@@ -509,7 +768,6 @@
     .nav-item.nav-home svg { color: #ffffff; position: relative; z-index: 1; }
     .nav-item.nav-home::after { display: none; }
 
-    /* Notif badge */
     .nav-badge {
       position: absolute;
       top: 2px; right: calc(50% - 20px);
@@ -534,10 +792,9 @@
     ────────────────────────────────── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Skeleton loader */
     .skeleton-card {
       background: var(--card);
       border: 1px solid var(--br-dim);
@@ -557,7 +814,7 @@
     .skel-line.meta  { width: 36%; height: 9px; }
     @keyframes skelPulse {
       0%, 100% { opacity: 1; }
-      50%       { opacity: 0.45; }
+      50% { opacity: 0.45; }
     }
 
     /* ──────────────────────────────────
@@ -566,20 +823,29 @@
     @media (min-width: 768px) {
       .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); }
       .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
-      .empty-state, .error-state { grid-column: 1 / -1; }
+      .chat-area { padding: 30px 12%; }
     }
 
     @media (min-width: 1024px) {
       .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); }
       .bottom-nav { padding: 0 24%; }
       .topbar { padding: 0 32px; }
+      .chat-area { padding: 30px 12%; }
+      .input-bar { padding: 14px 12% 16px; }
     }
 
     @media (max-width: 375px) {
       .brand-name { font-size: 16px; }
       .brand-sub { display: none; }
       .page-title { font-size: 26px; }
+      .bubble { max-width: 88%; }
     }
+
+    /* Hide archive view when chat view is active */
+    #archiveView.hidden { display: none; }
+
+    #archiveView { display: block; }
+    #archiveView.hidden { display: none; }
   </style>
 </head>
 <body>
@@ -599,15 +865,18 @@
     </div>
 
     <div class="topbar-center">
-      <span class="topbar-label">Session Archive</span>
+      <span class="topbar-label" id="topbarLabel">Session Archive</span>
+    </div>
+
+    <div class="topbar-right">
+      <a href="page.html" class="back-link">← Back</a>
     </div>
   </header>
 
-  <!-- MAIN STAGE -->
-  <div class="archive-stage">
+  <!-- ==================== ARCHIVE VIEW ==================== -->
+  <div id="archiveView" class="archive-stage">
     <div class="archive-container">
 
-      <!-- Page heading -->
       <div class="page-heading">
         <div class="heading-eyebrow">
           <div class="eyebrow-line"></div>
@@ -618,7 +887,6 @@
         <p class="page-sub">Access your historical outreach logs and conversation sessions.</p>
       </div>
 
-      <!-- Search -->
       <div class="search-wrap">
         <div class="search-shell">
           <div class="search-icon">
@@ -629,14 +897,41 @@
         </div>
       </div>
 
-      <!-- Session list -->
       <div class="session-grid" id="sessionGrid">
-        <!-- Skeleton loaders -->
         <div class="skeleton-card"><div class="skel-line title"></div><div class="skel-line meta"></div></div>
         <div class="skeleton-card"><div class="skel-line title" style="width:54%"></div><div class="skel-line meta" style="width:28%"></div></div>
         <div class="skeleton-card"><div class="skel-line title" style="width:76%"></div><div class="skel-line meta"></div></div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ==================== CHAT VIEW ==================== -->
+  <div id="chatView">
+    <!-- Chat header -->
+    <div class="chat-header">
+      <button class="back-btn" id="backToListBtn">← Back</button>
+      <span class="chat-title" id="chatTitle">Loading...</span>
+      <span class="chat-badge" id="chatBadge">assistant</span>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-area" id="chatArea">
+      <div id="msgContainer"></div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="input-bar" id="inputBar">
+      <div class="input-shell">
+        <textarea class="msg-ta" id="msgInput" rows="1" placeholder="Continue the conversation…" aria-label="Message"></textarea>
+        <button class="send-btn" id="sendBtn" disabled aria-label="Send">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </button>
+      </div>
+      <div class="input-foot">
+        <span class="input-tag" id="inputTag">Skyline AA-1</span>
+        <span class="char-ct" id="charCount"></span>
+      </div>
     </div>
   </div>
 
@@ -683,22 +978,305 @@
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
+    // ----- STATE -----
     let allSessions = [];
+    let currentSessionId = null;
+    let isAssistant = false;
+    let isTyping = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadSessions();
+    // ----- DOM REFS -----
+    const archiveView = document.getElementById('archiveView');
+    const chatView = document.getElementById('chatView');
+    const sessionGrid = document.getElementById('sessionGrid');
+    const countBadge = document.getElementById('countBadge');
+    const searchInput = document.getElementById('searchInput');
+    const msgContainer = document.getElementById('msgContainer');
+    const msgInput = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const charCount = document.getElementById('charCount');
+    const chatTitle = document.getElementById('chatTitle');
+    const chatBadge = document.getElementById('chatBadge');
+    const inputBar = document.getElementById('inputBar');
+    const inputTag = document.getElementById('inputTag');
+    const topbarLabel = document.getElementById('topbarLabel');
+    const backToListBtn = document.getElementById('backToListBtn');
 
-      const navNotifBtn = document.getElementById('navNotifBtn');
-      if (navNotifBtn) {
-        navNotifBtn.addEventListener('click', () => {
-          localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || 0);
-          updateBadge(0);
-        });
+    // ----- SHOW/HIDE VIEWS -----
+    function showArchiveView() {
+      archiveView.classList.remove('hidden');
+      chatView.classList.remove('active');
+      archiveView.style.display = 'block';
+      chatView.style.display = 'none';
+      topbarLabel.textContent = 'Session Archive';
+      // Re-render sessions in case we modified anything
+      renderSessions(allSessions);
+    }
+
+    function showChatView(sessionId, sessionTitle) {
+      archiveView.classList.add('hidden');
+      archiveView.style.display = 'none';
+      chatView.classList.add('active');
+      chatView.style.display = 'flex';
+      topbarLabel.textContent = 'Conversation';
+      chatTitle.textContent = sessionTitle || 'Conversation';
+      currentSessionId = sessionId;
+      isAssistant = (sessionId === 'assistant');
+      // Show/hide input bar based on assistant
+      if (isAssistant) {
+        inputBar.classList.add('active');
+        inputTag.textContent = 'Assistant';
+        chatBadge.textContent = 'assistant';
+        msgInput.placeholder = 'Ask your assistant…';
+      } else {
+        inputBar.classList.remove('active');
+        inputTag.textContent = 'Lead Archive';
+        chatBadge.textContent = 'lead';
+        msgInput.placeholder = 'This is a lead session – read only';
       }
-      loadNotifCount();
-      setInterval(loadNotifCount, 15000);
+      // Load messages
+      loadSessionMessages(sessionId);
+    }
+
+    // ----- LOAD SESSIONS -----
+    async function loadSessions() {
+      try {
+        const res = await fetch(`${BACKEND}/api/sessions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed');
+        allSessions = await res.json();
+        renderSessions(allSessions);
+
+        searchInput.addEventListener('input', (e) => {
+          const q = e.target.value.toLowerCase();
+          const filtered = allSessions.filter(s =>
+            s.title.toLowerCase().includes(q) ||
+            (s.company && s.company.toLowerCase().includes(q))
+          );
+          renderSessions(filtered);
+        });
+
+        // Check if URL has session parameter
+        const params = new URLSearchParams(window.location.search);
+        const sessionParam = params.get('session');
+        if (sessionParam) {
+          const session = allSessions.find(s => s._id === sessionParam);
+          if (session) {
+            showChatView(sessionParam, session.title);
+          }
+        }
+
+      } catch {
+        sessionGrid.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="error-title">Archive unavailable</div>
+            <div class="error-sub">Failed to connect · Check your network</div>
+          </div>`;
+        countBadge.textContent = '—';
+      }
+    }
+
+    function renderSessions(sessions) {
+      sessionGrid.innerHTML = '';
+      countBadge.textContent = sessions.length;
+
+      if (sessions.length === 0) {
+        sessionGrid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="empty-title">No sessions found.</div>
+            <div class="empty-sub">Start a new search to begin</div>
+          </div>`;
+        return;
+      }
+
+      sessions.forEach((session, i) => {
+        const date = new Date(session.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const card = document.createElement('div');
+        card.className = 'session-card';
+        card.style.animationDelay = `${i * 0.04}s`;
+        card.style.animation = 'fadeUp 0.35s ease both';
+        const isAssistantSession = session._id === 'assistant';
+        card.innerHTML = `
+          <div class="card-content">
+            <div class="card-title">${escapeHTML(session.title)}</div>
+            <div class="card-meta">
+              <span class="meta-date">${date}</span>
+              <span class="meta-dot"></span>
+              <span class="meta-count">${session.messageCount || 0} messages</span>
+              ${isAssistantSession ? `<span class="meta-dot"></span><span style="color:var(--sky);font-size:8px;letter-spacing:0.06em;">ASSISTANT</span>` : ''}
+            </div>
+          </div>
+          <div class="card-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>`;
+        card.addEventListener('click', () => {
+          showChatView(session._id, session.title);
+          // Update URL without reload
+          const url = new URL(window.location);
+          url.searchParams.set('session', session._id);
+          window.history.pushState({}, '', url);
+        });
+        sessionGrid.appendChild(card);
+      });
+    }
+
+    // ----- LOAD SESSION MESSAGES -----
+    async function loadSessionMessages(sessionId) {
+      msgContainer.innerHTML = '';
+      try {
+        const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed');
+        const msgs = await res.json();
+        if (msgs && msgs.length) {
+          for (const m of msgs) {
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            appendMessage(role, m.content);
+          }
+        } else {
+          appendMessage('ai', 'No messages in this session.');
+        }
+        scrollDown();
+      } catch {
+        appendMessage('ai', '⚠️ Could not load session history.');
+      }
+    }
+
+    function appendMessage(role, content) {
+      const row = document.createElement('div');
+      row.className = `msg-row ${role}`;
+      const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+      row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+      msgContainer.appendChild(row);
+    }
+
+    function formatAI(text) {
+      let s = escapeHtml(text);
+      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+      s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+      s = s.replace(/\n/g, '<br>');
+      return s;
+    }
+
+    function escapeHTML(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function scrollDown() {
+      const area = document.getElementById('chatArea');
+      area.scrollTop = area.scrollHeight;
+    }
+
+    // ----- SEND MESSAGE (only for assistant) -----
+    async function sendMessage() {
+      if (!isAssistant) return;
+      if (isTyping) return;
+      const text = msgInput.value.trim();
+      if (!text) return;
+
+      isTyping = true;
+      sendBtn.disabled = true;
+
+      appendMessage('user', text);
+      msgInput.value = '';
+      msgInput.style.height = 'auto';
+      charCount.textContent = '';
+      showTyping('Thinking…');
+
+      try {
+        const res = await fetch(`${BACKEND}/api/assistant`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        hideTyping();
+        if (res.ok) {
+          appendMessage('ai', data.response || 'I couldn\'t process that.');
+        } else {
+          appendMessage('ai', `⚠️ ${data.error || 'Something went wrong.'}`);
+        }
+      } catch {
+        hideTyping();
+        appendMessage('ai', '🔌 Connection error.');
+      } finally {
+        isTyping = false;
+        sendBtn.disabled = !msgInput.value.trim();
+        scrollDown();
+      }
+    }
+
+    function showTyping(label) {
+      let row = document.getElementById('typingRow');
+      if (row) {
+        row.querySelector('.t-label').textContent = label;
+        scrollDown();
+        return;
+      }
+      row = document.createElement('div');
+      row.className = 'typing-row';
+      row.id = 'typingRow';
+      row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+      msgContainer.appendChild(row);
+      scrollDown();
+    }
+
+    function hideTyping() {
+      document.getElementById('typingRow')?.remove();
+    }
+
+    // ----- INPUT EVENTS -----
+    msgInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+      sendBtn.disabled = !this.value.trim() || isTyping;
+      charCount.textContent = this.value.length || '';
     });
 
+    msgInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    // ----- BACK BUTTON -----
+    backToListBtn.addEventListener('click', function() {
+      const url = new URL(window.location);
+      url.searchParams.delete('session');
+      window.history.pushState({}, '', url);
+      showArchiveView();
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', function() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionParam = params.get('session');
+      if (sessionParam) {
+        const session = allSessions.find(s => s._id === sessionParam);
+        if (session) {
+          showChatView(sessionParam, session.title);
+          return;
+        }
+      }
+      showArchiveView();
+    });
+
+    // ----- NOTIFICATIONS -----
     async function loadNotifCount() {
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -713,7 +1291,7 @@
     }
 
     function updateBadge(count) {
-      const item  = document.getElementById('navNotifBtn');
+      const item = document.getElementById('navNotifBtn');
       const badge = item?.querySelector('.nav-badge');
       if (!item || !badge) return;
       if (count > 0) {
@@ -725,81 +1303,31 @@
       }
     }
 
-    async function loadSessions() {
-      try {
-        const res = await fetch(`${BACKEND}/api/sessions`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed');
-        allSessions = await res.json();
-        renderSessions(allSessions);
+    // ----- INIT -----
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check URL for session param first
+      const params = new URLSearchParams(window.location.search);
+      const sessionParam = params.get('session');
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-          const q = e.target.value.toLowerCase();
-          const filtered = allSessions.filter(s =>
-            s.title.toLowerCase().includes(q) ||
-            (s.company && s.company.toLowerCase().includes(q))
-          );
-          renderSessions(filtered);
-        });
-
-      } catch {
-        document.getElementById('sessionGrid').innerHTML = `
-          <div class="error-state">
-            <div class="error-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div class="error-title">Archive unavailable</div>
-            <div class="error-sub">Failed to connect · Check your network</div>
-          </div>`;
-        document.getElementById('countBadge').textContent = '—';
-      }
-    }
-
-    function renderSessions(sessions) {
-      const grid = document.getElementById('sessionGrid');
-      const badge = document.getElementById('countBadge');
-      grid.innerHTML = '';
-      badge.textContent = sessions.length;
-
-      if (sessions.length === 0) {
-        grid.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <div class="empty-title">No sessions found.</div>
-            <div class="empty-sub">Start a new search to begin</div>
-          </div>`;
-        return;
-      }
-
-      sessions.forEach((session, i) => {
-        const date = new Date(session.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const card = document.createElement('a');
-        card.className = 'session-card';
-        card.href = `page.html?session=${session._id}`;
-        card.style.animationDelay = `${i * 0.04}s`;
-        card.style.animation = 'fadeUp 0.35s ease both';
-        card.innerHTML = `
-          <div class="card-content">
-            <div class="card-title">${escapeHTML(session.title)}</div>
-            <div class="card-meta">
-              <span class="meta-date">${date}</span>
-              <span class="meta-dot"></span>
-              <span class="meta-count">${session.messageCount || 0} messages</span>
-            </div>
-          </div>
-          <div class="card-arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>`;
-        grid.appendChild(card);
+      // Load sessions, then if session param exists, open it
+      loadSessions().then(() => {
+        if (sessionParam) {
+          const session = allSessions.find(s => s._id === sessionParam);
+          if (session) {
+            showChatView(sessionParam, session.title);
+          }
+        }
       });
-    }
 
-    function escapeHTML(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
+      loadNotifCount();
+      setInterval(loadNotifCount, 15000);
+
+      // Mark notifications as seen when clicking the bell
+      document.getElementById('navNotifBtn').addEventListener('click', function() {
+        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
+        updateBadge(0);
+      });
+    });
   </script>
 </body>
   </html>
