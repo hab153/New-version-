@@ -621,7 +621,8 @@
   let currentMode = 'lead';
   let isChatActive = false;
   let isTyping = false;
-  let currentSessionId = null;
+  let currentSessionId = null;           // for lead sessions
+  let assistantSessionId = null;         // <-- NEW: for assistant sessions
   let conversationHistory = [];
   let currentGeneratedLeads = [];
   let notifInterval = null;
@@ -650,7 +651,7 @@
   const statusText = document.getElementById('statusText');
   const statusBar = document.getElementById('statusBar');
 
-  // ----- MODE SWITCHING -----
+  // ----- MODE SWITCHING (updated for assistant session ID) -----
   window.switchMode = function(mode) {
     if (isChatActive) return;
     currentMode = mode;
@@ -668,11 +669,21 @@
       leadInputBar.classList.remove('lead-hidden');
       reviewPanel.style.display = 'none';
       modeSelector.classList.remove('hidden');
+      // Reset lead session ID if starting fresh
+      currentSessionId = null;
     } else {
       assistantContainer.classList.add('active');
       assistantModeSelector.style.display = 'flex';
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
+      // If no assistant session is active, generate a new one
+      if (!assistantSessionId) {
+        assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        // Clear any old messages and show welcome
+        assistantMsgContainer.innerHTML = '';
+        addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+      }
+      // If the container is empty (first time), show welcome
       if (assistantMsgContainer.children.length === 0) {
         addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       }
@@ -895,7 +906,7 @@
     }
   }
 
-  // ----- ASSISTANT MODE -----
+  // ----- ASSISTANT MODE (updated to use assistantSessionId) -----
   assistantMsgInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 130) + 'px';
@@ -928,6 +939,11 @@
       assistantModeSelector.style.display = 'none';
     }
 
+    // If no assistant session ID, create one
+    if (!assistantSessionId) {
+      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    }
+
     addAssistantMessage('user', message);
     assistantMsgInput.value = '';
     assistantMsgInput.style.height = 'auto';
@@ -939,12 +955,19 @@
       const res = await fetch(`${BACKEND}/api/assistant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({
+          message: message,
+          sessionId: assistantSessionId   // <-- send the session ID
+        })
       });
       const data = await res.json();
       hideAssistantTyping();
 
       if (res.ok) {
+        // If a new session ID is returned, use it
+        if (data.sessionId) {
+          assistantSessionId = data.sessionId;
+        }
         addAssistantMessage('ai', data.response || 'I couldn\'t process that. Please try again.');
       } else {
         addAssistantMessage('ai', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
@@ -1012,17 +1035,18 @@
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  // ----- LOAD SESSION FROM URL (FIXED: resets conversationHistory) -----
+  // ----- LOAD SESSION FROM URL (FIXED: uses type parameter and resets conversationHistory) -----
   async function loadSessionFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session');
+    const type = params.get('type');   // <-- NEW: read type from URL
     if (!sessionId) return false;
 
-    // ***** FIX: Reset conversation history to prevent merging *****
+    // Reset conversation history to prevent merging
     conversationHistory = [];
 
     isSessionLoading = true;
-    console.log('[page] Loading session:', sessionId);
+    console.log('[page] Loading session:', sessionId, 'type:', type);
 
     try {
       const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
@@ -1031,9 +1055,12 @@
       if (!res.ok) throw new Error('Failed to load session');
 
       const msgs = await res.json();
-      const isAssistantSession = (sessionId === 'assistant');
+      // Determine if it's assistant based on type parameter or fallback to sessionId === 'assistant' for backward compatibility
+      const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
 
       if (isAssistantSession) {
+        // Set the assistant session ID
+        assistantSessionId = sessionId;
         currentMode = 'assistant';
         modeSelector.classList.add('hidden');
         assistantModeSelector.style.display = 'flex';
@@ -1056,6 +1083,7 @@
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Assistant Session';
       } else {
+        // Lead session
         currentMode = 'lead';
         modeSelector.classList.add('hidden');
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
@@ -1137,7 +1165,7 @@
     } catch {}
   }
 
-  // ----- NEW CHAT / CLEAR -----
+  // ----- NEW CHAT / CLEAR (updated for assistant) -----
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
       isChatActive = false;
@@ -1157,10 +1185,14 @@
       document.querySelector('.topbar-label').textContent = 'Business Agent';
       const url = new URL(window.location);
       url.searchParams.delete('session');
+      url.searchParams.delete('type');
       window.history.pushState({}, '', url);
     } else {
+      // Reset assistant mode: generate NEW session ID
       isChatActive = false;
       isTyping = false;
+      // Generate a new assistant session ID
+      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
       assistantMsgContainer.innerHTML = '';
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       assistantModeSelector.style.display = 'flex';
@@ -1171,6 +1203,7 @@
       document.querySelector('.topbar-label').textContent = 'Business Agent';
       const url = new URL(window.location);
       url.searchParams.delete('session');
+      url.searchParams.delete('type');
       window.history.pushState({}, '', url);
     }
   });
@@ -1191,18 +1224,22 @@
       modeSelector.classList.remove('hidden');
       const url = new URL(window.location);
       url.searchParams.delete('session');
+      url.searchParams.delete('type');
       window.history.pushState({}, '', url);
       document.querySelector('.topbar-label').textContent = 'Business Agent';
     } else {
-      assistantMsgContainer.innerHTML = '';
-      addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+      // Clear assistant: create a new session
       isChatActive = false;
       isTyping = false;
+      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+      assistantMsgContainer.innerHTML = '';
+      addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       assistantModeSelector.style.display = 'flex';
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
       const url = new URL(window.location);
       url.searchParams.delete('session');
+      url.searchParams.delete('type');
       window.history.pushState({}, '', url);
       document.querySelector('.topbar-label').textContent = 'Business Agent';
     }
@@ -1213,14 +1250,12 @@
     const sessionLoaded = await loadSessionFromUrl();
 
     if (!sessionLoaded) {
-      const sessionParam = new URLSearchParams(window.location.search).get('session');
-      if (sessionParam) {
-        console.log('[page] Session load failed or not found, showing default');
-      }
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
       modeSelector.classList.remove('hidden');
       document.querySelector('.topbar-label').textContent = 'Business Agent';
+      // Generate a new assistant session ID for when they switch
+      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
 
     await updateStatus();
