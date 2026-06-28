@@ -625,6 +625,7 @@
   let conversationHistory = [];
   let currentGeneratedLeads = [];
   let notifInterval = null;
+  let isSessionLoading = false;
 
   // ----- DOM REFS -----
   const modeSelector = document.getElementById('modeSelector');
@@ -670,7 +671,6 @@
     } else {
       assistantContainer.classList.add('active');
       assistantModeSelector.style.display = 'flex';
-      // Ensure assistant input bar is visible
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
       if (assistantMsgContainer.children.length === 0) {
@@ -998,6 +998,91 @@
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  // ----- LOAD SESSION FROM URL -----
+  async function loadSessionFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session');
+    if (!sessionId) return false;
+
+    isSessionLoading = true;
+    console.log('[page] Loading session:', sessionId);
+
+    try {
+      // Fetch session messages
+      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load session');
+
+      const msgs = await res.json();
+      const isAssistantSession = (sessionId === 'assistant');
+
+      // Determine mode based on session
+      if (isAssistantSession) {
+        // Switch to assistant mode
+        currentMode = 'assistant';
+        modeSelector.classList.add('hidden');
+        assistantModeSelector.style.display = 'flex';
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        assistantContainer.classList.add('active');
+        // Show input bar for assistant
+        assistantInputBar.classList.add('active');
+        assistantInputBar.style.display = 'block';
+        assistantMsgInput.placeholder = 'Continue your conversation…';
+        assistantSendBtn.disabled = true;
+        // Load messages
+        assistantMsgContainer.innerHTML = '';
+        if (msgs && msgs.length > 0) {
+          for (const m of msgs) {
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            addAssistantMessage(role, m.content);
+          }
+        } else {
+          addAssistantMessage('ai', 'No messages in this session.');
+        }
+        scrollAssistantDown();
+        isChatActive = true;
+        // Show a "back to new" indicator in the topbar
+        document.querySelector('.topbar-label').textContent = 'Assistant Session';
+      } else {
+        // Lead session – switch to lead mode
+        currentMode = 'lead';
+        modeSelector.classList.add('hidden');
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        leadContainer.classList.add('active');
+        setupWizard.style.display = 'none';
+        leadChatArea.classList.add('active');
+        // HIDE input bar for lead sessions (single request mode)
+        leadInputBar.classList.remove('lead-active');
+        leadInputBar.classList.add('lead-hidden');
+        // Load messages
+        leadMsgContainer.innerHTML = '';
+        if (msgs && msgs.length > 0) {
+          for (const m of msgs) {
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            addLeadMessage(role, m.content);
+            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
+          }
+        } else {
+          addLeadMessage('ai', 'No messages in this session.');
+        }
+        scrollLeadDown();
+        isChatActive = true;
+        document.querySelector('.topbar-label').textContent = 'Lead Session';
+      }
+
+      // Set session ID
+      currentSessionId = sessionId;
+      isSessionLoading = false;
+      return true;
+
+    } catch (err) {
+      console.error('[page] Error loading session:', err);
+      isSessionLoading = false;
+      return false;
+    }
+  }
+
   // ----- NOTIFICATION BADGE -----
   async function loadNotifCount() {
     try {
@@ -1045,7 +1130,7 @@
     } catch {}
   }
 
-  // ----- NEW CHAT / CLEAR (FIXED) -----
+  // ----- NEW CHAT / CLEAR -----
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
       isChatActive = false;
@@ -1062,6 +1147,11 @@
       modeSelector.classList.remove('hidden');
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       leadContainer.classList.add('active');
+      document.querySelector('.topbar-label').textContent = 'Business Agent';
+      // Remove session from URL
+      const url = new URL(window.location);
+      url.searchParams.delete('session');
+      window.history.pushState({}, '', url);
     } else {
       isChatActive = false;
       isTyping = false;
@@ -1070,9 +1160,13 @@
       assistantModeSelector.style.display = 'flex';
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       assistantContainer.classList.add('active');
-      // Ensure assistant input bar is visible after reset
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
+      document.querySelector('.topbar-label').textContent = 'Business Agent';
+      // Remove session from URL
+      const url = new URL(window.location);
+      url.searchParams.delete('session');
+      window.history.pushState({}, '', url);
     }
   });
 
@@ -1090,56 +1184,56 @@
       isChatActive = false;
       isTyping = false;
       modeSelector.classList.remove('hidden');
+      // Remove session from URL
+      const url = new URL(window.location);
+      url.searchParams.delete('session');
+      window.history.pushState({}, '', url);
+      document.querySelector('.topbar-label').textContent = 'Business Agent';
     } else {
       assistantMsgContainer.innerHTML = '';
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       isChatActive = false;
       isTyping = false;
       assistantModeSelector.style.display = 'flex';
-      // Ensure assistant input bar is visible after clear
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
+      // Remove session from URL
+      const url = new URL(window.location);
+      url.searchParams.delete('session');
+      window.history.pushState({}, '', url);
+      document.querySelector('.topbar-label').textContent = 'Business Agent';
     }
   });
 
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
-    const sessionParam = new URLSearchParams(window.location.search).get('session');
-    if (sessionParam) {
-      currentSessionId = sessionParam;
-      modeSelector.classList.add('hidden');
-      isChatActive = true;
-      setupWizard.style.display = 'none';
-      leadChatArea.classList.add('active');
-      leadInputBar.classList.add('lead-hidden');
-      leadInputBar.classList.remove('lead-active');
-      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+    // First, check if there's a session in the URL
+    const sessionLoaded = await loadSessionFromUrl();
+
+    if (!sessionLoaded) {
+      // Normal page load – show default view
+      const sessionParam = new URLSearchParams(window.location.search).get('session');
+      if (sessionParam) {
+        // If session param exists but failed to load, still show default
+        console.log('[page] Session load failed or not found, showing default');
+      }
+      // Ensure default view is shown
       leadContainer.classList.add('active');
-      await loadLeadSession(sessionParam);
+      setupWizard.style.display = 'flex';
+      modeSelector.classList.remove('hidden');
+      document.querySelector('.topbar-label').textContent = 'Business Agent';
     }
 
     await updateStatus();
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
-  });
 
-  async function loadLeadSession(sessionId) {
-    try {
-      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const msgs = await res.json();
-        if (msgs?.length) {
-          leadMsgContainer.innerHTML = '';
-          for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            addLeadMessage(role, m.content);
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
-          }
-          scrollLeadDown();
-        }
-      }
-    } catch {}
-  }
+    // Mark notifications as seen when clicking bell
+    document.getElementById('navNotifBtn').addEventListener('click', function() {
+      localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
+      updateBadge(0);
+    });
+  });
 </script>
 </body>
   </html>
