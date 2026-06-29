@@ -284,6 +284,18 @@
             font-size: 12px;
         }
 
+        /* NEW: Forgot password link */
+        .signup-form .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .signup-form .forgot-link:hover { color: var(--accent); }
+
         @media (max-width: 768px) {
             .hero h1 { font-size: 32px; }
             .signup-section { flex-direction: column; padding: 32px 24px; }
@@ -417,7 +429,11 @@
                 <button type="submit" class="btn-primary" style="width:100%; background:white; color:black;">Sign Up →</button>
                 <div id="errorMessage" class="error-message"></div>
             </form>
-            <p style="margin-top: 16px; font-size: 13px; text-align: center;">Already have an account? <a href="login.html" style="color:white;">Login</a></p>
+            <p style="margin-top: 16px; font-size: 13px; text-align: center;">
+                Already have an account? <a href="login.html" style="color:white;">Login</a>
+                &nbsp;·&nbsp;
+                <a href="forgot-password.html" style="color:var(--muted);">🔑 Forgot password?</a>
+            </p>
         </div>
     </div>
 
