@@ -9,237 +9,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --bg:           #0a0a0a;
-            --card:         #121212;
-            --card-border:  rgba(255,255,255,0.08);
-            --input-bg:     #1a1a1a;
-            --input-border: rgba(255,255,255,0.1);
-            --input-focus:  #ffffff;
-            --accent:       #ffffff;
-            --accent-dim:   rgba(255,255,255,0.15);
-            --text:         #f5f5f5;
-            --muted:        rgba(255,255,255,0.6);
-            --error:        #ff5555;
-            --font:         'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            --bg: #0a0a0a; --card: #121212; --card-border: rgba(255,255,255,0.08); --input-bg: #1a1a1a;
+            --input-border: rgba(255,255,255,0.1); --input-focus: #ffffff; --accent: #ffffff;
+            --accent-dim: rgba(255,255,255,0.15); --text: #f5f5f5; --muted: rgba(255,255,255,0.6);
+            --error: #ff5555; --font: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-
         body {
             background-color: var(--bg);
             background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%);
-            color: var(--text);
-            font-family: var(--font);
-            line-height: 1.5;
+            color: var(--text); font-family: var(--font); line-height: 1.5;
         }
-
-        /* Container */
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* Navigation */
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            flex-wrap: wrap;
-            gap: 16px;
-            border-bottom: 1px solid var(--card-border);
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .logo-icon {
-            width: 36px; height: 36px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid var(--card-border); }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         .logo-icon svg { width: 20px; height: 20px; stroke: var(--accent); stroke-width: 1.8; }
-        .logo-text {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
+        .logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
         .logo-text span { font-weight: 400; opacity: 0.7; }
-        .nav-links {
-            display: flex;
-            gap: 28px;
-            align-items: center;
-        }
-        .nav-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
+        .nav-links { display: flex; gap: 28px; align-items: center; }
+        .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: var(--text); }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--accent-dim);
-            padding: 8px 18px;
-            border-radius: 40px;
-            color: var(--text);
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-outline:hover {
-            background: var(--accent-dim);
-            border-color: var(--accent);
-        }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 60px 0 40px;
-        }
+        .btn-outline { background: transparent; border: 1px solid var(--accent-dim); padding: 8px 18px; border-radius: 40px; color: var(--text); font-weight: 500; transition: all 0.2s; }
+        .btn-outline:hover { background: var(--accent-dim); border-color: var(--accent); }
+        .hero { text-align: center; padding: 60px 0 40px; }
         .hero h1 {
-            font-size: 48px;
-            font-weight: 800;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            max-width: 900px;
-            margin: 0 auto 20px;
+            font-size: 48px; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+            max-width: 900px; margin: 0 auto 20px;
         }
-        .hero p {
-            font-size: 18px;
-            color: var(--muted);
-            max-width: 700px;
-            margin: 0 auto 32px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255,255,255,0.15);
-        }
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--accent-dim);
-            color: var(--text);
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .btn-secondary:hover {
-            background: var(--accent-dim);
-            border-color: var(--accent);
-        }
-
-        /* Features grid */
-        .features {
-            padding: 60px 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 32px;
-        }
-        .feature-card {
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 28px 24px;
-            transition: transform 0.2s;
-        }
+        .hero p { font-size: 18px; color: var(--muted); max-width: 700px; margin: 0 auto 32px; }
+        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary { background: var(--accent); color: #000; padding: 12px 28px; border-radius: 40px; font-weight: 600; text-decoration: none; display: inline-block; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.15); }
+        .btn-secondary { background: transparent; border: 1px solid var(--accent-dim); color: var(--text); padding: 12px 28px; border-radius: 40px; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+        .btn-secondary:hover { background: var(--accent-dim); border-color: var(--accent); }
+        .features { padding: 60px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+        .feature-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: 28px 24px; transition: transform 0.2s; }
         .feature-card:hover { transform: translateY(-4px); }
-        .feature-icon {
-            width: 48px; height: 48px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
+        .feature-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
         .feature-icon svg { width: 24px; height: 24px; stroke: var(--accent); stroke-width: 1.5; }
         .feature-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
         .feature-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
-
-        /* Pricing */
-        .pricing {
-            text-align: center;
-            padding: 40px 0 60px;
-        }
+        .pricing { text-align: center; padding: 40px 0 60px; }
         .pricing h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
         .pricing-sub { color: var(--muted); margin-bottom: 48px; }
-        .pricing-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 24px;
-        }
-        .plan {
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 32px 24px;
-            width: 280px;
-            transition: all 0.2s;
-        }
-        .plan.popular {
-            border-color: var(--accent);
-            background: rgba(255,255,255,0.02);
-        }
+        .pricing-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+        .plan { background: var(--card); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px 24px; width: 280px; transition: all 0.2s; }
+        .plan.popular { border-color: var(--accent); background: rgba(255,255,255,0.02); }
         .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
         .plan-price { font-size: 36px; font-weight: 800; margin: 16px 0; }
         .plan-price span { font-size: 14px; font-weight: 400; color: var(--muted); }
         .plan-features { list-style: none; margin: 20px 0 30px; }
         .plan-features li { margin: 12px 0; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
         .plan-features li::before { content: "✓"; color: var(--accent); font-weight: bold; }
-        .plan-btn {
-            background: var(--accent-dim);
-            border: none;
-            border-radius: 40px;
-            padding: 10px 20px;
-            width: 100%;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: var(--text);
-        }
+        .plan-btn { background: var(--accent-dim); border: none; border-radius: 40px; padding: 10px 20px; width: 100%; font-weight: 600; cursor: pointer; transition: background 0.2s; color: var(--text); }
         .plan-btn:hover { background: var(--accent); color: #000; }
-
-        /* Signup section */
         .signup-section {
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 32px;
-            padding: 48px 40px;
-            margin: 40px 0 60px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 48px;
-            align-items: center;
-            justify-content: space-between;
+            background: var(--card); border: 1px solid var(--card-border); border-radius: 32px; padding: 48px 40px; margin: 40px 0 60px;
+            display: flex; flex-wrap: wrap; gap: 48px; align-items: center; justify-content: space-between;
         }
         .signup-text { flex: 1; }
         .signup-text h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
@@ -247,64 +75,22 @@
         .signup-form { flex: 1; min-width: 280px; }
         .form-field { margin-bottom: 16px; }
         .form-field input {
-            width: 100%;
-            padding: 12px 14px;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 12px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 14px;
-            outline: none;
+            width: 100%; padding: 12px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px;
+            color: var(--text); font-family: inherit; font-size: 14px; outline: none;
         }
         .form-field input:focus { border-color: var(--accent); background: rgba(255,255,255,0.03); }
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 16px 0;
-            font-size: 13px;
-            color: var(--muted);
-        }
+        .checkbox-row { display: flex; align-items: center; gap: 10px; margin: 16px 0; font-size: 13px; color: var(--muted); }
         .checkbox-row input { width: 18px; height: 18px; accent-color: var(--accent); }
-        .error-message {
-            display: none;
-            background: rgba(255,68,68,0.1);
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 12px;
-            color: var(--error);
-            font-size: 13px;
-        }
-        .footer {
-            text-align: center;
-            padding: 32px 0;
-            border-top: 1px solid var(--card-border);
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        /* NEW: Forgot password link */
-        .signup-form .forgot-link {
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            font-size: 13px;
-            color: var(--muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+        .error-message { display: none; background: rgba(255,68,68,0.1); border-radius: 12px; padding: 12px; margin-top: 12px; color: var(--error); font-size: 13px; }
+        .footer { text-align: center; padding: 32px 0; border-top: 1px solid var(--card-border); color: var(--muted); font-size: 12px; }
+        .signup-form .forgot-link { display: block; text-align: center; margin-top: 10px; font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
         .signup-form .forgot-link:hover { color: var(--accent); }
-
         @media (max-width: 768px) {
-            .hero h1 { font-size: 32px; }
-            .signup-section { flex-direction: column; padding: 32px 24px; }
-            .nav-links { display: none; }
+            .hero h1 { font-size: 32px; } .signup-section { flex-direction: column; padding: 32px 24px; } .nav-links { display: none; }
         }
     </style>
 </head>
 <body>
-
 <div class="container">
     <nav class="nav">
         <div class="logo">
@@ -321,7 +107,6 @@
             <a href="#signup" class="btn-outline">Get Started</a>
         </div>
     </nav>
-
     <div class="hero">
         <h1>AI That Finds Leads, Writes Emails & Auto-Replies While You Sleep</h1>
         <p>Your autonomous sales assistant – lead generation, smart inbox, auto-follow‑ups. Start free, upgrade when you grow.</p>
@@ -330,7 +115,6 @@
             <a href="#features" class="btn-secondary">See how it works</a>
         </div>
     </div>
-
     <div id="features" class="features">
         <div class="feature-card">
             <div class="feature-icon">
@@ -354,7 +138,6 @@
             <p>Set delays (1–7 days or custom). AI automatically sends follow‑up emails. Never lose a lead again.</p>
         </div>
     </div>
-
     <div id="pricing" class="pricing">
         <h2>Simple, transparent pricing</h2>
         <p class="pricing-sub">All plans include daily resets. No hidden fees.</p>
@@ -363,11 +146,7 @@
                 <div class="plan-name">Free</div>
                 <div class="plan-price">$0<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>10 chats / day</li>
-                    <li>5 emails / day</li>
-                    <li>3 AI hints / day</li>
-                    <li>5 suggest follow‑ups / day</li>
-                    <li>No auto‑reply / auto‑follow‑up</li>
+                    <li>10 chats / day</li><li>5 emails / day</li><li>3 AI hints / day</li><li>5 suggest follow‑ups / day</li><li>No auto‑reply / auto‑follow‑up</li>
                 </ul>
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
             </div>
@@ -375,11 +154,7 @@
                 <div class="plan-name">Go</div>
                 <div class="plan-price">$49<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>50 chats / day</li>
-                    <li>25 emails / day</li>
-                    <li>20 AI hints / day</li>
-                    <li>30 suggest follow‑ups / day</li>
-                    <li>Auto‑reply (20/day) & Auto‑follow‑up (15/day)</li>
+                    <li>50 chats / day</li><li>25 emails / day</li><li>20 AI hints / day</li><li>30 suggest follow‑ups / day</li><li>Auto‑reply (20/day) & Auto‑follow‑up (15/day)</li>
                 </ul>
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
             </div>
@@ -387,17 +162,12 @@
                 <div class="plan-name">Pro</div>
                 <div class="plan-price">$129<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>150 chats / day</li>
-                    <li>100 emails / day</li>
-                    <li>300 AI hints / day</li>
-                    <li>200 suggest follow‑ups / day</li>
-                    <li>Auto‑reply (100/day) & Auto‑follow‑up (100/day)</li>
+                    <li>150 chats / day</li><li>100 emails / day</li><li>300 AI hints / day</li><li>200 suggest follow‑ups / day</li><li>Auto‑reply (100/day) & Auto‑follow‑up (100/day)</li>
                 </ul>
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
             </div>
         </div>
     </div>
-
     <div id="signup" class="signup-section">
         <div class="signup-text">
             <h2>Get started for free</h2>
@@ -410,18 +180,10 @@
         </div>
         <div class="signup-form">
             <form id="signupForm">
-                <div class="form-field">
-                    <input type="text" id="username" placeholder="Username" required>
-                </div>
-                <div class="form-field">
-                    <input type="email" id="email" placeholder="Email address" required>
-                </div>
-                <div class="form-field">
-                    <input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required>
-                </div>
-                <div class="form-field">
-                    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
-                </div>
+                <div class="form-field"><input type="text" id="username" placeholder="Username" required></div>
+                <div class="form-field"><input type="email" id="email" placeholder="Email address" required></div>
+                <div class="form-field"><input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required></div>
+                <div class="form-field"><input type="password" id="confirmPassword" placeholder="Confirm password" required></div>
                 <div class="checkbox-row">
                     <input type="checkbox" id="privacyPolicy" required>
                     <label>I agree to the <a href="Privacy.html" target="_blank">Privacy Policy</a></label>
@@ -436,84 +198,39 @@
             </p>
         </div>
     </div>
-
-    <div class="footer">
-        © 2025 Skyline AA-1 – Autonomous Sales Assistant. All rights reserved.
-    </div>
+    <div class="footer">© 2025 Skyline AA-1 – Autonomous Sales Assistant. All rights reserved.</div>
 </div>
-
 <script>
-    // Redirect if already logged in
-    if (localStorage.getItem('token')) {
-        window.location.href = "page.html";
-    }
-
+    if (localStorage.getItem('token')) { window.location.href = "page.html"; }
     const form = document.getElementById('signupForm');
     const errorDiv = document.getElementById('errorMessage');
-
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorDiv.style.display = 'none';
-        errorDiv.textContent = '';
-
+        e.preventDefault(); errorDiv.style.display = 'none'; errorDiv.textContent = '';
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirm = document.getElementById('confirmPassword').value;
         const privacy = document.getElementById('privacyPolicy').checked;
-
-        if (!username || !email || !password || !confirm) {
-            showError("All fields are required.");
-            return;
-        }
-        if (password !== confirm) {
-            showError("Passwords do not match.");
-            return;
-        }
-        if (password.length < 8) {
-            showError("Password must be at least 8 characters.");
-            return;
-        }
-        if (!privacy) {
-            showError("You must agree to the Privacy Policy.");
-            return;
-        }
-
+        if (!username || !email || !password || !confirm) { showError("All fields are required."); return; }
+        if (password !== confirm) { showError("Passwords do not match."); return; }
+        if (password.length < 8) { showError("Password must be at least 8 characters."); return; }
+        if (!privacy) { showError("You must agree to the Privacy Policy."); return; }
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Creating account...";
-
+        submitBtn.disabled = true; submitBtn.textContent = "Creating account...";
         try {
             const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password })
             });
             const data = await res.json();
             if (res.ok) {
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = "page.html";
-                } else {
-                    alert("Account created! Please log in.");
-                    window.location.href = "login.html";
-                }
-            } else {
-                showError(data.message || "Signup failed. Try a different email.");
-            }
-        } catch (err) {
-            showError("Network error. Please try again.");
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }
+                if (data.token) { localStorage.setItem('token', data.token); window.location.href = "page.html"; }
+                else { alert("Account created! Please log in."); window.location.href = "login.html"; }
+            } else { showError(data.message || "Signup failed. Try a different email."); }
+        } catch (err) { showError("Network error. Please try again."); }
+        finally { submitBtn.disabled = false; submitBtn.textContent = originalText; }
     });
-
-    function showError(msg) {
-        errorDiv.textContent = msg;
-        errorDiv.style.display = 'block';
-    }
+    function showError(msg) { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
 </script>
 </body>
-    </html>
+            </html>
