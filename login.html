@@ -200,24 +200,52 @@
   </main>
 </div>
 <script>
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+
     const existingToken = localStorage.getItem('token');
     if (existingToken) {
         (async () => {
             try {
-                const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', { headers: { 'Authorization': `Bearer ${existingToken}` } });
+                const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${existingToken}` } });
                 if (res.ok) {
                     const user = await res.json();
-                    if (user.isAdmin) { window.location.href = "admin-layer2.html"; } else { window.location.href = "page.html"; }
-                } else { localStorage.removeItem('token'); window.location.href = "login.html"; }
-            } catch (e) { localStorage.removeItem('token'); window.location.href = "login.html"; }
+                    if (user.isAdmin) {
+                        window.location.href = "admin-layer2.html";
+                    } else {
+                        window.location.href = "page.html";
+                    }
+                } else {
+                    localStorage.removeItem('token');
+                    window.location.href = "login.html";
+                }
+            } catch (e) {
+                localStorage.removeItem('token');
+                window.location.href = "login.html";
+            }
         })();
     }
-    function showError(msg) { document.getElementById('errorText').textContent = msg; document.getElementById('errorMessage').classList.add('visible'); document.getElementById('successMessage').classList.remove('visible'); }
-    function showSuccess(msg) { document.getElementById('successText').textContent = msg; document.getElementById('successMessage').classList.add('visible'); document.getElementById('errorMessage').classList.remove('visible'); }
-    function hideMessages() { document.getElementById('errorMessage').classList.remove('visible'); document.getElementById('successMessage').classList.remove('visible'); }
+
+    function showError(msg) {
+        document.getElementById('errorText').textContent = msg;
+        document.getElementById('errorMessage').classList.add('visible');
+        document.getElementById('successMessage').classList.remove('visible');
+    }
+
+    function showSuccess(msg) {
+        document.getElementById('successText').textContent = msg;
+        document.getElementById('successMessage').classList.add('visible');
+        document.getElementById('errorMessage').classList.remove('visible');
+    }
+
+    function hideMessages() {
+        document.getElementById('errorMessage').classList.remove('visible');
+        document.getElementById('successMessage').classList.remove('visible');
+    }
+
     const pwToggle = document.getElementById('pwToggle');
     const pwInput = document.getElementById('password');
     const eyeIcon = document.getElementById('eyeIcon');
+
     pwToggle.addEventListener('click', (e) => {
         e.preventDefault();
         if (pwInput.type === 'password') {
@@ -228,32 +256,88 @@
             eyeIcon.innerHTML = '<path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/>';
         }
     });
+
     let loginAttempts = 0;
+
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const identifier = document.getElementById('identifier').value;
         const password = document.getElementById('password').value;
         const submitBtn = document.querySelector('button[type="submit"]');
+
         hideMessages();
-        if (!identifier || !password) { showError("Please enter both email/username and password."); return; }
-        if (loginAttempts >= 5) { showError("Too many failed attempts. Please try again later."); document.getElementById('attemptBar').classList.remove('visible'); return; }
-        submitBtn.disabled = true; submitBtn.classList.add('loading');
+
+        if (!identifier || !password) {
+            showError("Please enter both email/username and password.");
+            return;
+        }
+
+        if (loginAttempts >= 5) {
+            showError("Too many failed attempts. Please try again later.");
+            document.getElementById('attemptBar').classList.remove('visible');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+
         try {
-            const response = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifier, password }) });
+            const response = await fetch(`${BACKEND}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier, password })
+            });
             const data = await response.json();
+
             if (response.ok) {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
                     showSuccess("Login successful! Redirecting...");
+
+                    // ✅ CHECK FOR ADMIN LAYER REDIRECTION
+                    if (data.nextStep) {
+                        // Redirect to the next admin verification step
+                        setTimeout(() => {
+                            window.location.href = data.nextStep;
+                        }, 1000);
+                        loginAttempts = 0;
+                        document.getElementById('attemptBar').classList.remove('visible');
+                        return;
+                    }
+
+                    // Normal user flow: check admin status
                     try {
-                        const userRes = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', { headers: { 'Authorization': `Bearer ${data.token}` } });
+                        const userRes = await fetch(`${BACKEND}/api/users/me`, {
+                            headers: { 'Authorization': `Bearer ${data.token}` }
+                        });
                         if (userRes.ok) {
                             const user = await userRes.json();
-                            if (user.isAdmin) { setTimeout(() => { window.location.href = "admin-layer2.html"; }, 1000); } else { setTimeout(() => { window.location.href = "page.html"; }, 1000); }
-                        } else { setTimeout(() => { window.location.href = "page.html"; }, 1000); }
-                    } catch (err) { setTimeout(() => { window.location.href = "page.html"; }, 1000); }
-                    loginAttempts = 0; document.getElementById('attemptBar').classList.remove('visible');
-                } else { showError("Login failed. Please try again."); loginAttempts++; }
+                            if (user.isAdmin) {
+                                setTimeout(() => {
+                                    window.location.href = "admin-layer2.html";
+                                }, 1000);
+                            } else {
+                                setTimeout(() => {
+                                    window.location.href = "page.html";
+                                }, 1000);
+                            }
+                        } else {
+                            setTimeout(() => {
+                                window.location.href = "page.html";
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        setTimeout(() => {
+                            window.location.href = "page.html";
+                        }, 1000);
+                    }
+
+                    loginAttempts = 0;
+                    document.getElementById('attemptBar').classList.remove('visible');
+                } else {
+                    showError("Login failed. Please try again.");
+                    loginAttempts++;
+                }
             } else {
                 showError(data.message || "Invalid credentials. Please try again.");
                 loginAttempts++;
@@ -263,9 +347,14 @@
                     document.getElementById('attemptFill').style.width = (loginAttempts / 5) * 100 + '%';
                 }
             }
-        } catch (err) { showError("Network error. Is the server running?"); console.error(err); }
-        finally { submitBtn.disabled = false; submitBtn.classList.remove('loading'); }
+        } catch (err) {
+            showError("Network error. Is the server running?");
+            console.error(err);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
     });
 </script>
 </body>
-                                                                                                                                                      </html>
+  </html>
