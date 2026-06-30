@@ -79,25 +79,56 @@
             color: var(--text); font-family: inherit; font-size: 14px; outline: none;
         }
         .form-field input:focus { border-color: var(--accent); background: rgba(255,255,255,0.03); }
+
+        /* ✅ CUSTOM CHECKBOX - Shows white checkmark when clicked */
         .checkbox-row {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            align-items: flex-start;
+            gap: 12px;
             margin: 16px 0;
             font-size: 13px;
             color: var(--muted);
             cursor: pointer;
         }
         .checkbox-row input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid rgba(255,255,255,0.25);
+            border-radius: 4px;
+            background: var(--input-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
             flex-shrink: 0;
-            accent-color: var(--accent);
-            cursor: pointer;
+            margin-top: 1px;
+        }
+        .checkbox-row input:checked + .checkbox-custom {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .checkbox-row input:checked + .checkbox-custom::after {
+            content: "✓";
+            color: #000;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .checkbox-row:hover .checkbox-custom {
+            border-color: var(--accent);
         }
         .checkbox-row label {
             cursor: pointer;
             user-select: none;
+            line-height: 1.5;
         }
         .checkbox-row label a {
             color: var(--accent);
@@ -107,6 +138,7 @@
         .checkbox-row label a:hover {
             opacity: 0.7;
         }
+
         .error-message { display: none; background: rgba(255,68,68,0.1); border-radius: 12px; padding: 12px; margin-top: 12px; color: var(--error); font-size: 13px; }
         .footer { text-align: center; padding: 32px 0; border-top: 1px solid var(--card-border); color: var(--muted); font-size: 12px; }
         .signup-form .forgot-link { display: block; text-align: center; margin-top: 10px; font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
@@ -211,9 +243,10 @@
                 <div class="form-field"><input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required></div>
                 <div class="form-field"><input type="password" id="confirmPassword" placeholder="Confirm password" required></div>
 
-                <!-- ✅ FIXED: Privacy Policy Checkbox -->
+                <!-- ✅ FIXED: Custom Checkbox with visible checkmark -->
                 <div class="checkbox-row">
                     <input type="checkbox" id="privacyPolicy" required>
+                    <span class="checkbox-custom"></span>
                     <label for="privacyPolicy">
                         I agree to the <a href="Privacy.html" target="_blank">Privacy Policy</a>
                     </label>
@@ -301,4 +334,4 @@
     }
 </script>
 </body>
-                                                       </html>
+            </html>
