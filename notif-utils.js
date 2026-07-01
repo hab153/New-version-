@@ -1,3 +1,21 @@
+// ========== GLOBAL CSRF FETCH INTERCEPTOR ==========
+(function() {
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+        const csrfToken = localStorage.getItem('csrfToken');
+        const method = (options.method || 'GET').toUpperCase();
+        const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+
+        // Only add CSRF token for state-changing requests
+        if (!safeMethods.includes(method) && csrfToken) {
+            options.headers = options.headers || {};
+            options.headers['X-CSRF-Token'] = csrfToken;
+        }
+
+        return originalFetch.call(this, url, options);
+    };
+})();
+
 // ========== UTILITY FUNCTIONS (MUST BE DEFINED FIRST) ==========
 function calculateEngagementScore(lead, messages) {
     // Simple scoring – adjust as needed
