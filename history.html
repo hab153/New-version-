@@ -4,1039 +4,281 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>Skyline AA-1 · Session Archive</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-
     :root {
-      --void:        #0a0a0a;
-      --base:        #121212;
-      --surface:     #1a1a1a;
-      --raised:      #242424;
-      --hover:       #2d2d2d;
-      --card:        #1a1a1a;
-
-      --br-dim:      rgba(255,255,255,0.08);
-      --br-md:       rgba(255,255,255,0.12);
-      --br-hi:       rgba(255,255,255,0.18);
-
-      --gold:        #ffffff;
-      --gold-bright: #f0f0f0;
-      --gold-pale:   #e0e0e0;
-      --gold-mute:   rgba(255,255,255,0.1);
-      --gold-glow:   rgba(255,255,255,0.15);
-
-      --sage:        #66dd99;
-      --rose:        #ff5555;
-      --sky:         #66ddff;
-
-      --t1:          #f5f5f5;
-      --t2:          #b0b0b0;
-      --t3:          #707070;
-
-      --display:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --ui:          -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --mono:        'Monaco', 'Menlo', monospace;
-
-      --nav-h:       68px;
-      --top-h:       54px;
-      --r-xs:        4px;
-      --r-sm:        8px;
-      --r-md:        14px;
-      --r-lg:        20px;
-      --r-xl:        28px;
+      --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a;
+      --br-dim: rgba(255,255,255,0.08); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+      --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
+      --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
+      --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070;
+      --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'Monaco', 'Menlo', monospace;
+      --nav-h: 68px; --top-h: 54px; --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
     }
-
     html, body { height: 100%; overflow: hidden; }
-
-    body {
-      background: var(--void);
-      color: var(--t1);
-      font-family: var(--ui);
-      font-size: 14px;
-      height: 100vh;
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      background:
-        radial-gradient(ellipse 55% 35% at 5% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 55% at 95% 100%, rgba(102,221,255,0.02) 0%, transparent 55%);
-    }
-
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.5;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      background-size: 180px;
-    }
-
-    .topbar {
-      height: var(--top-h);
-      padding: 0 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--base);
-      border-bottom: 1px solid var(--br-dim);
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
-    }
-    .topbar::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15), transparent);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .brand-mark {
-      width: 28px; height: 28px;
-      border-radius: 7px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(255,255,255,0.05);
-      position: relative;
-      overflow: hidden;
-    }
-    .brand-mark::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 60%);
-    }
+    body { background: var(--void); color: var(--t1); font-family: var(--ui); font-size: 14px; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+    body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 55% 35% at 5% 0%, rgba(255,255,255,0.03) 0%, transparent 60%), radial-gradient(ellipse 40% 55% at 95% 100%, rgba(102,221,255,0.02) 0%, transparent 55%); }
+    body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-size: 180px; }
+    .topbar { height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between; background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; }
+    .topbar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15), transparent); }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(255,255,255,0.05); position: relative; overflow: hidden; }
+    .brand-mark::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 60%); }
     .brand-mark svg { position: relative; z-index: 1; }
-
     .brand-text { display: flex; flex-direction: column; gap: 1px; }
-    .brand-name {
-      font-family: var(--display);
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--t1);
-      letter-spacing: 0.04em;
-      line-height: 1;
-    }
+    .brand-name { font-family: var(--display); font-size: 18px; font-weight: 500; color: var(--t1); letter-spacing: 0.04em; line-height: 1; }
     .brand-name em { font-style: italic; color: var(--gold); font-weight: 400; }
-    .brand-sub {
-      font-family: var(--mono);
-      font-size: 8px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--t3);
-    }
-
-    .topbar-center {
-      position: absolute;
-      left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .topbar-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.30em;
-      text-transform: uppercase;
-      color: var(--t2);
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .back-link {
-      color: var(--t2);
-      text-decoration: none;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.2s;
-      padding: 4px 10px;
-      border-radius: var(--r-sm);
-      border: 1px solid var(--br-dim);
-    }
+    .brand-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--t3); }
+    .topbar-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; display: flex; align-items: center; gap: 8px; }
+    .topbar-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase; color: var(--t2); }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .back-link { color: var(--t2); text-decoration: none; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; transition: color 0.2s; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--br-dim); }
     .back-link:hover { color: var(--gold); border-color: var(--br-md); }
-
-    .archive-stage {
-      flex: 1;
-      overflow-y: auto;
-      padding: 28px 16px calc(var(--nav-h) + 20px);
-      position: relative;
-      z-index: 1;
-    }
+    .archive-stage { flex: 1; overflow-y: auto; padding: 28px 16px calc(var(--nav-h) + 20px); position: relative; z-index: 1; }
     .archive-stage::-webkit-scrollbar { width: 2px; }
     .archive-stage::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
-
-    .archive-container {
-      max-width: 680px;
-      margin: 0 auto;
-    }
-
-    .page-heading {
-      margin-bottom: 28px;
-      animation: fadeUp 0.4s 0.05s ease both;
-    }
-    .heading-eyebrow {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .eyebrow-line {
-      width: 22px; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold));
-    }
-    .eyebrow-line.right {
-      background: linear-gradient(90deg, var(--gold), transparent);
-    }
-    .eyebrow-text {
-      font-family: var(--mono);
-      font-size: 8px;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0.65;
-    }
-    .page-title {
-      font-family: var(--display);
-      font-size: 30px;
-      font-weight: 400;
-      color: var(--t1);
-      letter-spacing: 0.01em;
-      line-height: 1.1;
-      margin-bottom: 6px;
-    }
+    .archive-container { max-width: 680px; margin: 0 auto; }
+    .page-heading { margin-bottom: 28px; animation: fadeUp 0.4s 0.05s ease both; }
+    .heading-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .eyebrow-line { width: 22px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+    .eyebrow-line.right { background: linear-gradient(90deg, var(--gold), transparent); }
+    .eyebrow-text { font-family: var(--mono); font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); opacity: 0.65; }
+    .page-title { font-family: var(--display); font-size: 30px; font-weight: 400; color: var(--t1); letter-spacing: 0.01em; line-height: 1.1; margin-bottom: 6px; }
     .page-title em { font-style: italic; color: var(--gold); font-weight: 300; }
-    .page-sub {
-      font-size: 12px;
-      color: var(--t2);
-      font-weight: 400;
-      line-height: 1.55;
-    }
-
-    .search-wrap {
-      margin-bottom: 24px;
-      animation: fadeUp 0.4s 0.1s ease both;
-    }
-    .search-shell {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      background: var(--surface);
-      border: 1px solid var(--br-md);
-      border-radius: var(--r-xl);
-      padding: 0 16px;
-      transition: border-color 0.25s, box-shadow 0.25s;
-    }
-    .search-shell:focus-within {
-      border-color: rgba(255,255,255,0.20);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.05), 0 6px 20px rgba(0,0,0,0.25);
-    }
-    .search-icon {
-      color: var(--t3);
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      padding-right: 10px;
-      transition: color 0.2s;
-    }
+    .page-sub { font-size: 12px; color: var(--t2); font-weight: 400; line-height: 1.55; }
+    .search-wrap { margin-bottom: 24px; animation: fadeUp 0.4s 0.1s ease both; }
+    .search-shell { display: flex; align-items: center; gap: 0; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-xl); padding: 0 16px; transition: border-color 0.25s, box-shadow 0.25s; }
+    .search-shell:focus-within { border-color: rgba(255,255,255,0.20); box-shadow: 0 0 0 3px rgba(255,255,255,0.05), 0 6px 20px rgba(0,0,0,0.25); }
+    .search-icon { color: var(--t3); display: flex; align-items: center; flex-shrink: 0; padding-right: 10px; transition: color 0.2s; }
     .search-shell:focus-within .search-icon { color: var(--gold); }
-    .search-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--t1);
-      padding: 13px 0;
-      font-family: var(--ui);
-      font-size: 13.5px;
-      font-weight: 400;
-      outline: none;
-      caret-color: #ffffff;
-    }
+    .search-input { flex: 1; background: transparent; border: none; color: var(--t1); padding: 13px 0; font-family: var(--ui); font-size: 13.5px; font-weight: 400; outline: none; caret-color: #ffffff; }
     .search-input::placeholder { color: var(--t3); }
-
-    .count-badge {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.10em;
-      color: var(--t3);
-      padding: 3px 8px;
-      border-radius: 20px;
-      border: 1px solid var(--br-dim);
-      background: var(--raised);
-      flex-shrink: 0;
-      transition: color 0.2s;
-    }
-
-    .session-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      animation: fadeUp 0.4s 0.15s ease both;
-    }
-
-    .session-card {
-      background: var(--card);
-      border: 1px solid var(--br-dim);
-      border-radius: var(--r-md);
-      padding: 18px 18px 18px 20px;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      transition: border-color 0.22s, background 0.22s, transform 0.18s, box-shadow 0.22s;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      position: relative;
-      overflow: hidden;
-    }
-    .session-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 2px; height: 100%;
-      background: linear-gradient(180deg, #ffffff, transparent);
-      opacity: 0;
-      transition: opacity 0.22s;
-    }
-    .session-card:hover {
-      background: var(--surface);
-      border-color: var(--br-md);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
-    }
+    .count-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; color: var(--t3); padding: 3px 8px; border-radius: 20px; border: 1px solid var(--br-dim); background: var(--raised); flex-shrink: 0; transition: color 0.2s; }
+    .session-grid { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s 0.15s ease both; }
+    .session-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); padding: 18px 18px 18px 20px; cursor: pointer; text-decoration: none; color: inherit; transition: border-color 0.22s, background 0.22s, transform 0.18s, box-shadow 0.22s; display: flex; justify-content: space-between; align-items: center; gap: 14px; position: relative; overflow: hidden; }
+    .session-card::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: linear-gradient(180deg, #ffffff, transparent); opacity: 0; transition: opacity 0.22s; }
+    .session-card:hover { background: var(--surface); border-color: var(--br-md); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1); }
     .session-card:hover::before { opacity: 1; }
-    .session-card.pinned {
-      border-color: rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.03);
-    }
-    /* Pinned indicator – SVG icon instead of emoji */
-    .pinned-icon {
-      display: none;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      opacity: 0.5;
-    }
-    .session-card.pinned .pinned-icon {
-      display: block;
-    }
-
+    .session-card.pinned { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.03); }
+    .pinned-icon { display: none; position: absolute; top: 10px; right: 10px; opacity: 0.5; }
+    .session-card.pinned .pinned-icon { display: block; }
     .card-content { flex: 1; min-width: 0; }
-    .card-title {
-      font-size: 13.5px;
-      font-weight: 500;
-      color: var(--t1);
-      margin-bottom: 7px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      letter-spacing: 0.01em;
-      transition: color 0.2s;
-      padding-right: 20px;
-    }
+    .card-title { font-size: 13.5px; font-weight: 500; color: var(--t1); margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.01em; transition: color 0.2s; padding-right: 20px; }
     .session-card:hover .card-title { color: var(--gold-pale); }
-
-    .card-meta {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--t3);
-      letter-spacing: 0.04em;
-      flex-wrap: wrap;
-      gap: 4px 8px;
-    }
-    .meta-dot {
-      width: 2px; height: 2px;
-      border-radius: 50%;
-      background: var(--t3);
-      flex-shrink: 0;
-      opacity: 0.5;
-    }
+    .card-meta { display: flex; align-items: center; gap: 0; font-family: var(--mono); font-size: 10px; color: var(--t3); letter-spacing: 0.04em; flex-wrap: wrap; gap: 4px 8px; }
+    .meta-dot { width: 2px; height: 2px; border-radius: 50%; background: var(--t3); flex-shrink: 0; opacity: 0.5; }
     .meta-date { color: var(--t2); }
-
-    .type-badge {
-      font-size: 7px;
-      letter-spacing: 0.10em;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 500;
-    }
-    .type-badge.lead {
-      background: rgba(255,255,255,0.08);
-      color: var(--t2);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .type-badge.assistant {
-      background: rgba(102,221,255,0.12);
-      color: var(--sky);
-      border: 1px solid rgba(102,221,255,0.2);
-    }
-
-    .card-arrow {
-      color: var(--t3);
-      transition: color 0.2s, transform 0.2s;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-    }
-    .session-card:hover .card-arrow {
-      color: var(--gold);
-      transform: translateX(3px);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 56px 24px;
-      color: var(--t2);
-    }
-    .empty-icon {
-      width: 48px; height: 48px;
-      margin: 0 auto 16px;
-      border: 1px solid var(--br-md);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--t3);
-    }
-    .empty-title {
-      font-family: var(--display);
-      font-size: 18px;
-      font-weight: 400;
-      font-style: italic;
-      color: var(--t2);
-      margin-bottom: 6px;
-    }
-    .empty-sub {
-      font-size: 11.5px;
-      color: var(--t3);
-      font-family: var(--mono);
-      letter-spacing: 0.04em;
-    }
-
-    .error-state {
-      text-align: center;
-      padding: 48px 24px;
-    }
-    .error-icon {
-      width: 44px; height: 44px;
-      margin: 0 auto 14px;
-      border: 1px solid rgba(184,92,92,0.3);
-      border-radius: 50%;
-      background: rgba(184,92,92,0.06);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--rose);
-    }
-    .error-title {
-      font-family: var(--display);
-      font-size: 17px;
-      font-style: italic;
-      color: var(--rose);
-      margin-bottom: 6px;
-    }
-    .error-sub {
-      font-size: 11px;
-      color: var(--t3);
-      font-family: var(--mono);
-      letter-spacing: 0.04em;
-    }
-
-    /* ----- CONTEXT MENU ----- */
-    #contextMenu {
-      display: none;
-      position: fixed;
-      background: var(--surface);
-      border: 1px solid var(--br-md);
-      border-radius: var(--r-md);
-      padding: 6px 0;
-      z-index: 100;
-      min-width: 160px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    }
-    #contextMenu .ctx-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      padding: 10px 18px;
-      background: transparent;
-      border: none;
-      color: var(--t2);
-      font-family: var(--ui);
-      font-size: 12.5px;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      text-align: left;
-    }
-    #contextMenu .ctx-btn:hover {
-      background: var(--hover);
-      color: var(--t1);
-    }
-    #contextMenu .ctx-btn.danger {
-      color: var(--rose);
-    }
-    #contextMenu .ctx-btn.danger:hover {
-      background: rgba(255,85,85,0.1);
-    }
-    #contextMenu .ctx-divider {
-      height: 1px;
-      background: var(--br-dim);
-      margin: 4px 12px;
-    }
-    #contextMenu .ctx-btn svg {
-      flex-shrink: 0;
-    }
-
-    /* ----- RENAME MODAL ----- */
-    #renameModal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-    #renameModal.active {
-      display: flex;
-    }
-    .modal-box {
-      background: var(--surface);
-      border: 1px solid var(--br-md);
-      border-radius: var(--r-xl);
-      padding: 28px;
-      max-width: 400px;
-      width: 90%;
-      animation: modalIn 0.25s ease both;
-    }
-    @keyframes modalIn {
-      from { opacity: 0; transform: scale(0.94) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .modal-box h3 {
-      font-family: var(--display);
-      font-weight: 400;
-      font-size: 20px;
-      color: var(--t1);
-      margin-bottom: 6px;
-    }
-    .modal-box .modal-sub {
-      font-size: 12px;
-      color: var(--t3);
-      margin-bottom: 18px;
-      font-family: var(--mono);
-      letter-spacing: 0.04em;
-    }
-    .modal-box .field-input {
-      width: 100%;
-      background: var(--raised);
-      border: 1px solid var(--br-dim);
-      border-radius: var(--r-sm);
-      padding: 11px 13px;
-      color: var(--t1);
-      font-family: var(--ui);
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.25s, box-shadow 0.25s;
-      margin-bottom: 16px;
-    }
-    .modal-box .field-input:focus {
-      border-color: rgba(255,255,255,0.25);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
-    }
-    .modal-box .modal-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-    .modal-box .modal-actions button {
-      padding: 8px 20px;
-      border-radius: var(--r-sm);
-      font-family: var(--ui);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .modal-box .modal-actions .btn-cancel {
-      background: var(--raised);
-      color: var(--t2);
-      border: 1px solid var(--br-dim);
-    }
-    .modal-box .modal-actions .btn-cancel:hover {
-      background: var(--hover);
-      color: var(--t1);
-    }
-    .modal-box .modal-actions .btn-save {
-      background: var(--gold);
-      color: #0d0a04;
-      border: none;
-    }
-    .modal-box .modal-actions .btn-save:hover {
-      background: var(--gold-bright);
-      box-shadow: 0 4px 16px rgba(255,255,255,0.2);
-    }
-
-    .bottom-nav {
-      height: var(--nav-h);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      background: var(--base);
-      border-top: 1px solid var(--br-dim);
-      flex-shrink: 0;
-      position: fixed;
-      bottom: 0; width: 100%;
-      z-index: 20;
-      padding: 0 8px;
-    }
-    .bottom-nav::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 20%; right: 20%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    }
-
-    .nav-item {
-      flex: 1;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      color: var(--t3);
-      text-decoration: none;
-      transition: color 0.22s;
-      position: relative;
-    }
+    .type-badge { font-size: 7px; letter-spacing: 0.10em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+    .type-badge.lead { background: rgba(255,255,255,0.08); color: var(--t2); border: 1px solid rgba(255,255,255,0.06); }
+    .type-badge.assistant { background: rgba(102,221,255,0.12); color: var(--sky); border: 1px solid rgba(102,221,255,0.2); }
+    .card-arrow { color: var(--t3); transition: color 0.2s, transform 0.2s; flex-shrink: 0; display: flex; align-items: center; }
+    .session-card:hover .card-arrow { color: var(--gold); transform: translateX(3px); }
+    .empty-state { text-align: center; padding: 56px 24px; color: var(--t2); }
+    .empty-icon { width: 48px; height: 48px; margin: 0 auto 16px; border: 1px solid var(--br-md); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--t3); }
+    .empty-title { font-family: var(--display); font-size: 18px; font-weight: 400; font-style: italic; color: var(--t2); margin-bottom: 6px; }
+    .empty-sub { font-size: 11.5px; color: var(--t3); font-family: var(--mono); letter-spacing: 0.04em; }
+    .error-state { text-align: center; padding: 48px 24px; }
+    .error-icon { width: 44px; height: 44px; margin: 0 auto 14px; border: 1px solid rgba(184,92,92,0.3); border-radius: 50%; background: rgba(184,92,92,0.06); display: flex; align-items: center; justify-content: center; color: var(--rose); }
+    .error-title { font-family: var(--display); font-size: 17px; font-style: italic; color: var(--rose); margin-bottom: 6px; }
+    .error-sub { font-size: 11px; color: var(--t3); font-family: var(--mono); letter-spacing: 0.04em; }
+    #contextMenu { display: none; position: fixed; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-md); padding: 6px 0; z-index: 100; min-width: 160px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+    #contextMenu .ctx-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: transparent; border: none; color: var(--t2); font-family: var(--ui); font-size: 12.5px; cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; }
+    #contextMenu .ctx-btn:hover { background: var(--hover); color: var(--t1); }
+    #contextMenu .ctx-btn.danger { color: var(--rose); }
+    #contextMenu .ctx-btn.danger:hover { background: rgba(255,85,85,0.1); }
+    #contextMenu .ctx-divider { height: 1px; background: var(--br-dim); margin: 4px 12px; }
+    #contextMenu .ctx-btn svg { flex-shrink: 0; }
+    #renameModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    #renameModal.active { display: flex; }
+    .modal-box { background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-xl); padding: 28px; max-width: 400px; width: 90%; animation: modalIn 0.25s ease both; }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-box h3 { font-family: var(--display); font-weight: 400; font-size: 20px; color: var(--t1); margin-bottom: 6px; }
+    .modal-box .modal-sub { font-size: 12px; color: var(--t3); margin-bottom: 18px; font-family: var(--mono); letter-spacing: 0.04em; }
+    .modal-box .field-input { width: 100%; background: var(--raised); border: 1px solid var(--br-dim); border-radius: var(--r-sm); padding: 11px 13px; color: var(--t1); font-family: var(--ui); font-size: 13px; outline: none; transition: border-color 0.25s, box-shadow 0.25s; margin-bottom: 16px; }
+    .modal-box .field-input:focus { border-color: rgba(255,255,255,0.25); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); }
+    .modal-box .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-box .modal-actions button { padding: 8px 20px; border-radius: var(--r-sm); font-family: var(--ui); font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .modal-box .modal-actions .btn-cancel { background: var(--raised); color: var(--t2); border: 1px solid var(--br-dim); }
+    .modal-box .modal-actions .btn-cancel:hover { background: var(--hover); color: var(--t1); }
+    .modal-box .modal-actions .btn-save { background: var(--gold); color: #0d0a04; border: none; }
+    .modal-box .modal-actions .btn-save:hover { background: var(--gold-bright); box-shadow: 0 4px 16px rgba(255,255,255,0.2); }
+    .bottom-nav { height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; position: fixed; bottom: 0; width: 100%; z-index: 20; padding: 0 8px; }
+    .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); }
+    .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--t3); text-decoration: none; transition: color 0.22s; position: relative; }
     .nav-item svg { transition: transform 0.2s; }
     .nav-item:hover { color: var(--gold); }
     .nav-item:hover svg { transform: scale(1.1) translateY(-1px); }
     .nav-item.active { color: var(--gold); }
-    .nav-item.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 20px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      border-radius: 2px 2px 0 0;
-    }
-
-    .nav-item.nav-home .home-wrap {
-      width: 44px; height: 44px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: var(--r-md);
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.12);
-      position: relative;
-      overflow: hidden;
-    }
-    .nav-item.nav-home .home-wrap::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
-    }
-    .nav-item.nav-home:hover .home-wrap {
-      transform: scale(1.07) translateY(-2px);
-      box-shadow: 0 8px 24px rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.18);
-    }
+    .nav-item.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border-radius: 2px 2px 0 0; }
+    .nav-item.nav-home .home-wrap { width: 44px; height: 44px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.12); position: relative; overflow: hidden; }
+    .nav-item.nav-home .home-wrap::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%); }
+    .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.18); }
     .nav-item.nav-home svg { color: #ffffff; position: relative; z-index: 1; }
     .nav-item.nav-home::after { display: none; }
-
-    .nav-badge {
-      position: absolute;
-      top: 2px; right: calc(50% - 20px);
-      min-width: 14px; height: 14px;
-      background: #ff5555;
-      border-radius: 10px;
-      border: 1.5px solid var(--base);
-      display: none;
-      color: white;
-      font-family: var(--mono);
-      font-size: 7px;
-      font-weight: 600;
-      align-items: center;
-      justify-content: center;
-      padding: 0 3px;
-      z-index: 2;
-      box-shadow: 0 2px 6px rgba(255,85,85,0.3);
-    }
+    .nav-badge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: #ff5555; border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono); font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(255,85,85,0.3); }
     .nav-item.has-notifs .nav-badge { display: flex; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .skeleton-card {
-      background: var(--card);
-      border: 1px solid var(--br-dim);
-      border-radius: var(--r-md);
-      padding: 18px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      animation: skelPulse 1.6s ease-in-out infinite;
-    }
-    .skel-line {
-      height: 11px;
-      border-radius: 4px;
-      background: var(--raised);
-    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .skeleton-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; animation: skelPulse 1.6s ease-in-out infinite; }
+    .skel-line { height: 11px; border-radius: 4px; background: var(--raised); }
     .skel-line.title { width: 68%; }
-    .skel-line.meta  { width: 36%; height: 9px; }
-    @keyframes skelPulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.45; }
-    }
-
-    @media (min-width: 768px) {
-      .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); }
-      .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (min-width: 1024px) {
-      .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); }
-      .bottom-nav { padding: 0 24%; }
-      .topbar { padding: 0 32px; }
-    }
-
-    @media (max-width: 375px) {
-      .brand-name { font-size: 16px; }
-      .brand-sub { display: none; }
-      .page-title { font-size: 26px; }
-    }
+    .skel-line.meta { width: 36%; height: 9px; }
+    @keyframes skelPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+    @media (min-width: 768px) { .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); } .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); } .bottom-nav { padding: 0 24%; } .topbar { padding: 0 32px; } }
+    @media (max-width: 375px) { .brand-name { font-size: 16px; } .brand-sub { display: none; } .page-title { font-size: 26px; } }
   </style>
 </head>
 <body>
-
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </div>
-      <div class="brand-text">
-        <span class="brand-name">Sky<em>line</em></span>
-        <span class="brand-sub">AA-1 · Agent</span>
-      </div>
+      <div class="brand-text"><span class="brand-name">Sky<em>line</em></span><span class="brand-sub">AA-1 · Agent</span></div>
     </div>
-
-    <div class="topbar-center">
-      <span class="topbar-label">Session Archive</span>
-    </div>
-
-    <div class="topbar-right">
-      <a href="page.html" class="back-link">← Back</a>
-    </div>
+    <div class="topbar-center"><span class="topbar-label">Session Archive</span></div>
+    <div class="topbar-right"><a href="page.html" class="back-link">← Back</a></div>
   </header>
-
   <div class="archive-stage">
     <div class="archive-container">
-
       <div class="page-heading">
-        <div class="heading-eyebrow">
-          <div class="eyebrow-line"></div>
-          <span class="eyebrow-text">History · Archive</span>
-          <div class="eyebrow-line right"></div>
-        </div>
+        <div class="heading-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">History · Archive</span><div class="eyebrow-line right"></div></div>
         <h1 class="page-title">Session <em>Archive.</em></h1>
         <p class="page-sub">Click to open · Long press or right-click for options.</p>
       </div>
-
       <div class="search-wrap">
         <div class="search-shell">
-          <div class="search-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          </div>
+          <div class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
           <input type="text" class="search-input" id="searchInput" placeholder="Search by title…" autocomplete="off" />
           <div class="count-badge" id="countBadge">—</div>
         </div>
       </div>
-
       <div class="session-grid" id="sessionGrid">
         <div class="skeleton-card"><div class="skel-line title"></div><div class="skel-line meta"></div></div>
         <div class="skeleton-card"><div class="skel-line title" style="width:54%"></div><div class="skel-line meta" style="width:28%"></div></div>
         <div class="skeleton-card"><div class="skel-line title" style="width:76%"></div><div class="skel-line meta"></div></div>
       </div>
-
     </div>
   </div>
-
-  <!-- CONTEXT MENU -->
   <div id="contextMenu">
-    <button class="ctx-btn" data-action="rename">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Rename
-    </button>
-    <button class="ctx-btn" data-action="pin" id="pinBtn">
-      <!-- Will be dynamically replaced -->
-      <span id="pinIcon"></span>
-      <span id="pinLabel">Pin</span>
-    </button>
+    <button class="ctx-btn" data-action="rename"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Rename</button>
+    <button class="ctx-btn" data-action="pin" id="pinBtn"><span id="pinIcon"></span><span id="pinLabel">Pin</span></button>
     <div class="ctx-divider"></div>
-    <button class="ctx-btn danger" data-action="delete">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      Delete
-    </button>
+    <button class="ctx-btn danger" data-action="delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
   </div>
-
-  <!-- RENAME MODAL -->
   <div id="renameModal">
     <div class="modal-box">
       <h3>Rename Session</h3>
       <p class="modal-sub">Give this session a custom name.</p>
       <input type="text" class="field-input" id="renameInput" placeholder="New session name…" autocomplete="off" />
-      <div class="modal-actions">
-        <button class="btn-cancel" id="renameCancel">Cancel</button>
-        <button class="btn-save" id="renameConfirm">Save</button>
-      </div>
+      <div class="modal-actions"><button class="btn-cancel" id="renameCancel">Cancel</button><button class="btn-save" id="renameConfirm">Save</button></div>
     </div>
   </div>
-
   <nav class="bottom-nav" aria-label="Main navigation">
-    <a href="page.html" class="nav-item nav-home" aria-label="Home">
-      <div class="home-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-          <polyline points="9 21 9 12 15 12 15 21"/>
-        </svg>
-      </div>
-    </a>
-
-    <a href="history.html" class="nav-item active" aria-label="History">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <polyline points="12 7 12 12 15 15"/>
-        <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-        <polyline points="3 4 3 11 10 11"/>
-      </svg>
-    </a>
-
-    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
-      <div class="nav-badge"></div>
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-    </a>
-
-    <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7" rx="1"/>
-        <rect x="14" y="3" width="7" height="7" rx="1"/>
-        <rect x="3" y="14" width="7" height="7" rx="1"/>
-        <rect x="14" y="14" width="7" height="7" rx="1"/>
-      </svg>
-    </a>
+    <a href="page.html" class="nav-item nav-home" aria-label="Home"><div class="home-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg></div></a>
+    <a href="history.html" class="nav-item active" aria-label="History"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg></a>
+    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications"><div class="nav-badge"></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
+    <a href="dashboard.html" class="nav-item" aria-label="Dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
   </nav>
-
   <script>
+    // ──────────────────────────────────────────────────────────────
+    //  GLOBAL CSRF FETCH INTERCEPTOR
+    // ──────────────────────────────────────────────────────────────
+    (function() {
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const csrfToken = localStorage.getItem('csrfToken');
+            const method = (options.method || 'GET').toUpperCase();
+            const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+
+            // Only add CSRF token for state-changing requests
+            if (!safeMethods.includes(method) && csrfToken) {
+                options.headers = options.headers || {};
+                options.headers['X-CSRF-Token'] = csrfToken;
+            }
+
+            return originalFetch.call(this, url, options);
+        };
+    })();
+
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
-
     let allSessions = [];
     let contextTargetId = null;
     let currentRenameId = null;
-
-    // ----- DOM REFS -----
     const contextMenu = document.getElementById('contextMenu');
     const renameModal = document.getElementById('renameModal');
     const renameInput = document.getElementById('renameInput');
     const sessionGrid = document.getElementById('sessionGrid');
     const countBadge = document.getElementById('countBadge');
     const searchInput = document.getElementById('searchInput');
-
-    // ----- HELPER: SVG Icons -----
-    function pinIconSolid() {
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`;
-    }
-    function pinIconOutline() {
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`;
-    }
-
-    // ----- LOAD SESSIONS -----
+    function pinIconSolid() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`; }
+    function pinIconOutline() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`; }
     async function loadSessions() {
       try {
-        const res = await fetch(`${BACKEND}/api/sessions`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${BACKEND}/api/sessions`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!res.ok) throw new Error('Failed');
         allSessions = await res.json();
         renderSessions(allSessions);
       } catch {
-        sessionGrid.innerHTML = `
-          <div class="error-state">
-            <div class="error-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div class="error-title">Archive unavailable</div>
-            <div class="error-sub">Failed to connect · Check your network</div>
-          </div>`;
+        sessionGrid.innerHTML = `<div class="error-state"><div class="error-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="error-title">Archive unavailable</div><div class="error-sub">Failed to connect · Check your network</div></div>`;
         countBadge.textContent = '—';
       }
     }
-
     function renderSessions(sessions) {
       sessionGrid.innerHTML = '';
       countBadge.textContent = sessions.length;
-
       if (sessions.length === 0) {
-        sessionGrid.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <div class="empty-title">No sessions found.</div>
-            <div class="empty-sub">Start a new search to begin</div>
-          </div>`;
+        sessionGrid.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="empty-title">No sessions found.</div><div class="empty-sub">Start a new search to begin</div></div>`;
         return;
       }
-
       sessions.forEach((session, i) => {
         const date = new Date(session.lastUpdated || session.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const card = document.createElement('a');
         card.className = 'session-card';
-        
         const isAssistant = (session.type === 'assistant');
         const typeParam = isAssistant ? '&type=assistant' : '';
         card.href = `page.html?session=${session.sessionId || session._id}${typeParam}`;
-        
         card.dataset.sessionId = session.sessionId || session._id;
         card.style.animationDelay = `${i * 0.04}s`;
         card.style.animation = 'fadeUp 0.35s ease both';
-
-        if (session.pinned) {
-          card.classList.add('pinned');
-        }
-
+        if (session.pinned) card.classList.add('pinned');
         const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
         const typeClass = isAssistant ? 'assistant' : 'lead';
-
-        // Pinned indicator (SVG)
-        const pinnedSvg = session.pinned ? `
-          <span class="pinned-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>
-          </span>
-        ` : '';
-
-        card.innerHTML = `
-          <div class="card-content">
-            <div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div>
-            <div class="card-meta">
-              <span class="meta-date">${date}</span>
-              <span class="meta-dot"></span>
-              <span class="meta-count">${session.messageCount || 0} messages</span>
-              <span class="meta-dot"></span>
-              <span class="type-badge ${typeClass}">${typeLabel}</span>
-            </div>
-          </div>
-          <div class="card-arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>
-          ${pinnedSvg}
-        `;
-
-        // ----- LONG PRESS / RIGHT CLICK -----
-        card.addEventListener('contextmenu', function(e) {
-          e.preventDefault();
-          showContextMenu(e.clientX, e.clientY, this.dataset.sessionId);
-        });
-
+        const pinnedSvg = session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : '';
+        card.innerHTML = `<div class="card-content"><div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div><div class="card-meta"><span class="meta-date">${date}</span><span class="meta-dot"></span><span class="meta-count">${session.messageCount || 0} messages</span><span class="meta-dot"></span><span class="type-badge ${typeClass}">${typeLabel}</span></div></div><div class="card-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>${pinnedSvg}`;
+        card.addEventListener('contextmenu', function(e) { e.preventDefault(); showContextMenu(e.clientX, e.clientY, this.dataset.sessionId); });
         let timer;
-        card.addEventListener('touchstart', function(e) {
-          timer = setTimeout(() => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            showContextMenu(touch.clientX, touch.clientY, this.dataset.sessionId);
-          }, 600);
-        });
+        card.addEventListener('touchstart', function(e) { timer = setTimeout(() => { e.preventDefault(); const touch = e.touches[0]; showContextMenu(touch.clientX, touch.clientY, this.dataset.sessionId); }, 600); });
         card.addEventListener('touchend', () => clearTimeout(timer));
         card.addEventListener('touchmove', () => clearTimeout(timer));
-
         sessionGrid.appendChild(card);
       });
     }
-
-    // ----- CONTEXT MENU (with dynamic pin/unpin) -----
     function showContextMenu(x, y, sessionId) {
       contextTargetId = sessionId;
       const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
       const pinned = session ? session.pinned : false;
-
-      // Update pin button
       const pinBtn = document.getElementById('pinBtn');
       const pinIcon = document.getElementById('pinIcon');
       const pinLabel = document.getElementById('pinLabel');
-      if (pinned) {
-        pinIcon.innerHTML = pinIconOutline(); // show outline icon for "unpin"
-        pinLabel.textContent = 'Unpin';
-      } else {
-        pinIcon.innerHTML = pinIconSolid(); // solid icon for "pin"
-        pinLabel.textContent = 'Pin';
-      }
-
-      const menuWidth = 160;
-      const menuHeight = 140;
+      if (pinned) { pinIcon.innerHTML = pinIconOutline(); pinLabel.textContent = 'Unpin'; }
+      else { pinIcon.innerHTML = pinIconSolid(); pinLabel.textContent = 'Pin'; }
+      const menuWidth = 160; const menuHeight = 140;
       const left = Math.min(x, window.innerWidth - menuWidth - 10);
       const top = Math.min(y, window.innerHeight - menuHeight - 10);
       contextMenu.style.left = Math.max(10, left) + 'px';
       contextMenu.style.top = Math.max(10, top) + 'px';
       contextMenu.style.display = 'block';
     }
-
-    function hideContextMenu() {
-      contextMenu.style.display = 'none';
-      contextTargetId = null;
-    }
-
-    document.addEventListener('click', function(e) {
-      if (!contextMenu.contains(e.target)) {
-        hideContextMenu();
-      }
-    });
-
-    // ----- CONTEXT MENU ACTIONS -----
+    function hideContextMenu() { contextMenu.style.display = 'none'; contextTargetId = null; }
+    document.addEventListener('click', function(e) { if (!contextMenu.contains(e.target)) hideContextMenu(); });
     document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const action = this.dataset.action;
@@ -1047,8 +289,6 @@
         else if (action === 'delete') deleteSession(sessionId);
       });
     });
-
-    // ----- RENAME -----
     function openRenameModal(sessionId) {
       currentRenameId = sessionId;
       const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
@@ -1057,89 +297,39 @@
       renameInput.focus();
       renameInput.select();
     }
-
-    document.getElementById('renameCancel').addEventListener('click', function() {
-      renameModal.classList.remove('active');
-      currentRenameId = null;
-    });
-
+    document.getElementById('renameCancel').addEventListener('click', function() { renameModal.classList.remove('active'); currentRenameId = null; });
     document.getElementById('renameConfirm').addEventListener('click', async function() {
       const name = renameInput.value.trim();
       if (!name) return;
       try {
-        const res = await fetch(`${BACKEND}/api/sessions/${currentRenameId}/rename`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ name })
-        });
-        if (res.ok) {
-          renameModal.classList.remove('active');
-          currentRenameId = null;
-          loadSessions();
-        } else {
-          const data = await res.json();
-          alert(data.error || 'Rename failed');
-        }
-      } catch {
-        alert('Connection error');
-      }
+        const res = await fetch(`${BACKEND}/api/sessions/${currentRenameId}/rename`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name }) });
+        if (res.ok) { renameModal.classList.remove('active'); currentRenameId = null; loadSessions(); }
+        else { const data = await res.json(); alert(data.error || 'Rename failed'); }
+      } catch { alert('Connection error'); }
     });
-
-    renameInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') document.getElementById('renameConfirm').click();
-      if (e.key === 'Escape') document.getElementById('renameCancel').click();
-    });
-
-    // ----- PIN -----
+    renameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('renameConfirm').click(); if (e.key === 'Escape') document.getElementById('renameCancel').click(); });
     async function togglePin(sessionId) {
       const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
       if (!session) return;
       try {
-        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/pin`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ pinned: !session.pinned })
-        });
-        if (res.ok) {
-          loadSessions();
-        } else {
-          const data = await res.json();
-          alert(data.error || 'Failed to pin');
-        }
-      } catch {
-        alert('Connection error');
-      }
+        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/pin`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ pinned: !session.pinned }) });
+        if (res.ok) loadSessions();
+        else { const data = await res.json(); alert(data.error || 'Failed to pin'); }
+      } catch { alert('Connection error'); }
     }
-
-    // ----- DELETE -----
     async function deleteSession(sessionId) {
       if (!confirm('Delete this session and all its messages?')) return;
       try {
-        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          loadSessions();
-        } else {
-          const data = await res.json();
-          alert(data.error || 'Delete failed');
-        }
-      } catch {
-        alert('Connection error');
-      }
+        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) loadSessions();
+        else { const data = await res.json(); alert(data.error || 'Delete failed'); }
+      } catch { alert('Connection error'); }
     }
-
-    // ----- SEARCH -----
     searchInput.addEventListener('input', function() {
       const q = this.value.toLowerCase();
-      const filtered = allSessions.filter(s =>
-        (s.name || s.title || '').toLowerCase().includes(q)
-      );
+      const filtered = allSessions.filter(s => (s.name || s.title || '').toLowerCase().includes(q));
       renderSessions(filtered);
     });
-
-    // ----- NOTIFICATIONS -----
     async function loadNotifCount() {
       try {
         const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -1152,38 +342,24 @@
         }
       } catch {}
     }
-
     function updateBadge(count) {
       const item = document.getElementById('navNotifBtn');
       const badge = item?.querySelector('.nav-badge');
       if (!item || !badge) return;
-      if (count > 0) {
-        item.classList.add('has-notifs');
-        badge.textContent = count > 9 ? '9+' : count;
-      } else {
-        item.classList.remove('has-notifs');
-        badge.textContent = '';
-      }
+      if (count > 0) { item.classList.add('has-notifs'); badge.textContent = count > 9 ? '9+' : count; }
+      else { item.classList.remove('has-notifs'); badge.textContent = ''; }
     }
-
-    function escapeHTML(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // ----- INIT -----
+    function escapeHTML(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     document.addEventListener('DOMContentLoaded', function() {
       loadSessions();
       loadNotifCount();
       setInterval(loadNotifCount, 15000);
-
       document.getElementById('navNotifBtn').addEventListener('click', function() {
         localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
         updateBadge(0);
       });
-
-      // Close context menu on scroll
       document.querySelector('.archive-stage').addEventListener('scroll', hideContextMenu);
     });
   </script>
 </body>
-  </html>
+                                                                                                                                                                                                                                                        </html>
