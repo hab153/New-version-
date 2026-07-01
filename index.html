@@ -212,7 +212,7 @@
                 <div class="plan-name">Go</div>
                 <div class="plan-price">$49<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>50 chats / day</li><li>25 emails / day</li><li>20 AI hints / day</li><li>30 suggest follow‑ups / day</li><li>Auto‑reply (20/day) & Auto‑follow‑up (15/day)</li>
+                    <li>50 chats / day</li><li>25 emails / day</li><li>20 AI hints / day</li><li>30 suggest follow‑ups / day</li><li>Auto‑reply (20/day) & Auto‑follow-up (15/day)</li>
                 </ul>
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
             </div>
@@ -220,7 +220,7 @@
                 <div class="plan-name">Pro</div>
                 <div class="plan-price">$129<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>150 chats / day</li><li>100 emails / day</li><li>300 AI hints / day</li><li>200 suggest follow‑ups / day</li><li>Auto‑reply (100/day) & Auto‑follow‑up (100/day)</li>
+                    <li>150 chats / day</li><li>100 emails / day</li><li>300 AI hints / day</li><li>200 suggest follow‑ups / day</li><li>Auto‑reply (100/day) & Auto‑follow-up (100/day)</li>
                 </ul>
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
             </div>
@@ -312,6 +312,10 @@
             if (res.ok) {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
+                    // ✅ Store CSRF Token
+                    if (data.csrfToken) {
+                        localStorage.setItem('csrfToken', data.csrfToken);
+                    }
                     window.location.href = "page.html";
                 } else {
                     alert("Account created! Please log in.");
@@ -334,4 +338,4 @@
     }
 </script>
 </body>
-            </html>
+                    </html>
