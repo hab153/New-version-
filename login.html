@@ -202,6 +202,22 @@
 <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 
+    // ✅ Helper for Logout
+    async function handleLogout() {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch(`${BACKEND}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+        } catch (e) { console.error('Logout API error:', e); }
+        localStorage.removeItem('token');
+        localStorage.removeItem('csrfToken');
+        window.location.href = "login.html";
+    }
+
     const existingToken = localStorage.getItem('token');
     if (existingToken) {
         (async () => {
@@ -216,10 +232,12 @@
                     }
                 } else {
                     localStorage.removeItem('token');
+                    localStorage.removeItem('csrfToken');
                     window.location.href = "login.html";
                 }
             } catch (e) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('csrfToken');
                 window.location.href = "login.html";
             }
         })();
@@ -292,11 +310,14 @@
             if (response.ok) {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
+                    // ✅ Store CSRF Token
+                    if (data.csrfToken) {
+                        localStorage.setItem('csrfToken', data.csrfToken);
+                    }
                     showSuccess("Login successful! Redirecting...");
 
                     // ✅ CHECK FOR ADMIN LAYER REDIRECTION
                     if (data.nextStep) {
-                        // Redirect to the next admin verification step
                         setTimeout(() => {
                             window.location.href = data.nextStep;
                         }, 1000);
@@ -357,4 +378,4 @@
     });
 </script>
 </body>
-  </html>
+              </html>
