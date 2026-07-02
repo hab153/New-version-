@@ -10,7 +10,7 @@
     :root {
       --bg-void: #060608; --bg-base: #0b0c0f; --bg-surface: #111318;
       --bg-raised: #181b22; --border: rgba(255,255,255,0.06);
-      --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e;
+      --accent: #c8ff57; --text-1: #e8eaf0; --text-2: #8c909e; --danger: #ff4d4d;
       --font-mono: 'IBM Plex Mono', monospace; --font-sans: 'Syne', sans-serif;
     }
     body { background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh; }
@@ -22,6 +22,7 @@
     .container { max-width: 500px; margin: 40px auto; padding: 0 20px; }
     
     h1 { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+    h2 { font-size: 18px; margin-bottom: 20px; }
 
     .form-group { margin-bottom: 20px; }
     label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -37,13 +38,24 @@
     .save-btn {
       background: var(--accent); color: #060608; border: none; padding: 14px 24px;
       border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px;
-      transition: transform 0.1s;
+      transition: transform 0.1s, opacity 0.2s;
     }
     .save-btn:active { transform: scale(0.98); }
+    .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .status-msg { margin-top: 15px; text-align: center; font-size: 13px; font-family: var(--font-mono); }
-    .success { color: var(--accent); }
-    .error { color: #ff4d4d; }
+    .status-msg { margin-top: 15px; text-align: center; font-size: 13px; font-family: var(--font-mono); padding: 10px; border-radius: 6px; display: none; }
+    .status-msg.success { display: block; background: rgba(200,255,87,0.1); border: 1px solid rgba(200,255,87,0.2); color: var(--accent); }
+    .status-msg.error { display: block; background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.2); color: var(--danger); }
+    .status-msg.loading { display: block; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text-2); }
+
+    .danger-zone { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .danger-zone h2 { color: var(--danger); }
+    .danger-btn {
+      background: var(--danger); color: white; border: none; padding: 14px 24px;
+      border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%;
+      transition: opacity 0.2s, transform 0.1s; text-decoration: none; display: block; text-align: center;
+    }
+    .danger-btn:hover { opacity: 0.9; transform: scale(1.01); }
   </style>
 </head>
 <body>
@@ -61,56 +73,88 @@
 
     <hr style="border: 0; border-top: 1px solid var(--border); margin: 30px 0;">
 
-    <h2 style="font-size: 18px; margin-bottom: 20px;">Change Password</h2>
+    <h2>Change Password</h2>
     <form id="passwordForm">
       <div class="form-group">
-        <label>Current Password</label>
-        <input type="password" id="currentPassword" required placeholder="Enter current password">
+        <label for="currentPassword">Current Password</label>
+        <input type="password" id="currentPassword" required placeholder="Enter current password" autocomplete="current-password">
       </div>
 
       <div class="form-group">
-        <label>New Password</label>
-        <input type="password" id="newPassword" required minlength="8" placeholder="Min 8 characters">
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" required minlength="8" placeholder="Min 8 characters" autocomplete="new-password">
       </div>
 
-      <button type="submit" class="save-btn">Update Password</button>
+      <button type="submit" class="save-btn" id="passwordBtn">Update Password</button>
       <div id="statusMsg" class="status-msg"></div>
     </form>
+
+    <div class="danger-zone">
+      <h2>⚠️ Danger Zone</h2>
+      <p style="color: var(--text-2); font-size: 13px; margin-bottom: 16px;">
+        Permanently delete your account and all associated data. This action cannot be undone.
+      </p>
+      <a href="delete-account.html" class="danger-btn">🗑️ Delete Account</a>
+    </div>
   </div>
 
   <script>
+    // ──────────────────────────────────────────────────────────────
+    //  GLOBAL CSRF FETCH INTERCEPTOR
+    // ──────────────────────────────────────────────────────────────
+    (function() {
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const csrfToken = localStorage.getItem('csrfToken');
+            const method = (options.method || 'GET').toUpperCase();
+            const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+
+            if (!safeMethods.includes(method) && csrfToken) {
+                options.headers = options.headers || {};
+                options.headers['X-CSRF-Token'] = csrfToken;
+            }
+
+            return originalFetch.call(this, url, options);
+        };
+    })();
+
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
-    if (!token) window.location.href = "login.html";
+    if (!token) window.location.href = 'login.html';
 
     const statusMsg = document.getElementById('statusMsg');
 
     // Load User Email
     async function loadAccountInfo() {
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
           const user = await res.json();
-          document.getElementById('emailDisplay').value = user.email;
+          document.getElementById('emailDisplay').value = user.email || 'No email set';
         }
       } catch (err) {
         console.error("Failed to load account info");
-      }    }
+        document.getElementById('emailDisplay').value = 'Error loading';
+      }
+    }
 
     // Handle Password Change
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      statusMsg.textContent = "Updating...";
-      statusMsg.className = "status-msg";
-
+      const btn = document.getElementById('passwordBtn');
       const currentPassword = document.getElementById('currentPassword').value;
       const newPassword = document.getElementById('newPassword').value;
 
+      statusMsg.textContent = 'Updating password...';
+      statusMsg.className = 'status-msg loading';
+      btn.disabled = true;
+
       try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/change-password', {
+        const res = await fetch(`${BACKEND}/api/auth/change-password`, {
           method: 'PUT',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
@@ -120,21 +164,24 @@
         const data = await res.json();
 
         if (res.ok) {
-          statusMsg.textContent = data.message;
-          statusMsg.className = "status-msg success";
+          statusMsg.textContent = '✅ ' + data.message;
+          statusMsg.className = 'status-msg success';
           document.getElementById('currentPassword').value = '';
           document.getElementById('newPassword').value = '';
         } else {
-          statusMsg.textContent = data.message;
-          statusMsg.className = "status-msg error";
+          statusMsg.textContent = '❌ ' + (data.message || 'Failed to update password');
+          statusMsg.className = 'status-msg error';
         }
       } catch (err) {
-        statusMsg.textContent = "Network error.";
-        statusMsg.className = "status-msg error";
+        statusMsg.textContent = '❌ Network error. Please try again.';
+        statusMsg.className = 'status-msg error';
+        console.error('Password change error:', err);
+      } finally {
+        btn.disabled = false;
       }
     });
 
     loadAccountInfo();
   </script>
 </body>
-</html>
+  </html>
