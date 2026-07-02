@@ -16,89 +16,211 @@
     p { color: var(--text-2); font-size: 14px; line-height: 1.6; margin-bottom: 30px; }
     
     .warning-box { background: rgba(255,77,77,0.05); border: 1px solid rgba(255,77,77,0.2); padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: left; }
-    .warning-box li { font-size: 13px; color: var(--text-2); margin-bottom: 8px; list-style-position: inside; }
+    .warning-box ul { margin: 0; padding-left: 20px; }
+    .warning-box li { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
 
     .form-group { margin-bottom: 20px; text-align: left; }
-    label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; }
-    input { width: 100%; background: var(--bg-void); border: 1px solid rgba(255,255,255,0.1); color: var(--text-1); padding: 12px; border-radius: 8px; box-sizing: border-box; }
-    input:focus { outline: none; border-color: var(--danger); }
-
-    .delete-btn { background: var(--danger); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: opacity 0.2s; }
-    .delete-btn:hover { opacity: 0.9; }
+    label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    input[type="password"] { width: 100%; background: var(--bg-void); border: 1px solid rgba(255,255,255,0.1); color: var(--text-1); padding: 12px; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+    input[type="password"]:focus { outline: none; border-color: var(--danger); }
     
-    .back-link { display: block; margin-top: 20px; color: var(--text-2); text-decoration: none; font-size: 13px; }
+    .checkbox-group { display: flex; align-items: center; gap: 12px; margin: 16px 0 20px; text-align: left; }
+    .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--danger); cursor: pointer; flex-shrink: 0; }
+    .checkbox-group label { font-size: 13px; color: var(--text-2); cursor: pointer; margin: 0; text-transform: none; letter-spacing: 0; }
+
+    .delete-btn { background: var(--danger); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: opacity 0.2s, transform 0.1s; font-size: 14px; }
+    .delete-btn:hover:not(:disabled) { opacity: 0.9; transform: scale(1.01); }
+    .delete-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .back-link { display: block; margin-top: 20px; color: var(--text-2); text-decoration: none; font-size: 13px; transition: color 0.2s; }
     .back-link:hover { color: var(--text-1); }
     
-    .status-msg { margin-top: 15px; font-size: 13px; font-family: var(--font-mono); min-height: 20px; }
-    .error { color: var(--danger); }
+    .status-msg { margin-top: 15px; font-size: 13px; font-family: var(--font-mono); min-height: 20px; padding: 10px; border-radius: 6px; display: none; }
+    .status-msg.error { display: block; background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.2); color: var(--danger); }
+    .status-msg.success { display: block; background: rgba(200,255,87,0.1); border: 1px solid rgba(200,255,87,0.2); color: var(--accent); }
+    .status-msg.loading { display: block; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text-2); }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Delete Account</h1>
-    <p>This action is permanent and cannot be undone.</p>
+    <h1>⚠️ Delete Account</h1>
+    <p>This action is <strong>permanent</strong> and cannot be undone.</p>
     
     <div class="warning-box">
       <ul>
-        <li>All your dreams and chat history will be erased.</li>
-        <li>Your profile information will be removed.</li>
+        <li>All your leads and conversations will be erased.</li>
+        <li>Your profile and settings will be removed.</li>
+        <li>Connected email accounts will be disconnected.</li>
         <li>You will be logged out immediately.</li>
       </ul>
     </div>
 
-    <form id="deleteForm">      <div class="form-group">
-        <label>Enter Password to Confirm</label>
-        <input type="password" id="password" placeholder="Your current password" required>
+    <form id="deleteForm">
+      <div class="form-group">
+        <label for="password">Confirm with your password</label>
+        <input type="password" id="password" placeholder="Enter your current password" required autocomplete="current-password">
       </div>
 
-      <button type="submit" class="delete-btn">Permanently Delete Account</button>
+      <div class="checkbox-group">
+        <input type="checkbox" id="confirmCheck">
+        <label for="confirmCheck">I understand this action is <strong>irreversible</strong> and I want to permanently delete my account.</label>
+      </div>
+
+      <button type="submit" class="delete-btn" id="deleteBtn" disabled>
+        🗑️ Permanently Delete Account
+      </button>
       <div id="statusMsg" class="status-msg"></div>
     </form>
 
-    <a href="dashboard.html" class="back-link">Cancel and go back</a>
+    <a href="dashboard.html" class="back-link">← Cancel and go back</a>
   </div>
 
   <script>
+    // ──────────────────────────────────────────────────────────────
+    //  GLOBAL CSRF FETCH INTERCEPTOR
+    // ──────────────────────────────────────────────────────────────
+    (function() {
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const csrfToken = localStorage.getItem('csrfToken');
+            const method = (options.method || 'GET').toUpperCase();
+            const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+
+            if (!safeMethods.includes(method) && csrfToken) {
+                options.headers = options.headers || {};
+                options.headers['X-CSRF-Token'] = csrfToken;
+            }
+
+            return originalFetch.call(this, url, options);
+        };
+    })();
+
+    // ──────────────────────────────────────────────────────────────
+    //  XSS ESCAPE
+    // ──────────────────────────────────────────────────────────────
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
-    if (!token) window.location.href = "login.html";
+    if (!token) window.location.href = 'login.html';
 
+    const passwordInput = document.getElementById('password');
+    const confirmCheck = document.getElementById('confirmCheck');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // Validate form
+    function validateForm() {
+        const pass = passwordInput.value.trim();
+        const confirmed = confirmCheck.checked;
+        deleteBtn.disabled = !(pass && confirmed);
+    }
+
+    passwordInput.addEventListener('input', validateForm);
+    confirmCheck.addEventListener('change', validateForm);
+
+    // Handle form submission
     document.getElementById('deleteForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const statusMsg = document.getElementById('statusMsg');
-      const password = document.getElementById('password').value;
-      
-      if(!confirm("Are you absolutely sure? This cannot be undone.")) return;
+        e.preventDefault();
+        const password = passwordInput.value.trim();
 
-      statusMsg.textContent = "Processing...";
-      statusMsg.className = "status-msg";
-
-      try {
-        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/users/me', {
-          method: 'DELETE',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          statusMsg.textContent = "Account deleted. Redirecting...";
-          localStorage.removeItem('token');
-          setTimeout(() => {
-            window.location.href = "login.html";
-          }, 2000);
-        } else {
-          statusMsg.textContent = data.message;
-          statusMsg.className = "status-msg error";
+        if (!confirmCheck.checked) {
+            statusMsg.textContent = 'Please confirm by checking the box.';
+            statusMsg.className = 'status-msg error';
+            return;
         }
-      } catch (err) {
-        statusMsg.textContent = "Network Error.";        statusMsg.className = "status-msg error";
-      }
+
+        if (!password) {
+            statusMsg.textContent = 'Please enter your password.';
+            statusMsg.className = 'status-msg error';
+            return;
+        }
+
+        // Final confirmation
+        const reallySure = confirm(
+            '⚠️ ARE YOU SURE?\n\n' +
+            'This will permanently delete your account and ALL associated data.\n' +
+            'This action CANNOT be undone.\n\n' +
+            'Type "DELETE" in the box below to confirm.'
+        );
+        if (!reallySure) return;
+
+        const confirmText = prompt('Type "DELETE" to confirm permanent deletion:');
+        if (confirmText !== 'DELETE') {
+            statusMsg.textContent = 'Confirmation text did not match. Deletion cancelled.';
+            statusMsg.className = 'status-msg error';
+            return;
+        }
+
+        // Show loading state
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = '⏳ Processing...';
+        statusMsg.textContent = 'Deleting your account and all associated data...';
+        statusMsg.className = 'status-msg loading';
+
+        try {
+            const res = await fetch(`${BACKEND}/api/users/me`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    password: password,
+                    permanent: true,
+                    reason: 'User requested permanent deletion'
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                statusMsg.textContent = '✅ ' + data.message;
+                statusMsg.className = 'status-msg success';
+                deleteBtn.textContent = '✅ Deleted';
+
+                // Clear all local storage
+                localStorage.removeItem('token');
+                localStorage.removeItem('csrfToken');
+                localStorage.removeItem('lastSeenNotifCount');
+                localStorage.removeItem('lastKnownNotifCount');
+                localStorage.removeItem('pendingEmailPayload');
+                localStorage.removeItem('commandCenterCollapsed');
+
+                // Redirect after 2.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'login.html?deleted=true';
+                }, 2500);
+            } else {
+                statusMsg.textContent = '❌ ' + (data.error || data.message || 'Failed to delete account. Please try again.');
+                statusMsg.className = 'status-msg error';
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = '🗑️ Permanently Delete Account';
+            }
+        } catch (error) {
+            console.error('Deletion error:', error);
+            statusMsg.textContent = '❌ Connection error. Please check your network and try again.';
+            statusMsg.className = 'status-msg error';
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = '🗑️ Permanently Delete Account';
+        }
+    });
+
+    // Enter key submits
+    passwordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !deleteBtn.disabled) {
+            document.getElementById('deleteForm').dispatchEvent(new Event('submit'));
+        }
     });
   </script>
 </body>
-</html>
+  </html>
