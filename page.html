@@ -633,6 +633,33 @@
       };
   })();
 
+  // ============================================================
+  //  XSS PROTECTION – ENHANCED (Full 5-character escaping)
+  // ============================================================
+  function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;')
+          .replace(/`/g, '&#x60;');
+  }
+
+  function escapeAttr(str) {
+      if (!str) return '';
+      return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#x27;')
+          .replace(/`/g, '&#x60;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+  }
+
+  // ============================================================
+
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
   const token = localStorage.getItem('token');
   if (!token) window.location.href = 'login.html';
@@ -641,8 +668,8 @@
   let currentMode = 'lead';
   let isChatActive = false;
   let isTyping = false;
-  let currentSessionId = null;           // for lead sessions
-  let assistantSessionId = null;         // <-- NEW: for assistant sessions
+  let currentSessionId = null;
+  let assistantSessionId = null;
   let conversationHistory = [];
   let currentGeneratedLeads = [];
   let notifInterval = null;
@@ -671,16 +698,16 @@
   const statusText = document.getElementById('statusText');
   const statusBar = document.getElementById('statusBar');
 
-  // ----- MODE SWITCHING (updated for assistant session ID) -----
+  // ----- MODE SWITCHING -----
   window.switchMode = function(mode) {
     if (isChatActive) return;
     currentMode = mode;
-    
+
     modeSelector.classList.add('hidden');
     assistantModeSelector.style.display = 'none';
-    
+
     document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-    
+
     if (mode === 'lead') {
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
@@ -689,21 +716,17 @@
       leadInputBar.classList.remove('lead-hidden');
       reviewPanel.style.display = 'none';
       modeSelector.classList.remove('hidden');
-      // Reset lead session ID if starting fresh
       currentSessionId = null;
     } else {
       assistantContainer.classList.add('active');
       assistantModeSelector.style.display = 'flex';
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
-      // If no assistant session is active, generate a new one
       if (!assistantSessionId) {
         assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-        // Clear any old messages and show welcome
         assistantMsgContainer.innerHTML = '';
         addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       }
-      // If the container is empty (first time), show welcome
       if (assistantMsgContainer.children.length === 0) {
         addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
       }
@@ -855,7 +878,7 @@
     leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
   }
 
-  // ----- REVIEW PANEL -----
+  // ----- REVIEW PANEL (All user content escaped) -----
   function renderReview(leads) {
     emailList.innerHTML = '';
     leads.forEach((lead, i) => {
@@ -863,7 +886,12 @@
       d.className = 'lead-card';
       const subj = lead.messages?.[0]?.subject || 'Hello from Skyline';
       const body = lead.messages?.[0]?.body || '';
-      d.innerHTML = `<div class="lead-name">${escapeHtml(lead.name)} · ${escapeHtml(lead.company)}</div><div class="lead-email-guess">${escapeHtml(lead.email)}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${escapeHtml(lead.email)}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${escapeHtml(subj)}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${escapeHtml(body)}</textarea></div>`;
+      const safeName = escapeHtml(lead.name || 'Unknown');
+      const safeCompany = escapeHtml(lead.company || '');
+      const safeEmail = escapeHtml(lead.email || '');
+      const safeSubj = escapeHtml(subj);
+      const safeBody = escapeHtml(body);
+      d.innerHTML = `<div class="lead-name">${safeName} · ${safeCompany}</div><div class="lead-email-guess">${safeEmail}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${safeEmail}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${safeSubj}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${safeBody}</textarea></div>`;
       emailList.appendChild(d);
     });
     reviewPanel.style.display = 'block';
@@ -926,7 +954,7 @@
     }
   }
 
-  // ----- ASSISTANT MODE (updated to use assistantSessionId) -----
+  // ----- ASSISTANT MODE -----
   assistantMsgInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 130) + 'px';
@@ -959,7 +987,6 @@
       assistantModeSelector.style.display = 'none';
     }
 
-    // If no assistant session ID, create one
     if (!assistantSessionId) {
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
@@ -977,14 +1004,13 @@
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           message: message,
-          sessionId: assistantSessionId   // <-- send the session ID
+          sessionId: assistantSessionId
         })
       });
       const data = await res.json();
       hideAssistantTyping();
 
       if (res.ok) {
-        // If a new session ID is returned, use it
         if (data.sessionId) {
           assistantSessionId = data.sessionId;
         }
@@ -1046,25 +1072,18 @@
     return s;
   }
 
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
   function getTime() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  // ----- LOAD SESSION FROM URL (FIXED: uses type parameter and resets conversationHistory) -----
+  // ----- LOAD SESSION FROM URL -----
   async function loadSessionFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session');
-    const type = params.get('type');   // <-- NEW: read type from URL
+    const type = params.get('type');
     if (!sessionId) return false;
 
-    // Reset conversation history to prevent merging
     conversationHistory = [];
-
     isSessionLoading = true;
     console.log('[page] Loading session:', sessionId, 'type:', type);
 
@@ -1075,11 +1094,9 @@
       if (!res.ok) throw new Error('Failed to load session');
 
       const msgs = await res.json();
-      // Determine if it's assistant based on type parameter or fallback to sessionId === 'assistant' for backward compatibility
       const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
 
       if (isAssistantSession) {
-        // Set the assistant session ID
         assistantSessionId = sessionId;
         currentMode = 'assistant';
         modeSelector.classList.add('hidden');
@@ -1103,7 +1120,6 @@
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Assistant Session';
       } else {
-        // Lead session
         currentMode = 'lead';
         modeSelector.classList.add('hidden');
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
@@ -1185,7 +1201,7 @@
     } catch {}
   }
 
-  // ----- NEW CHAT / CLEAR (updated for assistant) -----
+  // ----- NEW CHAT / CLEAR -----
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
       isChatActive = false;
@@ -1208,10 +1224,8 @@
       url.searchParams.delete('type');
       window.history.pushState({}, '', url);
     } else {
-      // Reset assistant mode: generate NEW session ID
       isChatActive = false;
       isTyping = false;
-      // Generate a new assistant session ID
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
       assistantMsgContainer.innerHTML = '';
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
@@ -1248,7 +1262,6 @@
       window.history.pushState({}, '', url);
       document.querySelector('.topbar-label').textContent = 'Business Agent';
     } else {
-      // Clear assistant: create a new session
       isChatActive = false;
       isTyping = false;
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -1274,7 +1287,6 @@
       setupWizard.style.display = 'flex';
       modeSelector.classList.remove('hidden');
       document.querySelector('.topbar-label').textContent = 'Business Agent';
-      // Generate a new assistant session ID for when they switch
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
 
