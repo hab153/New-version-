@@ -355,14 +355,51 @@
       if (connected === 'true') { showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000); setConnectionStatus('connected', 'Connected'); window.history.replaceState({}, document.title, '/dashboard.html'); }
       else if (connected === 'false') { const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : ''; showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000); setConnectionStatus('error', 'Failed'); window.history.replaceState({}, document.title, '/dashboard.html'); }
     }
+
+    // ──────────────────────────────────────────────────────────────
+    //  FIXED connectEmail() — opens Nylas in new tab/popup
+    // ──────────────────────────────────────────────────────────────
     async function connectEmail() {
-      const btn = document.getElementById('connectEmailBtn'); setConnectionStatus('connecting', 'Connecting...');
+      const btn = document.getElementById('connectEmailBtn');
+      setConnectionStatus('connecting', 'Connecting...');
+      showToast('Opening Nylas authorization... Please complete the flow in the new window.', 'info', 3000);
+
       try {
-        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `Server error ${res.status}`); }
-        const data = await res.json(); if (data.url) { window.location.href = data.url; } else { throw new Error('No URL returned from server'); }
-      } catch (err) { showToast(`❌ Could not start connection: ${err.message}`, 'error'); setConnectionStatus('error', 'Failed'); }
+        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Server error ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.url) {
+          // ✅ Open Nylas in a NEW TAB to avoid session conflict
+          const newWindow = window.open(data.url, '_blank', 'width=600,height=700');
+
+          // Check if popup was blocked
+          if (!newWindow || newWindow.closed) {
+            showToast('⚠️ Popup blocked! Click "Connect" again or allow popups for this site.', 'warning', 5000);
+            // Fallback: redirect current page
+            window.location.href = data.url;
+          } else {
+            // Reset button state after 10 seconds (in case user cancels)
+            setTimeout(() => {
+              setConnectionStatus('', 'Disconnected');
+            }, 10000);
+          }
+        } else {
+          throw new Error('No URL returned from server');
+        }
+      } catch (err) {
+        showToast(`❌ Could not start connection: ${err.message}`, 'error');
+        setConnectionStatus('error', 'Failed');
+      }
     }
+
     async function checkEmailStatus() {
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -457,4 +494,4 @@
     handleOAuthRedirect(); loadCollapseState(); checkCurrentPlan(); checkEmailStatus(); loadLeads();
   </script>
 </body>
-              </html>
+  </html>
