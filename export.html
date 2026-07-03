@@ -143,6 +143,7 @@
         .export-item .info .name {
             font-family: var(--mono); font-size: 13px; color: var(--t1);
             display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
         }
         .export-item .info .meta {
             font-size: 11px; color: var(--t3); font-family: var(--mono);
@@ -177,6 +178,9 @@
         }
         .action-btn.download:hover {
             background: rgba(200,255,87,0.08); border-color: var(--accent);
+        }
+        .action-btn.download:disabled {
+            opacity: 0.4; cursor: not-allowed;
         }
         .action-btn.delete {
             border-color: rgba(255,85,85,0.15); color: var(--danger);
@@ -388,7 +392,67 @@
         }
 
         // ──────────────────────────────────────────────────────────────
-        //  REQUEST EXPORT (with CSRF handling)
+        //  DOWNLOAD EXPORT (FIXED: Uses fetch with token)
+        // ──────────────────────────────────────────────────────────────
+        async function downloadExport(exportId, fileName) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showToast('❌ Please login again', 'error');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                showToast('⏳ Downloading...', 'info', 3000);
+
+                const res = await fetch(`${BACKEND}/api/data/export/${exportId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (res.status === 404) {
+                    showToast('❌ Export not found or expired', 'error');
+                    await loadExports();
+                    return;
+                }
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || `Download failed (${res.status})`);
+                }
+
+                // Get the blob from the response
+                const blob = await res.blob();
+
+                // Determine content type and extension
+                const contentType = res.headers.get('Content-Type') || '';
+                let extension = '.json';
+                if (contentType.includes('zip')) extension = '.zip';
+                else if (contentType.includes('csv')) extension = '.csv';
+                else if (contentType.includes('json')) extension = '.json';
+
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName || `export_${exportId}${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showToast('✅ Download complete!', 'success', 3000);
+
+            } catch (error) {
+                console.error('Download error:', error);
+                showToast(`❌ ${error.message || 'Download failed'}`, 'error', 5000);
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  REQUEST EXPORT
         // ──────────────────────────────────────────────────────────────
         async function requestExport() {
             if (isLoading) return;
@@ -399,10 +463,8 @@
             btn.disabled = true;
 
             try {
-                // ✅ Check if CSRF token exists
                 let csrfToken = localStorage.getItem('csrfToken');
                 
-                // If CSRF token is missing, try to refresh it
                 if (!csrfToken) {
                     console.warn('⚠️ CSRF token missing, attempting to refresh...');
                     const newToken = await refreshCsrfToken();
@@ -417,26 +479,23 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
-                        'X-CSRF-Token': csrfToken || ''  // ✅ Explicitly add header
+                        'X-CSRF-Token': csrfToken || ''
                     },
                     body: JSON.stringify({ format: selectedFormat })
                 });
 
                 const data = await res.json();
 
-                // ✅ Handle CSRF error specifically
                 if (res.status === 403 && data.error && (
                     data.error.includes('CSRF') || 
                     data.error.includes('csrf') ||
                     data.error.includes('Invalid token')
                 )) {
-                    // CSRF token invalid/expired - refresh and retry
                     showToast('⏳ Session expired. Refreshing...', 'warning', 3000);
                     
                     const newToken = await refreshCsrfToken();
                     if (newToken) {
                         showToast('🔄 Retrying with new session...', 'info', 2000);
-                        // Retry the request (call itself once)
                         isLoading = false;
                         btn.classList.remove('loading');
                         btn.disabled = false;
@@ -527,12 +586,13 @@
                     }
 
                     const formatLabel = exp.format ? exp.format.toUpperCase() : 'JSON';
+                    const safeFileName = escapeHtml(exp.fileName || exp.exportId);
 
                     return `
                         <div class="export-item" style="animation-delay: ${index * 50}ms">
                             <div class="info">
                                 <div class="name">
-                                    📄 ${escapeHtml(exp.fileName || exp.exportId)}
+                                    📄 ${safeFileName}
                                     <span class="status-badge ${statusClass}">${statusText}</span>
                                     <span style="font-size:10px;color:var(--t3);font-family:var(--mono);">
                                         ${formatLabel}
@@ -546,7 +606,7 @@
                                 </div>
                             </div>
                             <div class="actions">
-                                ${isReady ? `<a href="${BACKEND}${exp.downloadUrl}" class="action-btn download" onclick="event.stopPropagation();">⬇ Download</a>` : ''}
+                                ${isReady ? `<button class="action-btn download" onclick="event.stopPropagation(); downloadExport('${exp.exportId}', '${safeFileName}')">⬇ Download</button>` : ''}
                                 ${!isReady && !isExpired && !isFailed ? `<span style="font-size:10px;color:var(--t3);font-family:var(--mono);">${isProcessing ? '⏳' : '⏳'}</span>` : ''}
                                 <button class="action-btn delete" onclick="deleteExport('${exp.exportId}')" ${isProcessing ? 'disabled' : ''}>🗑</button>
                             </div>
@@ -625,7 +685,7 @@
             });
         });
 
-        // Also refresh CSRF token on page load
+        // Ensure CSRF token exists on page load
         (async function ensureCsrfToken() {
             const csrfToken = localStorage.getItem('csrfToken');
             if (!csrfToken) {
