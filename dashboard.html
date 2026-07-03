@@ -357,7 +357,7 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  FIXED connectEmail() — opens Nylas in new tab/popup
+    //  FIXED connectEmail() — Opens Nylas in new tab to avoid session conflict
     // ──────────────────────────────────────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
@@ -377,20 +377,41 @@
         const data = await res.json();
 
         if (data.url) {
-          // ✅ Open Nylas in a NEW TAB to avoid session conflict
-          const newWindow = window.open(data.url, '_blank', 'width=600,height=700');
+          // FIXED: Open Nylas in a NEW TAB to avoid session conflict
+          // This prevents the authenticated Skyline session from interfering
+          const oauthWindow = window.open(data.url, '_blank', 'width=600,height=700');
 
           // Check if popup was blocked
-          if (!newWindow || newWindow.closed) {
-            showToast('⚠️ Popup blocked! Click "Connect" again or allow popups for this site.', 'warning', 5000);
-            // Fallback: redirect current page
-            window.location.href = data.url;
-          } else {
-            // Reset button state after 10 seconds (in case user cancels)
-            setTimeout(() => {
-              setConnectionStatus('', 'Disconnected');
-            }, 10000);
+          if (!oauthWindow || oauthWindow.closed) {
+            showToast('⚠️ Popup blocked! Allow popups for this site or paste the URL directly.', 'warning', 5000);
+            setConnectionStatus('error', 'Failed');
+            return;
           }
+
+          // Poll to detect when OAuth flow completes (popup closes or returns)
+          const pollInterval = setInterval(() => {
+            try {
+              // Try to check popup location - if it closes or navigates back, this will fail
+              if (oauthWindow.closed) {
+                clearInterval(pollInterval);
+                // Wait a moment then check if connection was successful
+                setTimeout(() => {
+                  checkEmailStatus();
+                  setConnectionStatus('', 'Disconnected');
+                }, 1500);
+              }
+            } catch (e) {
+              // Cross-origin error is expected, ignore
+            }
+          }, 500);
+
+          // Fallback: reset button after 15 minutes
+          setTimeout(() => {
+            clearInterval(pollInterval);
+            if (oauthWindow && !oauthWindow.closed) {
+              oauthWindow.close();
+            }
+          }, 15 * 60 * 1000);
         } else {
           throw new Error('No URL returned from server');
         }
@@ -494,4 +515,4 @@
     handleOAuthRedirect(); loadCollapseState(); checkCurrentPlan(); checkEmailStatus(); loadLeads();
   </script>
 </body>
-  </html>
+</html>
