@@ -6,262 +6,486 @@
   <title>Dashboard | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://checkout.flutterwave.com/v3.js"></script>
   <style>
     :root {
-      --bg-void: #0a0a0a; --bg-base: #121212; --bg-surface: #1a1a1a; --bg-raised: #242424; --bg-hover: #2d2d2d;
-      --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.15);
-      --accent: #ffffff; --accent-go: #66ddff;
-      --text-1: #f5f5f5; --text-2: #b0b0b0; --text-3: #707070;
-      --danger: #ff5555; --success: #66dd99; --warning: #ffbb44;
-      --font-mono: 'Monaco', 'Menlo', monospace; --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.25); --shadow-md: 0 4px 16px rgba(0,0,0,0.3); --shadow-glow: 0 0 20px rgba(255,255,255,0.1);
-      --transition-fast: 0.15s ease; --transition-base: 0.2s ease; --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --bg-void: #060608;
+      --bg-base: #0b0c0f;
+      --bg-surface: #111318;
+      --bg-raised: #181b22;
+      --border: rgba(255,255,255,0.06);
+      --accent: #c8ff57;
+      --accent-go: #00d2ff;
+      --text-1: #e8eaf0;
+      --text-2: #8c909e;
+      --text-3: #52566a;
+      --danger: #ff4d4d;
+      --success: #00e676;
+      --warning: #ffaa00;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
     }
-    * { box-sizing: border-box; }
+
     body {
-      background: var(--bg-void); color: var(--text-1); font-family: var(--font-sans); margin: 0; padding: 0; min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      background: var(--bg-void);
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
     .toast {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: var(--radius-sm);
-      font-family: var(--font-mono); font-size: 13px; font-weight: 600; z-index: 9999; display: none; animation: slideDown 0.3s ease; backdrop-filter: blur(12px);
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      display: none;
+      animation: slideDown 0.3s ease;
     }
-    .toast.success { background: rgba(0, 230, 118, 0.12); border: 1px solid var(--success); color: var(--success); }
-    .toast.error { background: rgba(255, 77, 77, 0.12); border: 1px solid var(--danger); color: var(--danger); }
-    .toast.info { background: rgba(0, 210, 255, 0.12); border: 1px solid var(--accent-go); color: var(--accent-go); }
-    .toast.warning { background: rgba(255, 170, 0, 0.12); border: 1px solid var(--warning); color: var(--warning); }
-    .toast-progress { position: absolute; bottom: 0; left: 0; height: 2px; background: currentColor; opacity: 0.4; animation: shrink linear forwards; }
-    @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-    @keyframes shrink { from { width: 100%; } to { width: 0%; } }
-    .topbar { width: 100%; height: 58px; background: var(--bg-base); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
+    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--danger);  color: var(--danger); }
+    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--accent-go); color: var(--accent-go); }
+    .toast.warning { background: rgba(255, 170, 0, 0.15);  border: 1px solid var(--warning); color: var(--warning); }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .topbar {
+      width: 100%;
+      height: 58px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
     .topbar-left { display: flex; align-items: center; gap: 16px; }
-    .brand { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
-    .brand .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); animation: pulse-dot 2s ease-in-out infinite; }
-    @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.2); } }
+    .brand {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .notif-wrapper { display: flex; align-items: center; gap: 8px; }
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      color: var(--text-2);
+    }
+    .notif-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-1);
+    }
+    .notif-btn svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+      transition: color 0.2s;
+    }
+    .notif-btn.has-notifs {
+      color: var(--danger);
+      animation: pulse-red 2s infinite;
+    }
+    @keyframes pulse-red {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+      70%  { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+    }
+    .badge {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 15px;
+      height: 15px;
+      padding: 0 3px;
+      border-radius: 8px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--bg-base);
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
     .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
     .section-title {
-      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-3);
-      margin-bottom: 16px; margin-top: 32px; padding-left: 12px; border-left: 2px solid var(--accent); line-height: 1.4;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-3);
+      margin-bottom: 16px;
+      margin-top: 32px;
+      padding-left: 4px;
     }
     .section-title:first-child { margin-top: 0; }
-    .section-title.danger { border-left-color: var(--danger); }
+
     .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
     .menu-item {
-      background: var(--bg-surface); border: 1px solid var(--border); padding: 16px 20px; border-radius: var(--radius-md); text-decoration: none;
-      color: var(--text-1); font-weight: 500; display: flex; align-items: center; justify-content: space-between; transition: all var(--transition-base);
-      position: relative; overflow: hidden;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-1);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
     }
-    .menu-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: scaleY(0); transition: transform var(--transition-base); }
-    .menu-item:hover { background: var(--bg-raised); border-color: var(--border-hover); transform: translateX(4px); box-shadow: var(--shadow-sm); }
-    .menu-item:hover::before { transform: scaleY(1); }
-    .menu-item:hover .arrow { transform: translateX(4px); color: var(--accent); }
+    .menu-item:hover { background: var(--bg-raised); border-color: var(--accent); transform: translateX(4px); }
     .menu-item span { font-size: 14px; }
-    .arrow { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; transition: all var(--transition-fast); }
-    .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.08); }
-    .danger-zone .menu-item::before { background: var(--danger); }
-    .danger-zone .menu-item:hover { border-color: rgba(255, 77, 77, 0.2); background: rgba(255, 77, 77, 0.04); }
-    .danger-zone .menu-item:hover .arrow { color: var(--danger); }
+    .arrow { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; }
+    .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.1); }
+    .danger-zone .menu-item:hover { border-color: var(--danger); background: rgba(255, 77, 77, 0.05); }
     .danger-text { color: var(--danger); }
-    .back-link { display: block; text-align: center; margin-top: 40px; color: var(--text-2); text-decoration: none; font-size: 13px; font-family: var(--font-mono); transition: color var(--transition-fast); }
-    .back-link:hover { color: var(--accent); }
-    .command-center { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 40px; transition: all var(--transition-smooth); }
-    .command-center:hover { border-color: var(--border-hover); }
-    .cc-header {
-      display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; background: var(--bg-raised); border-bottom: 1px solid var(--border);
-      cursor: pointer; user-select: none; transition: background var(--transition-base); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
+    .back-link {
+      display: block; text-align: center; margin-top: 40px;
+      color: var(--text-2); text-decoration: none;
+      font-size: 13px; font-family: var(--font-mono);
     }
-    .cc-header:hover { background: var(--bg-hover); }
-    .command-center.collapsed .cc-header { border-radius: var(--radius-lg); border-bottom-color: transparent; }
+    .back-link:hover { color: var(--accent); }
+
+    .command-center {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 40px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cc-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; user-select: none;
+      transition: background 0.2s ease;
+    }
+    .cc-header:hover { background: #1e2229; }
+    .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--accent); }
     .cc-title-group { display: flex; align-items: center; gap: 12px; }
     .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
-    .cc-status { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
-    .cc-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); transition: all var(--transition-base); }
-    .cc-status-dot.connected { background: var(--success); box-shadow: 0 0 6px var(--success); }
-    .cc-status-dot.connecting { background: var(--warning); animation: blink 1s ease-in-out infinite; }
-    .cc-status-dot.error { background: var(--danger); }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
     .toggle-button-circle {
-      width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center; transition: all var(--transition-smooth);
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .toggle-button:hover .toggle-button-circle { border-color: var(--accent); background: rgba(200, 255, 87, 0.08); }
-    .toggle-icon-svg { width: 16px; height: 16px; transition: transform var(--transition-smooth); }
-    .toggle-icon-svg path { stroke: var(--text-2); stroke-width: 2; transition: stroke var(--transition-fast); }
+    .toggle-icon-svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .toggle-icon-svg path { stroke: var(--text-2); stroke-width: 2; transition: stroke 0.2s ease; }
     .toggle-button:hover .toggle-icon-svg path { stroke: var(--accent); }
     .command-center.collapsed .toggle-icon-svg { transform: rotate(-90deg); }
-    .cc-content-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--transition-smooth); }
-    .command-center.collapsed .cc-content-wrapper { grid-template-rows: 0fr; }
-    .cc-content-inner { overflow: hidden; }
-    .cc-content { padding: 24px; opacity: 1; transition: opacity var(--transition-fast); }
+    .cc-content-wrapper { max-height: 2000px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .command-center.collapsed .cc-content-wrapper { max-height: 0; }
+    .cc-content { padding: 24px; opacity: 1; transition: opacity 0.2s ease; }
     .command-center.collapsed .cc-content { opacity: 0; }
+
     .connect-btn {
-      background: var(--accent-go); color: #000; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer;
-      font-family: var(--font-mono); font-size: 12px; transition: all var(--transition-base); z-index: 2; position: relative; display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent-go); color: #000;
+      border: none; padding: 8px 16px; border-radius: 6px;
+      font-weight: 600; cursor: pointer; font-family: var(--font-mono);
+      font-size: 12px; transition: all 0.2s; z-index: 2; position: relative;
     }
-    .connect-btn:hover { box-shadow: 0 0 12px rgba(0, 210, 255, 0.35); transform: translateY(-1px); }
+    .connect-btn:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); transform: translateY(-1px); }
     .connect-btn.connected { background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent); }
-    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
-    .connect-btn .spinner { width: 14px; height: 14px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
-    .connect-btn.loading .spinner { display: inline-block; }
-    .connect-btn.loading .btn-text { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
     .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--bg-base); padding: 20px 16px; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border); transition: all var(--transition-base); position: relative; }
-    .stat-card:hover { border-color: var(--text-3); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .stat-value { font-size: 28px; font-weight: 700; color: var(--text-1); margin-bottom: 6px; font-variant-numeric: tabular-nums; min-height: 36px; display: flex; align-items: center; justify-content: center; }
-    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); letter-spacing: 0.08em; }
-    .stat-trend { font-size: 11px; font-family: var(--font-mono); color: var(--success); margin-top: 4px; opacity: 0; transition: opacity var(--transition-base); }
-    .stat-card:hover .stat-trend { opacity: 1; }
-    .skeleton { background: linear-gradient(90deg, var(--bg-raised) 25%, var(--bg-hover) 50%, var(--bg-raised) 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.5s infinite; border-radius: 4px; }
-    .skeleton-text { height: 28px; width: 60%; margin: 0 auto 6px; }
-    .skeleton-label { height: 10px; width: 40%; margin: 0 auto; }
-    @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .lead-table-wrap { overflow-x: auto; }
-    .lead-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
-    .lead-table th { text-align: left; padding: 14px 12px; color: var(--text-3); border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; white-space: nowrap; }
-    .lead-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); color: var(--text-2); transition: background var(--transition-fast); }
-    .lead-table tbody tr { animation: fadeInUp 0.3s ease-out both; animation-delay: calc(var(--row-index, 0) * 50ms); }
-    .lead-table tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--text-1); }
-    .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--font-mono); white-space: nowrap; }
-    .status-queued { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-new { background: rgba(255,255,255,0.06); color: var(--text-2); }
-    .status-contacted { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
-    .status-interested { background: rgba(200, 255, 87, 0.12); color: var(--accent); }
-    .status-replied { background: rgba(0, 210, 255, 0.08); color: var(--accent-go); }
-    .status-closed { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
-    .empty-state { text-align: center; padding: 48px 24px; color: var(--text-3); }
-    .empty-state-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
-    .empty-state-text { font-size: 13px; margin-bottom: 16px; }
-    .empty-state-hint { font-size: 12px; font-family: var(--font-mono); color: var(--text-3); }
-    .meta-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
-    .refresh-indicator { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
-    .retry-btn { background: transparent; border: 1px solid var(--border); color: var(--text-3); padding: 4px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all var(--transition-fast); }
-    .retry-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .stat-card {
+      background: var(--bg-base); padding: 16px; border-radius: 8px;
+      text-align: center; border: 1px solid var(--border);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover { border-color: var(--text-3); transform: translateY(-2px); }
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
+
+    .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .lead-table th {
+      text-align: left; padding: 12px; color: var(--text-3);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+    }
+    .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+    .status-badge {
+      padding: 4px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
+    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
+    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
+    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
+    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
+    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
+
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); z-index: 1000;
+      justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; width: 90%; max-width: 650px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+    }
+    .modal-header h3 { color: var(--accent); margin: 0; font-size: 18px; }
+    .close-modal { background: none; border: none; color: var(--text-3); font-size: 24px; cursor: pointer; }
+    .reply-history {
+      background: var(--bg-base); padding: 15px; border-radius: 8px;
+      margin-bottom: 20px; border-left: 3px solid var(--accent);
+      max-height: 300px; overflow-y: auto;
+    }
+    .reply-history h4 { margin-top: 0; color: var(--text-2); font-size: 12px; text-transform: uppercase; }
+    .reply-history .reply-item {
+      background: var(--bg-raised); padding: 12px; border-radius: 8px; margin-bottom: 12px;
+    }
+    .reply-history .reply-meta { font-size: 10px; color: var(--text-3); margin-bottom: 6px; font-family: var(--font-mono); }
+    .reply-history .reply-content { color: var(--text-1); font-size: 13px; }
+    .reply-input-area textarea {
+      width: 100%; background: var(--bg-raised); border: 1px solid var(--border);
+      color: var(--text-1); padding: 12px; border-radius: 8px;
+      min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
+    }
+    .send-reply-btn {
+      margin-top: 15px; width: 100%; padding: 12px;
+      background: var(--accent); color: #000; border: none;
+      border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
+    }
+    .send-reply-btn:hover { background: #d4ff70; }
+    .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
+    .refresh-indicator { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 8px; font-family: var(--font-mono); }
+
     .pricing-header { text-align: center; margin-bottom: 40px; }
-    .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); letter-spacing: -0.5px; }
+    .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
     .pricing-header p { color: var(--text-2); font-size: 14px; }
     .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
-    @media (min-width: 768px) and (max-width: 1024px) { .pricing-cards { grid-template-columns: repeat(2, 1fr); } }
-    .plan-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px 24px; display: flex; flex-direction: column; position: relative; transition: all var(--transition-base); }
-    .plan-card:hover { transform: translateY(-4px); border-color: var(--border-hover); box-shadow: var(--shadow-md); }
-    .plan-card.featured { border: 1px solid var(--accent); box-shadow: var(--shadow-glow); }
-    .plan-card.featured:hover { box-shadow: 0 0 30px rgba(200, 255, 87, 0.15), var(--shadow-md); }
-    .plan-card.inactive { opacity: 0.6; }
-    .plan-card.inactive:hover { opacity: 0.8; transform: translateY(-2px); }
-    .plan-badge { position: absolute; top: -12px; right: 20px; background: var(--accent); color: var(--bg-void); font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 2px 8px rgba(200, 255, 87, 0.3); }
-    .plan-name { font-size: 18px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .plan-price { font-size: 40px; font-weight: 700; color: var(--text-1); margin-bottom: 24px; display: flex; align-items: baseline; gap: 4px; line-height: 1; }
-    .plan-price .currency { font-size: 20px; font-weight: 500; }
-    .plan-price .period { font-size: 14px; color: var(--text-3); font-weight: 400; font-family: var(--font-mono); }
-    .plan-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex-grow: 1; }
-    .plan-features li { margin-bottom: 12px; font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 10px; }
-    .plan-features li::before { content: ''; width: 16px; height: 16px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23c8ff57' d='M13.5 4.5L6 12 2.5 8.5' stroke='%23c8ff57' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; flex-shrink: 0; }
-    .plan-features li.disabled { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
-    .plan-features li.disabled::before { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='%2352566a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat; }
-    .plan-btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: none; font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all var(--transition-base); letter-spacing: 0.04em; position: relative; overflow: hidden; }
-    .plan-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-    .plan-btn:not(:disabled):active { transform: translateY(0); }
-    .btn-free { background: var(--bg-raised); color: var(--text-3); cursor: default; }
-    .btn-free.active { background: rgba(200, 255, 87, 0.08); color: var(--accent); border: 1px solid var(--accent); cursor: default; }
-    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
-    .btn-go:not(:disabled):hover { border-color: var(--accent-go); color: var(--accent-go); box-shadow: 0 0 12px rgba(0, 210, 255, 0.15); }
-    .btn-go.active { background: rgba(0, 210, 255, 0.08); color: var(--accent-go); border: 1px solid var(--accent-go); cursor: default; }
-    .btn-pro { background: var(--accent); color: var(--bg-void); box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
-    .btn-pro:not(:disabled):hover { background: #d4ff70; box-shadow: 0 0 25px rgba(200, 255, 87, 0.3); }
-    .btn-pro.active { background: var(--bg-raised); color: var(--accent); border: 1px solid var(--accent); box-shadow: none; cursor: default; }
-    .current-plan-tag { display: inline-block; font-size: 10px; background: rgba(200, 255, 87, 0.1); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.05em; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .command-center:not(.collapsed) .analytics-grid, .command-center:not(.collapsed) .lead-table-wrap, .command-center:not(.collapsed) .meta-bar { animation: fadeInUp 0.4s ease-out; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-void); }
-    ::-webkit-scrollbar-thumb { background: var(--bg-raised); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
-    @media (max-width: 640px) {
-      .analytics-grid { grid-template-columns: 1fr; } .topbar { padding: 0 16px; } .container { padding: 20px 16px; }
-      .cc-header { padding: 16px; } .cc-content { padding: 16px; } .plan-card { padding: 24px 16px; }
+    .plan-card {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px 24px;
+      display: flex; flex-direction: column; position: relative;
+      transition: transform 0.2s, border-color 0.2s;
     }
+    .plan-card:hover { transform: translateY(-5px); border-color: var(--text-3); }
+    .plan-card.featured { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(200, 255, 87, 0.1); }
+    .plan-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #060608; font-size: 10px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .plan-name { font-size: 18px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+    .plan-price {
+      font-size: 36px; font-weight: 700; color: var(--text-1); margin-bottom: 24px;
+      display: flex; align-items: baseline;
+    }
+    .plan-price span { font-size: 14px; color: var(--text-3); margin-left: 4px; font-weight: 400; }
+    .plan-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex-grow: 1; }
+    .plan-features li {
+      margin-bottom: 12px; font-size: 13px; color: var(--text-2);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: bold; }
+    .plan-features li.disabled { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
+    .plan-features li.disabled::before { content: '✕'; color: var(--text-3); }
+    .plan-btn {
+      width: 100%; padding: 14px; border-radius: 8px; border: none;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-free { background: var(--bg-raised); color: var(--text-3); cursor: default; }
+    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
+    .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
+    .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
+    .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
+    .current-plan-tag {
+      display: inline-block; font-size: 10px;
+      background: rgba(200, 255, 87, 0.1); color: var(--accent);
+      padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
+    }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .command-center:not(.collapsed) .analytics-grid,
+    .command-center:not(.collapsed) .lead-table,
+    .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
   </style>
 </head>
 <body>
+
   <div class="toast" id="toast"></div>
+
   <header class="topbar">
     <div class="topbar-left">
-      <div class="brand"><span class="dot"></span>SKYLINE AA-1</div>
+      <div class="brand">
+        <span class="dot"></span>
+        SKYLINE AA-1
+      </div>
+    </div>
+    <div class="notif-wrapper">
+      <button class="notif-btn" id="notifBtn" onclick="handleNotifClick()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="notifBadge" class="badge">0</span>
+      </button>
     </div>
   </header>
+
   <div class="container">
+
     <div class="section-title">Month 2: Command Center</div>
     <div class="command-center" id="commandCenter">
-      <div class="cc-header" onclick="toggleCommandCenter()" role="button" aria-expanded="true" aria-controls="cc-content" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleCommandCenter()">
+      <div class="cc-header" onclick="toggleCommandCenter()">
         <div class="cc-title-group">
           <span class="cc-title">Email Infrastructure</span>
-          <div class="cc-status" id="ccStatus"><span class="cc-status-dot" id="ccStatusDot"></span><span id="ccStatusText">Disconnected</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
-          <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()"><span class="spinner"></span><span class="btn-text">Connect Gmail/Outlook</span></button>
+          <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
+            Connect Gmail/Outlook
+          </button>
           <div class="toggle-button">
             <div class="toggle-button-circle">
-              <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
           </div>
         </div>
       </div>
-      <div class="cc-content-wrapper" id="ccContentWrapper">
-        <div class="cc-content-inner">
-          <div class="cc-content" id="cc-content">
-            <div class="analytics-grid" id="analyticsGrid">
-              <div class="stat-card"><div class="stat-value" id="totalLeads"><div class="skeleton skeleton-text"></div></div><div class="stat-label">Total Leads</div><div class="stat-trend" id="totalTrend">+0 this week</div></div>
-              <div class="stat-card"><div class="stat-value" id="replyRate"><div class="skeleton skeleton-text"></div></div><div class="stat-label">Reply Rate</div><div class="stat-trend" id="replyTrend">0% conversion</div></div>
-              <div class="stat-card"><div class="stat-value" id="interestedCount"><div class="skeleton skeleton-text"></div></div><div class="stat-label">Interested</div><div class="stat-trend" id="interestedTrend">0 hot leads</div></div>
+
+      <div class="cc-content-wrapper">
+        <div class="cc-content">
+          <div class="analytics-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="totalLeads">—</div>
+              <div class="stat-label">Total Leads</div>
             </div>
-            <div class="lead-table-wrap">
-              <table class="lead-table">
-                <thead><tr><th>Name</th><th>Company</th><th>Status</th><th>Last Action</th></tr></thead>
-                <tbody id="leadList">
-                  <tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Loading your leads...</div></div></td></tr>
-                </tbody>
-              </table>
+            <div class="stat-card">
+              <div class="stat-value" id="replyRate">—</div>
+              <div class="stat-label">Reply Rate</div>
             </div>
-            <div class="meta-bar">
-              <button class="retry-btn" id="retryBtn" onclick="loadLeads()" style="display:none;">↻ Retry</button>
-              <div></div>
-              <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
+            <div class="stat-card">
+              <div class="stat-value" id="interestedCount">—</div>
+              <div class="stat-label">Interested</div>
             </div>
           </div>
+
+          <table class="lead-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Last Action</th>
+              </tr>
+            </thead>
+            <tbody id="leadList">
+              <tr>
+                <td colspan="4" style="text-align:center; color: var(--text-3); padding: 24px;">
+                  Loading leads...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
         </div>
       </div>
     </div>
+
     <div class="section-title">Subscription</div>
-    <div class="pricing-header"><h2>Choose Your Power Level</h2><p>Select the plan that fits your ambition. Upgrade anytime.</p></div>
-    <div class="pricing-cards" id="pricingCards">
-      <div class="plan-card" id="freeCard">
+    <div class="pricing-header">
+      <h2>Choose Your Power Level</h2>
+      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
+    </div>
+    <div class="pricing-cards">
+
+      <div class="plan-card">
         <div class="plan-name">Free</div>
-        <div class="plan-price"><span class="currency">$</span>0<span class="period">/mo</span></div>
-        <ul class="plan-features"><li>30 Requests / Day</li><li>Basic Model (Skyline AA-1a)</li><li>Short Memory</li><li class="disabled">Powerful Reasoning</li><li class="disabled">Early Access</li></ul>
-        <button class="plan-btn btn-free" id="freePlanBtn" disabled>Current Plan</button>
+        <div class="plan-price">$0<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>30 Requests / Day</li>
+          <li>Basic Model (Skyline AA-1a)</li>
+          <li>Short Memory</li>
+          <li class="disabled">Powerful Reasoning</li>
+          <li class="disabled">Early Access</li>
+        </ul>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>
       </div>
-      <div class="plan-card" id="goCard">
+
+      <div class="plan-card">
         <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price"><span class="currency">$</span>9<span class="period">/mo</span></div>
-        <ul class="plan-features"><li>180 Requests / Day</li><li>Powerful Model (Skyline AA-1mini)</li><li>Long Memory</li><li>Great Features</li><li class="disabled">Skyline AA-1a Model</li></ul>
-        <button class="plan-btn btn-go" id="goPlanBtn" onclick="initiateUpgrade('go')">Upgrade to GO</button>
+        <div class="plan-price">$9<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>18 Requests / Day</li>
+          <li>Powerful Model (Skyline AA-1mini)</li>
+          <li>Long Memory</li>
+          <li>Great Features</li>
+          <li class="disabled">Skyline AA-1a Model</li>
+        </ul>
+        <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
       </div>
-      <div class="plan-card featured" id="proCard">
+
+      <div class="plan-card featured">
         <div class="plan-badge">Best Value</div>
         <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price"><span class="currency">$</span>20<span class="period">/mo</span></div>
-        <ul class="plan-features"><li>400 Requests / Day</li><li>Skyline AA-1aa Model</li><li>Advanced Reasoning</li><li>Early Access to Features</li><li>Priority Support</li></ul>
-        <button class="plan-btn btn-pro" id="proPlanBtn" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
+        <div class="plan-price">$20<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>40 Requests / Day</li>
+          <li>Skyline AA-1aa Model</li>
+          <li>Advance Reasoning</li>
+          <li>Early Access to Features</li>
+          <li>Priority Support</li>
+        </ul>
+        <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
       </div>
+
     </div>
+
     <div class="section-title">Profile</div>
     <div class="menu-grid">
       <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
       <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
-      <a href="forgot-password.html" class="menu-item"><span>🔑 Forgot Password?</span><span class="arrow">›</span></a>
     </div>
     <div class="section-title">Skyline System</div>
     <div class="menu-grid">
@@ -271,98 +495,100 @@
       <a href="about.html" class="menu-item"><span>About Skyline AA-1</span><span class="arrow">›</span></a>
       <a href="report.html" class="menu-item"><span>Report an Issue</span><span class="arrow">›</span></a>
     </div>
-    <div class="section-title">Data & Privacy</div>
-    <div class="menu-grid">
-      <a href="export.html" class="menu-item"><span>📤 Export Your Data</span><span class="arrow">›</span></a>
-    </div>
-    <div class="section-title danger">Dangerous Zone</div>
+
+    <div class="section-title">Dangerous Zone</div>
     <div class="menu-grid danger-zone">
       <a href="#" onclick="handleLogout()" class="menu-item"><span class="danger-text">Sign Out</span><span class="arrow">›</span></a>
-      <a href="delete-account.html" class="menu-item"><span class="danger-text">🗑️ Delete Account</span><span class="arrow">›</span></a>
+      <a href="delete-account.html" class="menu-item"><span class="danger-text">Delete Account</span><span class="arrow">›</span></a>
     </div>
+
     <a href="page.html" class="back-link">← Return to Dream Architect</a>
   </div>
+
+  <div id="replyModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reply to <span id="modalLeadName">Lead</span></h3>
+        <button class="close-modal" onclick="closeReplyModal()">×</button>
+      </div>
+      <div class="reply-history" id="replyHistoryContainer">
+        <h4>Conversation History:</h4>
+        <div id="conversationHistory">Loading...</div>
+      </div>
+      <div class="reply-input-area">
+        <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-3);">Your Reply:</label>
+        <textarea id="replyTextArea" placeholder="Type your reply here..."></textarea>
+        <button id="sendReplyBtn" class="send-reply-btn" onclick="sendDirectReply()">🚀 Send Reply</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ──────────────────────────────────────────────────────────────
-    //  GLOBAL CSRF FETCH INTERCEPTOR
-    // ──────────────────────────────────────────────────────────────
-    (function() {
-        const originalFetch = window.fetch;
-        window.fetch = function(url, options = {}) {
-            const csrfToken = localStorage.getItem('csrfToken');
-            const method = (options.method || 'GET').toUpperCase();
-            const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token   = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
 
-            if (!safeMethods.includes(method) && csrfToken) {
-                options.headers = options.headers || {};
-                options.headers['X-CSRF-Token'] = csrfToken;
-            }
+    let currentReplyLeadId = null;
+    let currentReplyEmail = null;
+    let autoRefreshInterval = null;
 
-            return originalFetch.call(this, url, options);
-        };
-    })();
-
-    // ──────────────────────────────────────────────────────────────
-    //  XSS ESCAPE
-    // ──────────────────────────────────────────────────────────────
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+    // ── Toggle Command Center ────────────────────────────────────────────────
+    function toggleCommandCenter() {
+      const cc = document.getElementById('commandCenter');
+      cc.classList.toggle('collapsed');
+      localStorage.setItem('commandCenterCollapsed', cc.classList.contains('collapsed'));
     }
 
-    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'login.html';
-    const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK_TEST-24d6f21e5868f2107c825d08fbd8a761-X';
+    function loadCollapseState() {
+      const savedState = localStorage.getItem('commandCenterCollapsed');
+      const cc = document.getElementById('commandCenter');
+      if (savedState === 'true') {
+        cc.classList.add('collapsed');
+      } else {
+        cc.classList.remove('collapsed');
+        if (savedState === null) localStorage.setItem('commandCenterCollapsed', 'false');
+      }
+    }
+
     function showToast(message, type = 'success', duration = 4000) {
       const toast = document.getElementById('toast');
-      toast.innerHTML = `${escapeHtml(message)}<div class="toast-progress" style="animation-duration: ${duration}ms;"></div>`;
-      toast.className = `toast ${type}`; toast.style.display = 'block';
+      toast.textContent = message;
+      toast.className   = `toast ${type}`;
+      toast.style.display = 'block';
       setTimeout(() => { toast.style.display = 'none'; }, duration);
     }
-    function animateValue(element, start, end, duration, suffix = '') {
-      const range = end - start; const startTime = performance.now();
-      function update(currentTime) {
-        const elapsed = currentTime - startTime; const progress = Math.min(elapsed / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 3); const current = Math.round(start + range * easeOut);
-        element.textContent = current + suffix; if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-    function toggleCommandCenter() {
-      const cc = document.getElementById('commandCenter'); const isCollapsed = cc.classList.toggle('collapsed');
-      cc.querySelector('.cc-header').setAttribute('aria-expanded', !isCollapsed); localStorage.setItem('commandCenterCollapsed', isCollapsed);
-    }
-    function loadCollapseState() {
-      const saved = localStorage.getItem('commandCenterCollapsed'); const cc = document.getElementById('commandCenter'); const header = cc.querySelector('.cc-header');
-      if (saved === 'true') { cc.classList.add('collapsed'); header.setAttribute('aria-expanded', 'false'); }
-      else { cc.classList.remove('collapsed'); header.setAttribute('aria-expanded', 'true'); if (saved === null) localStorage.setItem('commandCenterCollapsed', 'false'); }
-    }
-    function setConnectionStatus(status, text) {
-      const dot = document.getElementById('ccStatusDot'); const label = document.getElementById('ccStatusText'); const btn = document.getElementById('connectEmailBtn');
-      dot.className = 'cc-status-dot ' + status; label.textContent = text;
-      if (status === 'connected') { btn.innerHTML = '<span class="spinner"></span><span class="btn-text">✅ Connected</span>'; btn.classList.add('connected'); }
-      else if (status === 'connecting') { btn.classList.add('loading'); btn.disabled = true; }
-      else { btn.innerHTML = '<span class="spinner"></span><span class="btn-text">Connect Gmail/Outlook</span>'; btn.classList.remove('connected', 'loading'); btn.disabled = false; }
-    }
+
+    // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
-      const params = new URLSearchParams(window.location.search); const connected = params.get('connected'); const error = params.get('error');
-      if (connected === 'true') { showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000); setConnectionStatus('connected', 'Connected'); window.history.replaceState({}, document.title, '/dashboard.html'); }
-      else if (connected === 'false') { const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : ''; showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000); setConnectionStatus('error', 'Failed'); window.history.replaceState({}, document.title, '/dashboard.html'); }
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get('connected');
+      const error     = params.get('error');
+
+      if (connected === 'true') {
+        showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000);
+        setConnectedState();
+        window.history.replaceState({}, document.title, '/dashboard.html');
+      } else if (connected === 'false') {
+        const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
+        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
+        window.history.replaceState({}, document.title, '/dashboard.html');
+      }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  FIXED connectEmail() — Opens Nylas in new tab to avoid session conflict
-    // ──────────────────────────────────────────────────────────────
+    // ── Set button to connected state ────────────────────────────────────────
+    function setConnectedState() {
+      const btn = document.getElementById('connectEmailBtn');
+      if (btn) {
+        btn.innerText = '✅ Connected';
+        btn.classList.add('connected');
+      }
+    }
+
+    // ── Connect Email ────────────────────────────────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
-      setConnectionStatus('connecting', 'Connecting...');
-      showToast('Opening Nylas authorization... Please complete the flow in the new window.', 'info', 3000);
+      btn.innerText = 'Connecting...';
+      btn.disabled  = true;
 
       try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
@@ -375,144 +601,331 @@
         }
 
         const data = await res.json();
-
         if (data.url) {
-          // FIXED: Open Nylas in a NEW TAB to avoid session conflict
-          // This prevents the authenticated Skyline session from interfering
-          const oauthWindow = window.open(data.url, '_blank', 'width=600,height=700');
-
-          // Check if popup was blocked
-          if (!oauthWindow || oauthWindow.closed) {
-            showToast('⚠️ Popup blocked! Allow popups for this site or paste the URL directly.', 'warning', 5000);
-            setConnectionStatus('error', 'Failed');
-            return;
-          }
-
-          // Poll to detect when OAuth flow completes (popup closes or returns)
-          const pollInterval = setInterval(() => {
-            try {
-              // Try to check popup location - if it closes or navigates back, this will fail
-              if (oauthWindow.closed) {
-                clearInterval(pollInterval);
-                // Wait a moment then check if connection was successful
-                setTimeout(() => {
-                  checkEmailStatus();
-                  setConnectionStatus('', 'Disconnected');
-                }, 1500);
-              }
-            } catch (e) {
-              // Cross-origin error is expected, ignore
-            }
-          }, 500);
-
-          // Fallback: reset button after 15 minutes
-          setTimeout(() => {
-            clearInterval(pollInterval);
-            if (oauthWindow && !oauthWindow.closed) {
-              oauthWindow.close();
-            }
-          }, 15 * 60 * 1000);
+          window.location.href = data.url;
         } else {
           throw new Error('No URL returned from server');
         }
       } catch (err) {
+        console.error('Error getting Nylas URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
-        setConnectionStatus('error', 'Failed');
+        btn.innerText = 'Connect Gmail/Outlook';
+        btn.disabled  = false;
       }
     }
 
+    // ── Check Email Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) { const user = await res.json(); if (user.nylasIntegration && user.nylasIntegration.isConnected) { setConnectionStatus('connected', 'Connected'); } else { setConnectionStatus('', 'Disconnected'); } }
-      } catch (err) { console.error('Error checking email status:', err); setConnectionStatus('error', 'Error'); }
-    }
-    async function loadLeads() {
-      const tbody = document.getElementById('leadList'); const retryBtn = document.getElementById('retryBtn');
-      document.getElementById('totalLeads').innerHTML = '<div class="skeleton skeleton-text"></div>';
-      document.getElementById('replyRate').innerHTML = '<div class="skeleton skeleton-text"></div>';
-      document.getElementById('interestedCount').innerHTML = '<div class="skeleton skeleton-text"></div>';
-      retryBtn.style.display = 'none';
-      try {
-        const res = await fetch(`${BACKEND}/api/leads`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        const leads = await res.json();
-        const totalEl = document.getElementById('totalLeads'); const replyEl = document.getElementById('replyRate'); const interestedEl = document.getElementById('interestedCount');
-        const interestedCount = leads.filter(l => l.status === 'Interested').length;
-        const repliedCount = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
-        const replyRate = leads.length > 0 ? Math.round((repliedCount / leads.length) * 100) : 0;
-        animateValue(totalEl, 0, leads.length, 600); animateValue(replyEl, 0, replyRate, 600, '%'); animateValue(interestedEl, 0, interestedCount, 600);
-        document.getElementById('totalTrend').textContent = `${leads.length} total leads`;
-        document.getElementById('replyTrend').textContent = `${replyRate}% reply rate`;
-        document.getElementById('interestedTrend').textContent = `${interestedCount} hot leads`;
-        if (leads.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No leads yet</div><div class="empty-state-hint">Say "Research [company]" in the Architect to start</div></div></td></tr>`;
-        } else {
-          tbody.innerHTML = leads.map((lead, index) => {
-            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
-            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-            return `<tr style="--row-index: ${index}"><td>${escapeHtml(lead.name || '—')}</td><td>${escapeHtml(lead.company || '—')}</td><td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td><td>${lastDate}</td></tr>`;
-          }).join('');
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
+            setConnectedState();
+          } else {
+            const btn = document.getElementById('connectEmailBtn');
+            if (btn) {
+              btn.innerText = 'Connect Gmail/Outlook';
+              btn.classList.remove('connected');
+            }
+          }
         }
-        updateRefreshTime();
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Could not load leads</div><div class="empty-state-hint">${escapeHtml(err.message)}</div></div></td></tr>`;
-        retryBtn.style.display = 'inline-block'; console.error('Load leads error:', err);
+        console.error('Error checking email status:', err);
       }
     }
-    function updateRefreshTime() { const now = new Date(); const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); document.getElementById('refreshIndicator').textContent = `Last updated: ${timeStr}`; }
-    async function initiateUpgrade(planType) {
-      const btnId = planType === 'go' ? 'goPlanBtn' : 'proPlanBtn'; const btn = document.getElementById(btnId); const originalText = btn.innerText;
+
+    // ── Load Leads ───────────────────────────────────────────────────────────
+    async function loadLeads() {
       try {
-        btn.innerText = 'Loading...'; btn.disabled = true;
-        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ planType }) });
-        if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(errorData.message || `Server Error: ${response.status}`); }
-        const data = await response.json(); if (!data.txRef) throw new Error('No transaction reference received');
-        FlutterwaveCheckout({
-          public_key: FLUTTERWAVE_PUBLIC_KEY, tx_ref: data.txRef, amount: planType === 'go' ? 9 : 20, currency: 'USD', payment_options: 'card',
-          customer: { email: 'saa@gmail.com', phonenumber: '', name: '' },
-          customizations: { title: 'Skyline AA-1 Subscription', description: `Payment for ${planType.toUpperCase()} Plan`, logo: 'https://skylineai-app.vercel.app/logo.png' },
-          callback: function(response) {
-            console.log('Payment callback:', response);
-            if (response.status === 'successful') { showToast('✅ Payment successful! Upgrading...', 'success'); setTimeout(() => { window.location.href = 'https://skylineai-app.vercel.app/dashboard.html?payment=success'; }, 2000); }
-            else { showToast('❌ Payment failed or cancelled.', 'error'); btn.innerText = originalText; btn.disabled = false; }
-          },
-          onclose: function() { btn.innerText = originalText; btn.disabled = false; }
+        const res = await fetch(`${BACKEND}/api/leads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-      } catch (err) { showToast(`❌ ${err.message}`, 'error'); btn.innerText = originalText; btn.disabled = false; }
+
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+
+        const leads = await res.json();
+        const tbody = document.getElementById('leadList');
+
+        document.getElementById('totalLeads').innerText = leads.length;
+        const interested = leads.filter(l => l.status === 'Interested').length;
+        document.getElementById('interestedCount').innerText = interested;
+        const replied = leads.filter(l => ['Replied', 'Interested'].includes(l.status)).length;
+        const rate = leads.length > 0 ? Math.round((replied / leads.length) * 100) : 0;
+        document.getElementById('replyRate').innerText = rate + '%';
+
+        if (leads.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
+        } else {
+          tbody.innerHTML = leads.map(lead => {
+            const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
+            const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
+            return `
+              <tr>
+                <td>${escapeHtml(lead.name || '—')}</td>
+                <td>${escapeHtml(lead.company || '—')}</td>
+                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
+                <td>${lastDate}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error loading leads:', err);
+        document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
+      }
     }
+
+    // ── Safe HTML escape ─────────────────────────────────────────────────────
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    // ── Open Reply Modal ─────────────────────────────────────────────────────
+    async function openReplyModal(leadId, name, email) {
+      currentReplyLeadId = leadId;
+      currentReplyEmail = email;
+
+      document.getElementById('modalLeadName').innerText = name;
+      document.getElementById('replyModal').style.display = 'flex';
+      document.getElementById('replyTextArea').value = '';
+      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
+
+      try {
+        const res = await fetch(`${BACKEND}/api/leads`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const leads = await res.json();
+        const lead = leads.find(l => l._id === leadId);
+
+        if (lead && lead.replies && lead.replies.length > 0) {
+          const conversationHtml = lead.replies.slice().reverse().map(reply => {
+            const isLead = reply.from === 'lead';
+            const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
+            return `
+              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
+                <div class="reply-meta">
+                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
+                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
+                </div>
+                <div class="reply-content">${escapeHtml(reply.content)}</div>
+              </div>
+            `;
+          }).join('');
+          document.getElementById('conversationHistory').innerHTML = conversationHtml;
+        } else {
+          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
+        }
+      } catch (err) {
+        console.error('Error loading conversation:', err);
+        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
+      }
+    }
+
+    // ── Close Reply Modal ────────────────────────────────────────────────────
+    function closeReplyModal() {
+      document.getElementById('replyModal').style.display = 'none';
+      currentReplyLeadId = null;
+      currentReplyEmail = null;
+    }
+
+    // ── Send Direct Reply ────────────────────────────────────────────────────
+    async function sendDirectReply() {
+      const btn = document.getElementById('sendReplyBtn');
+      const text = document.getElementById('replyTextArea').value.trim();
+
+      if (!text) { showToast("Please type a reply.", "error"); return; }
+      if (!currentReplyEmail) { showToast("Error: No email address found.", "error"); return; }
+
+      btn.disabled = true;
+      btn.innerText = "Sending...";
+
+      try {
+        const payload = {
+          leads: [{
+            name: document.getElementById('modalLeadName').innerText,
+            email: currentReplyEmail,
+            company: '',
+            messages: [{
+              subject: "Re: Your inquiry about Skyline AA-1",
+              body: text
+            }]
+          }]
+        };
+
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showToast("✅ Reply sent successfully!", "success");
+          closeReplyModal();
+          loadLeads();
+        } else {
+          showToast("❌ Failed to send reply.", "error");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("❌ Connection error.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "🚀 Send Reply";
+      }
+    }
+
+    // ── Upgrade Logic ────────────────────────────────────────────────────────
+    async function initiateUpgrade(planType) {
+      const btn = event.target;
+      const originalText = btn.innerText;
+      try {
+        btn.innerText = 'Connecting...';
+        btn.disabled  = true;
+
+        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ planType })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Server Error: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.link) {
+          btn.innerText = 'Redirecting...';
+          window.location.href = data.link;
+        } else {
+          throw new Error('No payment link received from server.');
+        }
+      } catch (err) {
+        console.error('Upgrade Error:', err);
+        showToast(`❌ ${err.message}`, 'error');
+        if (btn) {
+          btn.innerText = originalText;
+          btn.disabled  = false;
+        }
+      }
+    }
+
+    // ── Check Current Plan ───────────────────────────────────────────────────
     async function checkCurrentPlan() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Failed to fetch user');
-        const user = await res.json(); const plan = user.subscriptionTier || 'free'; const cards = document.querySelectorAll('.plan-card');
-        cards.forEach(card => { card.classList.remove('inactive'); card.classList.remove('active'); });
-        document.querySelectorAll('.plan-btn').forEach(btn => { btn.disabled = false; btn.classList.remove('active'); });
-        if (plan === 'free') {
-          document.getElementById('freeTag')?.style.setProperty('display', 'inline-block');
-          document.getElementById('freePlanBtn').classList.add('active'); document.getElementById('freePlanBtn').innerText = 'Current Plan'; document.getElementById('freePlanBtn').disabled = true;
-          document.getElementById('goCard').classList.add('inactive'); document.getElementById('proCard').classList.add('inactive');
-        } else if (plan === 'go') {
-          document.getElementById('goTag').style.display = 'inline-block'; const goBtn = document.getElementById('goPlanBtn');
-          goBtn.innerText = 'Current Plan'; goBtn.disabled = true; goBtn.classList.add('active'); goBtn.classList.remove('btn-go');
-          document.getElementById('freeCard').classList.add('inactive'); document.getElementById('proCard').classList.add('inactive');
-        } else if (plan === 'pro') {
-          document.getElementById('proTag').style.display = 'inline-block'; const proBtn = document.getElementById('proPlanBtn');
-          proBtn.innerText = 'Current Plan'; proBtn.disabled = true; proBtn.classList.add('active'); proBtn.classList.remove('btn-pro');
-          document.getElementById('freeCard').classList.add('inactive'); document.getElementById('goCard').classList.add('inactive');
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const user = await res.json();
+          const plan = user.subscriptionTier || 'free';
+
+          if (plan === 'go') {
+            document.getElementById('goTag').style.display = 'inline-block';
+            const goBtn = document.querySelector('.btn-go');
+            if (goBtn) {
+              goBtn.innerText = 'Current Plan';
+              goBtn.disabled  = true;
+              goBtn.classList.add('btn-free');
+              goBtn.classList.remove('btn-go');
+            }
+          } else if (plan === 'pro') {
+            document.getElementById('proTag').style.display = 'inline-block';
+            const proBtn = document.querySelector('.btn-pro');
+            if (proBtn) {
+              proBtn.innerText = 'Current Plan';
+              proBtn.disabled  = true;
+              proBtn.style.background = '#333';
+              proBtn.style.color      = '#888';
+              proBtn.style.boxShadow  = 'none';
+            }
+          }
         }
-      } catch (err) { console.error('Failed to check plan:', err); }
+      } catch (err) {
+        console.error('Failed to check plan:', err);
+      }
     }
+
+    // ── Notifications ────────────────────────────────────────────────────────
+    function handleNotifClick() {
+      // Save current visible unread count into lastSeenNotifCount before leaving
+      const badge = document.getElementById('notifBadge');
+      const visibleUnread = parseInt(badge.textContent, 10) || 0;
+      const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
+      localStorage.setItem('lastSeenNotifCount', lastSeen + visibleUnread);
+      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+      updateBadgeUI(0);
+      window.location.href = 'notifications.html';
+    }
+
+    async function loadNotifCount() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const serverCount = data.count || 0;
+          const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
+
+          // Only show badge for notifications that arrived after last visit
+          const unread = Math.max(0, serverCount - lastSeen);
+          updateBadgeUI(unread);
+        }
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      }
+    }
+
+    function updateBadgeUI(count) {
+      const badge = document.getElementById('notifBadge');
+      const btn   = document.getElementById('notifBtn');
+
+      if (count > 0) {
+        badge.style.display = 'flex';
+        badge.textContent   = count > 9 ? '9+' : count;
+        btn.classList.add('has-notifs');
+      } else {
+        badge.style.display = 'none';
+        btn.classList.remove('has-notifs');
+      }
+    }
+
+    // ── Logout ───────────────────────────────────────────────────────────────
     function handleLogout() {
       if (confirm('Are you sure you want to sign out?')) {
         localStorage.removeItem('token');
-        localStorage.removeItem('csrfToken');
-        localStorage.removeItem('lastNotifViewTime'); 
-        localStorage.removeItem('lastSeenNotifCount'); 
+        localStorage.removeItem('lastNotifViewTime');
+        localStorage.removeItem('lastSeenNotifCount');
         window.location.href = 'login.html';
       }
     }
-    handleOAuthRedirect(); loadCollapseState(); checkCurrentPlan(); checkEmailStatus(); loadLeads();
+
+    // ── Initialize ───────────────────────────────────────────────────────────
+    handleOAuthRedirect();
+    loadCollapseState();
+    checkCurrentPlan();
+    checkEmailStatus();
+    loadLeads();
+    loadNotifCount();
+
+    // Auto-refresh notifications every 15 seconds
+    autoRefreshInterval = setInterval(() => {
+      loadNotifCount();
+    }, 15000);
   </script>
 </body>
-</html>
+      </html>
