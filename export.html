@@ -200,10 +200,12 @@
             padding: 12px 24px; border-radius: 10px; font-family: var(--mono);
             font-size: 13px; font-weight: 500; z-index: 9999; display: none;
             animation: slideDown 0.3s ease; backdrop-filter: blur(12px);
+            max-width: 90%;
         }
         .toast.success { background: rgba(102,221,153,0.12); border: 1px solid var(--success); color: var(--success); }
         .toast.error { background: rgba(255,85,85,0.12); border: 1px solid var(--danger); color: var(--danger); }
         .toast.info { background: rgba(200,255,87,0.08); border: 1px solid var(--accent); color: var(--accent); }
+        .toast.warning { background: rgba(255,187,68,0.12); border: 1px solid var(--warning); color: var(--warning); }
         @keyframes slideDown {
             from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -361,7 +363,32 @@
         }
 
         // ──────────────────────────────────────────────────────────────
-        //  REQUEST EXPORT
+        //  REFRESH CSRF TOKEN
+        // ──────────────────────────────────────────────────────────────
+        async function refreshCsrfToken() {
+            try {
+                const res = await fetch(`${BACKEND}/api/auth/csrf-token`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.csrfToken) {
+                        localStorage.setItem('csrfToken', data.csrfToken);
+                        return data.csrfToken;
+                    }
+                }
+                return null;
+            } catch (err) {
+                console.error('Failed to refresh CSRF token:', err);
+                return null;
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  REQUEST EXPORT (with CSRF handling)
         // ──────────────────────────────────────────────────────────────
         async function requestExport() {
             if (isLoading) return;
@@ -372,16 +399,54 @@
             btn.disabled = true;
 
             try {
+                // ✅ Check if CSRF token exists
+                let csrfToken = localStorage.getItem('csrfToken');
+                
+                // If CSRF token is missing, try to refresh it
+                if (!csrfToken) {
+                    console.warn('⚠️ CSRF token missing, attempting to refresh...');
+                    const newToken = await refreshCsrfToken();
+                    if (newToken) {
+                        csrfToken = newToken;
+                        console.log('✅ CSRF token refreshed');
+                    }
+                }
+
                 const res = await fetch(`${BACKEND}/api/data/export`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'X-CSRF-Token': csrfToken || ''  // ✅ Explicitly add header
                     },
                     body: JSON.stringify({ format: selectedFormat })
                 });
 
                 const data = await res.json();
+
+                // ✅ Handle CSRF error specifically
+                if (res.status === 403 && data.error && (
+                    data.error.includes('CSRF') || 
+                    data.error.includes('csrf') ||
+                    data.error.includes('Invalid token')
+                )) {
+                    // CSRF token invalid/expired - refresh and retry
+                    showToast('⏳ Session expired. Refreshing...', 'warning', 3000);
+                    
+                    const newToken = await refreshCsrfToken();
+                    if (newToken) {
+                        showToast('🔄 Retrying with new session...', 'info', 2000);
+                        // Retry the request (call itself once)
+                        isLoading = false;
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+                        await requestExport();
+                        return;
+                    } else {
+                        showToast('❌ Unable to refresh session. Please logout and login again.', 'error', 5000);
+                        return;
+                    }
+                }
 
                 if (res.status === 429) {
                     showToast(`⏳ ${data.error || 'Rate limit exceeded. Please wait 1 hour.'}`, 'error', 5000);
@@ -452,7 +517,6 @@
                         month: 'short', day: 'numeric', year: 'numeric'
                     }) : '—';
 
-                    // Progress bar for processing
                     let progressHtml = '';
                     if (isProcessing && exp.progress !== undefined) {
                         progressHtml = `
@@ -534,10 +598,8 @@
         //  AUTO-REFRESH
         // ──────────────────────────────────────────────────────────────
         function startAutoRefresh() {
-            // Clear any existing interval
             if (refreshInterval) clearInterval(refreshInterval);
             
-            // Refresh every 10 seconds if there are processing exports
             refreshInterval = setInterval(async () => {
                 const items = document.querySelectorAll('.export-item');
                 const hasProcessing = Array.from(items).some(item => 
@@ -556,13 +618,24 @@
             await loadExports();
             startAutoRefresh();
 
-            // Also refresh on visibility change (user comes back to tab)
             document.addEventListener('visibilitychange', function() {
                 if (!document.hidden) {
                     loadExports();
                 }
             });
         });
+
+        // Also refresh CSRF token on page load
+        (async function ensureCsrfToken() {
+            const csrfToken = localStorage.getItem('csrfToken');
+            if (!csrfToken) {
+                console.log('🔄 Checking CSRF token on page load...');
+                const newToken = await refreshCsrfToken();
+                if (newToken) {
+                    console.log('✅ CSRF token initialized');
+                }
+            }
+        })();
     </script>
 </body>
-              </html>
+    </html>
