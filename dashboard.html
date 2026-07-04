@@ -602,7 +602,11 @@
 
         const data = await res.json();
         if (data.url) {
-          window.location.href = data.url;
+          // ✅ FIX: Open in new tab instead of redirect
+          window.open(data.url, '_blank');
+          showToast('📧 OAuth window opened. Complete authorization there.', 'info', 5000);
+          btn.innerText = 'Connect Gmail/Outlook';
+          btn.disabled  = false;
         } else {
           throw new Error('No URL returned from server');
         }
@@ -861,7 +865,6 @@
 
     // ── Notifications ────────────────────────────────────────────────────────
     function handleNotifClick() {
-      // Save current visible unread count into lastSeenNotifCount before leaving
       const badge = document.getElementById('notifBadge');
       const visibleUnread = parseInt(badge.textContent, 10) || 0;
       const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
@@ -880,8 +883,6 @@
           const data = await res.json();
           const serverCount = data.count || 0;
           const lastSeen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0', 10);
-
-          // Only show badge for notifications that arrived after last visit
           const unread = Math.max(0, serverCount - lastSeen);
           updateBadgeUI(unread);
         }
@@ -928,4 +929,4 @@
     }, 15000);
   </script>
 </body>
-      </html>
+  </html>
