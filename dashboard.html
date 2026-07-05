@@ -584,9 +584,10 @@
       }
     }
 
-    // ── Connect Email ────────────────────────────────────────────────────────
+    // ── Connect Email (FIXED: same tab redirect) ────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
+      const originalText = btn.innerText;
       btn.innerText = 'Connecting...';
       btn.disabled  = true;
 
@@ -602,18 +603,16 @@
 
         const data = await res.json();
         if (data.url) {
-          // ✅ FIX: Open in new tab instead of redirect
-          window.open(data.url, '_blank');
-          showToast('📧 OAuth window opened. Complete authorization there.', 'info', 5000);
-          btn.innerText = 'Connect Gmail/Outlook';
-          btn.disabled  = false;
+          // ✅ FIX: Redirect in same tab, not new window
+          window.location.href = data.url;
+          // No need to reset button since page will redirect
         } else {
           throw new Error('No URL returned from server');
         }
       } catch (err) {
         console.error('Error getting Nylas URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
-        btn.innerText = 'Connect Gmail/Outlook';
+        btn.innerText = originalText;
         btn.disabled  = false;
       }
     }
@@ -929,4 +928,4 @@
     }, 15000);
   </script>
 </body>
-  </html>
+          </html>
