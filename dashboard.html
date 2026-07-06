@@ -381,8 +381,9 @@
           <span class="cc-title">Email Infrastructure</span>
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
+          <!-- ✅ Updated: Connect Gmail (no more "Outlook") -->
           <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
-            Connect Gmail/Outlook
+            Connect Gmail
           </button>
           <div class="toggle-button">
             <div class="toggle-button-circle">
@@ -486,6 +487,8 @@
     <div class="menu-grid">
       <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
       <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
+      <!-- ✅ NEW: Forgot Password link -->
+      <a href="forgot-password.html" class="menu-item"><span>🔑 Forgot Password?</span><span class="arrow">›</span></a>
     </div>
     <div class="section-title">Skyline System</div>
     <div class="menu-grid">
@@ -565,7 +568,7 @@
       const error     = params.get('error');
 
       if (connected === 'true') {
-        showToast('✅ Gmail/Outlook connected successfully!', 'success', 6000);
+        showToast('✅ Gmail connected successfully!', 'success', 6000);
         setConnectedState();
         window.history.replaceState({}, document.title, '/dashboard.html');
       } else if (connected === 'false') {
@@ -584,7 +587,7 @@
       }
     }
 
-    // ── Connect Email (FIXED: same tab redirect) ────────────────────────────
+    // ── Connect Email (Gmail) ────────────────────────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
       const originalText = btn.innerText;
@@ -592,51 +595,51 @@
       btn.disabled  = true;
 
       try {
-        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
+        // ✅ NEW: Gmail OAuth endpoint (replaces Nylas)
+        const res = await fetch(`${BACKEND}/api/auth/gmail/url`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || `Server error ${res.status}`);
+          throw new Error(err.message || err.error || `Server error ${res.status}`);
         }
 
         const data = await res.json();
         if (data.url) {
-          // ✅ FIX: Redirect in same tab, not new window
           window.location.href = data.url;
-          // No need to reset button since page will redirect
         } else {
           throw new Error('No URL returned from server');
         }
       } catch (err) {
-        console.error('Error getting Nylas URL:', err);
+        console.error('Error getting Gmail URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
         btn.innerText = originalText;
         btn.disabled  = false;
       }
     }
 
-    // ── Check Email Connection Status ────────────────────────────────────────
+    // ── Check Gmail Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, {
+        // ✅ NEW: Gmail status endpoint
+        const res = await fetch(`${BACKEND}/api/auth/gmail/status`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
-          const user = await res.json();
-          if (user.nylasIntegration && user.nylasIntegration.isConnected) {
+          const data = await res.json();
+          if (data.isConnected) {
             setConnectedState();
           } else {
             const btn = document.getElementById('connectEmailBtn');
             if (btn) {
-              btn.innerText = 'Connect Gmail/Outlook';
+              btn.innerText = 'Connect Gmail';
               btn.classList.remove('connected');
             }
           }
         }
       } catch (err) {
-        console.error('Error checking email status:', err);
+        console.error('Error checking Gmail status:', err);
       }
     }
 
@@ -928,4 +931,4 @@
     }, 15000);
   </script>
 </body>
-          </html>
+                  </html>
