@@ -382,7 +382,7 @@
         </div>
         <div style="display:flex; align-items:center; gap:16px;">
           <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
-            Connect Gmail
+            Connect Email
           </button>
           <div class="toggle-button">
             <div class="toggle-button-circle">
@@ -562,16 +562,14 @@
     // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
-      const connected = params.get('connected');
-      const error     = params.get('error');
-
-      if (connected === 'true') {
-        showToast('✅ Gmail connected successfully!', 'success', 6000);
+      const nylasSuccess = params.get('nylas');
+      
+      if (nylasSuccess === 'success') {
+        showToast('✅ Email account connected successfully!', 'success', 6000);
         setConnectedState();
         window.history.replaceState({}, document.title, '/dashboard.html');
-      } else if (connected === 'false') {
-        const errMsg = error ? ` (${error.replace(/_/g, ' ')})` : '';
-        showToast(`❌ Connection failed${errMsg}. Please try again.`, 'error', 6000);
+      } else if (nylasSuccess === 'error') {
+        showToast(`❌ Connection failed. Please try again.`, 'error', 6000);
         window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
@@ -585,7 +583,7 @@
       }
     }
 
-    // ── Connect Email (Gmail) WITH DEBUG OVERLAY ────────────────────────────
+    // ── Connect Email (Nylas) ────────────────────────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
       const originalText = btn.innerText;
@@ -594,7 +592,8 @@
       btn.disabled  = true;
 
       try {
-        const res = await fetch(`${BACKEND}/api/auth/gmail/url`, {
+        // Call the new Nylas endpoint
+        const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -606,91 +605,41 @@
         const data = await res.json();
 
         if (data.url) {
-          // 🔍 DEBUG: Check if URL contains response_type
-          const hasResponseType = data.url.includes('response_type=code');
-
-          // Create debug overlay on screen
-          const debugDiv = document.createElement('div');
-          debugDiv.style.cssText = `
-            position:fixed;top:60px;left:10px;right:10px;
-            background:#111;padding:15px;border:2px solid ${hasResponseType ? '#66dd99' : '#ff5555'};
-            border-radius:8px;z-index:9999;color:#fff;font-size:12px;
-            max-height:50vh;overflow:auto;word-break:break-all;
-            box-shadow:0 10px 40px rgba(0,0,0,0.9);
-          `;
-          debugDiv.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <strong style="color:#c8ff57;">🔍 DEBUG: Gmail OAuth URL</strong>
-              <span style="color:${hasResponseType ? '#66dd99' : '#ff5555'};font-size:13px;font-weight:bold;">
-                ${hasResponseType ? '✅ VALID' : '❌ MISSING response_type'}
-              </span>
-            </div>
-            <div style="background:#0a0a0a;padding:10px;border-radius:4px;font-family:monospace;font-size:11px;max-height:200px;overflow:auto;">
-              ${data.url}
-            </div>
-            <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-              <span style="background:${hasResponseType ? '#1a3a1a' : '#3a1a1a'};padding:3px 10px;border-radius:4px;">
-                response_type=code: ${hasResponseType ? '✅ YES' : '❌ NO'}
-              </span>
-              <span style="background:#1a1a2a;padding:3px 10px;border-radius:4px;">
-                scope: ${data.url.includes('gmail.send') ? '✅' : '❌'} gmail.send
-              </span>
-              <span style="background:#1a1a2a;padding:3px 10px;border-radius:4px;">
-                access_type: ${data.url.includes('access_type=offline') ? '✅' : '❌'} offline
-              </span>
-            </div>
-            <div style="margin-top:10px;display:flex;gap:8px;">
-              <button onclick="window.location.href='${data.url}'" style="background:#c8ff57;color:#000;border:none;padding:8px 16px;border-radius:4px;font-weight:bold;cursor:pointer;">
-                🔗 Proceed to Google
-              </button>
-              <button onclick="this.parentElement.parentElement.remove()" style="background:#333;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
-                ✕ Close
-              </button>
-            </div>
-          `;
-          document.body.appendChild(debugDiv);
-
-          // If URL is correct, auto-redirect after 4 seconds
-          if (hasResponseType) {
-            setTimeout(() => {
-              window.location.href = data.url;
-            }, 4000);
-          } else {
-            btn.innerText = originalText;
-            btn.disabled = false;
-            showToast('❌ URL is missing response_type=code! Check the debug box.', 'error');
-          }
+          // Redirect user to Nylas OAuth page
+          window.location.href = data.url;
         } else {
           throw new Error('No URL returned from server');
         }
       } catch (err) {
-        console.error('Error getting Gmail URL:', err);
+        console.error('Error getting Nylas URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
         btn.innerText = originalText;
         btn.disabled = false;
       }
     }
 
-    // ── Check Gmail Connection Status ────────────────────────────────────────
+    // ── Check Email Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch(`${BACKEND}/api/auth/gmail/status`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.isConnected) {
-            setConnectedState();
-          } else {
-            const btn = document.getElementById('connectEmailBtn');
-            if (btn) {
-              btn.innerText = 'Connect Gmail';
-              btn.classList.remove('connected');
-            }
-          }
+        // We can check status by trying to fetch leads or a specific status endpoint
+        // For now, we'll assume if we can fetch leads, we might be connected, 
+        // but ideally we'd have a /api/auth/nylas/status endpoint.
+        // Let's use the lead fetch as a proxy for now or add a specific check.
+        
+        // Actually, let's just check if we have a stored state or try a lightweight call.
+        // Since we don't have a dedicated status endpoint in the provided backend code yet,
+        // we will rely on the redirect success or manual check.
+        // To make it robust, let's try to fetch the user profile which might have integration info
+        // or just leave it for the user to click "Connect" if it's not connected.
+        
+        // For now, we'll just reset the button to "Connect Email" unless redirected successfully.
+        const btn = document.getElementById('connectEmailBtn');
+        if (btn && !btn.classList.contains('connected')) {
+           btn.innerText = 'Connect Email';
+           btn.classList.remove('connected');
         }
       } catch (err) {
-        console.error('Error checking Gmail status:', err);
+        console.error('Error checking status:', err);
       }
     }
 
@@ -982,4 +931,4 @@
     }, 15000);
   </script>
 </body>
-                </html>
+            </html>
