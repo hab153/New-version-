@@ -597,8 +597,6 @@
       btn.disabled = true;
 
       try {
-        showToast('Connecting to Nylas...', 'info', 2000);
-
         const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
           method: 'GET',
           headers: { 
@@ -618,17 +616,24 @@
           throw new Error('No URL returned from server');
         }
 
-        // ✅ DIRECT REDIRECT - NO HTML DISPLAY
-        btn.innerText = '🔄 Redirecting...';
-        showToast('Opening Nylas...', 'info', 1500);
-        
-        console.log('✅ Redirecting to:', data.url);
-        
-        // ✅ Use the raw URL - no modifications, no HTML display
-        window.location.href = data.url;
+        // ✅ FIX: Replace &amp; with & if present (clean the URL)
+        let redirectUrl = data.url;
+        if (redirectUrl.includes('&amp;')) {
+          redirectUrl = redirectUrl.replace(/&amp;/g, '&');
+          console.log('🔧 [FRONTEND] Fixed URL (replaced &amp; with &)');
+        }
+
+        // ✅ Verify the URL has response_type=code
+        if (!redirectUrl.includes('response_type=code')) {
+          console.warn('⚠️ [FRONTEND] URL missing response_type=code!');
+        }
+
+        // ✅ IMMEDIATE REDIRECT - No delays, no HTML display
+        console.log('✅ [FRONTEND] Redirecting to:', redirectUrl);
+        window.location.href = redirectUrl;
 
       } catch (error) {
-        console.error('❌ Connect error:', error);
+        console.error('❌ [FRONTEND] Connect error:', error);
         btn.innerText = '❌ Failed';
         showToast(`❌ ${error.message}`, 'error', 5000);
         setTimeout(() => {
@@ -944,4 +949,4 @@
     }, 15000);
   </script>
 </body>
-  </html>
+                </html>
