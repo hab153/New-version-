@@ -1076,6 +1076,59 @@
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  // ----- ✅ EMAIL STATUS CHECK -----
+  async function checkEmailStatus() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`Status check failed: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log('📊 [PAGE] Email status:', data);
+
+      const statusTextEl = document.getElementById('statusText');
+      const statusBarEl = document.getElementById('statusBar');
+
+      if (data.connected && !data.isExpired) {
+        // ✅ Connected
+        statusBarEl.className = 'status-bar connected';
+        statusTextEl.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
+        // Show email if available
+        if (data.email && data.email !== 'Connected') {
+          statusTextEl.innerHTML = `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>`;
+        }
+      } else if (data.connected && data.isExpired) {
+        // ⚠️ Expired
+        statusBarEl.className = 'status-bar disconnected';
+        statusTextEl.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
+      } else {
+        // ❌ Not connected
+        statusBarEl.className = 'status-bar disconnected';
+        statusTextEl.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
+      }
+
+      return data;
+
+    } catch (err) {
+      console.error('❌ Error checking email status:', err);
+      const statusTextEl = document.getElementById('statusText');
+      if (statusTextEl) {
+        statusTextEl.textContent = '⚠️ Status unknown';
+      }
+    }
+  }
+
   // ----- LOAD SESSION FROM URL -----
   async function loadSessionFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -1187,13 +1240,7 @@
       const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) {
         const user = await res.json();
-        if (user.nylasIntegration?.isConnected) {
-          statusBar.className = 'status-bar connected';
-          statusText.innerHTML = `Email connected · <a href="dashboard.html">Manage →</a>`;
-        } else {
-          statusBar.className = 'status-bar disconnected';
-          statusText.innerHTML = `No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
-        }
+        // Email status is now handled by checkEmailStatus()
         const p = user.subscriptionTier || 'free';
         planChip.className = `plan-chip ${p}`;
         planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
@@ -1280,6 +1327,9 @@
 
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
+    // ✅ Check email status first
+    await checkEmailStatus();
+
     const sessionLoaded = await loadSessionFromUrl();
 
     if (!sessionLoaded) {
@@ -1293,6 +1343,9 @@
     await updateStatus();
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
+
+    // ✅ Refresh email status every 30 seconds
+    setInterval(checkEmailStatus, 30000);
 
     document.getElementById('navNotifBtn').addEventListener('click', function() {
       localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
