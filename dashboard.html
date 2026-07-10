@@ -647,13 +647,63 @@
     async function checkEmailStatus() {
       try {
         const btn = document.getElementById('connectEmailBtn');
-        if (btn && !btn.classList.contains('connected')) {
-           btn.innerText = 'Connect Email';
-           btn.classList.remove('connected');
-           btn.disabled = false;
+        
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = '⏳ Checking...';
         }
+
+        const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
+          method: 'GET',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error(`Status check failed: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log('📊 [FRONTEND] Email status:', data);
+
+        if (btn) {
+          if (data.connected && !data.isExpired) {
+            // ✅ Valid connection
+            btn.innerText = '✅ Connected';
+            btn.classList.add('connected');
+            btn.disabled = false;
+            if (data.email && data.email !== 'Connected') {
+              btn.title = `Connected as ${data.email}`;
+            }
+          } else if (data.connected && data.isExpired) {
+            // ⚠️ Expired - need reconnect
+            btn.innerText = '🔄 Reconnect';
+            btn.classList.remove('connected');
+            btn.disabled = false;
+            btn.title = 'Session expired, please reconnect';
+            showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+          } else {
+            // ❌ Not connected
+            btn.innerText = 'Connect Email';
+            btn.classList.remove('connected');
+            btn.disabled = false;
+            btn.title = '';
+          }
+        }
+
+        return data;
+
       } catch (err) {
-        console.error('Error checking status:', err);
+        console.error('❌ Error checking email status:', err);
+        const btn = document.getElementById('connectEmailBtn');
+        if (btn) {
+          btn.innerText = 'Connect Email';
+          btn.classList.remove('connected');
+          btn.disabled = false;
+        }
+        // Don't show toast on initial load - it's just a status check
       }
     }
 
@@ -949,4 +999,4 @@
     }, 15000);
   </script>
 </body>
-                </html>
+  </html>
