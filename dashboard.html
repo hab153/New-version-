@@ -562,19 +562,15 @@
     // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
-      const nylasStatus = params.get('nylas');
-      const error = params.get('error');
+      const nylasSuccess = params.get('nylas');
       
-      console.log('🔍 OAuth Redirect:', { nylasStatus, error });
-      
-      if (nylasStatus === 'success') {
+      if (nylasSuccess === 'success') {
         showToast('✅ Email account connected successfully!', 'success', 6000);
         setConnectedState();
-        // Remove query params from URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (nylasStatus === 'error') {
-        showToast(`❌ Connection failed: ${decodeURIComponent(error || 'Unknown error')}`, 'error', 6000);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState({}, document.title, '/dashboard.html');
+      } else if (nylasSuccess === 'error') {
+        showToast(`❌ Connection failed. Please try again.`, 'error', 6000);
+        window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
 
@@ -584,27 +580,24 @@
       if (btn) {
         btn.innerText = '✅ Connected';
         btn.classList.add('connected');
-        btn.disabled = false;
       }
     }
 
-    // ── Connect Email (Nylas) - FIXED ──────────────────────────────────────
+    // ── Connect Email (Nylas) ────────────────────────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
       const originalText = btn.innerText;
 
-      // Don't reconnect if already connected
-      if (btn.classList.contains('connected')) {
-        showToast('Already connected!', 'info');
-        return;
-      }
+      console.log('🔗 [FRONTEND] Connect Email button clicked');
+      console.log('📝 [FRONTEND] Token present:', !!token);
 
       btn.innerText = 'Connecting...';
       btn.disabled  = true;
 
       try {
-        // ✅ FIX: Use the correct endpoint (/url not /connect)
-        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
+        console.log('📡 [FRONTEND] Fetching from:', `${BACKEND}/api/auth/nylas/connect`);
+        
+        const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
           method: 'GET',
           headers: { 
             'Authorization': `Bearer ${token}`,
@@ -612,23 +605,47 @@
           }
         });
 
+        console.log('📥 [FRONTEND] Response status:', res.status);
+
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || err.error || `Server error ${res.status}`);
+          const errorText = await res.text();
+          console.error('❌ [FRONTEND] Error response body:', errorText);
+          throw new Error(`Server error ${res.status}: ${errorText}`);
         }
 
         const data = await res.json();
-        console.log('🔗 Auth URL received:', data.url);
+        console.log('🔗 [FRONTEND] Data received:', data);
+        console.log('🔗 [FRONTEND] URL received:', data.url);
 
-        if (data.url) {
-          // ✅ CRITICAL: Use window.location.href for FULL page redirect
-          // This is the ONLY way OAuth works properly
-          window.location.href = data.url;
-        } else {
+        if (!data.url) {
           throw new Error('No URL returned from server');
         }
+
+        // ✅ Verify the URL has response_type=code
+        if (data.url.includes('response_type=code')) {
+          console.log('✅ [FRONTEND] URL contains response_type=code');
+        } else {
+          console.warn('⚠️ [FRONTEND] URL does NOT contain response_type=code!');
+        }
+
+        // ✅ Full page redirect - this is the correct way
+        console.log('🔄 [FRONTEND] Redirecting to Nylas OAuth...');
+        console.log('🔗 [FRONTEND] Redirect URL:', data.url);
+        
+        // Use window.location.assign for reliability
+        window.location.assign(data.url);
+        // OR use window.location.href = data.url;
+        
+        // The page will redirect, so code below this won't execute
+        // But keep a safety timeout just in case
+        setTimeout(() => {
+          console.warn('⚠️ [FRONTEND] Redirect timed out - possible popup blocker or CORS issue');
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }, 5000);
+
       } catch (err) {
-        console.error('❌ Error getting Nylas URL:', err);
+        console.error('❌ [FRONTEND] Error:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
         btn.innerText = originalText;
         btn.disabled = false;
@@ -638,19 +655,14 @@
     // ── Check Email Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        const res = await fetch(`${BACKEND}/api/email/status`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          if (data.connected) {
-            setConnectedState();
-          }
+        // For now, we'll just reset the button to "Connect Email" unless redirected successfully.
+        const btn = document.getElementById('connectEmailBtn');
+        if (btn && !btn.classList.contains('connected')) {
+           btn.innerText = 'Connect Email';
+           btn.classList.remove('connected');
         }
       } catch (err) {
-        // Silently fail - user can still try to connect
-        console.log('Status check not available, using fallback');
+        console.error('Error checking status:', err);
       }
     }
 
@@ -929,7 +941,10 @@
     }
 
     // ── Initialize ───────────────────────────────────────────────────────────
-    console.log('🚀 Dashboard initializing...');
+    console.log('🚀 [FRONTEND] Dashboard initialized');
+    console.log('📝 [FRONTEND] Backend URL:', BACKEND);
+    console.log('📝 [FRONTEND] Token present:', !!token);
+    
     handleOAuthRedirect();
     loadCollapseState();
     checkCurrentPlan();
@@ -943,4 +958,4 @@
     }, 15000);
   </script>
 </body>
-    </html>
+  </html>
