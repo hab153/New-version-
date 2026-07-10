@@ -230,27 +230,6 @@
     .connect-btn.connected { background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent); }
     .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    .fallback-link-container {
-      display: none;
-      margin-top: 12px;
-      padding: 12px;
-      background: var(--bg-raised);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      word-break: break-all;
-    }
-    .fallback-link-container p {
-      font-size: 12px;
-      color: var(--text-3);
-      margin-bottom: 8px;
-    }
-    .fallback-link-container a {
-      color: var(--accent-go);
-      font-size: 11px;
-      font-family: var(--font-mono);
-      text-decoration: underline;
-    }
-
     .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
       background: var(--bg-base); padding: 16px; border-radius: 8px;
@@ -419,12 +398,6 @@
 
       <div class="cc-content-wrapper">
         <div class="cc-content">
-          <!-- Fallback Link Container -->
-          <div id="fallbackContainer" class="fallback-link-container">
-            <p>⚠️ If redirect doesn't work, tap the link below:</p>
-            <a id="fallbackLink" href="#" target="_blank">Open Nylas</a>
-          </div>
-
           <div class="analytics-grid">
             <div class="stat-card">
               <div class="stat-value" id="totalLeads">—</div>
@@ -616,55 +589,53 @@
     }
 
     // ── Connect Email (Nylas) ────────────────────────────────────────────────
-async function connectEmail() {
-  const btn = document.getElementById('connectEmailBtn');
-  const originalText = btn.innerText;
-  const fallbackContainer = document.getElementById('fallbackContainer');
+    async function connectEmail() {
+      const btn = document.getElementById('connectEmailBtn');
+      const originalText = btn.innerText;
 
-  // Hide fallback
-  fallbackContainer.style.display = 'none';
+      btn.innerText = '⏳ Connecting...';
+      btn.disabled = true;
 
-  btn.innerText = '⏳ Connecting...';
-  btn.disabled = true;
+      try {
+        showToast('Connecting to Nylas...', 'info', 2000);
 
-  try {
-    showToast('Connecting to Nylas...', 'info', 2000);
+        const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
+          method: 'GET',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-    const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Server ${res.status}: ${errorText}`);
+        }
+
+        const data = await res.json();
+
+        if (!data.url) {
+          throw new Error('No URL returned from server');
+        }
+
+        // ✅ DIRECT REDIRECT - NO HTML DISPLAY
+        btn.innerText = '🔄 Redirecting...';
+        showToast('Opening Nylas...', 'info', 1500);
+        
+        console.log('✅ Redirecting to:', data.url);
+        
+        // ✅ Use the raw URL - no modifications, no HTML display
+        window.location.href = data.url;
+
+      } catch (error) {
+        console.error('❌ Connect error:', error);
+        btn.innerText = '❌ Failed';
+        showToast(`❌ ${error.message}`, 'error', 5000);
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }, 3000);
       }
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Server ${res.status}: ${errorText}`);
-    }
-
-    const data = await res.json();
-
-    if (!data.url) {
-      throw new Error('No URL returned from server');
-    }
-
-    // ✅ DIRECT REDIRECT - NO HTML DISPLAY
-    btn.innerText = '🔄 Redirecting...';
-    showToast('Opening Nylas...', 'info', 1500);
-    
-    console.log('Redirecting to:', data.url);
-    window.location.href = data.url;
-
-  } catch (error) {
-    console.error('Connect error:', error);
-    btn.innerText = '❌ Failed';
-    showToast(`❌ ${error.message}`, 'error', 5000);
-    setTimeout(() => {
-      btn.innerText = originalText;
-      btn.disabled = false;
-    }, 3000);
-  }
     }
 
     // ── Check Email Connection Status ────────────────────────────────────────
@@ -959,7 +930,6 @@ async function connectEmail() {
     console.log('🚀 [FRONTEND] Dashboard initialized');
     console.log('📝 [FRONTEND] Backend URL:', BACKEND);
     console.log('📝 [FRONTEND] Token present:', !!token);
-
     
     handleOAuthRedirect();
     loadCollapseState();
@@ -974,4 +944,4 @@ async function connectEmail() {
     }, 15000);
   </script>
 </body>
-          </html>
+  </html>
