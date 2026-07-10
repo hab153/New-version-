@@ -562,15 +562,19 @@
     // ── Handle OAuth Redirect ────────────────────────────────────────────────
     function handleOAuthRedirect() {
       const params = new URLSearchParams(window.location.search);
-      const nylasSuccess = params.get('nylas');
+      const nylasStatus = params.get('nylas');
+      const error = params.get('error');
       
-      if (nylasSuccess === 'success') {
+      console.log('🔍 OAuth Redirect:', { nylasStatus, error });
+      
+      if (nylasStatus === 'success') {
         showToast('✅ Email account connected successfully!', 'success', 6000);
         setConnectedState();
-        window.history.replaceState({}, document.title, '/dashboard.html');
-      } else if (nylasSuccess === 'error') {
-        showToast(`❌ Connection failed. Please try again.`, 'error', 6000);
-        window.history.replaceState({}, document.title, '/dashboard.html');
+        // Remove query params from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (nylasStatus === 'error') {
+        showToast(`❌ Connection failed: ${decodeURIComponent(error || 'Unknown error')}`, 'error', 6000);
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
 
@@ -580,21 +584,32 @@
       if (btn) {
         btn.innerText = '✅ Connected';
         btn.classList.add('connected');
+        btn.disabled = false;
       }
     }
 
-    // ── Connect Email (Nylas) ────────────────────────────────────────────────
+    // ── Connect Email (Nylas) - FIXED ──────────────────────────────────────
     async function connectEmail() {
       const btn = document.getElementById('connectEmailBtn');
       const originalText = btn.innerText;
+
+      // Don't reconnect if already connected
+      if (btn.classList.contains('connected')) {
+        showToast('Already connected!', 'info');
+        return;
+      }
 
       btn.innerText = 'Connecting...';
       btn.disabled  = true;
 
       try {
-        // Call the new Nylas endpoint
-        const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        // ✅ FIX: Use the correct endpoint (/url not /connect)
+        const res = await fetch(`${BACKEND}/api/auth/nylas/url`, {
+          method: 'GET',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
 
         if (!res.ok) {
@@ -603,15 +618,17 @@
         }
 
         const data = await res.json();
+        console.log('🔗 Auth URL received:', data.url);
 
         if (data.url) {
-          // Redirect user to Nylas OAuth page
+          // ✅ CRITICAL: Use window.location.href for FULL page redirect
+          // This is the ONLY way OAuth works properly
           window.location.href = data.url;
         } else {
           throw new Error('No URL returned from server');
         }
       } catch (err) {
-        console.error('Error getting Nylas URL:', err);
+        console.error('❌ Error getting Nylas URL:', err);
         showToast(`❌ Could not start connection: ${err.message}`, 'error');
         btn.innerText = originalText;
         btn.disabled = false;
@@ -621,25 +638,19 @@
     // ── Check Email Connection Status ────────────────────────────────────────
     async function checkEmailStatus() {
       try {
-        // We can check status by trying to fetch leads or a specific status endpoint
-        // For now, we'll assume if we can fetch leads, we might be connected, 
-        // but ideally we'd have a /api/auth/nylas/status endpoint.
-        // Let's use the lead fetch as a proxy for now or add a specific check.
+        const res = await fetch(`${BACKEND}/api/email/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         
-        // Actually, let's just check if we have a stored state or try a lightweight call.
-        // Since we don't have a dedicated status endpoint in the provided backend code yet,
-        // we will rely on the redirect success or manual check.
-        // To make it robust, let's try to fetch the user profile which might have integration info
-        // or just leave it for the user to click "Connect" if it's not connected.
-        
-        // For now, we'll just reset the button to "Connect Email" unless redirected successfully.
-        const btn = document.getElementById('connectEmailBtn');
-        if (btn && !btn.classList.contains('connected')) {
-           btn.innerText = 'Connect Email';
-           btn.classList.remove('connected');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.connected) {
+            setConnectedState();
+          }
         }
       } catch (err) {
-        console.error('Error checking status:', err);
+        // Silently fail - user can still try to connect
+        console.log('Status check not available, using fallback');
       }
     }
 
@@ -918,6 +929,7 @@
     }
 
     // ── Initialize ───────────────────────────────────────────────────────────
+    console.log('🚀 Dashboard initializing...');
     handleOAuthRedirect();
     loadCollapseState();
     checkCurrentPlan();
@@ -931,4 +943,4 @@
     }, 15000);
   </script>
 </body>
-            </html>
+    </html>
