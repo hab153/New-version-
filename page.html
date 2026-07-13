@@ -103,7 +103,6 @@
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* MODE SELECTOR */
     #modeSelector {
       display: flex;
       gap: 12px;
@@ -261,7 +260,6 @@
     .t-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes tdot { 0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); } 30% { transform: translateY(-6px) scale(1.2); background: var(--gold); } }
 
-    /* REVIEW PANEL - NEW LEAD DISPLAY */
     #reviewPanel {
       display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px; max-height: 48vh;
       overflow-y: auto; flex-shrink: 0; position: relative; z-index: 6;
@@ -278,7 +276,6 @@
     }
     .rv-close:hover { color: var(--t1); background: var(--hover); border-color: var(--br-md); }
 
-    /* ── LEAD TABLE ── */
     .lead-table-wrap {
       overflow-x: auto;
       margin-bottom: 16px;
@@ -324,7 +321,6 @@
     .expand-icon { font-size: 10px; color: var(--t3); transition: transform 0.2s; }
     .lead-table tr.expanded .expand-icon { transform: rotate(180deg); }
 
-    /* ── EXPANDED DETAILS ── */
     .lead-detail-row { display: none; }
     .lead-detail-row.open { display: table-row; }
     .lead-detail-row td { padding: 16px 20px; background: var(--base); border-bottom: 1px solid var(--br-dim); }
@@ -702,7 +698,6 @@
   let currentGeneratedLeads = [];
   let notifInterval = null;
   let isSessionLoading = false;
-  let expandedLead = null;
 
   // ----- DOM REFS -----
   const modeSelector = document.getElementById('modeSelector');
@@ -885,34 +880,31 @@
   function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
 
   // ============================================================
-  //  NEW: RENDER LEADS TABLE
+  //  RENDER LEADS - BEAUTIFUL TABLE
   // ============================================================
   function renderLeads(leads) {
     leadTableContainer.innerHTML = '';
     if (!leads || leads.length === 0) {
       leadTableContainer.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);">No leads found.</div>';
+      reviewPanel.style.display = 'block';
       return;
     }
 
-    // Build table
-    const table = document.createElement('table');
-    table.className = 'lead-table';
-    
-    // Header
-    const thead = document.createElement('thead');
-    thead.innerHTML = `
-      <tr>
-        <th style="width:40px;">#</th>
-        <th>Company</th>
-        <th>Industry</th>
-        <th style="width:80px;">Score</th>
-        <th style="width:100px;">Status</th>
-        <th style="width:30px;"></th>
-      </tr>
+    let tableHTML = `
+      <div class="lead-table-wrap">
+      <table class="lead-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>Company</th>
+            <th>Industry</th>
+            <th style="width:80px;">Score</th>
+            <th style="width:100px;">Status</th>
+            <th style="width:30px;"></th>
+          </tr>
+        </thead>
+        <tbody>
     `;
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
 
     leads.forEach((lead, index) => {
       const rank = lead.rank || index + 1;
@@ -921,113 +913,97 @@
       const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
       const statusClass = score >= 0.75 ? 'status-good' : score >= 0.50 ? 'status-moderate' : 'status-low';
       const statusLabel = score >= 0.75 ? 'Good' : score >= 0.50 ? 'Moderate' : 'Low';
+      const email = lead.email || 'N/A';
+      const emailConfidence = lead.emailConfidence || 'unknown';
+      const confClass = emailConfidence === 'high' ? 'high' : emailConfidence === 'medium' ? 'medium' : 'low';
+      const outreach = lead.outreach || lead.messages?.[0] || {};
+      const subject = outreach.subject || 'No subject';
+      const body = outreach.body || 'No message body available.';
+      const evidence = outreach.personalization_used || outreach.evidence_summary || [];
+      const qualityPassed = lead.quality_passed !== undefined ? lead.quality_passed : true;
+      const warnings = lead.quality_warnings || [];
+      const issues = lead.quality_issues || [];
 
-      const row = document.createElement('tr');
-      row.dataset.index = index;
-      row.innerHTML = `
-        <td><span class="rank-badge ${rankClass}">${rank}</span></td>
-        <td><strong>${escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
-        <td>${escapeHtml(lead.industry || '—')}</td>
-        <td>
-          <span style="font-weight:600;font-size:13px;">${percent}%</span>
-          <div class="score-bar"><div class="fill" style="width:${percent}%;"></div></div>
-        </td>
-        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-        <td><span class="expand-icon">▾</span></td>
+      tableHTML += `
+        <tr onclick="toggleLeadDetail(${index})" style="cursor:pointer;">
+          <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+          <td><strong>${escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
+          <td>${escapeHtml(lead.industry || '—')}</td>
+          <td>
+            <span style="font-weight:600;font-size:13px;">${percent}%</span>
+            <div class="score-bar"><div class="fill" style="width:${percent}%;"></div></div>
+          </td>
+          <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+          <td><span class="expand-icon">▾</span></td>
+        </tr>
+        <tr class="lead-detail-row">
+          <td colspan="6">
+            <div class="lead-detail-grid">
+              <div class="detail-section">
+                <h4>📋 Company Details</h4>
+                <div class="field"><span class="label">Company</span><span class="value">${escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
+                <div class="field"><span class="label">Domain</span><span class="value">${escapeHtml(lead.domain || '—')}</span></div>
+                <div class="field"><span class="label">Industry</span><span class="value">${escapeHtml(lead.industry || '—')}</span></div>
+                <div class="field"><span class="label">Location</span><span class="value">${escapeHtml(lead.hq || lead.location || '—')}</span></div>
+                <div class="field"><span class="label">Employees</span><span class="value">${lead.employees || '—'}</span></div>
+                <div class="field"><span class="label">Tech Stack</span><span class="value">${Array.isArray(lead.tech_stack) ? lead.tech_stack.join(', ') : (lead.tech_stack || '—')}</span></div>
+                <div class="field"><span class="label">Hiring</span><span class="value">${lead.hiring || '—'}</span></div>
+              </div>
+
+              <div class="detail-section">
+                <h4>📧 Contact</h4>
+                <div class="field"><span class="label">Email</span><span class="value">${escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
+                ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${escapeHtml(lead.emailLabel)}</span></div>` : ''}
+                ${lead.contact_alternatives ? `<div class="field"><span class="label">Alternatives</span><span class="value" style="font-size:11px;color:var(--t3);">${lead.contact_alternatives.join(', ')}</span></div>` : ''}
+              </div>
+
+              <div class="detail-section" style="grid-column: 1 / -1;">
+                <h4>✉️ Personalized Outreach</h4>
+                <div class="outreach-preview">
+                  <div class="subj">${escapeHtml(subject)}</div>
+                  <div class="body">${escapeHtml(body)}</div>
+                  ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${escapeHtml(e)}</span>`).join('')}</div>` : ''}
+                </div>
+              </div>
+
+              <div class="detail-section">
+                <h4>🏆 Ranking & Quality</h4>
+                <div class="field"><span class="label">Lead Score</span><span class="value">${Math.round((lead.leadScore || 0) * 100)}%</span></div>
+                <div class="field"><span class="label">Rank</span><span class="value">#${lead.rank || '—'}</span></div>
+                <div class="field"><span class="label">Label</span><span class="value">${escapeHtml(lead.rank_label || '—')}</span></div>
+                <div class="field"><span class="label">Quality</span><span class="value"><span class="quality-badge ${qualityPassed ? '' : 'failed'}">${qualityPassed ? '✅ Passed' : '❌ Failed'}</span></span></div>
+                ${warnings.length > 0 ? `<div class="field"><span class="label">Warnings</span><span class="value" style="font-size:11px;color:var(--rose);">${warnings.join('; ')}</span></div>` : ''}
+                ${issues.length > 0 ? `<div class="field"><span class="label">Issues</span><span class="value" style="font-size:11px;color:var(--rose);">${issues.join('; ')}</span></div>` : ''}
+              </div>
+
+              <div class="detail-section" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                <h4>📤 Actions</h4>
+                <button class="send-lead-btn" onclick="event.stopPropagation(); sendSingleLead(${index})" ${!lead.email ? 'disabled' : ''}>
+                  ${lead.email ? '📧 Send Email' : '⚠️ No Email'}
+                </button>
+                ${lead.reason_selected ? `<div style="margin-top:8px;font-size:10px;color:var(--t3);">${lead.reason_selected.slice(0,3).join(' • ')}</div>` : ''}
+              </div>
+            </div>
+          </td>
+        </tr>
       `;
-      row.style.cursor = 'pointer';
-      row.addEventListener('click', () => toggleLeadDetail(index));
-      tbody.appendChild(row);
-
-      // Detail row
-      const detailRow = document.createElement('tr');
-      detailRow.className = 'lead-detail-row';
-      detailRow.dataset.index = index;
-      detailRow.innerHTML = buildLeadDetailHTML(lead);
-      tbody.appendChild(detailRow);
     });
 
-    table.appendChild(tbody);
-    leadTableContainer.appendChild(table);
+    tableHTML += `</tbody></table></div>`;
+    tableHTML += `<button class="send-all" onclick="submitBatch()">📧 Send All Emails</button>`;
+    
+    leadTableContainer.innerHTML = tableHTML;
     reviewPanel.style.display = 'block';
     scrollLeadDown();
   }
 
-  function buildLeadDetailHTML(lead) {
-    const email = lead.email || 'N/A';
-    const emailConfidence = lead.emailConfidence || 'unknown';
-    const confClass = emailConfidence === 'high' ? 'high' : emailConfidence === 'medium' ? 'medium' : 'low';
-    const outreach = lead.outreach || lead.messages?.[0] || {};
-    const subject = outreach.subject || 'No subject';
-    const body = outreach.body || 'No message body available.';
-    const evidence = outreach.personalization_used || outreach.evidence_summary || [];
-    const qualityPassed = lead.quality_passed !== undefined ? lead.quality_passed : true;
-    const warnings = lead.quality_warnings || [];
-    const issues = lead.quality_issues || [];
-
-    return `
-      <td colspan="6">
-        <div class="lead-detail-grid">
-          <div class="detail-section">
-            <h4>📋 Company Details</h4>
-            <div class="field"><span class="label">Company</span><span class="value">${escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
-            <div class="field"><span class="label">Domain</span><span class="value">${escapeHtml(lead.domain || '—')}</span></div>
-            <div class="field"><span class="label">Industry</span><span class="value">${escapeHtml(lead.industry || '—')}</span></div>
-            <div class="field"><span class="label">Location</span><span class="value">${escapeHtml(lead.hq || lead.location || '—')}</span></div>
-            <div class="field"><span class="label">Employees</span><span class="value">${lead.employees || '—'}</span></div>
-            <div class="field"><span class="label">Tech Stack</span><span class="value">${Array.isArray(lead.tech_stack) ? lead.tech_stack.join(', ') : (lead.tech_stack || '—')}</span></div>
-            <div class="field"><span class="label">Hiring</span><span class="value">${lead.hiring || '—'}</span></div>
-          </div>
-
-          <div class="detail-section">
-            <h4>📧 Contact</h4>
-            <div class="field"><span class="label">Email</span><span class="value">${escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
-            ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${escapeHtml(lead.emailLabel)}</span></div>` : ''}
-            ${lead.contact_alternatives ? `<div class="field"><span class="label">Alternatives</span><span class="value" style="font-size:11px;color:var(--t3);">${lead.contact_alternatives.join(', ')}</span></div>` : ''}
-          </div>
-
-          <div class="detail-section" style="grid-column: 1 / -1;">
-            <h4>✉️ Personalized Outreach</h4>
-            <div class="outreach-preview">
-              <div class="subj">${escapeHtml(subject)}</div>
-              <div class="body">${escapeHtml(body)}</div>
-              ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${escapeHtml(e)}</span>`).join('')}</div>` : ''}
-            </div>
-          </div>
-
-          <div class="detail-section">
-            <h4>🏆 Ranking & Quality</h4>
-            <div class="field"><span class="label">Lead Score</span><span class="value">${Math.round((lead.leadScore || 0) * 100)}%</span></div>
-            <div class="field"><span class="label">Rank</span><span class="value">#${lead.rank || '—'}</span></div>
-            <div class="field"><span class="label">Label</span><span class="value">${escapeHtml(lead.rank_label || '—')}</span></div>
-            <div class="field"><span class="label">Quality</span><span class="value"><span class="quality-badge ${qualityPassed ? '' : 'failed'}">${qualityPassed ? '✅ Passed' : '❌ Failed'}</span></span></div>
-            ${warnings.length > 0 ? `<div class="field"><span class="label">Warnings</span><span class="value" style="font-size:11px;color:var(--rose);">${warnings.join('; ')}</span></div>` : ''}
-            ${issues.length > 0 ? `<div class="field"><span class="label">Issues</span><span class="value" style="font-size:11px;color:var(--rose);">${issues.join('; ')}</span></div>` : ''}
-          </div>
-
-          <div class="detail-section" style="display:flex;flex-direction:column;justify-content:flex-end;">
-            <h4>📤 Actions</h4>
-            <button class="send-lead-btn" onclick="sendSingleLead(${lead.rank || 0})" ${!lead.email ? 'disabled' : ''}>
-              ${lead.email ? '📧 Send Email' : '⚠️ No Email'}
-            </button>
-            ${lead.reason_selected ? `<div style="margin-top:8px;font-size:10px;color:var(--t3);">${lead.reason_selected.slice(0,3).join(' • ')}</div>` : ''}
-          </div>
-        </div>
-      </td>
-    `;
-  }
-
   function toggleLeadDetail(index) {
     const rows = document.querySelectorAll('.lead-detail-row');
-    const mainRows = document.querySelectorAll('.lead-table tbody tr:not(.lead-detail-row)');
-    
     rows.forEach((row, i) => {
       if (i === index) {
         row.classList.toggle('open');
-        if (mainRows[i]) mainRows[i].classList.toggle('expanded');
       } else {
         row.classList.remove('open');
-        if (mainRows[i]) mainRows[i].classList.remove('expanded');
       }
     });
   }
