@@ -103,7 +103,7 @@
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* MODE SELECTOR - Small, sleek, at the TOP of content area */
+    /* MODE SELECTOR */
     #modeSelector {
       display: flex;
       gap: 12px;
@@ -142,57 +142,24 @@
       position: relative;
       overflow: hidden;
     }
-    .mode-btn .mode-icon {
-      font-size: 16px;
-      line-height: 1;
-    }
-    .mode-btn .mode-label {
-      font-size: 13px;
-      color: var(--t1);
-    }
-    .mode-btn .mode-badge {
-      font-size: 8px;
-      background: rgba(255,255,255,0.06);
-      padding: 2px 8px;
-      border-radius: 10px;
-      color: var(--t3);
-      font-weight: 400;
-      letter-spacing: 0.04em;
-    }
-    .mode-btn:hover {
-      border-color: var(--br-hi);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    }
-    .mode-btn.lead-mode {
-      border-color: rgba(201,168,76,0.2);
-    }
-    .mode-btn.lead-mode:hover {
-      border-color: rgba(201,168,76,0.5);
-      box-shadow: 0 4px 16px rgba(201,168,76,0.08);
-    }
-    .mode-btn.assistant-mode {
-      border-color: rgba(102,221,255,0.15);
-    }
-    .mode-btn.assistant-mode:hover {
-      border-color: rgba(102,221,255,0.4);
-      box-shadow: 0 4px 16px rgba(102,221,255,0.06);
-    }
+    .mode-btn .mode-icon { font-size: 16px; line-height: 1; }
+    .mode-btn .mode-label { font-size: 13px; color: var(--t1); }
+    .mode-btn .mode-badge { font-size: 8px; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; color: var(--t3); font-weight: 400; letter-spacing: 0.04em; }
+    .mode-btn:hover { border-color: var(--br-hi); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+    .mode-btn.lead-mode { border-color: rgba(201,168,76,0.2); }
+    .mode-btn.lead-mode:hover { border-color: rgba(201,168,76,0.5); box-shadow: 0 4px 16px rgba(201,168,76,0.08); }
+    .mode-btn.assistant-mode { border-color: rgba(102,221,255,0.15); }
+    .mode-btn.assistant-mode:hover { border-color: rgba(102,221,255,0.4); box-shadow: 0 4px 16px rgba(102,221,255,0.06); }
 
-    /* MODE CONTAINERS */
     .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; overflow: hidden; }
     .mode-container.active { display: flex; }
 
-    /* LEAD CONTAINER - override input visibility */
     #leadContainer .input-bar { display: none !important; }
     #leadContainer .input-bar.lead-active { display: block !important; }
     #leadContainer .input-bar.lead-hidden { display: none !important; }
-
-    /* ASSISTANT CONTAINER - input bar ALWAYS visible */
     #assistantContainer .input-bar { display: block !important; }
     #assistantContainer .input-bar.active { display: block !important; }
 
-    /* Setup wizard - centered below mode selector */
     #setupWizard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px 24px; overflow-y: auto; position: relative; z-index: 1; }
     #setupWizard.hidden { display: none; }
 
@@ -294,6 +261,7 @@
     .t-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes tdot { 0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); } 30% { transform: translateY(-6px) scale(1.2); background: var(--gold); } }
 
+    /* REVIEW PANEL - NEW LEAD DISPLAY */
     #reviewPanel {
       display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px; max-height: 48vh;
       overflow-y: auto; flex-shrink: 0; position: relative; z-index: 6;
@@ -301,6 +269,7 @@
     #reviewPanel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), rgba(201,168,76,0.5), rgba(201,168,76,0.3), transparent); }
     #reviewPanel::-webkit-scrollbar { width: 2px; }
     #reviewPanel::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 2px; }
+
     .rv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--br-dim); }
     .rv-title { font-family: var(--display); font-size: 16px; font-weight: 400; color: var(--gold-pale); font-style: italic; }
     .rv-close {
@@ -308,41 +277,113 @@
       border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.2s, background 0.2s, border-color 0.2s;
     }
     .rv-close:hover { color: var(--t1); background: var(--hover); border-color: var(--br-md); }
-    .lead-card {
-      border: 1px solid var(--br-dim); padding: 14px; margin-bottom: 10px; border-radius: var(--r-md); background: var(--surface);
-      transition: border-color 0.2s, transform 0.15s; position: relative; overflow: hidden;
-    }
-    .lead-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--gold), transparent); opacity: 0.4; }
-    .lead-card:hover { border-color: var(--br-md); }
-    .lead-name { font-weight: 600; color: var(--gold-pale); margin-bottom: 2px; font-size: 12.5px; letter-spacing: 0.01em; }
-    .lead-email-guess { font-family: var(--mono); font-size: 9.5px; color: var(--t3); text-decoration: line-through; margin-bottom: 12px; opacity: 0.7; }
-    .rv-field { margin-bottom: 10px; }
-    .rv-label { display: block; font-family: var(--mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--t3); margin-bottom: 5px; }
-    .rv-input, .rv-textarea {
-      width: 100%; background: var(--raised); border: 1px solid var(--br-dim); border-radius: var(--r-sm); color: var(--t1);
-      padding: 9px 11px; font-family: var(--ui); font-size: 12.5px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .rv-input:focus, .rv-textarea:focus { border-color: rgba(201,168,76,0.3); box-shadow: 0 0 0 3px rgba(201,168,76,0.05); }
-    .rv-input[type="email"] { border-color: rgba(201,168,76,0.18); background: rgba(201,168,76,0.03); }
-    .rv-textarea { resize: vertical; min-height: 72px; }
-    .send-all {
-      width: 100%; padding: 13px; background: var(--gold); color: #0d0a04; border: none; border-radius: var(--r-md);
-      font-family: var(--ui); font-weight: 700; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
-      margin-top: 10px; position: relative; overflow: hidden; transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-    }
-    .send-all::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%); pointer-events: none; }
-    .send-all:hover { background: var(--gold-bright); box-shadow: 0 6px 22px rgba(201,168,76,0.3); transform: translateY(-1px); }
-    .send-all:disabled { background: var(--hover); color: var(--t3); cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .input-bar { padding: 12px 16px 14px; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; display: none; position: relative; z-index: 5; }
+    /* ── LEAD TABLE ── */
+    .lead-table-wrap {
+      overflow-x: auto;
+      margin-bottom: 16px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--br-dim);
+    }
+    .lead-table {
+      width: 100%; border-collapse: collapse; font-size: 12px; min-width: 420px;
+    }
+    .lead-table th {
+      text-align: left; padding: 10px 12px; color: var(--t2); border-bottom: 2px solid var(--br-dim);
+      font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500;
+      background: var(--surface);
+    }
+    .lead-table td {
+      padding: 10px 12px; border-bottom: 1px solid var(--br-dim); color: var(--t1); cursor: pointer;
+      transition: background 0.15s;
+    }
+    .lead-table tr:hover td { background: var(--hover); }
+    .lead-table tr.expanded td { background: var(--raised); }
+    .lead-table .rank-badge {
+      display: inline-block; min-width: 24px; text-align: center; font-weight: 700;
+      background: var(--raised); padding: 2px 6px; border-radius: 4px; font-size: 11px;
+    }
+    .rank-1 { color: var(--gold); }
+    .rank-2 { color: var(--platinum); }
+    .rank-3 { color: #cd7f32; }
+    .lead-table .score-bar {
+      display: inline-block; height: 4px; border-radius: 2px; background: var(--br-dim); min-width: 40px; position: relative; top: 0px;
+    }
+    .lead-table .score-bar .fill {
+      height: 100%; border-radius: 2px; background: var(--gold); transition: width 0.4s ease;
+    }
+    .lead-table .status-badge {
+      padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      background: var(--sage-dim); color: var(--sage);
+    }
+    .status-moderate { background: rgba(255,170,0,0.12); color: #ffaa00; }
+    .status-good { background: var(--sage-dim); color: var(--sage); }
+    .status-low { background: var(--rose-dim); color: var(--rose); }
+    .status-excellent { background: rgba(201,168,76,0.15); color: var(--gold); }
+
+    .expand-icon { font-size: 10px; color: var(--t3); transition: transform 0.2s; }
+    .lead-table tr.expanded .expand-icon { transform: rotate(180deg); }
+
+    /* ── EXPANDED DETAILS ── */
+    .lead-detail-row { display: none; }
+    .lead-detail-row.open { display: table-row; }
+    .lead-detail-row td { padding: 16px 20px; background: var(--base); border-bottom: 1px solid var(--br-dim); }
+    .lead-detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 600px) { .lead-detail-grid { grid-template-columns: 1fr; } }
+    .detail-section {
+      background: var(--surface); border: 1px solid var(--br-dim); border-radius: var(--r-sm); padding: 14px 16px;
+    }
+    .detail-section h4 {
+      font-family: var(--mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--t3); margin-bottom: 8px; border-bottom: 1px solid var(--br-dim); padding-bottom: 6px;
+    }
+    .detail-section .field { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; color: var(--t2); }
+    .detail-section .field .label { color: var(--t3); font-size: 10px; }
+    .detail-section .field .value { color: var(--t1); font-weight: 500; text-align: right; }
+    .detail-section .email-confidence {
+      display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600;
+      background: var(--warning); color: #000;
+    }
+    .email-confidence.high { background: var(--sage); color: #000; }
+    .email-confidence.medium { background: #ffaa00; color: #000; }
+    .email-confidence.low { background: var(--rose); color: #fff; }
+
+    .outreach-preview {
+      background: var(--raised); border-radius: var(--r-sm); padding: 12px; margin-top: 6px;
+      border-left: 2px solid rgba(201,168,76,0.3);
+    }
+    .outreach-preview .subj { font-weight: 600; color: var(--gold-pale); font-size: 13px; margin-bottom: 4px; }
+    .outreach-preview .body { font-family: var(--mono); font-size: 10.5px; color: var(--t2); line-height: 1.7; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
+    .outreach-preview .evidence {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+    }
+    .outreach-preview .evidence span {
+      background: var(--surface); padding: 2px 8px; border-radius: 10px; font-size: 8.5px; color: var(--t3);
+      border: 1px solid var(--br-dim);
+    }
+    .quality-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 600;
+      background: var(--sage-dim); color: var(--sage);
+    }
+    .quality-badge.failed { background: var(--rose-dim); color: var(--rose); }
+
+    .send-lead-btn {
+      padding: 6px 14px; background: var(--gold); color: #0d0a04; border: none; border-radius: var(--r-sm);
+      font-family: var(--ui); font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .send-lead-btn:hover { background: var(--gold-bright); transform: scale(1.03); }
+    .send-lead-btn:disabled { background: var(--hover); color: var(--t3); cursor: not-allowed; transform: none; }
+
+    .input-bar {
+      padding: 12px 16px 14px; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; display: none; position: relative; z-index: 5;
+    }
     .input-bar.active { display: block; }
     .input-shell {
       display: flex; align-items: flex-end; gap: 9px; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-xl);
       padding: 10px 10px 10px 18px; transition: border-color 0.25s, box-shadow 0.25s; position: relative;
-    }
-    .input-shell::before {
-      content: ''; position: absolute; inset: -1px; border-radius: calc(var(--r-xl) + 1px);
-      background: linear-gradient(135deg, rgba(201,168,76,0), rgba(201,168,76,0)); transition: background 0.3s; pointer-events: none; z-index: -1;
     }
     .input-shell:focus-within { border-color: rgba(201,168,76,0.28); box-shadow: 0 0 0 3px rgba(201,168,76,0.05), 0 8px 24px rgba(0,0,0,0.3); }
     .msg-ta {
@@ -534,11 +575,13 @@
   </div>
   <div id="reviewPanel">
     <div class="rv-header">
-      <span class="rv-title">Review Generated Emails</span>
+      <span class="rv-title">📊 Leads Found</span>
       <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
     </div>
-    <div id="emailList"></div>
-    <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect &amp; Send All</button>
+    <div id="leadTableContainer">
+      <!-- Table rendered by JavaScript -->
+    </div>
+    <button class="send-all" id="sendAllBtn" onclick="submitBatch()">📧 Send All Emails</button>
   </div>
   <div class="input-bar lead-active" id="leadInputBar">
     <div class="input-shell">
@@ -568,7 +611,6 @@
       <span class="mode-badge">Chat</span>
     </button>
   </div>
-
   <div class="chat-area active" id="assistantChatArea">
     <div id="assistantMsgContainer">
       <div class="msg-row ai">
@@ -622,19 +664,16 @@
           const csrfToken = localStorage.getItem('csrfToken');
           const method = (options.method || 'GET').toUpperCase();
           const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-
-          // Only add CSRF token for state-changing requests
           if (!safeMethods.includes(method) && csrfToken) {
               options.headers = options.headers || {};
               options.headers['X-CSRF-Token'] = csrfToken;
           }
-
           return originalFetch.call(this, url, options);
       };
   })();
 
   // ============================================================
-  //  XSS PROTECTION – ENHANCED (Full 5-character escaping)
+  //  XSS PROTECTION
   // ============================================================
   function escapeHtml(str) {
       if (!str) return '';
@@ -645,17 +684,6 @@
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;')
           .replace(/`/g, '&#x60;');
-  }
-
-  function escapeAttr(str) {
-      if (!str) return '';
-      return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#x27;')
-          .replace(/`/g, '&#x60;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
   }
 
   // ============================================================
@@ -674,6 +702,7 @@
   let currentGeneratedLeads = [];
   let notifInterval = null;
   let isSessionLoading = false;
+  let expandedLead = null;
 
   // ----- DOM REFS -----
   const modeSelector = document.getElementById('modeSelector');
@@ -688,7 +717,7 @@
   const leadSendBtn = document.getElementById('leadSendBtn');
   const leadCharCount = document.getElementById('leadCharCount');
   const reviewPanel = document.getElementById('reviewPanel');
-  const emailList = document.getElementById('emailList');
+  const leadTableContainer = document.getElementById('leadTableContainer');
   const assistantMsgContainer = document.getElementById('assistantMsgContainer');
   const assistantInputBar = document.getElementById('assistantInputBar');
   const assistantMsgInput = document.getElementById('assistantMsgInput');
@@ -702,12 +731,9 @@
   window.switchMode = function(mode) {
     if (isChatActive) return;
     currentMode = mode;
-
     modeSelector.classList.add('hidden');
     assistantModeSelector.style.display = 'none';
-
     document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-
     if (mode === 'lead') {
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
@@ -779,14 +805,11 @@
     if (isChatActive || isTyping) return;
     isChatActive = true;
     isTyping = true;
-
     modeSelector.classList.add('hidden');
-
     setupWizard.style.display = 'none';
     leadChatArea.classList.add('active');
     leadInputBar.classList.remove('lead-active');
     leadInputBar.classList.add('lead-hidden');
-
     addLeadMessage('user', message);
     showLeadTyping('Searching for leads…');
 
@@ -805,20 +828,13 @@
           const url = new URL(window.location);
           url.searchParams.set('session', data.sessionId);
           window.history.pushState({}, '', url);
-
           try {
             await fetch(`${BACKEND}/api/sessions`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-              body: JSON.stringify({
-                sessionId: data.sessionId,
-                type: 'lead',
-                name: message.substring(0, 50) || 'Lead Search'
-              })
+              body: JSON.stringify({ sessionId: data.sessionId, type: 'lead', name: message.substring(0, 50) || 'Lead Search' })
             });
-          } catch (sessionErr) {
-            console.error('[page] Failed to create session:', sessionErr);
-          }
+          } catch (sessionErr) { console.error('[page] Failed to create session:', sessionErr); }
         }
         if (data.history) conversationHistory = data.history;
 
@@ -826,8 +842,8 @@
           const parsed = JSON.parse(data.reply);
           if (Array.isArray(parsed)) {
             currentGeneratedLeads = parsed;
-            renderReview(parsed);
-            addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the emails below.`);
+            renderLeads(parsed);
+            addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the table below.`);
             return;
           }
         } catch {}
@@ -856,12 +872,7 @@
 
   function showLeadTyping(label = 'Thinking…') {
     let row = document.getElementById('leadTypingRow');
-    if (row) {
-      const lbl = row.querySelector('.t-label');
-      if (lbl) lbl.textContent = label;
-      scrollLeadDown();
-      return;
-    }
+    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollLeadDown(); return; }
     row = document.createElement('div');
     row.className = 'typing-row';
     row.id = 'leadTypingRow';
@@ -870,62 +881,256 @@
     scrollLeadDown();
   }
 
-  function hideLeadTyping() {
-    document.getElementById('leadTypingRow')?.remove();
-  }
+  function hideLeadTyping() { document.getElementById('leadTypingRow')?.remove(); }
+  function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
 
-  function scrollLeadDown() {
-    leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
-  }
+  // ============================================================
+  //  NEW: RENDER LEADS TABLE
+  // ============================================================
+  function renderLeads(leads) {
+    leadTableContainer.innerHTML = '';
+    if (!leads || leads.length === 0) {
+      leadTableContainer.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);">No leads found.</div>';
+      return;
+    }
 
-  // ----- REVIEW PANEL (All user content escaped) -----
-  function renderReview(leads) {
-    emailList.innerHTML = '';
-    leads.forEach((lead, i) => {
-      const d = document.createElement('div');
-      d.className = 'lead-card';
-      const subj = lead.messages?.[0]?.subject || 'Hello from Skyline';
-      const body = lead.messages?.[0]?.body || '';
-      const safeName = escapeHtml(lead.name || 'Unknown');
-      const safeCompany = escapeHtml(lead.company || '');
-      const safeEmail = escapeHtml(lead.email || '');
-      const safeSubj = escapeHtml(subj);
-      const safeBody = escapeHtml(body);
-      d.innerHTML = `<div class="lead-name">${safeName} · ${safeCompany}</div><div class="lead-email-guess">${safeEmail}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${safeEmail}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${safeSubj}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${safeBody}</textarea></div>`;
-      emailList.appendChild(d);
+    // Build table
+    const table = document.createElement('table');
+    table.className = 'lead-table';
+    
+    // Header
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+      <tr>
+        <th style="width:40px;">#</th>
+        <th>Company</th>
+        <th>Industry</th>
+        <th style="width:80px;">Score</th>
+        <th style="width:100px;">Status</th>
+        <th style="width:30px;"></th>
+      </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    leads.forEach((lead, index) => {
+      const rank = lead.rank || index + 1;
+      const score = lead.leadScore || 0;
+      const percent = Math.round(score * 100);
+      const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+      const statusClass = score >= 0.75 ? 'status-good' : score >= 0.50 ? 'status-moderate' : 'status-low';
+      const statusLabel = score >= 0.75 ? 'Good' : score >= 0.50 ? 'Moderate' : 'Low';
+
+      const row = document.createElement('tr');
+      row.dataset.index = index;
+      row.innerHTML = `
+        <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+        <td><strong>${escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
+        <td>${escapeHtml(lead.industry || '—')}</td>
+        <td>
+          <span style="font-weight:600;font-size:13px;">${percent}%</span>
+          <div class="score-bar"><div class="fill" style="width:${percent}%;"></div></div>
+        </td>
+        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+        <td><span class="expand-icon">▾</span></td>
+      `;
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => toggleLeadDetail(index));
+      tbody.appendChild(row);
+
+      // Detail row
+      const detailRow = document.createElement('tr');
+      detailRow.className = 'lead-detail-row';
+      detailRow.dataset.index = index;
+      detailRow.innerHTML = buildLeadDetailHTML(lead);
+      tbody.appendChild(detailRow);
     });
+
+    table.appendChild(tbody);
+    leadTableContainer.appendChild(table);
     reviewPanel.style.display = 'block';
     scrollLeadDown();
+  }
+
+  function buildLeadDetailHTML(lead) {
+    const email = lead.email || 'N/A';
+    const emailConfidence = lead.emailConfidence || 'unknown';
+    const confClass = emailConfidence === 'high' ? 'high' : emailConfidence === 'medium' ? 'medium' : 'low';
+    const outreach = lead.outreach || lead.messages?.[0] || {};
+    const subject = outreach.subject || 'No subject';
+    const body = outreach.body || 'No message body available.';
+    const evidence = outreach.personalization_used || outreach.evidence_summary || [];
+    const qualityPassed = lead.quality_passed !== undefined ? lead.quality_passed : true;
+    const warnings = lead.quality_warnings || [];
+    const issues = lead.quality_issues || [];
+
+    return `
+      <td colspan="6">
+        <div class="lead-detail-grid">
+          <div class="detail-section">
+            <h4>📋 Company Details</h4>
+            <div class="field"><span class="label">Company</span><span class="value">${escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
+            <div class="field"><span class="label">Domain</span><span class="value">${escapeHtml(lead.domain || '—')}</span></div>
+            <div class="field"><span class="label">Industry</span><span class="value">${escapeHtml(lead.industry || '—')}</span></div>
+            <div class="field"><span class="label">Location</span><span class="value">${escapeHtml(lead.hq || lead.location || '—')}</span></div>
+            <div class="field"><span class="label">Employees</span><span class="value">${lead.employees || '—'}</span></div>
+            <div class="field"><span class="label">Tech Stack</span><span class="value">${Array.isArray(lead.tech_stack) ? lead.tech_stack.join(', ') : (lead.tech_stack || '—')}</span></div>
+            <div class="field"><span class="label">Hiring</span><span class="value">${lead.hiring || '—'}</span></div>
+          </div>
+
+          <div class="detail-section">
+            <h4>📧 Contact</h4>
+            <div class="field"><span class="label">Email</span><span class="value">${escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
+            ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${escapeHtml(lead.emailLabel)}</span></div>` : ''}
+            ${lead.contact_alternatives ? `<div class="field"><span class="label">Alternatives</span><span class="value" style="font-size:11px;color:var(--t3);">${lead.contact_alternatives.join(', ')}</span></div>` : ''}
+          </div>
+
+          <div class="detail-section" style="grid-column: 1 / -1;">
+            <h4>✉️ Personalized Outreach</h4>
+            <div class="outreach-preview">
+              <div class="subj">${escapeHtml(subject)}</div>
+              <div class="body">${escapeHtml(body)}</div>
+              ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${escapeHtml(e)}</span>`).join('')}</div>` : ''}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>🏆 Ranking & Quality</h4>
+            <div class="field"><span class="label">Lead Score</span><span class="value">${Math.round((lead.leadScore || 0) * 100)}%</span></div>
+            <div class="field"><span class="label">Rank</span><span class="value">#${lead.rank || '—'}</span></div>
+            <div class="field"><span class="label">Label</span><span class="value">${escapeHtml(lead.rank_label || '—')}</span></div>
+            <div class="field"><span class="label">Quality</span><span class="value"><span class="quality-badge ${qualityPassed ? '' : 'failed'}">${qualityPassed ? '✅ Passed' : '❌ Failed'}</span></span></div>
+            ${warnings.length > 0 ? `<div class="field"><span class="label">Warnings</span><span class="value" style="font-size:11px;color:var(--rose);">${warnings.join('; ')}</span></div>` : ''}
+            ${issues.length > 0 ? `<div class="field"><span class="label">Issues</span><span class="value" style="font-size:11px;color:var(--rose);">${issues.join('; ')}</span></div>` : ''}
+          </div>
+
+          <div class="detail-section" style="display:flex;flex-direction:column;justify-content:flex-end;">
+            <h4>📤 Actions</h4>
+            <button class="send-lead-btn" onclick="sendSingleLead(${lead.rank || 0})" ${!lead.email ? 'disabled' : ''}>
+              ${lead.email ? '📧 Send Email' : '⚠️ No Email'}
+            </button>
+            ${lead.reason_selected ? `<div style="margin-top:8px;font-size:10px;color:var(--t3);">${lead.reason_selected.slice(0,3).join(' • ')}</div>` : ''}
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
+  function toggleLeadDetail(index) {
+    const rows = document.querySelectorAll('.lead-detail-row');
+    const mainRows = document.querySelectorAll('.lead-table tbody tr:not(.lead-detail-row)');
+    
+    rows.forEach((row, i) => {
+      if (i === index) {
+        row.classList.toggle('open');
+        if (mainRows[i]) mainRows[i].classList.toggle('expanded');
+      } else {
+        row.classList.remove('open');
+        if (mainRows[i]) mainRows[i].classList.remove('expanded');
+      }
+    });
   }
 
   function closeReview() {
     reviewPanel.style.display = 'none';
   }
 
+  // ----- SEND SINGLE LEAD -----
+  async function sendSingleLead(index) {
+    const lead = currentGeneratedLeads[index];
+    if (!lead) return alert('Lead not found.');
+    if (!lead.email) return alert('No email address available for this lead.');
+
+    const btn = document.querySelector('.send-lead-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+    try {
+      const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+      const user = await userRes.json();
+      if (!user.nylasIntegration?.isConnected) {
+        alert('⚠️ Email connection expired. Please reconnect.');
+        window.location.href = 'dashboard.html?connect=true';
+        return;
+      }
+
+      const payload = {
+        leads: [{
+          name: lead.name || lead.company || 'Unknown',
+          email: lead.email,
+          company: lead.company || '',
+          messages: [{
+            subject: lead.outreach?.subject || 'Hello from Skyline',
+            body: lead.outreach?.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nAlex'
+          }]
+        }]
+      };
+
+      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+        alert('⚠️ Session expired. Please reconnect.');
+        window.location.href = 'dashboard.html?connect=true';
+        return;
+      }
+      if (data.success) {
+        alert('✅ Email sent successfully!');
+        addLeadMessage('ai', `📧 Email sent to ${lead.name || lead.company}`);
+      } else {
+        alert('❌ Failed to send: ' + JSON.stringify(data.errors));
+      }
+    } catch (err) {
+      alert('❌ Error: ' + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '📧 Send Email'; }
+    }
+  }
+
+  // ----- SEND ALL LEADS -----
   async function submitBatch() {
     const btn = document.getElementById('sendAllBtn');
     const orig = btn.textContent;
     btn.textContent = 'Verifying…';
     btn.disabled = true;
+
     try {
       const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
       const user = await userRes.json();
+      
+      const validLeads = currentGeneratedLeads.filter(l => l.email);
+      if (validLeads.length === 0) {
+        alert('⚠️ No leads with valid email addresses.');
+        btn.textContent = orig;
+        btn.disabled = false;
+        return;
+      }
+
       const payload = {
-        leads: currentGeneratedLeads.map((lead, i) => ({
-          name: lead.name,
-          email: document.getElementById(`email-${i}`).value,
-          company: lead.company,
-          messages: [{ subject: document.getElementById(`subject-${i}`).value, body: document.getElementById(`body-${i}`).value }]
+        leads: validLeads.map(lead => ({
+          name: lead.name || lead.company || 'Unknown',
+          email: lead.email,
+          company: lead.company || '',
+          messages: [{
+            subject: lead.outreach?.subject || 'Hello from Skyline',
+            body: lead.outreach?.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nAlex'
+          }]
         }))
       };
+
       if (!user.nylasIntegration?.isConnected) {
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
         alert('⚠️ Email connection expired. Please reconnect.');
         window.location.href = 'dashboard.html?connect=true';
         return;
       }
-      btn.textContent = 'Sending…';
+
+      btn.textContent = `Sending ${validLeads.length}...`;
       const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -939,15 +1144,14 @@
         return;
       }
       if (data.success) {
-        alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
-        addLeadMessage('ai', '✅ Emails sent! Track replies in Dashboard.');
-        closeReview();
+        alert(`✅ ${data.message || 'Emails sent successfully!'}`);
+        addLeadMessage('ai', `📧 Sent ${validLeads.length} emails!`);
         setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
       } else {
-        alert('Error: ' + JSON.stringify(data.errors));
+        alert('❌ Error: ' + JSON.stringify(data.errors));
       }
-    } catch {
-      alert('Connection error. Reconnect in Dashboard if session expired.');
+    } catch (err) {
+      alert('❌ Error: ' + err.message);
     } finally {
       btn.textContent = orig;
       btn.disabled = false;
@@ -980,40 +1184,30 @@
   async function sendAssistantMessage(message) {
     if (isTyping) return;
     isTyping = true;
-
     if (!isChatActive) {
       isChatActive = true;
       modeSelector.classList.add('hidden');
       assistantModeSelector.style.display = 'none';
     }
-
     if (!assistantSessionId) {
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
-
     addAssistantMessage('user', message);
     assistantMsgInput.value = '';
     assistantMsgInput.style.height = 'auto';
     assistantSendBtn.disabled = true;
-
     showAssistantTyping('Thinking…');
 
     try {
       const res = await fetch(`${BACKEND}/api/assistant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          message: message,
-          sessionId: assistantSessionId
-        })
+        body: JSON.stringify({ message, sessionId: assistantSessionId })
       });
       const data = await res.json();
       hideAssistantTyping();
-
       if (res.ok) {
-        if (data.sessionId) {
-          assistantSessionId = data.sessionId;
-        }
+        if (data.sessionId) assistantSessionId = data.sessionId;
         addAssistantMessage('ai', data.response || 'I couldn\'t process that. Please try again.');
       } else {
         addAssistantMessage('ai', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
@@ -1039,12 +1233,7 @@
 
   function showAssistantTyping(label = 'Thinking…') {
     let row = document.getElementById('assistantTypingRow');
-    if (row) {
-      const lbl = row.querySelector('.t-label');
-      if (lbl) lbl.textContent = label;
-      scrollAssistantDown();
-      return;
-    }
+    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollAssistantDown(); return; }
     row = document.createElement('div');
     row.className = 'typing-row';
     row.id = 'assistantTypingRow';
@@ -1053,14 +1242,8 @@
     scrollAssistantDown();
   }
 
-  function hideAssistantTyping() {
-    document.getElementById('assistantTypingRow')?.remove();
-  }
-
-  function scrollAssistantDown() {
-    const area = document.getElementById('assistantChatArea');
-    area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-  }
+  function hideAssistantTyping() { document.getElementById('assistantTypingRow')?.remove(); }
+  function scrollAssistantDown() { const area = document.getElementById('assistantChatArea'); area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
 
   // ----- UTILITY FUNCTIONS -----
   function formatAI(text) {
@@ -1072,60 +1255,40 @@
     return s;
   }
 
-  function getTime() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+  function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 
-  // ----- ✅ EMAIL STATUS CHECK -----
+  // ----- EMAIL STATUS CHECK -----
   async function checkEmailStatus() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-
       const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
-
-      if (!res.ok) {
-        throw new Error(`Status check failed: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`Status check failed: ${res.status}`);
       const data = await res.json();
       console.log('📊 [PAGE] Email status:', data);
-
       const statusTextEl = document.getElementById('statusText');
       const statusBarEl = document.getElementById('statusBar');
-
       if (data.connected && !data.isExpired) {
-        // ✅ Connected
         statusBarEl.className = 'status-bar connected';
         statusTextEl.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
-        // Show email if available
         if (data.email && data.email !== 'Connected') {
           statusTextEl.innerHTML = `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>`;
         }
       } else if (data.connected && data.isExpired) {
-        // ⚠️ Expired
         statusBarEl.className = 'status-bar disconnected';
         statusTextEl.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
       } else {
-        // ❌ Not connected
         statusBarEl.className = 'status-bar disconnected';
         statusTextEl.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
       }
-
       return data;
-
     } catch (err) {
       console.error('❌ Error checking email status:', err);
       const statusTextEl = document.getElementById('statusText');
-      if (statusTextEl) {
-        statusTextEl.textContent = '⚠️ Status unknown';
-      }
+      if (statusTextEl) statusTextEl.textContent = '⚠️ Status unknown';
     }
   }
 
@@ -1135,20 +1298,16 @@
     const sessionId = params.get('session');
     const type = params.get('type');
     if (!sessionId) return false;
-
     conversationHistory = [];
     isSessionLoading = true;
     console.log('[page] Loading session:', sessionId, 'type:', type);
-
     try {
       const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to load session');
-
       const msgs = await res.json();
       const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
-
       if (isAssistantSession) {
         assistantSessionId = sessionId;
         currentMode = 'assistant';
@@ -1195,11 +1354,9 @@
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Lead Session';
       }
-
       currentSessionId = sessionId;
       isSessionLoading = false;
       return true;
-
     } catch (err) {
       console.error('[page] Error loading session:', err);
       isSessionLoading = false;
@@ -1240,7 +1397,6 @@
       const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) {
         const user = await res.json();
-        // Email status is now handled by checkEmailStatus()
         const p = user.subscriptionTier || 'free';
         planChip.className = `plan-chip ${p}`;
         planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
@@ -1251,28 +1407,19 @@
   // ----- NEW CHAT / CLEAR -----
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
-      isChatActive = false;
-      isTyping = false;
-      leadMsgContainer.innerHTML = '';
-      reviewPanel.style.display = 'none';
-      setupWizard.style.display = 'flex';
-      leadChatArea.classList.remove('active');
-      leadInputBar.classList.add('lead-active');
-      leadInputBar.classList.remove('lead-hidden');
-      currentGeneratedLeads = [];
-      conversationHistory = [];
-      currentSessionId = null;
+      isChatActive = false; isTyping = false; leadMsgContainer.innerHTML = ''; reviewPanel.style.display = 'none';
+      setupWizard.style.display = 'flex'; leadChatArea.classList.remove('active');
+      leadInputBar.classList.add('lead-active'); leadInputBar.classList.remove('lead-hidden');
+      currentGeneratedLeads = []; conversationHistory = []; currentSessionId = null;
       modeSelector.classList.remove('hidden');
       document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
       leadContainer.classList.add('active');
       document.querySelector('.topbar-label').textContent = 'Business Agent';
       const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
+      url.searchParams.delete('session'); url.searchParams.delete('type');
       window.history.pushState({}, '', url);
     } else {
-      isChatActive = false;
-      isTyping = false;
+      isChatActive = false; isTyping = false;
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
       assistantMsgContainer.innerHTML = '';
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
@@ -1283,34 +1430,24 @@
       assistantInputBar.style.display = 'block';
       document.querySelector('.topbar-label').textContent = 'Business Agent';
       const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
+      url.searchParams.delete('session'); url.searchParams.delete('type');
       window.history.pushState({}, '', url);
     }
   });
 
   document.getElementById('clearSessionBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
-      leadMsgContainer.innerHTML = '';
-      reviewPanel.style.display = 'none';
-      setupWizard.style.display = 'flex';
-      leadChatArea.classList.remove('active');
-      leadInputBar.classList.add('lead-active');
-      leadInputBar.classList.remove('lead-hidden');
-      currentGeneratedLeads = [];
-      conversationHistory = [];
-      currentSessionId = null;
-      isChatActive = false;
-      isTyping = false;
-      modeSelector.classList.remove('hidden');
+      leadMsgContainer.innerHTML = ''; reviewPanel.style.display = 'none';
+      setupWizard.style.display = 'flex'; leadChatArea.classList.remove('active');
+      leadInputBar.classList.add('lead-active'); leadInputBar.classList.remove('lead-hidden');
+      currentGeneratedLeads = []; conversationHistory = []; currentSessionId = null;
+      isChatActive = false; isTyping = false; modeSelector.classList.remove('hidden');
       const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
+      url.searchParams.delete('session'); url.searchParams.delete('type');
       window.history.pushState({}, '', url);
       document.querySelector('.topbar-label').textContent = 'Business Agent';
     } else {
-      isChatActive = false;
-      isTyping = false;
+      isChatActive = false; isTyping = false;
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
       assistantMsgContainer.innerHTML = '';
       addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
@@ -1318,8 +1455,7 @@
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
       const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
+      url.searchParams.delete('session'); url.searchParams.delete('type');
       window.history.pushState({}, '', url);
       document.querySelector('.topbar-label').textContent = 'Business Agent';
     }
@@ -1327,11 +1463,8 @@
 
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
-    // ✅ Check email status first
     await checkEmailStatus();
-
     const sessionLoaded = await loadSessionFromUrl();
-
     if (!sessionLoaded) {
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
@@ -1339,14 +1472,10 @@
       document.querySelector('.topbar-label').textContent = 'Business Agent';
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
-
     await updateStatus();
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
-
-    // ✅ Refresh email status every 30 seconds
     setInterval(checkEmailStatus, 30000);
-
     document.getElementById('navNotifBtn').addEventListener('click', function() {
       localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
       updateBadge(0);
