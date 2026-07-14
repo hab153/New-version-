@@ -607,6 +607,51 @@
     if (msg && !this.disabled) startLeadSearch(msg);
   });
 
+  // ============================================================
+  //  ✅ FIXED: addLeadMessage - Shows summary instead of raw JSON
+  // ============================================================
+  function addLeadMessage(role, content) {
+    const container = leadMsgContainer;
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    
+    let displayContent = content;
+    
+    // ✅ Check if content is JSON (leads data) and show summary instead
+    if (role === 'ai' && typeof content === 'string') {
+      try {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // It's lead data - show a summary message
+          displayContent = `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. View them in the table below.`;
+        } else if (Array.isArray(parsed) && parsed.length === 0) {
+          displayContent = '📊 No leads found. Try adjusting your search criteria.';
+        }
+      } catch {
+        // Not JSON, use as is
+      }
+    }
+    
+    const html = role === 'ai' ? formatAI(displayContent) : escapeHtml(displayContent);
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    container.appendChild(row);
+    scrollLeadDown();
+  }
+
+  function showLeadTyping(label = 'Thinking…') {
+    let row = document.getElementById('leadTypingRow');
+    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollLeadDown(); return; }
+    row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'leadTypingRow';
+    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+    leadMsgContainer.appendChild(row);
+    scrollLeadDown();
+  }
+
+  function hideLeadTyping() { document.getElementById('leadTypingRow')?.remove(); }
+  function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
+
   // Show welcome message when lead mode loads
   function showWelcomeMessage() {
     if (leadMsgContainer.children.length === 0) {
@@ -671,30 +716,6 @@
       isTyping = false;
     }
   }
-
-  function addLeadMessage(role, content) {
-    const container = leadMsgContainer;
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollLeadDown();
-  }
-
-  function showLeadTyping(label = 'Thinking…') {
-    let row = document.getElementById('leadTypingRow');
-    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollLeadDown(); return; }
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'leadTypingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    leadMsgContainer.appendChild(row);
-    scrollLeadDown();
-  }
-
-  function hideLeadTyping() { document.getElementById('leadTypingRow')?.remove(); }
-  function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
 
   // ============================================================
   //  RENDER LEADS - BEAUTIFUL TABLE
@@ -1085,22 +1106,30 @@
     }
   }
 
-  // ----- LOAD SESSION FROM URL -----
+  // ============================================================
+  //  ✅ FIXED: loadSessionFromUrl - Properly loads session messages
+  // ============================================================
   async function loadSessionFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session');
     const type = params.get('type');
     if (!sessionId) return false;
+
     conversationHistory = [];
     isSessionLoading = true;
     console.log('[page] Loading session:', sessionId, 'type:', type);
+
     try {
       const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to load session');
+
       const msgs = await res.json();
+      console.log('[page] Loaded messages:', msgs);
+
       const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
+
       if (isAssistantSession) {
         assistantSessionId = sessionId;
         currentMode = 'assistant';
@@ -1125,6 +1154,7 @@
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Assistant Session';
       } else {
+        // ✅ LEAD SESSION - Properly displays messages
         currentMode = 'lead';
         modeSelector.classList.add('hidden');
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
@@ -1133,9 +1163,11 @@
         leadInputBar.classList.remove('lead-active');
         leadInputBar.classList.add('lead-hidden');
         leadMsgContainer.innerHTML = '';
+        
         if (msgs && msgs.length > 0) {
           for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';
+            const role = m.role === 'assistant' || m.role === 'ai' ? 'ai' : 'user';
+            // ✅ Use addLeadMessage which handles JSON properly
             addLeadMessage(role, m.content);
             conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
           }
@@ -1146,9 +1178,11 @@
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Lead Session';
       }
+
       currentSessionId = sessionId;
       isSessionLoading = false;
       return true;
+
     } catch (err) {
       console.error('[page] Error loading session:', err);
       isSessionLoading = false;
@@ -1280,4 +1314,4 @@
   });
 </script>
 </body>
-      </html>
+  </html>
