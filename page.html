@@ -1177,47 +1177,88 @@
       if (isAssistantSession) {
         assistantSessionId = sessionId;
         currentMode = 'assistant';
+        
+        // ✅ FORCE VISIBILITY OF ASSISTANT CONTAINER
         modeSelector.classList.add('hidden');
-        assistantModeSelector.style.display = 'flex';
+        if (assistantModeSelector) assistantModeSelector.style.display = 'flex';
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
         assistantContainer.classList.add('active');
         assistantInputBar.classList.add('active');
         assistantInputBar.style.display = 'block';
+        
         assistantMsgInput.placeholder = 'Continue your conversation…';
         assistantSendBtn.disabled = true;
+        
+        // ✅ OPTIMIZED RENDERING: Clear and Batch Insert
         assistantMsgContainer.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        
         if (msgs && msgs.length > 0) {
           for (const m of msgs) {
+            if (!m.content) continue;
             const role = m.role === 'ai' ? 'ai' : 'user';
-            addAssistantMessage(role, m.content);
+            const row = document.createElement('div');
+            row.className = `msg-row ${role}`;
+            const html = role === 'ai' ? formatAI(m.content) : escapeHtml(m.content);
+            row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+            fragment.appendChild(row);
           }
         } else {
-          addAssistantMessage('ai', 'No messages in this session.');
+           const row = document.createElement('div');
+           row.className = `msg-row ai`;
+           row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">No messages in this session.</div><div class="msg-time">${getTime()}</div></div>`;
+           fragment.appendChild(row);
         }
+        assistantMsgContainer.appendChild(fragment);
+        
         scrollAssistantDown();
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Assistant Session';
       } else {
         // ✅ LEAD SESSION - Properly displays messages
         currentMode = 'lead';
+        
+        // ✅ FORCE VISIBILITY OF LEAD CONTAINER
         modeSelector.classList.add('hidden');
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
         leadContainer.classList.add('active');
         leadChatArea.classList.add('active');
         leadInputBar.classList.remove('lead-active');
         leadInputBar.classList.add('lead-hidden');
+        
+        // ✅ OPTIMIZED RENDERING: Clear and Batch Insert
         leadMsgContainer.innerHTML = '';
+        const fragment = document.createDocumentFragment();
         
         if (msgs && msgs.length > 0) {
           for (const m of msgs) {
+            if (!m.content) continue;
             const role = m.role === 'assistant' || m.role === 'ai' ? 'ai' : 'user';
-            // ✅ Use addLeadMessage which handles JSON properly
-            addLeadMessage(role, m.content);
+            
+            let displayContent = m.content;
+            if (role === 'ai') {
+                displayContent = cleanAIResponse(m.content);
+            } else {
+                displayContent = escapeHtml(m.content);
+            }
+            
+            const html = role === 'ai' ? formatAI(displayContent) : displayContent;
+            
+            const row = document.createElement('div');
+            row.className = `msg-row ${role}`;
+            row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+            fragment.appendChild(row);
+            
             conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
           }
         } else {
-          addLeadMessage('ai', 'No messages in this session.');
+           const row = document.createElement('div');
+           row.className = `msg-row ai`;
+           row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">No messages in this session.</div><div class="msg-time">${getTime()}</div></div>`;
+           fragment.appendChild(row);
         }
+        leadMsgContainer.appendChild(fragment);
+        
         scrollLeadDown();
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Lead Session';
@@ -1358,4 +1399,4 @@
   });
 </script>
 </body>
-  </html>
+        </html>
