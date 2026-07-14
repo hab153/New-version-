@@ -493,7 +493,7 @@
   })();
 
   // ============================================================
-  //  XSS PROTECTION
+  //  XSS PROTECTION & UTILS
   // ============================================================
   function escapeHtml(str) {
       if (!str) return '';
@@ -506,7 +506,52 @@
           .replace(/`/g, '&#x60;');
   }
 
-  // ============================================================
+  // ✅ FIX 1: Robust JSON Cleaning for AI Responses
+  function cleanAIResponse(content) {
+      if (typeof content !== 'string') return content;
+      
+      // Check if it's a JSON array of leads
+      try {
+          const parsed = JSON.parse(content);
+          if (Array.isArray(parsed)) {
+              if (parsed.length > 0) {
+                  return `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. View them in the table below.`;
+              } else {
+                  return '📊 No leads found. Try adjusting your search criteria.';
+              }
+          }
+          // If it's a JSON object but not an array, it might be a structured response
+          if (typeof parsed === 'object' && parsed !== null) {
+              // Optionally handle specific object structures here
+              // For now, we'll let it pass through to formatting if it's not a lead array
+          }
+      } catch (e) {
+          // Not JSON, continue
+      }
+
+      // Clean up common JSON artifacts if they appear in regular text
+      // Remove leading/trailing braces/brackets if they seem out of place
+      let cleaned = content.trim();
+      if ((cleaned.startsWith('{') && cleaned.endsWith('}')) || 
+          (cleaned.startsWith('[') && cleaned.endsWith(']'))) {
+          // It looks like JSON but failed parsing above, or it's a stringified JSON.
+          // We'll try to extract meaningful text if possible, otherwise return as is
+          // but formatted nicely.
+          try {
+             const reParsed = JSON.parse(cleaned);
+             if (typeof reParsed === 'object') {
+                 // Convert simple objects to a readable list
+                 let lines = [];
+                 for (const [key, value] of Object.entries(reParsed)) {
+                     lines.push(`<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`);
+                 }
+                 return lines.join('<br>');
+             }
+          } catch {}
+      }
+      
+      return content;
+  }
 
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
   const token = localStorage.getItem('token');
@@ -549,12 +594,16 @@
   window.switchMode = function(mode) {
     if (isChatActive) return;
     currentMode = mode;
+    
+    // Hide both mode selectors initially to prevent flicker
     modeSelector.classList.add('hidden');
-    assistantModeSelector.style.display = 'none';
+    if (assistantModeSelector) assistantModeSelector.style.display = 'none';
+
     document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+    
     if (mode === 'lead') {
       leadContainer.classList.add('active');
-      leadChatArea.classList.remove('active');
+      leadChatArea.classList.remove('active'); // Hide chat area until active
       leadInputBar.classList.add('lead-active');
       leadInputBar.classList.remove('lead-hidden');
       reviewPanel.style.display = 'none';
@@ -562,7 +611,7 @@
       currentSessionId = null;
     } else {
       assistantContainer.classList.add('active');
-      assistantModeSelector.style.display = 'flex';
+      if (assistantModeSelector) assistantModeSelector.style.display = 'flex';
       assistantInputBar.classList.add('active');
       assistantInputBar.style.display = 'block';
       if (!assistantSessionId) {
@@ -611,28 +660,22 @@
   //  ✅ FIXED: addLeadMessage - Shows summary instead of raw JSON
   // ============================================================
   function addLeadMessage(role, content) {
+    if (!content) return; // Prevent empty bubbles
+    
     const container = leadMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
     
     let displayContent = content;
     
-    // ✅ Check if content is JSON (leads data) and show summary instead
-    if (role === 'ai' && typeof content === 'string') {
-      try {
-        const parsed = JSON.parse(content);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // It's lead data - show a summary message
-          displayContent = `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. View them in the table below.`;
-        } else if (Array.isArray(parsed) && parsed.length === 0) {
-          displayContent = '📊 No leads found. Try adjusting your search criteria.';
-        }
-      } catch {
-        // Not JSON, use as is
-      }
+    // ✅ Use cleanAIResponse to handle JSON
+    if (role === 'ai') {
+        displayContent = cleanAIResponse(content);
+    } else {
+        displayContent = escapeHtml(content);
     }
     
-    const html = role === 'ai' ? formatAI(displayContent) : escapeHtml(displayContent);
+    const html = role === 'ai' ? formatAI(displayContent) : displayContent;
     row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
     scrollLeadDown();
@@ -1036,6 +1079,7 @@
   }
 
   function addAssistantMessage(role, content) {
+    if (!content) return; // Prevent empty bubbles
     const container = assistantMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
