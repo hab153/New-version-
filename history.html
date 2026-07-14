@@ -195,13 +195,10 @@
             const csrfToken = localStorage.getItem('csrfToken');
             const method = (options.method || 'GET').toUpperCase();
             const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-
-            // Only add CSRF token for state-changing requests
             if (!safeMethods.includes(method) && csrfToken) {
                 options.headers = options.headers || {};
                 options.headers['X-CSRF-Token'] = csrfToken;
             }
-
             return originalFetch.call(this, url, options);
         };
     })();
@@ -243,6 +240,7 @@
         const card = document.createElement('a');
         card.className = 'session-card';
         const isAssistant = (session.type === 'assistant');
+        // ✅ Ensure type param is passed for correct routing in page.html
         const typeParam = isAssistant ? '&type=assistant' : '';
         card.href = `page.html?session=${session.sessionId || session._id}${typeParam}`;
         card.dataset.sessionId = session.sessionId || session._id;
@@ -362,4 +360,4 @@
     });
   </script>
 </body>
-                                                                                                                                                                                                                                                        </html>
+                                                                                                                                                                                                                                                                                                                                                                                                             </html>
