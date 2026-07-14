@@ -103,6 +103,7 @@
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+    /* MODE SELECTOR */
     #modeSelector {
       display: flex;
       gap: 12px;
@@ -260,6 +261,7 @@
     .t-dot:nth-child(3) { animation-delay: 0.32s; }
     @keyframes tdot { 0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); } 30% { transform: translateY(-6px) scale(1.2); background: var(--gold); } }
 
+    /* REVIEW PANEL - NEW LEAD DISPLAY */
     #reviewPanel {
       display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px; max-height: 48vh;
       overflow-y: auto; flex-shrink: 0; position: relative; z-index: 6;
@@ -607,6 +609,7 @@
       <span class="mode-badge">Chat</span>
     </button>
   </div>
+
   <div class="chat-area active" id="assistantChatArea">
     <div id="assistantMsgContainer">
       <div class="msg-row ai">
@@ -883,9 +886,20 @@
   //  RENDER LEADS - BEAUTIFUL TABLE
   // ============================================================
   function renderLeads(leads) {
-    leadTableContainer.innerHTML = '';
+    console.log('🎨 [FRONTEND] renderLeads called with', leads.length, 'leads');
+    
+    const container = document.getElementById('leadTableContainer');
+    const reviewPanel = document.getElementById('reviewPanel');
+    
+    if (!container) {
+      console.error('❌ leadTableContainer not found!');
+      return;
+    }
+    
+    container.innerHTML = '';
+    
     if (!leads || leads.length === 0) {
-      leadTableContainer.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);">No leads found.</div>';
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);">No leads found.</div>';
       reviewPanel.style.display = 'block';
       return;
     }
@@ -992,9 +1006,11 @@
     tableHTML += `</tbody></table></div>`;
     tableHTML += `<button class="send-all" onclick="submitBatch()">📧 Send All Emails</button>`;
     
-    leadTableContainer.innerHTML = tableHTML;
+    container.innerHTML = tableHTML;
     reviewPanel.style.display = 'block';
     scrollLeadDown();
+    
+    console.log('✅ [FRONTEND] Table rendered successfully!');
   }
 
   function toggleLeadDetail(index) {
