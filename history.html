@@ -145,50 +145,6 @@
     .skel-line.meta { width: 36%; height: 9px; }
     @keyframes skelPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
-    /* --- HISTORY CHAT OVERLAY (NEW) --- */
-    #historyOverlay {
-      display: none; position: fixed; inset: 0; background: var(--void); z-index: 1000; flex-direction: column;
-      animation: fadeIn 0.3s ease;
-    }
-    #historyOverlay.active { display: flex; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    
-    .overlay-header {
-      height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between;
-      background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0;
-    }
-    .overlay-close {
-      background: transparent; border: 1px solid var(--br-dim); color: var(--t2); width: 32px; height: 32px;
-      border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: all 0.2s;
-    }
-    .overlay-close:hover { background: var(--hover); color: var(--t1); border-color: var(--br-md); }
-    
-    .overlay-chat-area {
-      flex: 1; overflow-y: auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px;
-    }
-    .overlay-msg { max-width: 85%; padding: 12px 16px; border-radius: var(--r-lg); font-size: 13.5px; line-height: 1.6; }
-    .overlay-msg.user {
-      align-self: flex-end; background: var(--raised); border: 1px solid var(--br-md); color: var(--t1);
-      border-radius: var(--r-lg) var(--r-lg) var(--r-xs) var(--r-lg);
-    }
-    .overlay-msg.ai {
-      align-self: flex-start; background: var(--surface); border: 1px solid var(--br-dim); color: #ccc7bb;
-      border-left: 2px solid rgba(201,168,76,0.25); font-family: var(--mono); font-size: 12px;
-      border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-xs);
-    }
-    
-    .overlay-footer {
-      padding: 16px; background: var(--base); border-top: 1px solid var(--br-dim); display: flex; justify-content: center;
-    }
-    .continue-btn {
-      width: 100%; max-width: 400px; padding: 14px; background: var(--gold); color: #0d0a04;
-      border: none; border-radius: var(--r-md); font-family: var(--ui); font-weight: 700; font-size: 14px;
-      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
-
     @media (min-width: 768px) { .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); } .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 1024px) { .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); } .bottom-nav { padding: 0 24%; } .topbar { padding: 0 32px; } }
     @media (max-width: 375px) { .brand-name { font-size: 16px; } .brand-sub { display: none; } .page-title { font-size: 26px; } }
@@ -211,7 +167,7 @@
       <div class="page-heading">
         <div class="heading-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">History · Archive</span><div class="eyebrow-line right"></div></div>
         <h1 class="page-title">Session <em>Archive.</em></h1>
-        <p class="page-sub">Click to preview · Long press for options.</p>
+        <p class="page-sub">Click to open · Long press for options.</p>
       </div>
       <div class="search-wrap">
         <div class="search-shell">
@@ -225,26 +181,6 @@
         <div class="skeleton-card"><div class="skel-line title" style="width:54%"></div><div class="skel-line meta" style="width:28%"></div></div>
         <div class="skeleton-card"><div class="skel-line title" style="width:76%"></div><div class="skel-line meta"></div></div>
       </div>
-    </div>
-  </div>
-
-  <!-- ✅ NEW: History Chat Overlay -->
-  <div id="historyOverlay">
-    <div class="overlay-header">
-      <div class="brand" style="gap:8px;">
-        <span class="brand-name" style="font-size:16px;">Preview</span>
-        <span class="type-badge" id="overlayTypeBadge" style="font-size:9px;">LEAD</span>
-      </div>
-      <button class="overlay-close" onclick="closeOverlay()">✕</button>
-    </div>
-    <div class="overlay-chat-area" id="overlayChatArea">
-      <!-- Messages injected here -->
-    </div>
-    <div class="overlay-footer">
-      <button class="continue-btn" id="continueBtn">
-        Continue Conversation 
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
     </div>
   </div>
 
@@ -293,7 +229,6 @@
     let allSessions = [];
     let contextTargetId = null;
     let currentRenameId = null;
-    let currentPreviewSession = null; // Store session being previewed
 
     const contextMenu = document.getElementById('contextMenu');
     const renameModal = document.getElementById('renameModal');
@@ -301,12 +236,6 @@
     const sessionGrid = document.getElementById('sessionGrid');
     const countBadge = document.getElementById('countBadge');
     const searchInput = document.getElementById('searchInput');
-    
-    // Overlay Elements
-    const historyOverlay = document.getElementById('historyOverlay');
-    const overlayChatArea = document.getElementById('overlayChatArea');
-    const overlayTypeBadge = document.getElementById('overlayTypeBadge');
-    const continueBtn = document.getElementById('continueBtn');
 
     function pinIconSolid() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`; }
     function pinIconOutline() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`; }
@@ -336,8 +265,12 @@
         card.className = 'session-card';
         const isAssistant = (session.type === 'assistant');
         
-        // ✅ Click handler to open overlay instead of redirecting
-        card.onclick = () => openSessionPreview(session);
+        // ✅ Direct URL navigation - no overlay
+        card.onclick = () => {
+            const sessionId = session.sessionId || session._id;
+            const type = session.type || 'lead';
+            window.location.href = `page.html?session=${encodeURIComponent(sessionId)}&type=${encodeURIComponent(type)}`;
+        };
         
         card.dataset.sessionId = session.sessionId || session._id;
         card.style.animationDelay = `${i * 0.04}s`;
@@ -358,75 +291,6 @@
         sessionGrid.appendChild(card);
       });
     }
-
-    // ✅ NEW: Open Preview Overlay
-    async function openSessionPreview(session) {
-      currentPreviewSession = session;
-      const sessionId = session.sessionId || session._id;
-      const isAssistant = (session.type === 'assistant');
-      
-      // Update Badge
-      overlayTypeBadge.textContent = isAssistant ? 'ASSISTANT' : 'LEAD';
-      overlayTypeBadge.className = `type-badge ${isAssistant ? 'assistant' : 'lead'}`;
-      
-      // Show Overlay
-      historyOverlay.classList.add('active');
-      overlayChatArea.innerHTML = '<div style="text-align:center;color:var(--t3);padding:20px;">Loading history...</div>';
-      
-      try {
-        const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed');
-        const msgs = await res.json();
-        
-        // Render Messages
-        overlayChatArea.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        
-        if (msgs && msgs.length > 0) {
-          msgs.forEach(m => {
-            if (!m.content) return;
-            const div = document.createElement('div');
-            const role = m.role === 'ai' || m.role === 'assistant' ? 'ai' : 'user';
-            div.className = `overlay-msg ${role}`;
-            // Simple formatting for preview
-            let text = escapeHTML(m.content);
-            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\n/g, '<br>');
-            div.innerHTML = text;
-            fragment.appendChild(div);
-          });
-        } else {
-          overlayChatArea.innerHTML = '<div style="text-align:center;color:var(--t3);">No messages found.</div>';
-        }
-        overlayChatArea.appendChild(fragment);
-        
-      } catch (err) {
-        console.error(err);
-        overlayChatArea.innerHTML = '<div style="text-align:center;color:var(--rose);">Failed to load history.</div>';
-      }
-    }
-
-    function closeOverlay() {
-      historyOverlay.classList.remove('active');
-      currentPreviewSession = null;
-    }
-
-    // ✅ NEW: Continue Button Logic
-    continueBtn.addEventListener('click', function() {
-      if (!currentPreviewSession) return;
-      
-      const sessionId = currentPreviewSession.sessionId || currentPreviewSession._id;
-      const type = currentPreviewSession.type;
-      
-      // Save to localStorage for page.html to pick up
-      localStorage.setItem('resumeSessionId', sessionId);
-      localStorage.setItem('resumeSessionType', type);
-      
-      // Redirect
-      window.location.href = 'page.html';
-    });
 
     function showContextMenu(x, y, sessionId) {
       contextTargetId = sessionId;
@@ -529,4 +393,4 @@
     });
   </script>
 </body>
-          </html>
+      </html>
