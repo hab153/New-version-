@@ -1,246 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
-  <title>Skyline AA-1 · Session Archive</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-    :root {
-      --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a;
-      --br-dim: rgba(255,255,255,0.08); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
-      --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
-      --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
-      --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070;
-      --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --mono: 'Monaco', 'Menlo', monospace;
-      --nav-h: 68px; --top-h: 54px; --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
-    }
-    html, body { height: 100%; overflow: hidden; }
-    body { background: var(--void); color: var(--t1); font-family: var(--ui); font-size: 14px; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
-    body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 55% 35% at 5% 0%, rgba(255,255,255,0.03) 0%, transparent 60%), radial-gradient(ellipse 40% 55% at 95% 100%, rgba(102,221,255,0.02) 0%, transparent 55%); }
-    body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-size: 180px; }
-    
-    .topbar { height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between; background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; }
-    .topbar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15), transparent); }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-mark { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(255,255,255,0.05); position: relative; overflow: hidden; }
-    .brand-mark::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 60%); }
-    .brand-mark svg { position: relative; z-index: 1; }
-    .brand-text { display: flex; flex-direction: column; gap: 1px; }
-    .brand-name { font-family: var(--display); font-size: 18px; font-weight: 500; color: var(--t1); letter-spacing: 0.04em; line-height: 1; }
-    .brand-name em { font-style: italic; color: var(--gold); font-weight: 400; }
-    .brand-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--t3); }
-    .topbar-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; display: flex; align-items: center; gap: 8px; }
-    .topbar-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase; color: var(--t2); }
-    .topbar-right { display: flex; align-items: center; gap: 6px; }
-    .back-link { color: var(--t2); text-decoration: none; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; transition: color 0.2s; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--br-dim); }
-    .back-link:hover { color: var(--gold); border-color: var(--br-md); }
-    
-    .archive-stage { flex: 1; overflow-y: auto; padding: 28px 16px calc(var(--nav-h) + 20px); position: relative; z-index: 1; }
-    .archive-stage::-webkit-scrollbar { width: 2px; }
-    .archive-stage::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
-    .archive-container { max-width: 680px; margin: 0 auto; }
-    
-    .page-heading { margin-bottom: 28px; animation: fadeUp 0.4s 0.05s ease both; }
-    .heading-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .eyebrow-line { width: 22px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
-    .eyebrow-line.right { background: linear-gradient(90deg, var(--gold), transparent); }
-    .eyebrow-text { font-family: var(--mono); font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); opacity: 0.65; }
-    .page-title { font-family: var(--display); font-size: 30px; font-weight: 400; color: var(--t1); letter-spacing: 0.01em; line-height: 1.1; margin-bottom: 6px; }
-    .page-title em { font-style: italic; color: var(--gold); font-weight: 300; }
-    .page-sub { font-size: 12px; color: var(--t2); font-weight: 400; line-height: 1.55; }
-    .search-wrap { margin-bottom: 24px; animation: fadeUp 0.4s 0.1s ease both; }
-    .search-shell { display: flex; align-items: center; gap: 0; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-xl); padding: 0 16px; transition: border-color 0.25s, box-shadow 0.25s; }
-    .search-shell:focus-within { border-color: rgba(255,255,255,0.20); box-shadow: 0 0 0 3px rgba(255,255,255,0.05), 0 6px 20px rgba(0,0,0,0.25); }
-    .search-icon { color: var(--t3); display: flex; align-items: center; flex-shrink: 0; padding-right: 10px; transition: color 0.2s; }
-    .search-shell:focus-within .search-icon { color: var(--gold); }
-    .search-input { flex: 1; background: transparent; border: none; color: var(--t1); padding: 13px 0; font-family: var(--ui); font-size: 13.5px; font-weight: 400; outline: none; caret-color: #ffffff; }
-    .search-input::placeholder { color: var(--t3); }
-    .count-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; color: var(--t3); padding: 3px 8px; border-radius: 20px; border: 1px solid var(--br-dim); background: var(--raised); flex-shrink: 0; transition: color 0.2s; }
-    
-    .session-grid { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s 0.15s ease both; }
-    .session-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); overflow: hidden; transition: border-color 0.22s, background 0.22s, box-shadow 0.22s; }
-    .session-card:hover { background: var(--surface); border-color: var(--br-md); box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1); }
-    .session-card.pinned { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.03); }
-    
-    .session-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 18px 18px 20px; cursor: pointer; position: relative; }
-    .session-header::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: linear-gradient(180deg, #ffffff, transparent); opacity: 0; transition: opacity 0.22s; }
-    .session-card:hover .session-header::before { opacity: 1; }
-    .card-content { flex: 1; min-width: 0; }
-    .card-title { font-size: 13.5px; font-weight: 500; color: var(--t1); margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.01em; transition: color 0.2s; padding-right: 20px; }
-    .session-card:hover .card-title { color: var(--gold-pale); }
-    .card-meta { display: flex; align-items: center; gap: 0; font-family: var(--mono); font-size: 10px; color: var(--t3); letter-spacing: 0.04em; flex-wrap: wrap; gap: 4px 8px; }
-    .meta-dot { width: 2px; height: 2px; border-radius: 50%; background: var(--t3); flex-shrink: 0; opacity: 0.5; }
-    .meta-date { color: var(--t2); }
-    .type-badge { font-size: 7px; letter-spacing: 0.10em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
-    .type-badge.lead { background: rgba(255,255,255,0.08); color: var(--t2); border: 1px solid rgba(255,255,255,0.06); }
-    .type-badge.assistant { background: rgba(102,221,255,0.12); color: var(--sky); border: 1px solid rgba(102,221,255,0.2); }
-    .card-arrow { color: var(--t3); transition: color 0.2s, transform 0.2s; flex-shrink: 0; display: flex; align-items: center; margin-left: 8px; }
-    .session-card:hover .card-arrow { color: var(--gold); }
-    .card-arrow.expanded { transform: rotate(180deg); }
-    .pinned-icon { display: none; position: absolute; top: 10px; right: 10px; opacity: 0.5; }
-    .session-card.pinned .pinned-icon { display: block; }
-    
-    .session-messages { display: none; padding: 0 20px 20px 20px; border-top: 1px solid var(--br-dim); max-height: 400px; overflow-y: auto; }
-    .session-messages.open { display: block; animation: fadeUp 0.3s ease both; }
-    .session-messages::-webkit-scrollbar { width: 2px; }
-    .session-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-    
-    .msg-item { display: flex; padding: 8px 0; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .msg-item:last-child { border-bottom: none; }
-    .msg-avatar { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 7px; font-weight: 600; }
-    .msg-avatar.user { background: var(--raised); border: 1px solid var(--br-md); color: var(--t2); }
-    .msg-avatar.ai { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0d0a04; }
-    .msg-content { flex: 1; min-width: 0; }
-    .msg-text { font-size: 12px; line-height: 1.6; color: var(--t2); word-wrap: break-word; }
-    .msg-text.ai { font-family: var(--mono); font-size: 11px; color: #ccc7bb; }
-    .msg-text.user { color: var(--t1); }
-    .msg-time { font-family: var(--mono); font-size: 8px; color: var(--t3); margin-top: 2px; }
-    
-    .empty-state { text-align: center; padding: 56px 24px; color: var(--t2); }
-    .empty-icon { width: 48px; height: 48px; margin: 0 auto 16px; border: 1px solid var(--br-md); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--t3); }
-    .empty-title { font-family: var(--display); font-size: 18px; font-weight: 400; font-style: italic; color: var(--t2); margin-bottom: 6px; }
-    .empty-sub { font-size: 11.5px; color: var(--t3); font-family: var(--mono); letter-spacing: 0.04em; }
-    .error-state { text-align: center; padding: 48px 24px; }
-    .error-icon { width: 44px; height: 44px; margin: 0 auto 14px; border: 1px solid rgba(184,92,92,0.3); border-radius: 50%; background: rgba(184,92,92,0.06); display: flex; align-items: center; justify-content: center; color: var(--rose); }
-    .error-title { font-family: var(--display); font-size: 17px; font-style: italic; color: var(--rose); margin-bottom: 6px; }
-    .error-sub { font-size: 11px; color: var(--t3); font-family: var(--mono); letter-spacing: 0.04em; }
-    
-    #contextMenu { display: none; position: fixed; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-md); padding: 6px 0; z-index: 100; min-width: 160px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
-    #contextMenu .ctx-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: transparent; border: none; color: var(--t2); font-family: var(--ui); font-size: 12.5px; cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; }
-    #contextMenu .ctx-btn:hover { background: var(--hover); color: var(--t1); }
-    #contextMenu .ctx-btn.danger { color: var(--rose); }
-    #contextMenu .ctx-btn.danger:hover { background: rgba(255,85,85,0.1); }
-    #contextMenu .ctx-divider { height: 1px; background: var(--br-dim); margin: 4px 12px; }
-    #contextMenu .ctx-btn svg { flex-shrink: 0; }
-    
-    #renameModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-    #renameModal.active { display: flex; }
-    .modal-box { background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-xl); padding: 28px; max-width: 400px; width: 90%; animation: modalIn 0.25s ease both; }
-    @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-    .modal-box h3 { font-family: var(--display); font-weight: 400; font-size: 20px; color: var(--t1); margin-bottom: 6px; }
-    .modal-box .modal-sub { font-size: 12px; color: var(--t3); margin-bottom: 18px; font-family: var(--mono); letter-spacing: 0.04em; }
-    .modal-box .field-input { width: 100%; background: var(--raised); border: 1px solid var(--br-dim); border-radius: var(--r-sm); padding: 11px 13px; color: var(--t1); font-family: var(--ui); font-size: 13px; outline: none; transition: border-color 0.25s, box-shadow 0.25s; margin-bottom: 16px; }
-    .modal-box .field-input:focus { border-color: rgba(255,255,255,0.25); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); }
-    .modal-box .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .modal-box .modal-actions button { padding: 8px 20px; border-radius: var(--r-sm); font-family: var(--ui); font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .modal-box .modal-actions .btn-cancel { background: var(--raised); color: var(--t2); border: 1px solid var(--br-dim); }
-    .modal-box .modal-actions .btn-cancel:hover { background: var(--hover); color: var(--t1); }
-    .modal-box .modal-actions .btn-save { background: var(--gold); color: #0d0a04; border: none; }
-    .modal-box .modal-actions .btn-save:hover { background: var(--gold-bright); box-shadow: 0 4px 16px rgba(255,255,255,0.2); }
-
-    .bottom-nav { height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; position: fixed; bottom: 0; width: 100%; z-index: 20; padding: 0 8px; }
-    .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); }
-    .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--t3); text-decoration: none; transition: color 0.22s; position: relative; }
-    .nav-item svg { transition: transform 0.2s; }
-    .nav-item:hover { color: var(--gold); }
-    .nav-item:hover svg { transform: scale(1.1) translateY(-1px); }
-    .nav-item.active { color: var(--gold); }
-    .nav-item.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border-radius: 2px 2px 0 0; }
-    .nav-item.nav-home .home-wrap { width: 44px; height: 44px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.12); position: relative; overflow: hidden; }
-    .nav-item.nav-home .home-wrap::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%); }
-    .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.18); }
-    .nav-item.nav-home svg { color: #ffffff; position: relative; z-index: 1; }
-    .nav-item.nav-home::after { display: none; }
-    .nav-badge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: #ff5555; border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono); font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(255,85,85,0.3); }
-    .nav-item.has-notifs .nav-badge { display: flex; }
-
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-    .skeleton-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; animation: skelPulse 1.6s ease-in-out infinite; }
-    .skel-line { height: 11px; border-radius: 4px; background: var(--raised); }
-    .skel-line.title { width: 68%; }
-    .skel-line.meta { width: 36%; height: 9px; }
-    @keyframes skelPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-    .msg-loader { display: flex; justify-content: center; align-items: center; padding: 16px 0; color: var(--t3); font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; gap: 10px; }
-    .msg-loader .spinner { width: 16px; height: 16px; border: 2px solid var(--br-dim); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (min-width: 768px) { .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); } .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); } .bottom-nav { padding: 0 24%; } .topbar { padding: 0 32px; } }
-    @media (max-width: 375px) { .brand-name { font-size: 16px; } .brand-sub { display: none; } .page-title { font-size: 26px; } }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>History | Skyline AA-1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ── Reset & Base ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #060608;
+            color: #e8eaf0;
+            font-family: 'Syne', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* ── Container ── */
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            width: 100%;
+            flex: 1;
+        }
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .back-link {
+            color: #8c909e;
+            text-decoration: none;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #c8ff57; }
+        h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+        .sub { color: #8c909e; font-size: 14px; margin-bottom: 24px; }
+        /* ── Search ── */
+        .search-wrap { margin-bottom: 20px; }
+        .search-shell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #111318;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 0 14px;
+            transition: border-color 0.2s;
+        }
+        .search-shell:focus-within { border-color: rgba(255,255,255,0.2); }
+        .search-shell input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e8eaf0;
+            padding: 12px 0;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            outline: none;
+        }
+        .search-shell input::placeholder { color: #52566a; }
+        .search-shell .count {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: #52566a;
+            white-space: nowrap;
+        }
+        /* ── Session List ── */
+        .session-list { display: flex; flex-direction: column; gap: 8px; }
+        .session-item {
+            background: #111318;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .session-item:hover { border-color: rgba(255,255,255,0.12); }
+        .session-item.pinned { border-color: rgba(200,255,87,0.2); }
+        /* ── Session Header ── */
+        .session-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            gap: 12px;
+        }
+        .session-name {
+            font-weight: 500;
+            font-size: 15px;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .session-name .pin-icon {
+            color: #c8ff57;
+            margin-right: 6px;
+        }
+        .session-meta {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: #8c909e;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .session-meta .count {
+            background: rgba(255,255,255,0.05);
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .session-arrow {
+            color: #52566a;
+            transition: transform 0.25s ease;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .session-item.expanded .session-arrow { transform: rotate(180deg); }
+        /* ── Session Messages ── */
+        .session-messages {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .session-item.expanded .session-messages { max-height: 3000px; }
+        .session-messages-inner {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        /* ── Message Bubbles ── */
+        .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 88%;
+            word-break: break-word;
+        }
+        .msg-bubble.user {
+            background: #242424;
+            border: 1px solid rgba(255,255,255,0.06);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .msg-bubble.ai {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.04);
+            border-left: 2px solid rgba(200,255,87,0.3);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: #ccc7bb;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+        }
+        .msg-bubble .msg-role {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-bottom: 2px;
+        }
+        .msg-bubble .msg-content { white-space: pre-wrap; }
+        .msg-bubble .msg-time {
+            font-size: 10px;
+            color: #52566a;
+            margin-top: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        /* ── Empty States ── */
+        .empty-state {
+            text-align: center;
+            color: #52566a;
+            padding: 60px 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; display: block; }
+        .loading-spinner {
+            text-align: center;
+            color: #52566a;
+            padding: 40px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+        }
+        .no-messages {
+            color: #52566a;
+            font-size: 13px;
+            text-align: center;
+            padding: 12px 0;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 13px;
+            text-align: center;
+            padding: 12px 0;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        /* ── Context Menu ── */
+        #contextMenu {
+            display: none;
+            position: fixed;
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 6px 0;
+            z-index: 1000;
+            min-width: 160px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        #contextMenu .ctx-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 18px;
+            background: transparent;
+            border: none;
+            color: #b0b0b0;
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            text-align: left;
+        }
+        #contextMenu .ctx-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: #f5f5f5;
+        }
+        #contextMenu .ctx-btn.danger { color: #ff5555; }
+        #contextMenu .ctx-btn.danger:hover { background: rgba(255,85,85,0.1); }
+        #contextMenu .ctx-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 4px 12px;
+        }
+        /* ── Rename Modal ── */
+        #renameModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        #renameModal.active { display: flex; }
+        .modal-box {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box h3 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+        .modal-box .modal-sub {
+            color: #8c909e;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+        .modal-box input {
+            width: 100%;
+            background: #242424;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 11px 14px;
+            color: #f5f5f5;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        .modal-box input:focus { border-color: rgba(255,255,255,0.2); }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .modal-actions .btn-cancel {
+            background: #242424;
+            color: #b0b0b0;
+        }
+        .modal-actions .btn-cancel:hover { background: #2d2d2d; color: #f5f5f5; }
+        .modal-actions .btn-save {
+            background: #c8ff57;
+            color: #060608;
+        }
+        .modal-actions .btn-save:hover { background: #d4ff70; }
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .container { padding: 12px; }
+            .session-header { padding: 12px 16px; flex-wrap: wrap; gap: 6px; }
+            .session-name { font-size: 14px; }
+            .session-meta { font-size: 10px; gap: 8px; }
+            .msg-bubble { max-width: 94%; font-size: 13px; }
+            h1 { font-size: 24px; }
+        }
+    </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <div class="brand-text"><span class="brand-name">Sky<em>line</em></span><span class="brand-sub">AA-1 · Agent</span></div>
-    </div>
-    <div class="topbar-center"><span class="topbar-label">Session Archive</span></div>
-    <div class="topbar-right"><a href="page.html" class="back-link">← Back</a></div>
-  </header>
 
-  <div class="archive-stage">
-    <div class="archive-container">
-      <div class="page-heading">
-        <div class="heading-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">History · Archive</span><div class="eyebrow-line right"></div></div>
-        <h1 class="page-title">Session <em>Archive.</em></h1>
-        <p class="page-sub">Click to expand and view messages · Long press for options.</p>
-      </div>
-      <div class="search-wrap">
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <a href="page.html" class="back-link">← Back</a>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#52566a;">v2</span>
+    </div>
+    <h1>📋 Session History</h1>
+    <p class="sub">Your saved conversations and lead searches</p>
+
+    <!-- Search -->
+    <div class="search-wrap">
         <div class="search-shell">
-          <div class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
-          <input type="text" class="search-input" id="searchInput" placeholder="Search by title…" autocomplete="off" />
-          <div class="count-badge" id="countBadge">—</div>
+            <input type="text" id="searchInput" placeholder="Search sessions…" />
+            <span class="count" id="countBadge">—</span>
         </div>
-      </div>
-      <div class="session-grid" id="sessionGrid">
-        <div class="skeleton-card"><div class="skel-line title"></div><div class="skel-line meta"></div></div>
-        <div class="skeleton-card"><div class="skel-line title" style="width:54%"></div><div class="skel-line meta" style="width:28%"></div></div>
-        <div class="skeleton-card"><div class="skel-line title" style="width:76%"></div><div class="skel-line meta"></div></div>
-      </div>
     </div>
-  </div>
 
-  <div id="contextMenu">
-    <button class="ctx-btn" data-action="rename"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Rename</button>
-    <button class="ctx-btn" data-action="pin" id="pinBtn"><span id="pinIcon"></span><span id="pinLabel">Pin</span></button>
+    <!-- Session List -->
+    <div id="sessionList" class="session-list">
+        <div class="loading-spinner">Loading sessions…</div>
+    </div>
+</div>
+
+<!-- Context Menu -->
+<div id="contextMenu">
+    <button class="ctx-btn" data-action="rename">✏️ Rename</button>
+    <button class="ctx-btn" data-action="pin" id="pinBtn">📌 Pin</button>
     <div class="ctx-divider"></div>
-    <button class="ctx-btn danger" data-action="delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-  </div>
-  <div id="renameModal">
-    <div class="modal-box">
-      <h3>Rename Session</h3>
-      <p class="modal-sub">Give this session a custom name.</p>
-      <input type="text" class="field-input" id="renameInput" placeholder="New session name…" autocomplete="off" />
-      <div class="modal-actions"><button class="btn-cancel" id="renameCancel">Cancel</button><button class="btn-save" id="renameConfirm">Save</button></div>
-    </div>
-  </div>
-  <nav class="bottom-nav" aria-label="Main navigation">
-    <a href="page.html" class="nav-item nav-home" aria-label="Home"><div class="home-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg></div></a>
-    <a href="history.html" class="nav-item active" aria-label="History"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg></a>
-    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications"><div class="nav-badge"></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
-    <a href="dashboard.html" class="nav-item" aria-label="Dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
-  </nav>
+    <button class="ctx-btn danger" data-action="delete">🗑️ Delete</button>
+</div>
 
-  <script>
+<!-- Rename Modal -->
+<div id="renameModal">
+    <div class="modal-box">
+        <h3>Rename Session</h3>
+        <p class="modal-sub">Give this session a custom name.</p>
+        <input type="text" id="renameInput" placeholder="New session name…" />
+        <div class="modal-actions">
+            <button class="btn-cancel" id="renameCancel">Cancel</button>
+            <button class="btn-save" id="renameConfirm">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
     // ──────────────────────────────────────────────────────────────
-    //  GLOBAL CSRF FETCH INTERCEPTOR
+    //  CONFIG
     // ──────────────────────────────────────────────────────────────
-    (function() {
-        const originalFetch = window.fetch;
-        window.fetch = function(url, options = {}) {
-            const csrfToken = localStorage.getItem('csrfToken');
-            const method = (options.method || 'GET').toUpperCase();
-            const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-            if (!safeMethods.includes(method) && csrfToken) {
-                options.headers = options.headers || {};
-                options.headers['X-CSRF-Token'] = csrfToken;
-            }
-            return originalFetch.call(this, url, options);
-        };
-    })();
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'login.html';
+
+    if (!token) {
+        window.location.href = 'login.html';
+    }
 
     // ──────────────────────────────────────────────────────────────
     //  STATE
@@ -255,78 +402,98 @@
     //  DOM REFS
     // ──────────────────────────────────────────────────────────────
 
+    const sessionList = document.getElementById('sessionList');
+    const searchInput = document.getElementById('searchInput');
+    const countBadge = document.getElementById('countBadge');
     const contextMenu = document.getElementById('contextMenu');
     const renameModal = document.getElementById('renameModal');
     const renameInput = document.getElementById('renameInput');
-    const sessionGrid = document.getElementById('sessionGrid');
-    const countBadge = document.getElementById('countBadge');
-    const searchInput = document.getElementById('searchInput');
 
     // ──────────────────────────────────────────────────────────────
     //  UTILITY FUNCTIONS
     // ──────────────────────────────────────────────────────────────
 
-    function escapeHTML(str) {
+    function escapeHtml(str) {
         if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    function getTime(dateStr) {
-        if (!dateStr) return '';
-        try {
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return '';
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch { return ''; }
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 
     function formatDate(dateStr) {
         if (!dateStr) return '';
         try {
-            return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            const now = new Date();
+            const diff = now - d;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch { return ''; }
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } catch { return ''; }
     }
 
     function formatAI(text) {
         if (!text) return '';
-        let s = escapeHTML(text);
+        let s = escapeHtml(text);
         s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-        s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul style="margin:4px 0;padding-left:16px;">${m}</ul>`);
+        s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) {
+            return '<ul style="margin:4px 0;padding-left:20px;list-style:none;">' + m + '</ul>';
+        });
         s = s.replace(/\n/g, '<br>');
         return s;
     }
 
-    function pinIconSolid() {
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`;
+    function getTypeLabel(type) {
+        if (type === 'assistant') return 'ASSISTANT';
+        if (type === 'lead') return 'LEAD';
+        return 'CHAT';
     }
 
-    function pinIconOutline() {
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`;
+    function getTypeClass(type) {
+        if (type === 'assistant') return 'assistant';
+        if (type === 'lead') return 'lead';
+        return 'chat';
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  LOAD SESSIONS
+    //  LOAD SESSIONS (NEW ENDPOINT)
     // ──────────────────────────────────────────────────────────────
 
     async function loadSessions() {
         try {
-            const res = await fetch(`${BACKEND}/api/sessions`, {
+            const res = await fetch(`${BACKEND}/api/history/sessions`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) throw new Error('Failed to fetch sessions');
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
             allSessions = await res.json();
             renderSessions(allSessions);
-        } catch (error) {
-            console.error('Error loading sessions:', error);
-            sessionGrid.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-                    <div class="error-title">Archive unavailable</div>
-                    <div class="error-sub">Failed to connect · Check your network</div>
+
+        } catch (err) {
+            console.error('Error loading sessions:', err);
+            sessionList.innerHTML = `
+                <div class="empty-state">
+                    <span class="icon">⚠️</span>
+                    Failed to load sessions.<br>
+                    <span style="font-size:12px;color:#707070;">${err.message}</span>
                 </div>
             `;
-            countBadge.textContent = '—';
+            countBadge.textContent = '0';
         }
     }
 
@@ -335,171 +502,219 @@
     // ──────────────────────────────────────────────────────────────
 
     function renderSessions(sessions) {
-        sessionGrid.innerHTML = '';
+        sessionList.innerHTML = '';
         countBadge.textContent = sessions.length;
 
         if (sessions.length === 0) {
-            sessionGrid.innerHTML = `
+            sessionList.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                    <div class="empty-title">No sessions found.</div>
-                    <div class="empty-sub">Start a new search to begin</div>
+                    <span class="icon">📭</span>
+                    No conversations yet.<br>
+                    <span style="font-size:13px;color:#707070;">Start a new search in the Dream Architect.</span>
                 </div>
             `;
             return;
         }
 
-        sessions.forEach((session) => {
-            const isAssistant = (session.type === 'assistant');
-            const sessionId = session.sessionId || session._id;
-            const date = formatDate(session.lastUpdated || session.createdAt);
-            const isExpanded = expandedSessions.has(sessionId);
-            const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
-            const typeClass = isAssistant ? 'assistant' : 'lead';
-
-            const card = document.createElement('div');
-            card.className = 'session-card' + (session.pinned ? ' pinned' : '');
-            card.dataset.sessionId = sessionId;
-
-            card.innerHTML = `
-                <div class="session-header" data-session-id="${sessionId}">
-                    <div class="card-content">
-                        <div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div>
-                        <div class="card-meta">
-                            <span class="meta-date">${date}</span>
-                            <span class="meta-dot"></span>
-                            <span class="meta-count">${session.messageCount || 0} messages</span>
-                            <span class="meta-dot"></span>
-                            <span class="type-badge ${typeClass}">${typeLabel}</span>
-                        </div>
-                    </div>
-                    <div class="card-arrow ${isExpanded ? 'expanded' : ''}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                    </div>
-                    ${session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : ''}
-                </div>
-                <div class="session-messages ${isExpanded ? 'open' : ''}" data-session-id="${sessionId}">
-                    <div class="msg-loader" id="loader-${sessionId}">
-                        <div class="spinner"></div> Loading messages…
-                    </div>
-                </div>
-            `;
-
-            // ── Click handler ──
-            const header = card.querySelector('.session-header');
-            const messagesDiv = card.querySelector('.session-messages');
-            const arrow = card.querySelector('.card-arrow');
-
-            header.onclick = function(e) {
-                if (e.button === 2) return;
-                const sid = this.dataset.sessionId;
-                if (!sid || sid === '') {
-                    alert('Error: Session ID not found. Please refresh and try again.');
-                    return;
-                }
-                
-                const isCurrentlyExpanded = expandedSessions.has(sid);
-
-                if (isCurrentlyExpanded) {
-                    expandedSessions.delete(sid);
-                    messagesDiv.classList.remove('open');
-                    arrow.classList.remove('expanded');
-                } else {
-                    expandedSessions.add(sid);
-                    messagesDiv.classList.add('open');
-                    arrow.classList.add('expanded');
-
-                    const loader = document.getElementById(`loader-${sid}`);
-                    if (loader) {
-                        loadMessages(sid, messagesDiv);
-                    }
-                }
-            };
-
-            // ── Context Menu ──
-            header.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                const sid = this.dataset.sessionId;
-                showContextMenu(e.clientX, e.clientY, sid);
-            });
-
-            let timer;
-            header.addEventListener('touchstart', function(e) {
-                timer = setTimeout(() => {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    const sid = this.dataset.sessionId;
-                    showContextMenu(touch.clientX, touch.clientY, sid);
-                }, 600);
-            });
-            header.addEventListener('touchend', () => clearTimeout(timer));
-            header.addEventListener('touchmove', () => clearTimeout(timer));
-
-            sessionGrid.appendChild(card);
-        });
+        for (const session of sessions) {
+            const item = createSessionElement(session);
+            sessionList.appendChild(item);
+        }
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  LOAD MESSAGES FOR A SESSION (COMPLETE FIX)
+    //  CREATE SESSION ELEMENT
+    // ──────────────────────────────────────────────────────────────
+
+    function createSessionElement(session) {
+        const sessionId = session.sessionId;
+        const name = session.name || 'Untitled';
+        const type = session.type || 'chat';
+        const msgCount = session.messageCount || 0;
+        const isPinned = session.pinned || false;
+        const isExpanded = expandedSessions.has(sessionId);
+        const date = formatDate(session.lastUpdated || session.createdAt);
+        const typeLabel = getTypeLabel(type);
+        const typeClass = getTypeClass(type);
+
+        const div = document.createElement('div');
+        div.className = `session-item${isPinned ? ' pinned' : ''}${isExpanded ? ' expanded' : ''}`;
+        div.dataset.sessionId = sessionId;
+
+        // ── Header ──
+        const header = document.createElement('div');
+        header.className = 'session-header';
+        header.dataset.sessionId = sessionId;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'session-name';
+        nameSpan.innerHTML = `${isPinned ? '<span class="pin-icon">📌</span>' : ''}${escapeHtml(name)}`;
+        header.appendChild(nameSpan);
+
+        const meta = document.createElement('div');
+        meta.className = 'session-meta';
+        meta.innerHTML = `
+            <span class="count">${msgCount}</span>
+            <span>${date}</span>
+            <span class="type-badge" style="font-size:8px;letter-spacing:0.08em;text-transform:uppercase;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.05);color:#8c909e;">${typeLabel}</span>
+            <span class="session-arrow">▼</span>
+        `;
+        header.appendChild(meta);
+
+        // ── Messages Container ──
+        const messagesDiv = document.createElement('div');
+        messagesDiv.className = 'session-messages';
+
+        const inner = document.createElement('div');
+        inner.className = 'session-messages-inner';
+        inner.innerHTML = `<div class="loading-spinner" style="padding:12px;font-size:11px;">Loading messages…</div>`;
+        messagesDiv.appendChild(inner);
+
+        div.appendChild(header);
+        div.appendChild(messagesDiv);
+
+        // ── Click to Expand ──
+        header.onclick = function(e) {
+            e.stopPropagation();
+            const sid = this.dataset.sessionId;
+            toggleSession(sid, div, messagesDiv);
+        };
+
+        // ── Context Menu (Right Click) ──
+        header.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            const sid = this.dataset.sessionId;
+            showContextMenu(e.clientX, e.clientY, sid);
+        });
+
+        // ── Long Press for Mobile ──
+        let timer;
+        header.addEventListener('touchstart', function(e) {
+            timer = setTimeout(() => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const sid = this.dataset.sessionId;
+                showContextMenu(touch.clientX, touch.clientY, sid);
+            }, 600);
+        });
+        header.addEventListener('touchend', () => clearTimeout(timer));
+        header.addEventListener('touchmove', () => clearTimeout(timer));
+
+        return div;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  TOGGLE SESSION
+    // ──────────────────────────────────────────────────────────────
+
+    function toggleSession(sessionId, element, messagesDiv) {
+        const isExpanded = expandedSessions.has(sessionId);
+
+        if (isExpanded) {
+            expandedSessions.delete(sessionId);
+            element.classList.remove('expanded');
+        } else {
+            expandedSessions.add(sessionId);
+            element.classList.add('expanded');
+            loadMessages(sessionId, messagesDiv);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  LOAD MESSAGES (NEW ENDPOINT)
     // ──────────────────────────────────────────────────────────────
 
     async function loadMessages(sessionId, container) {
-        if (!sessionId || sessionId === '') {
-            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Invalid session (no ID)</div>`;
-            return;
-        }
+        const inner = container.querySelector('.session-messages-inner');
+        if (!inner) return;
+
+        // Check if already loaded
+        if (inner.dataset.loaded === 'true') return;
 
         try {
-            const url = `${BACKEND}/api/history/${sessionId}`;
-            
-            const res = await fetch(url, {
+            const res = await fetch(`${BACKEND}/api/history/messages/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!res.ok) {
-                container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Failed to load messages (${res.status})</div>`;
-                return;
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
             const messages = await res.json();
 
+            inner.innerHTML = '';
+
             if (!messages || messages.length === 0) {
-                container.innerHTML = `<div style="padding:12px 0;color:var(--t3);font-size:12px;text-align:center;">No messages in this session.</div>`;
-                return;
-            }
-
-            let html = '';
-            for (const msg of messages) {
-                const role = msg.role === 'ai' || msg.role === 'assistant' ? 'ai' : 'user';
-                const content = msg.content || msg.text || '';
-                const time = getTime(msg.createdAt);
-                const avatarLabel = role === 'ai' ? 'AI' : 'ME';
-                const textClass = role === 'ai' ? 'msg-text ai' : 'msg-text user';
-                
-                let displayContent = content;
-                if (!displayContent || displayContent.trim() === '') {
-                    displayContent = '⚠️ Empty message';
+                inner.innerHTML = `<div class="no-messages">No messages in this session.</div>`;
+            } else {
+                for (const msg of messages) {
+                    const bubble = createMessageBubble(msg);
+                    inner.appendChild(bubble);
                 }
-                
-                const formattedContent = role === 'ai' ? formatAI(displayContent) : escapeHTML(displayContent);
-
-                html += `
-                    <div class="msg-item">
-                        <div class="msg-avatar ${role}">${avatarLabel}</div>
-                        <div class="msg-content">
-                            <div class="${textClass}">${formattedContent}</div>
-                            ${time ? `<div class="msg-time">${time}</div>` : ''}
-                        </div>
-                    </div>
-                `;
             }
 
-            container.innerHTML = html;
+            inner.dataset.loaded = 'true';
 
-        } catch (error) {
-            console.error('Error loading messages:', error);
-            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Connection error</div>`;
+        } catch (err) {
+            console.error('Error loading messages:', err);
+            inner.innerHTML = `<div class="error-msg">⚠️ Failed to load messages: ${err.message}</div>`;
         }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  CREATE MESSAGE BUBBLE
+    // ──────────────────────────────────────────────────────────────
+
+    function createMessageBubble(msg) {
+        const div = document.createElement('div');
+        const role = msg.role || 'user';
+        div.className = `msg-bubble ${role}`;
+
+        const roleLabel = role === 'ai' ? '🤖 AI' : '👤 You';
+
+        let content = msg.content || '';
+        let displayContent = content;
+
+        // ── Format AI content ──
+        if (role === 'ai') {
+            // Check if it's JSON (leads data)
+            if ((content.startsWith('[') || content.startsWith('{')) && content.length > 2) {
+                try {
+                    const parsed = JSON.parse(content);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        let leadText = `📊 ${parsed.length} lead${parsed.length > 1 ? 's' : ''} found\n\n`;
+                        const maxShow = Math.min(parsed.length, 5);
+                        for (let i = 0; i < maxShow; i++) {
+                            const l = parsed[i];
+                            const name = l.name || l.company || 'Unknown';
+                            const company = l.company || '';
+                            const email = l.email || '';
+                            leadText += `${i+1}. ${name}${company ? ' - ' + company : ''}${email ? ' (' + email + ')' : ''}\n`;
+                        }
+                        if (parsed.length > 5) {
+                            leadText += `\n... and ${parsed.length - 5} more`;
+                        }
+                        displayContent = leadText;
+                    } else {
+                        displayContent = JSON.stringify(parsed, null, 2);
+                    }
+                } catch (e) {
+                    displayContent = content;
+                }
+            } else {
+                displayContent = formatAI(content);
+            }
+        } else {
+            displayContent = escapeHtml(content);
+        }
+
+        const time = msg.time || formatTime(msg.createdAt);
+
+        div.innerHTML = `
+            <div class="msg-role">${roleLabel}</div>
+            <div class="msg-content">${displayContent}</div>
+            ${time ? `<div class="msg-time">${time}</div>` : ''}
+        `;
+
+        return div;
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -508,19 +723,11 @@
 
     function showContextMenu(x, y, sessionId) {
         contextTargetId = sessionId;
-        const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
-        const pinned = session ? session.pinned : false;
-        const pinBtn = document.getElementById('pinBtn');
-        const pinIcon = document.getElementById('pinIcon');
-        const pinLabel = document.getElementById('pinLabel');
+        const session = allSessions.find(s => s.sessionId === sessionId);
+        const isPinned = session?.pinned || false;
 
-        if (pinned) {
-            pinIcon.innerHTML = pinIconOutline();
-            pinLabel.textContent = 'Unpin';
-        } else {
-            pinIcon.innerHTML = pinIconSolid();
-            pinLabel.textContent = 'Pin';
-        }
+        const pinBtn = document.getElementById('pinBtn');
+        pinBtn.innerHTML = isPinned ? '📌 Unpin' : '📌 Pin';
 
         const menuWidth = 160;
         const menuHeight = 140;
@@ -543,45 +750,45 @@
     document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const action = this.dataset.action;
-            const sessionId = contextTargetId;
+            const sid = contextTargetId;
             hideContextMenu();
 
-            if (action === 'rename') openRenameModal(sessionId);
-            else if (action === 'pin') togglePin(sessionId);
-            else if (action === 'delete') deleteSession(sessionId);
+            if (action === 'rename') openRenameModal(sid);
+            else if (action === 'pin') togglePin(sid);
+            else if (action === 'delete') deleteSession(sid);
         });
     });
 
     // ──────────────────────────────────────────────────────────────
-    //  RENAME
+    //  RENAME SESSION
     // ──────────────────────────────────────────────────────────────
 
     function openRenameModal(sessionId) {
         currentRenameId = sessionId;
-        const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
-        renameInput.value = session?.name || session?.title || '';
+        const session = allSessions.find(s => s.sessionId === sessionId);
+        renameInput.value = session?.name || '';
         renameModal.classList.add('active');
         renameInput.focus();
         renameInput.select();
     }
 
-    document.getElementById('renameCancel').addEventListener('click', function() {
+    document.getElementById('renameCancel').onclick = function() {
         renameModal.classList.remove('active');
         currentRenameId = null;
-    });
+    };
 
-    document.getElementById('renameConfirm').addEventListener('click', async function() {
+    document.getElementById('renameConfirm').onclick = async function() {
         const name = renameInput.value.trim();
         if (!name) return;
 
         try {
-            const res = await fetch(`${BACKEND}/api/sessions/${currentRenameId}/rename`, {
+            const res = await fetch(`${BACKEND}/api/history/rename/${currentRenameId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ name: name })
+                body: JSON.stringify({ name })
             });
 
             if (res.ok) {
@@ -589,12 +796,12 @@
                 currentRenameId = null;
                 loadSessions();
             } else {
-                alert('Rename failed');
+                alert('Failed to rename session');
             }
-        } catch (error) {
+        } catch (err) {
             alert('Connection error');
         }
-    });
+    };
 
     renameInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') document.getElementById('renameConfirm').click();
@@ -606,25 +813,27 @@
     // ──────────────────────────────────────────────────────────────
 
     async function togglePin(sessionId) {
-        const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
+        const session = allSessions.find(s => s.sessionId === sessionId);
         if (!session) return;
 
+        const newPinned = !session.pinned;
+
         try {
-            const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/pin`, {
+            const res = await fetch(`${BACKEND}/api/history/pin/${sessionId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ pinned: !session.pinned })
+                body: JSON.stringify({ pinned: newPinned })
             });
 
             if (res.ok) {
                 loadSessions();
             } else {
-                alert('Failed to pin');
+                alert('Failed to update pin');
             }
-        } catch (error) {
+        } catch (err) {
             alert('Connection error');
         }
     }
@@ -637,7 +846,7 @@
         if (!confirm('Delete this session and all its messages?')) return;
 
         try {
-            const res = await fetch(`${BACKEND}/api/sessions/${sessionId}`, {
+            const res = await fetch(`${BACKEND}/api/history/delete/${sessionId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -646,9 +855,9 @@
                 expandedSessions.delete(sessionId);
                 loadSessions();
             } else {
-                alert('Delete failed');
+                alert('Failed to delete session');
             }
-        } catch (error) {
+        } catch (err) {
             alert('Connection error');
         }
     }
@@ -658,44 +867,16 @@
     // ──────────────────────────────────────────────────────────────
 
     searchInput.addEventListener('input', function() {
-        const q = this.value.toLowerCase();
-        const filtered = allSessions.filter(s => 
-            (s.name || s.title || '').toLowerCase().includes(q)
+        const query = this.value.toLowerCase().trim();
+        if (!query) {
+            renderSessions(allSessions);
+            return;
+        }
+        const filtered = allSessions.filter(s =>
+            (s.name || '').toLowerCase().includes(query)
         );
         renderSessions(filtered);
     });
-
-    // ──────────────────────────────────────────────────────────────
-    //  NOTIFICATIONS BADGE
-    // ──────────────────────────────────────────────────────────────
-
-    async function loadNotifCount() {
-        try {
-            const res = await fetch(`${BACKEND}/api/notifications/count`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const count = data.count || 0;
-                localStorage.setItem('lastKnownNotifCount', count);
-                const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-                updateBadge(count > seen ? count : 0);
-            }
-        } catch {}
-    }
-
-    function updateBadge(count) {
-        const item = document.getElementById('navNotifBtn');
-        const badge = item?.querySelector('.nav-badge');
-        if (!item || !badge) return;
-        if (count > 0) {
-            item.classList.add('has-notifs');
-            badge.textContent = count > 9 ? '9+' : count;
-        } else {
-            item.classList.remove('has-notifs');
-            badge.textContent = '';
-        }
-    }
 
     // ──────────────────────────────────────────────────────────────
     //  INIT
@@ -703,16 +884,12 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         loadSessions();
-        loadNotifCount();
-        setInterval(loadNotifCount, 15000);
 
-        document.getElementById('navNotifBtn').addEventListener('click', function() {
-            localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
-            updateBadge(0);
+        // Click outside to close context menu
+        document.addEventListener('click', function(e) {
+            if (!contextMenu.contains(e.target)) hideContextMenu();
         });
-
-        document.querySelector('.archive-stage').addEventListener('scroll', hideContextMenu);
     });
-  </script>
+</script>
 </body>
-                                                                                         </html>
+  </html>
