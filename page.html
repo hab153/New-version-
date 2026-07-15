@@ -1154,10 +1154,22 @@
   //  ✅ FIXED: loadSessionFromUrl - Properly loads session messages
   // ============================================================
   async function loadSessionFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('session');
-    const type = params.get('type');
+    // ✅ Check localStorage first (from History Overlay)
+    let sessionId = localStorage.getItem('resumeSessionId');
+    let type = localStorage.getItem('resumeSessionType');
+    
+    // If not in localStorage, check URL params (fallback)
+    if (!sessionId) {
+        const params = new URLSearchParams(window.location.search);
+        sessionId = params.get('session');
+        type = params.get('type');
+    }
+
     if (!sessionId) return false;
+
+    // Clear storage so it doesn't reload on next refresh
+    localStorage.removeItem('resumeSessionId');
+    localStorage.removeItem('resumeSessionType');
 
     conversationHistory = [];
     isSessionLoading = true;
@@ -1399,4 +1411,4 @@
   });
 </script>
 </body>
-  </html>
+      </html>
