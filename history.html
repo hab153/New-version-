@@ -25,7 +25,6 @@
     body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 55% 35% at 5% 0%, rgba(255,255,255,0.03) 0%, transparent 60%), radial-gradient(ellipse 40% 55% at 95% 100%, rgba(102,221,255,0.02) 0%, transparent 55%); }
     body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-size: 180px; }
     
-    /* --- Topbar & Layout --- */
     .topbar { height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between; background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; }
     .topbar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15), transparent); }
     .brand { display: flex; align-items: center; gap: 10px; }
@@ -47,7 +46,6 @@
     .archive-stage::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
     .archive-container { max-width: 680px; margin: 0 auto; }
     
-    /* --- Headings & Search --- */
     .page-heading { margin-bottom: 28px; animation: fadeUp 0.4s 0.05s ease both; }
     .heading-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .eyebrow-line { width: 22px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
@@ -65,7 +63,6 @@
     .search-input::placeholder { color: var(--t3); }
     .count-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; color: var(--t3); padding: 3px 8px; border-radius: 20px; border: 1px solid var(--br-dim); background: var(--raised); flex-shrink: 0; transition: color 0.2s; }
     
-    /* --- Session Card --- */
     .session-grid { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s 0.15s ease both; }
     .session-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); overflow: hidden; transition: border-color 0.22s, background 0.22s, box-shadow 0.22s; }
     .session-card:hover { background: var(--surface); border-color: var(--br-md); box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1); }
@@ -89,7 +86,6 @@
     .pinned-icon { display: none; position: absolute; top: 10px; right: 10px; opacity: 0.5; }
     .session-card.pinned .pinned-icon { display: block; }
     
-    /* --- Messages (expandable) --- */
     .session-messages { display: none; padding: 0 20px 20px 20px; border-top: 1px solid var(--br-dim); max-height: 400px; overflow-y: auto; }
     .session-messages.open { display: block; animation: fadeUp 0.3s ease both; }
     .session-messages::-webkit-scrollbar { width: 2px; }
@@ -106,7 +102,6 @@
     .msg-text.user { color: var(--t1); }
     .msg-time { font-family: var(--mono); font-size: 8px; color: var(--t3); margin-top: 2px; }
     
-    /* --- Empty / Error States --- */
     .empty-state { text-align: center; padding: 56px 24px; color: var(--t2); }
     .empty-icon { width: 48px; height: 48px; margin: 0 auto 16px; border: 1px solid var(--br-md); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--t3); }
     .empty-title { font-family: var(--display); font-size: 18px; font-weight: 400; font-style: italic; color: var(--t2); margin-bottom: 6px; }
@@ -116,7 +111,6 @@
     .error-title { font-family: var(--display); font-size: 17px; font-style: italic; color: var(--rose); margin-bottom: 6px; }
     .error-sub { font-size: 11px; color: var(--t3); font-family: var(--mono); letter-spacing: 0.04em; }
     
-    /* --- Context Menu & Modals --- */
     #contextMenu { display: none; position: fixed; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-md); padding: 6px 0; z-index: 100; min-width: 160px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
     #contextMenu .ctx-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: transparent; border: none; color: var(--t2); font-family: var(--ui); font-size: 12.5px; cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; }
     #contextMenu .ctx-btn:hover { background: var(--hover); color: var(--t1); }
@@ -140,7 +134,6 @@
     .modal-box .modal-actions .btn-save { background: var(--gold); color: #0d0a04; border: none; }
     .modal-box .modal-actions .btn-save:hover { background: var(--gold-bright); box-shadow: 0 4px 16px rgba(255,255,255,0.2); }
 
-    /* --- Bottom Nav --- */
     .bottom-nav { height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; position: fixed; bottom: 0; width: 100%; z-index: 20; padding: 0 8px; }
     .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); }
     .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--t3); text-decoration: none; transition: color 0.22s; position: relative; }
@@ -157,17 +150,14 @@
     .nav-badge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: #ff5555; border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono); font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(255,85,85,0.3); }
     .nav-item.has-notifs .nav-badge { display: flex; }
 
-    /* --- Animations & Skeletons --- */
     @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     .skeleton-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; animation: skelPulse 1.6s ease-in-out infinite; }
     .skel-line { height: 11px; border-radius: 4px; background: var(--raised); }
     .skel-line.title { width: 68%; }
     .skel-line.meta { width: 36%; height: 9px; }
     @keyframes skelPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-
-    /* Loading spinner for messages */
-    .msg-loader { display: flex; justify-content: center; padding: 16px 0; color: var(--t3); font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; }
-    .msg-loader .spinner { width: 16px; height: 16px; border: 2px solid var(--br-dim); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; }
+    .msg-loader { display: flex; justify-content: center; align-items: center; padding: 16px 0; color: var(--t3); font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; gap: 10px; }
+    .msg-loader .spinner { width: 16px; height: 16px; border: 2px solid var(--br-dim); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (min-width: 768px) { .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); } .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); } }
@@ -284,7 +274,9 @@
     function getTime(dateStr) {
         if (!dateStr) return '';
         try {
-            return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '';
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } catch { return ''; }
     }
 
@@ -400,24 +392,20 @@
             const arrow = card.querySelector('.card-arrow');
 
             header.addEventListener('click', async function(e) {
-                // Don't trigger if right-click or context menu
                 if (e.button === 2) return;
 
                 const sid = this.dataset.sessionId;
                 const isCurrentlyExpanded = expandedSessions.has(sid);
 
                 if (isCurrentlyExpanded) {
-                    // Collapse
                     expandedSessions.delete(sid);
                     messagesDiv.classList.remove('open');
                     arrow.classList.remove('expanded');
                 } else {
-                    // Expand
                     expandedSessions.add(sid);
                     messagesDiv.classList.add('open');
                     arrow.classList.add('expanded');
 
-                    // Load messages if not already loaded
                     const loader = document.getElementById(`loader-${sid}`);
                     if (loader) {
                         await loadMessages(sid, messagesDiv);
@@ -425,7 +413,7 @@
                 }
             });
 
-            // ── Context Menu (Right Click / Long Press) ──
+            // ── Context Menu ──
             header.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 const sid = this.dataset.sessionId;
@@ -449,21 +437,25 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  LOAD MESSAGES FOR A SESSION
+    //  LOAD MESSAGES FOR A SESSION (FIXED)
     // ──────────────────────────────────────────────────────────────
 
     async function loadMessages(sessionId, container) {
         try {
+            console.log('🔍 [history] Loading messages for session:', sessionId);
+            
             const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!res.ok) {
-                container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Failed to load messages</div>`;
+                console.error('❌ [history] Failed to load messages:', res.status);
+                container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Failed to load messages (${res.status})</div>`;
                 return;
             }
 
             const messages = await res.json();
+            console.log('✅ [history] Loaded', messages.length, 'messages');
 
             if (!messages || messages.length === 0) {
                 container.innerHTML = `<div style="padding:12px 0;color:var(--t3);font-size:12px;text-align:center;">No messages in this session.</div>`;
@@ -477,7 +469,14 @@
                 const time = getTime(msg.createdAt);
                 const avatarLabel = role === 'ai' ? 'AI' : 'ME';
                 const textClass = role === 'ai' ? 'msg-text ai' : 'msg-text user';
-                const formattedContent = role === 'ai' ? formatAI(content) : escapeHTML(content);
+                
+                // 🔥 FIX: If content is empty, show a placeholder
+                let displayContent = content;
+                if (!displayContent || displayContent.trim() === '') {
+                    displayContent = '⚠️ Empty message';
+                }
+                
+                const formattedContent = role === 'ai' ? formatAI(displayContent) : escapeHTML(displayContent);
 
                 html += `
                     <div class="msg-item">
@@ -491,10 +490,11 @@
             }
 
             container.innerHTML = html;
+            console.log('✅ [history] Messages rendered successfully');
 
         } catch (error) {
-            console.error('Error loading messages:', error);
-            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Connection error</div>`;
+            console.error('❌ [history] Error loading messages:', error);
+            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Connection error: ${error.message}</div>`;
         }
     }
 
@@ -711,4 +711,4 @@
     });
   </script>
 </body>
-      </html>
+  </html>
