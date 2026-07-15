@@ -331,7 +331,7 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  RENDER SESSIONS - FIXED to use direct click
+    //  RENDER SESSIONS
     // ──────────────────────────────────────────────────────────────
 
     function renderSessions(sessions) {
@@ -437,19 +437,32 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  LOAD MESSAGES FOR A SESSION (FIXED)
+    //  LOAD MESSAGES FOR A SESSION (COMPLETE FIX)
     // ──────────────────────────────────────────────────────────────
 
     async function loadMessages(sessionId, container) {
+        if (!sessionId) {
+            console.error('❌ [history] No session ID provided!');
+            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Invalid session</div>`;
+            return;
+        }
+
+        console.log('🔍 [history] Loading messages for session:', sessionId);
+        
         try {
-            console.log('🔍 [history] Loading messages for session:', sessionId);
+            // ✅ FIX: Use the sessionId in the URL
+            const url = `${BACKEND}/api/history/${sessionId}`;
+            console.log('🔍 [history] Request URL:', url);
             
-            const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+            const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
+            console.log('📊 [history] Response status:', res.status);
+
             if (!res.ok) {
-                console.error('❌ [history] Failed to load messages:', res.status);
+                const errorText = await res.text();
+                console.error('❌ [history] Failed to load messages:', res.status, errorText);
                 container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Failed to load messages (${res.status})</div>`;
                 return;
             }
@@ -710,4 +723,4 @@
     });
   </script>
 </body>
-  </html>
+                                                                                      </html>
