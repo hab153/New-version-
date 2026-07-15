@@ -472,7 +472,9 @@
   </a>
 </nav>
 
+<!-- Load Chat Orchestrator FIRST -->
 <script src="chat.js"></script>
+
 <script>
   // ──────────────────────────────────────────────────────────────
   //  PAGE-SPECIFIC CONFIGURATION
@@ -522,37 +524,78 @@
   //  SHARED CHAT FUNCTIONS (Using Chat.js)
   // ──────────────────────────────────────────────────────────────
 
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+      .replace(/`/g, '&#x60;');
+  }
+
+  function formatAI(text) {
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+    s = s.replace(/\n/g, '<br>');
+    return s;
+  }
+
   function addLeadMessage(role, content) {
-    Chat.addMessageToUI(leadMsgContainer, role, content);
+    const container = leadMsgContainer;
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    container.appendChild(row);
+    scrollLeadDown();
   }
 
   function addAssistantMessage(role, content) {
-    Chat.addMessageToUI(assistantMsgContainer, role, content);
+    const container = assistantMsgContainer;
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    container.appendChild(row);
+    scrollAssistantDown();
   }
 
   function showLeadTyping(label = 'Thinking…') {
-    Chat.showTyping(leadMsgContainer, label);
+    let row = document.getElementById('leadTypingRow');
+    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollLeadDown(); return; }
+    row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'leadTypingRow';
+    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+    leadMsgContainer.appendChild(row);
+    scrollLeadDown();
   }
 
-  function hideLeadTyping() {
-    Chat.hideTyping(leadMsgContainer);
-  }
+  function hideLeadTyping() { document.getElementById('leadTypingRow')?.remove(); }
 
   function showAssistantTyping(label = 'Thinking…') {
-    Chat.showTyping(assistantMsgContainer, label);
+    let row = document.getElementById('assistantTypingRow');
+    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollAssistantDown(); return; }
+    row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'assistantTypingRow';
+    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+    assistantMsgContainer.appendChild(row);
+    scrollAssistantDown();
   }
 
-  function hideAssistantTyping() {
-    Chat.hideTyping(assistantMsgContainer);
-  }
+  function hideAssistantTyping() { document.getElementById('assistantTypingRow')?.remove(); }
 
-  function scrollLeadDown() {
-    Chat.scrollToBottom(leadMsgContainer);
-  }
-
-  function scrollAssistantDown() {
-    Chat.scrollToBottom(assistantMsgContainer);
-  }
+  function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
+  function scrollAssistantDown() { assistantChatArea?.scrollTo({ top: assistantChatArea.scrollHeight, behavior: 'smooth' }); }
 
   // ──────────────────────────────────────────────────────────────
   //  MODE SWITCHING
@@ -652,7 +695,7 @@
   });
 
   // ──────────────────────────────────────────────────────────────
-  //  SEND MESSAGE - Lead
+  //  SEND MESSAGE - Lead (Using Chat.js)
   // ──────────────────────────────────────────────────────────────
 
   async function startLeadSearch(message) {
@@ -669,35 +712,39 @@
     showLeadTyping('Searching for leads…');
 
     try {
-      const result = await Chat.sendChatMessage(message, leadMsgContainer, currentSessionId, 'lead');
+      // Create session if needed
+      if (!currentSessionId) {
+        const newSession = await Chat.Sessions.createSession('lead', message.substring(0, 50) || 'Lead Search');
+        if (newSession) {
+          currentSessionId = newSession.sessionId || newSession._id;
+          const url = new URL(window.location);
+          url.searchParams.set('session', currentSessionId);
+          window.history.pushState({}, '', url);
+        }
+      }
+
+      // Send the message using Chat.js
+      const result = await Chat.Messages.sendLeadMessage(message, currentSessionId, conversationHistory);
+      
       hideLeadTyping();
 
       if (result) {
-        if (result.sessionId) {
-          currentSessionId = result.sessionId;
-          const url = new URL(window.location);
-          url.searchParams.set('session', result.sessionId);
-          window.history.pushState({}, '', url);
-          
-          try {
-            await fetch(`${BACKEND}/api/sessions`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-              body: JSON.stringify({ 
-                sessionId: result.sessionId, 
-                type: 'lead', 
-                name: message.substring(0, 50) || 'Lead Search' 
-              })
-            });
-          } catch (sessionErr) { console.error('[page] Failed to create session:', sessionErr); }
+        if (result.history) {
+          conversationHistory = result.history;
         }
 
         // Handle leads if present
-        if (result.leads && result.leads.length > 0) {
-          currentGeneratedLeads = result.leads;
-          renderLeads(result.leads);
-          addLeadMessage('ai', `📊 Found <strong>${result.leads.length}</strong> lead${result.leads.length !== 1 ? 's' : ''}. Review the table below.`);
-        }
+        try {
+          const parsed = JSON.parse(result.reply);
+          if (Array.isArray(parsed)) {
+            currentGeneratedLeads = parsed;
+            renderLeads(parsed);
+            addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the table below.`);
+            return;
+          }
+        } catch {}
+
+        addLeadMessage('ai', result.reply || 'Request received. How can I help further?');
       }
     } catch (error) {
       hideLeadTyping();
@@ -708,7 +755,7 @@
   }
 
   // ──────────────────────────────────────────────────────────────
-  //  SEND MESSAGE - Assistant
+  //  SEND MESSAGE - Assistant (Using Chat.js)
   // ──────────────────────────────────────────────────────────────
 
   async function sendAssistantMessage(message) {
@@ -728,11 +775,19 @@
     showAssistantTyping('Thinking…');
 
     try {
-      const result = await Chat.sendChatMessage(message, assistantMsgContainer, assistantSessionId, 'assistant');
+      // Create session if needed
+      if (!assistantSessionId) {
+        const newSession = await Chat.Sessions.createSession('assistant', 'Assistant Chat');
+        if (newSession) {
+          assistantSessionId = newSession.sessionId || newSession._id;
+        }
+      }
+
+      const result = await Chat.Messages.sendAssistantMessage(message, assistantSessionId);
       hideAssistantTyping();
       
-      if (result && result.sessionId) {
-        assistantSessionId = result.sessionId;
+      if (result) {
+        addAssistantMessage('ai', result.response || 'I couldn\'t process that. Please try again.');
       }
     } catch (error) {
       hideAssistantTyping();
@@ -744,7 +799,7 @@
   }
 
   // ──────────────────────────────────────────────────────────────
-  //  LOAD SESSION FROM URL
+  //  LOAD SESSION FROM URL (Using Chat.js)
   // ──────────────────────────────────────────────────────────────
 
   async function loadSessionFromUrl() {
@@ -758,46 +813,65 @@
 
     try {
       const isAssistant = (type === 'assistant') || (sessionId === 'assistant');
-      const container = isAssistant ? assistantMsgContainer : leadMsgContainer;
       
+      // Use Chat.js to load the session
+      const loaded = await Chat.loadSession(sessionId);
+      
+      if (!loaded || !loaded.messages || loaded.messages.length === 0) {
+        return false;
+      }
+
       // Clear containers
       if (isAssistant) {
         assistantMsgContainer.innerHTML = '';
+        assistantSessionId = sessionId;
       } else {
         leadMsgContainer.innerHTML = '';
+        currentSessionId = sessionId;
+        conversationHistory = [];
       }
+
+      // Display messages
+      const container = isAssistant ? assistantMsgContainer : leadMsgContainer;
       
-      // Load session using shared Chat.js
-      const loaded = await Chat.loadSession(sessionId, container, type);
-      
-      if (loaded) {
+      for (const msg of loaded.messages) {
+        const role = msg.role === 'ai' || msg.role === 'assistant' ? 'ai' : 'user';
+        const content = msg.content;
+        
         if (isAssistant) {
-          assistantSessionId = sessionId;
-          currentMode = 'assistant';
-          modeSelector.classList.add('hidden');
-          assistantModeSelector.style.display = 'flex';
-          document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-          assistantContainer.classList.add('active');
-          assistantInputBar.classList.add('active');
-          assistantInputBar.style.display = 'block';
-          isChatActive = true;
-          document.querySelector('.topbar-label').textContent = 'Assistant Session';
+          addAssistantMessage(role, content);
         } else {
-          currentSessionId = sessionId;
-          currentMode = 'lead';
-          modeSelector.classList.add('hidden');
-          document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-          leadContainer.classList.add('active');
-          leadChatArea.classList.add('active');
-          leadInputBar.classList.remove('lead-active');
-          leadInputBar.classList.add('lead-hidden');
-          isChatActive = true;
-          document.querySelector('.topbar-label').textContent = 'Lead Session';
+          addLeadMessage(role, content);
+          if (role === 'user' || role === 'ai') {
+            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: content });
+          }
         }
-        return true;
       }
-      
-      return false;
+
+      // Update UI
+      if (isAssistant) {
+        currentMode = 'assistant';
+        modeSelector.classList.add('hidden');
+        assistantModeSelector.style.display = 'flex';
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        assistantContainer.classList.add('active');
+        assistantInputBar.classList.add('active');
+        assistantInputBar.style.display = 'block';
+        isChatActive = true;
+        document.querySelector('.topbar-label').textContent = 'Assistant Session';
+      } else {
+        currentMode = 'lead';
+        modeSelector.classList.add('hidden');
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        leadContainer.classList.add('active');
+        leadChatArea.classList.add('active');
+        leadInputBar.classList.remove('lead-active');
+        leadInputBar.classList.add('lead-hidden');
+        isChatActive = true;
+        document.querySelector('.topbar-label').textContent = 'Lead Session';
+      }
+
+      return true;
       
     } catch (error) {
       console.error('[page] Error loading session:', error);
@@ -864,8 +938,8 @@
       tableHTML += `
         <tr onclick="toggleLeadDetail(${index})" style="cursor:pointer;">
           <td><span class="rank-badge ${rankClass}">${rank}</span></td>
-          <td><strong>${Chat.escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
-          <td>${Chat.escapeHtml(lead.industry || '—')}</td>
+          <td><strong>${escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
+          <td>${escapeHtml(lead.industry || '—')}</td>
           <td>
             <span style="font-weight:600;font-size:13px;">${percent}%</span>
             <div class="score-bar"><div class="fill" style="width:${percent}%;"></div></div>
@@ -878,10 +952,10 @@
             <div class="lead-detail-grid">
               <div class="detail-section">
                 <h4>📋 Company Details</h4>
-                <div class="field"><span class="label">Company</span><span class="value">${Chat.escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
-                <div class="field"><span class="label">Domain</span><span class="value">${Chat.escapeHtml(lead.domain || '—')}</span></div>
-                <div class="field"><span class="label">Industry</span><span class="value">${Chat.escapeHtml(lead.industry || '—')}</span></div>
-                <div class="field"><span class="label">Location</span><span class="value">${Chat.escapeHtml(lead.hq || lead.location || '—')}</span></div>
+                <div class="field"><span class="label">Company</span><span class="value">${escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
+                <div class="field"><span class="label">Domain</span><span class="value">${escapeHtml(lead.domain || '—')}</span></div>
+                <div class="field"><span class="label">Industry</span><span class="value">${escapeHtml(lead.industry || '—')}</span></div>
+                <div class="field"><span class="label">Location</span><span class="value">${escapeHtml(lead.hq || lead.location || '—')}</span></div>
                 <div class="field"><span class="label">Employees</span><span class="value">${lead.employees || '—'}</span></div>
                 <div class="field"><span class="label">Tech Stack</span><span class="value">${Array.isArray(lead.tech_stack) ? lead.tech_stack.join(', ') : (lead.tech_stack || '—')}</span></div>
                 <div class="field"><span class="label">Hiring</span><span class="value">${lead.hiring || '—'}</span></div>
@@ -889,17 +963,17 @@
 
               <div class="detail-section">
                 <h4>📧 Contact</h4>
-                <div class="field"><span class="label">Email</span><span class="value">${Chat.escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
-                ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${Chat.escapeHtml(lead.emailLabel)}</span></div>` : ''}
+                <div class="field"><span class="label">Email</span><span class="value">${escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
+                ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${escapeHtml(lead.emailLabel)}</span></div>` : ''}
                 ${lead.contact_alternatives ? `<div class="field"><span class="label">Alternatives</span><span class="value" style="font-size:11px;color:var(--t3);">${lead.contact_alternatives.join(', ')}</span></div>` : ''}
               </div>
 
               <div class="detail-section" style="grid-column: 1 / -1;">
                 <h4>✉️ Personalized Outreach</h4>
                 <div class="outreach-preview">
-                  <div class="subj">${Chat.escapeHtml(subject)}</div>
-                  <div class="body">${Chat.escapeHtml(body)}</div>
-                  ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${Chat.escapeHtml(e)}</span>`).join('')}</div>` : ''}
+                  <div class="subj">${escapeHtml(subject)}</div>
+                  <div class="body">${escapeHtml(body)}</div>
+                  ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${escapeHtml(e)}</span>`).join('')}</div>` : ''}
                 </div>
               </div>
 
@@ -907,7 +981,7 @@
                 <h4>🏆 Ranking & Quality</h4>
                 <div class="field"><span class="label">Lead Score</span><span class="value">${Math.round((lead.leadScore || 0) * 100)}%</span></div>
                 <div class="field"><span class="label">Rank</span><span class="value">#${lead.rank || '—'}</span></div>
-                <div class="field"><span class="label">Label</span><span class="value">${Chat.escapeHtml(lead.rank_label || '—')}</span></div>
+                <div class="field"><span class="label">Label</span><span class="value">${escapeHtml(lead.rank_label || '—')}</span></div>
                 <div class="field"><span class="label">Quality</span><span class="value"><span class="quality-badge ${qualityPassed ? '' : 'failed'}">${qualityPassed ? '✅ Passed' : '❌ Failed'}</span></span></div>
                 ${warnings.length > 0 ? `<div class="field"><span class="label">Warnings</span><span class="value" style="font-size:11px;color:var(--rose);">${warnings.join('; ')}</span></div>` : ''}
                 ${issues.length > 0 ? `<div class="field"><span class="label">Issues</span><span class="value" style="font-size:11px;color:var(--rose);">${issues.join('; ')}</span></div>` : ''}
@@ -1255,4 +1329,4 @@
   });
 </script>
 </body>
-      </html>
+        </html>
