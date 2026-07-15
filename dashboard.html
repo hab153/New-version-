@@ -299,53 +299,6 @@
     .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
     .refresh-indicator { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 8px; font-family: var(--font-mono); }
 
-    .pricing-header { text-align: center; margin-bottom: 40px; }
-    .pricing-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
-    .pricing-header p { color: var(--text-2); font-size: 14px; }
-    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
-    .plan-card {
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 32px 24px;
-      display: flex; flex-direction: column; position: relative;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .plan-card:hover { transform: translateY(-5px); border-color: var(--text-3); }
-    .plan-card.featured { border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(200, 255, 87, 0.1); }
-    .plan-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--accent); color: #060608; font-size: 10px; font-weight: 700;
-      padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .plan-name { font-size: 18px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
-    .plan-price {
-      font-size: 36px; font-weight: 700; color: var(--text-1); margin-bottom: 24px;
-      display: flex; align-items: baseline;
-    }
-    .plan-price span { font-size: 14px; color: var(--text-3); margin-left: 4px; font-weight: 400; }
-    .plan-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex-grow: 1; }
-    .plan-features li {
-      margin-bottom: 12px; font-size: 13px; color: var(--text-2);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: bold; }
-    .plan-features li.disabled { color: var(--text-3); text-decoration: line-through; opacity: 0.6; }
-    .plan-features li.disabled::before { content: '✕'; color: var(--text-3); }
-    .plan-btn {
-      width: 100%; padding: 14px; border-radius: 8px; border: none;
-      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-      text-transform: uppercase; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-free { background: var(--bg-raised); color: var(--text-3); cursor: default; }
-    .btn-go { background: var(--bg-raised); color: var(--text-1); border: 1px solid var(--border); }
-    .btn-go:hover { border-color: var(--accent-go); color: var(--accent-go); }
-    .btn-pro { background: var(--accent); color: #060608; box-shadow: 0 0 15px rgba(200, 255, 87, 0.2); }
-    .btn-pro:hover { background: #d4ff70; transform: scale(1.02); }
-    .current-plan-tag {
-      display: inline-block; font-size: 10px;
-      background: rgba(200, 255, 87, 0.1); color: var(--accent);
-      padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
-    }
-
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .command-center:not(.collapsed) .analytics-grid,
     .command-center:not(.collapsed) .lead-table,
@@ -435,61 +388,18 @@
       </div>
     </div>
 
-    <div class="section-title">Subscription</div>
-    <div class="pricing-header">
-      <h2>Choose Your Power Level</h2>
-      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
-    </div>
-    <div class="pricing-cards">
-
-      <div class="plan-card">
-        <div class="plan-name">Free</div>
-        <div class="plan-price">$0<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>30 Requests / Day</li>
-          <li>Basic Model (Skyline AA-1a)</li>
-          <li>Short Memory</li>
-          <li class="disabled">Powerful Reasoning</li>
-          <li class="disabled">Early Access</li>
-        </ul>
-        <button class="plan-btn btn-free" disabled>Current Plan</button>
-      </div>
-
-      <div class="plan-card">
-        <div class="plan-name">GO <span id="goTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price">$9<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>18 Requests / Day</li>
-          <li>Powerful Model (Skyline AA-1mini)</li>
-          <li>Long Memory</li>
-          <li>Great Features</li>
-          <li class="disabled">Skyline AA-1a Model</li>
-        </ul>
-        <button class="plan-btn btn-go" onclick="initiateUpgrade('go')">Upgrade to GO</button>
-      </div>
-
-      <div class="plan-card featured">
-        <div class="plan-badge">Best Value</div>
-        <div class="plan-name">PRO <span id="proTag" class="current-plan-tag" style="display:none;">ACTIVE</span></div>
-        <div class="plan-price">$20<span>/mo</span></div>
-        <ul class="plan-features">
-          <li>40 Requests / Day</li>
-          <li>Skyline AA-1aa Model</li>
-          <li>Advance Reasoning</li>
-          <li>Early Access to Features</li>
-          <li>Priority Support</li>
-        </ul>
-        <button class="plan-btn btn-pro" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
-      </div>
-
-    </div>
-
-    <div class="section-title">Profile</div>
+    <div class="section-title">Account</div>
     <div class="menu-grid">
+      <!-- ✅ NEW: Plan & Usage Link -->
+      <a href="plan.html" class="menu-item">
+        <span>📊 Plan &amp; Usage</span>
+        <span class="arrow">›</span>
+      </a>
       <a href="profile.html" class="menu-item"><span>Profile Details</span><span class="arrow">›</span></a>
       <a href="account.html" class="menu-item"><span>Account Settings</span><span class="arrow">›</span></a>
       <a href="forgot-password.html" class="menu-item"><span>🔑 Forgot Password?</span><span class="arrow">›</span></a>
     </div>
+
     <div class="section-title">Skyline System</div>
     <div class="menu-grid">
       <a href="Privacy.html" class="menu-item"><span>Privacy Policy</span><span class="arrow">›</span></a>
@@ -616,19 +526,16 @@
           throw new Error('No URL returned from server');
         }
 
-        // ✅ FIX: Replace &amp; with & if present (clean the URL)
         let redirectUrl = data.url;
         if (redirectUrl.includes('&amp;')) {
           redirectUrl = redirectUrl.replace(/&amp;/g, '&');
           console.log('🔧 [FRONTEND] Fixed URL (replaced &amp; with &)');
         }
 
-        // ✅ Verify the URL has response_type=code
         if (!redirectUrl.includes('response_type=code')) {
           console.warn('⚠️ [FRONTEND] URL missing response_type=code!');
         }
 
-        // ✅ IMMEDIATE REDIRECT - No delays, no HTML display
         console.log('✅ [FRONTEND] Redirecting to:', redirectUrl);
         window.location.href = redirectUrl;
 
@@ -670,7 +577,6 @@
 
         if (btn) {
           if (data.connected && !data.isExpired) {
-            // ✅ Valid connection
             btn.innerText = '✅ Connected';
             btn.classList.add('connected');
             btn.disabled = false;
@@ -678,14 +584,12 @@
               btn.title = `Connected as ${data.email}`;
             }
           } else if (data.connected && data.isExpired) {
-            // ⚠️ Expired - need reconnect
             btn.innerText = '🔄 Reconnect';
             btn.classList.remove('connected');
             btn.disabled = false;
             btn.title = 'Session expired, please reconnect';
             showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
           } else {
-            // ❌ Not connected
             btn.innerText = 'Connect Email';
             btn.classList.remove('connected');
             btn.disabled = false;
@@ -703,7 +607,6 @@
           btn.classList.remove('connected');
           btn.disabled = false;
         }
-        // Don't show toast on initial load - it's just a status check
       }
     }
 
@@ -855,44 +758,6 @@
       }
     }
 
-    // ── Upgrade Logic ────────────────────────────────────────────────────────
-    async function initiateUpgrade(planType) {
-      const btn = event.target;
-      const originalText = btn.innerText;
-      try {
-        btn.innerText = 'Connecting...';
-        btn.disabled  = true;
-
-        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
-          method: 'POST',
-          headers: {
-            'Content-Type':  'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ planType })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Server Error: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.link) {
-          btn.innerText = 'Redirecting...';
-          window.location.href = data.link;
-        } else {
-          throw new Error('No payment link received from server.');
-        }
-      } catch (err) {
-        console.error('Upgrade Error:', err);
-        showToast(`❌ ${err.message}`, 'error');
-        if (btn) {
-          btn.innerText = originalText;
-          btn.disabled  = false;
-        }
-      }
-    }
-
     // ── Check Current Plan ───────────────────────────────────────────────────
     async function checkCurrentPlan() {
       try {
@@ -902,27 +767,8 @@
         if (res.ok) {
           const user = await res.json();
           const plan = user.subscriptionTier || 'free';
-
-          if (plan === 'go') {
-            document.getElementById('goTag').style.display = 'inline-block';
-            const goBtn = document.querySelector('.btn-go');
-            if (goBtn) {
-              goBtn.innerText = 'Current Plan';
-              goBtn.disabled  = true;
-              goBtn.classList.add('btn-free');
-              goBtn.classList.remove('btn-go');
-            }
-          } else if (plan === 'pro') {
-            document.getElementById('proTag').style.display = 'inline-block';
-            const proBtn = document.querySelector('.btn-pro');
-            if (proBtn) {
-              proBtn.innerText = 'Current Plan';
-              proBtn.disabled  = true;
-              proBtn.style.background = '#333';
-              proBtn.style.color      = '#888';
-              proBtn.style.boxShadow  = 'none';
-            }
-          }
+          localStorage.setItem('currentPlan', plan);
+          console.log('📊 [FRONTEND] Current plan:', plan);
         }
       } catch (err) {
         console.error('Failed to check plan:', err);
@@ -993,7 +839,6 @@
     loadLeads();
     loadNotifCount();
 
-    // Auto-refresh notifications every 15 seconds
     autoRefreshInterval = setInterval(() => {
       loadNotifCount();
     }, 15000);
