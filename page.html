@@ -387,8 +387,6 @@
     </button>
   </div>
 
-  <!-- SETUP WIZARD - COMPLETELY REMOVED -->
-
   <div class="chat-area" id="leadChatArea">
     <div id="leadMsgContainer"></div>
   </div>
@@ -506,11 +504,9 @@
           .replace(/`/g, '&#x60;');
   }
 
-  // ✅ FIX 1: Robust JSON Cleaning for AI Responses
   function cleanAIResponse(content) {
       if (typeof content !== 'string') return content;
       
-      // Check if it's a JSON array of leads
       try {
           const parsed = JSON.parse(content);
           if (Array.isArray(parsed)) {
@@ -520,37 +516,29 @@
                   return '📊 No leads found. Try adjusting your search criteria.';
               }
           }
-          // If it's a JSON object but not an array, it might be a structured response
           if (typeof parsed === 'object' && parsed !== null) {
-              // Optionally handle specific object structures here
-              // For now, we'll let it pass through to formatting if it's not a lead array
+              let lines = [];
+              for (const [key, value] of Object.entries(parsed)) {
+                  lines.push(`<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`);
+              }
+              return lines.join('<br>');
           }
-      } catch (e) {
-          // Not JSON, continue
-      }
-
-      // Clean up common JSON artifacts if they appear in regular text
-      // Remove leading/trailing braces/brackets if they seem out of place
-      let cleaned = content.trim();
-      if ((cleaned.startsWith('{') && cleaned.endsWith('}')) || 
-          (cleaned.startsWith('[') && cleaned.endsWith(']'))) {
-          // It looks like JSON but failed parsing above, or it's a stringified JSON.
-          // We'll try to extract meaningful text if possible, otherwise return as is
-          // but formatted nicely.
-          try {
-             const reParsed = JSON.parse(cleaned);
-             if (typeof reParsed === 'object') {
-                 // Convert simple objects to a readable list
-                 let lines = [];
-                 for (const [key, value] of Object.entries(reParsed)) {
-                     lines.push(`<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`);
-                 }
-                 return lines.join('<br>');
-             }
-          } catch {}
-      }
+      } catch (e) {}
       
       return content;
+  }
+
+  function formatAI(text) {
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+    s = s.replace(/\n/g, '<br>');
+    return s;
+  }
+
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -595,7 +583,6 @@
     if (isChatActive) return;
     currentMode = mode;
     
-    // Hide both mode selectors initially to prevent flicker
     modeSelector.classList.add('hidden');
     if (assistantModeSelector) assistantModeSelector.style.display = 'none';
 
@@ -603,7 +590,7 @@
     
     if (mode === 'lead') {
       leadContainer.classList.add('active');
-      leadChatArea.classList.remove('active'); // Hide chat area until active
+      leadChatArea.classList.add('active');
       leadInputBar.classList.add('lead-active');
       leadInputBar.classList.remove('lead-hidden');
       reviewPanel.style.display = 'none';
@@ -656,19 +643,14 @@
     if (msg && !this.disabled) startLeadSearch(msg);
   });
 
-  // ============================================================
-  //  ✅ FIXED: addLeadMessage - Shows summary instead of raw JSON
-  // ============================================================
   function addLeadMessage(role, content) {
-    if (!content) return; // Prevent empty bubbles
+    if (!content) return;
     
     const container = leadMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
     
     let displayContent = content;
-    
-    // ✅ Use cleanAIResponse to handle JSON
     if (role === 'ai') {
         displayContent = cleanAIResponse(content);
     } else {
@@ -679,6 +661,17 @@
     row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
     scrollLeadDown();
+  }
+
+  function addAssistantMessage(role, content) {
+    if (!content) return;
+    const container = assistantMsgContainer;
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    container.appendChild(row);
+    scrollAssistantDown();
   }
 
   function showLeadTyping(label = 'Thinking…') {
@@ -695,13 +688,143 @@
   function hideLeadTyping() { document.getElementById('leadTypingRow')?.remove(); }
   function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
 
-  // Show welcome message when lead mode loads
+  function showAssistantTyping(label = 'Thinking…') {
+    let row = document.getElementById('assistantTypingRow');
+    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollAssistantDown(); return; }
+    row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'assistantTypingRow';
+    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+    assistantMsgContainer.appendChild(row);
+    scrollAssistantDown();
+  }
+
+  function hideAssistantTyping() { document.getElementById('assistantTypingRow')?.remove(); }
+  function scrollAssistantDown() { const area = document.getElementById('assistantChatArea'); area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
+
+  // ----- Show welcome message -----
   function showWelcomeMessage() {
     if (leadMsgContainer.children.length === 0) {
       addLeadMessage('ai', '👋 Hello! I\'m your Skyline lead agent. Just describe what you\'re looking for in the chat below, and I\'ll find qualified leads for you.\n\nFor example: "Find me CEOs in the SaaS industry, located in London."');
     }
   }
 
+  // ============================================================
+  //  ✅ LOAD SESSION FROM URL (FIXED)
+  // ============================================================
+  async function loadSessionFromUrl() {
+    // Check localStorage first (from History Overlay)
+    let sessionId = localStorage.getItem('resumeSessionId');
+    let type = localStorage.getItem('resumeSessionType');
+    
+    // If not in localStorage, check URL params
+    if (!sessionId) {
+        const params = new URLSearchParams(window.location.search);
+        sessionId = params.get('session');
+        type = params.get('type');
+    }
+
+    if (!sessionId) return false;
+
+    // Clear storage
+    localStorage.removeItem('resumeSessionId');
+    localStorage.removeItem('resumeSessionType');
+
+    conversationHistory = [];
+    isSessionLoading = true;
+    console.log('[page] Loading session:', sessionId, 'type:', type);
+
+    try {
+      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load session');
+
+      const msgs = await res.json();
+      console.log('[page] Loaded messages:', msgs.length);
+
+      const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
+
+      if (isAssistantSession) {
+        // ✅ Load Assistant Session
+        assistantSessionId = sessionId;
+        currentMode = 'assistant';
+        
+        modeSelector.classList.add('hidden');
+        if (assistantModeSelector) assistantModeSelector.style.display = 'flex';
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        assistantContainer.classList.add('active');
+        assistantInputBar.classList.add('active');
+        assistantInputBar.style.display = 'block';
+        
+        assistantMsgInput.placeholder = 'Continue your conversation…';
+        assistantSendBtn.disabled = true;
+        
+        assistantMsgContainer.innerHTML = '';
+        
+        if (msgs && msgs.length > 0) {
+          for (const m of msgs) {
+            if (!m.content) continue;
+            const role = m.role === 'ai' ? 'ai' : 'user';
+            addAssistantMessage(role, m.content);
+          }
+        } else {
+          addAssistantMessage('ai', 'No messages in this session.');
+        }
+        scrollAssistantDown();
+        isChatActive = true;
+        document.querySelector('.topbar-label').textContent = 'Assistant Session';
+        
+      } else {
+        // ✅ Load Lead Session
+        currentMode = 'lead';
+        
+        modeSelector.classList.add('hidden');
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        leadContainer.classList.add('active');
+        leadChatArea.classList.add('active');
+        leadInputBar.classList.remove('lead-active');
+        leadInputBar.classList.add('lead-hidden');
+        
+        leadMsgContainer.innerHTML = '';
+        
+        if (msgs && msgs.length > 0) {
+          for (const m of msgs) {
+            if (!m.content) continue;
+            const role = m.role === 'assistant' || m.role === 'ai' ? 'ai' : 'user';
+            
+            let displayContent = m.content;
+            if (role === 'ai') {
+                displayContent = cleanAIResponse(m.content);
+            } else {
+                displayContent = escapeHtml(m.content);
+            }
+            
+            addLeadMessage(role, displayContent);
+            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
+          }
+        } else {
+          addLeadMessage('ai', 'No messages in this session.');
+        }
+        scrollLeadDown();
+        isChatActive = true;
+        document.querySelector('.topbar-label').textContent = 'Lead Session';
+      }
+
+      currentSessionId = sessionId;
+      isSessionLoading = false;
+      return true;
+
+    } catch (err) {
+      console.error('[page] Error loading session:', err);
+      isSessionLoading = false;
+      return false;
+    }
+  }
+
+  // ============================================================
+  //  START LEAD SEARCH
+  // ============================================================
   async function startLeadSearch(message) {
     if (isChatActive || isTyping) return;
     isChatActive = true;
@@ -761,7 +884,7 @@
   }
 
   // ============================================================
-  //  RENDER LEADS - BEAUTIFUL TABLE
+  //  RENDER LEADS TABLE
   // ============================================================
   function renderLeads(leads) {
     leadTableContainer.innerHTML = '';
@@ -1078,43 +1201,6 @@
     }
   }
 
-  function addAssistantMessage(role, content) {
-    if (!content) return; // Prevent empty bubbles
-    const container = assistantMsgContainer;
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollAssistantDown();
-  }
-
-  function showAssistantTyping(label = 'Thinking…') {
-    let row = document.getElementById('assistantTypingRow');
-    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollAssistantDown(); return; }
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'assistantTypingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    assistantMsgContainer.appendChild(row);
-    scrollAssistantDown();
-  }
-
-  function hideAssistantTyping() { document.getElementById('assistantTypingRow')?.remove(); }
-  function scrollAssistantDown() { const area = document.getElementById('assistantChatArea'); area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
-
-  // ----- UTILITY FUNCTIONS -----
-  function formatAI(text) {
-    let s = escapeHtml(text);
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-    s = s.replace(/\n/g, '<br>');
-    return s;
-  }
-
-  function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-
   // ----- EMAIL STATUS CHECK -----
   async function checkEmailStatus() {
     try {
@@ -1147,143 +1233,6 @@
       console.error('❌ Error checking email status:', err);
       const statusTextEl = document.getElementById('statusText');
       if (statusTextEl) statusTextEl.textContent = '⚠️ Status unknown';
-    }
-  }
-
-  // ============================================================
-  //  ✅ FIXED: loadSessionFromUrl - Properly loads session messages
-  // ============================================================
-  async function loadSessionFromUrl() {
-    // ✅ Check localStorage first (from History Overlay)
-    let sessionId = localStorage.getItem('resumeSessionId');
-    let type = localStorage.getItem('resumeSessionType');
-    
-    // If not in localStorage, check URL params (fallback)
-    if (!sessionId) {
-        const params = new URLSearchParams(window.location.search);
-        sessionId = params.get('session');
-        type = params.get('type');
-    }
-
-    if (!sessionId) return false;
-
-    // Clear storage so it doesn't reload on next refresh
-    localStorage.removeItem('resumeSessionId');
-    localStorage.removeItem('resumeSessionType');
-
-    conversationHistory = [];
-    isSessionLoading = true;
-    console.log('[page] Loading session:', sessionId, 'type:', type);
-
-    try {
-      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to load session');
-
-      const msgs = await res.json();
-      console.log('[page] Loaded messages:', msgs);
-
-      const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
-
-      if (isAssistantSession) {
-        assistantSessionId = sessionId;
-        currentMode = 'assistant';
-        
-        // ✅ FORCE VISIBILITY OF ASSISTANT CONTAINER
-        modeSelector.classList.add('hidden');
-        if (assistantModeSelector) assistantModeSelector.style.display = 'flex';
-        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-        assistantContainer.classList.add('active');
-        assistantInputBar.classList.add('active');
-        assistantInputBar.style.display = 'block';
-        
-        assistantMsgInput.placeholder = 'Continue your conversation…';
-        assistantSendBtn.disabled = true;
-        
-        // ✅ OPTIMIZED RENDERING: Clear and Batch Insert
-        assistantMsgContainer.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        
-        if (msgs && msgs.length > 0) {
-          for (const m of msgs) {
-            if (!m.content) continue;
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            const row = document.createElement('div');
-            row.className = `msg-row ${role}`;
-            const html = role === 'ai' ? formatAI(m.content) : escapeHtml(m.content);
-            row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-            fragment.appendChild(row);
-          }
-        } else {
-           const row = document.createElement('div');
-           row.className = `msg-row ai`;
-           row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">No messages in this session.</div><div class="msg-time">${getTime()}</div></div>`;
-           fragment.appendChild(row);
-        }
-        assistantMsgContainer.appendChild(fragment);
-        
-        scrollAssistantDown();
-        isChatActive = true;
-        document.querySelector('.topbar-label').textContent = 'Assistant Session';
-      } else {
-        // ✅ LEAD SESSION - Properly displays messages
-        currentMode = 'lead';
-        
-        // ✅ FORCE VISIBILITY OF LEAD CONTAINER
-        modeSelector.classList.add('hidden');
-        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-        leadContainer.classList.add('active');
-        leadChatArea.classList.add('active');
-        leadInputBar.classList.remove('lead-active');
-        leadInputBar.classList.add('lead-hidden');
-        
-        // ✅ OPTIMIZED RENDERING: Clear and Batch Insert
-        leadMsgContainer.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        
-        if (msgs && msgs.length > 0) {
-          for (const m of msgs) {
-            if (!m.content) continue;
-            const role = m.role === 'assistant' || m.role === 'ai' ? 'ai' : 'user';
-            
-            let displayContent = m.content;
-            if (role === 'ai') {
-                displayContent = cleanAIResponse(m.content);
-            } else {
-                displayContent = escapeHtml(m.content);
-            }
-            
-            const html = role === 'ai' ? formatAI(displayContent) : displayContent;
-            
-            const row = document.createElement('div');
-            row.className = `msg-row ${role}`;
-            row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-            fragment.appendChild(row);
-            
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
-          }
-        } else {
-           const row = document.createElement('div');
-           row.className = `msg-row ai`;
-           row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">No messages in this session.</div><div class="msg-time">${getTime()}</div></div>`;
-           fragment.appendChild(row);
-        }
-        leadMsgContainer.appendChild(fragment);
-        
-        scrollLeadDown();
-        isChatActive = true;
-        document.querySelector('.topbar-label').textContent = 'Lead Session';
-      }
-
-      currentSessionId = sessionId;
-      isSessionLoading = false;
-      return true;
-
-    } catch (err) {
-      console.error('[page] Error loading session:', err);
-      isSessionLoading = false;
-      return false;
     }
   }
 
@@ -1331,7 +1280,7 @@
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
       isChatActive = false; isTyping = false; leadMsgContainer.innerHTML = ''; reviewPanel.style.display = 'none';
-      leadChatArea.classList.remove('active');
+      leadChatArea.classList.add('active');
       leadInputBar.classList.add('lead-active'); leadInputBar.classList.remove('lead-hidden');
       currentGeneratedLeads = []; conversationHistory = []; currentSessionId = null;
       modeSelector.classList.remove('hidden');
@@ -1362,7 +1311,7 @@
   document.getElementById('clearSessionBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
       leadMsgContainer.innerHTML = ''; reviewPanel.style.display = 'none';
-      leadChatArea.classList.remove('active');
+      leadChatArea.classList.add('active');
       leadInputBar.classList.add('lead-active'); leadInputBar.classList.remove('lead-hidden');
       currentGeneratedLeads = []; conversationHistory = []; currentSessionId = null;
       isChatActive = false; isTyping = false; modeSelector.classList.remove('hidden');
@@ -1389,10 +1338,14 @@
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
     await checkEmailStatus();
+    
+    // ✅ Make sure chat areas are visible by default
+    leadChatArea.classList.add('active');
+    
     const sessionLoaded = await loadSessionFromUrl();
     if (!sessionLoaded) {
       leadContainer.classList.add('active');
-      leadChatArea.classList.remove('active');
+      leadChatArea.classList.add('active');
       leadInputBar.classList.add('lead-active');
       leadInputBar.classList.remove('lead-hidden');
       modeSelector.classList.remove('hidden');
@@ -1411,4 +1364,4 @@
   });
 </script>
 </body>
-      </html>
+  </html>
