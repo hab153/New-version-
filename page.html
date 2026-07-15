@@ -799,7 +799,7 @@
   }
 
   // ──────────────────────────────────────────────────────────────
-  //  LOAD SESSION FROM URL (Using Chat.js)
+  //  LOAD SESSION FROM URL (FIXED)
   // ──────────────────────────────────────────────────────────────
 
   async function loadSessionFromUrl() {
@@ -812,14 +812,25 @@
     console.log('[page] Loading session from URL:', sessionId, type);
 
     try {
-      const isAssistant = (type === 'assistant') || (sessionId === 'assistant');
-      
-      // Use Chat.js to load the session
-      const loaded = await Chat.loadSession(sessionId);
-      
-      if (!loaded || !loaded.messages || loaded.messages.length === 0) {
+      // Get the session details first
+      const session = await Chat.Sessions.getSession(sessionId);
+      if (!session) {
+        console.error('[page] Session not found:', sessionId);
         return false;
       }
+
+      // Determine if it's assistant mode
+      const isAssistant = (type === 'assistant') || (session.type === 'assistant');
+
+      // Get messages using the session ID
+      const messages = await Chat.Messages.getMessages(sessionId);
+      
+      if (!messages || messages.length === 0) {
+        console.warn('[page] No messages found for session:', sessionId);
+        return false;
+      }
+
+      console.log('[page] Loaded', messages.length, 'messages');
 
       // Clear containers
       if (isAssistant) {
@@ -832,18 +843,19 @@
       }
 
       // Display messages
-      const container = isAssistant ? assistantMsgContainer : leadMsgContainer;
-      
-      for (const msg of loaded.messages) {
+      for (const msg of messages) {
         const role = msg.role === 'ai' || msg.role === 'assistant' ? 'ai' : 'user';
-        const content = msg.content;
+        const content = msg.content || msg.text || '';
         
         if (isAssistant) {
           addAssistantMessage(role, content);
         } else {
           addLeadMessage(role, content);
           if (role === 'user' || role === 'ai') {
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: content });
+            conversationHistory.push({ 
+              role: role === 'ai' ? 'assistant' : 'user', 
+              content: content 
+            });
           }
         }
       }
@@ -875,6 +887,55 @@
       
     } catch (error) {
       console.error('[page] Error loading session:', error);
+      return false;
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  EMERGENCY FALLBACK - Direct API Load
+  // ──────────────────────────────────────────────────────────────
+
+  async function emergencyLoadSession(sessionId) {
+    console.log('[page] Emergency loading session:', sessionId);
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+      
+      const response = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!response.ok) {
+        console.error('[page] Emergency load failed:', response.status);
+        return false;
+      }
+      
+      const messages = await response.json();
+      console.log('[page] Emergency loaded', messages.length, 'messages');
+      
+      leadMsgContainer.innerHTML = '';
+      
+      for (const msg of messages) {
+        const role = msg.role === 'ai' || msg.role === 'assistant' ? 'ai' : 'user';
+        const content = msg.content || msg.text || '';
+        addLeadMessage(role, content);
+      }
+      
+      currentMode = 'lead';
+      modeSelector.classList.add('hidden');
+      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+      leadContainer.classList.add('active');
+      leadChatArea.classList.add('active');
+      leadInputBar.classList.remove('lead-active');
+      leadInputBar.classList.add('lead-hidden');
+      isChatActive = true;
+      currentSessionId = sessionId;
+      document.querySelector('.topbar-label').textContent = 'Lead Session';
+      
+      return true;
+    } catch (error) {
+      console.error('[page] Emergency load error:', error);
       return false;
     }
   }
@@ -1298,16 +1359,25 @@
   }
 
   // ──────────────────────────────────────────────────────────────
-  //  INIT
+  //  INIT (FIXED)
   // ──────────────────────────────────────────────────────────────
 
   document.addEventListener('DOMContentLoaded', async function() {
     await checkEmailStatus();
     
-    // Make sure chat areas are visible by default
     leadChatArea.classList.add('active');
     
-    const sessionLoaded = await loadSessionFromUrl();
+    let sessionLoaded = await loadSessionFromUrl();
+    
+    if (!sessionLoaded) {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session');
+      if (sessionId) {
+        console.log('[page] Trying emergency load...');
+        sessionLoaded = await emergencyLoadSession(sessionId);
+      }
+    }
+    
     if (!sessionLoaded) {
       leadContainer.classList.add('active');
       leadChatArea.classList.add('active');
@@ -1318,10 +1388,12 @@
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
       showWelcomeMessage();
     }
+    
     await updateStatus();
     loadNotifCount();
     setInterval(loadNotifCount, 15000);
     setInterval(checkEmailStatus, 30000);
+    
     document.getElementById('navNotifBtn').addEventListener('click', function() {
       localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
       updateBadge(0);
@@ -1329,4 +1401,4 @@
   });
 </script>
 </body>
-        </html>
+  </html>
