@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    /* ... keep all your existing CSS ... */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
     :root {
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a;
@@ -331,7 +332,7 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  RENDER SESSIONS
+    //  RENDER SESSIONS - FIXED with onclick
     // ──────────────────────────────────────────────────────────────
 
     function renderSessions(sessions) {
@@ -356,7 +357,6 @@
             const isExpanded = expandedSessions.has(sessionId);
             const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
             const typeClass = isAssistant ? 'assistant' : 'lead';
-            const pinnedSvg = session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : '';
 
             const card = document.createElement('div');
             card.className = 'session-card' + (session.pinned ? ' pinned' : '');
@@ -377,7 +377,7 @@
                     <div class="card-arrow ${isExpanded ? 'expanded' : ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
                     </div>
-                    ${pinnedSvg}
+                    ${session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : ''}
                 </div>
                 <div class="session-messages ${isExpanded ? 'open' : ''}" data-session-id="${sessionId}">
                     <div class="msg-loader" id="loader-${sessionId}">
@@ -386,15 +386,24 @@
                 </div>
             `;
 
-            // ── Click to expand/collapse ──
+            // ── Click handler using onclick (more reliable) ──
             const header = card.querySelector('.session-header');
             const messagesDiv = card.querySelector('.session-messages');
             const arrow = card.querySelector('.card-arrow');
 
-            header.addEventListener('click', async function(e) {
+            // ✅ FIXED: Use onclick instead of addEventListener
+            header.onclick = function(e) {
                 if (e.button === 2) return;
-
+                
+                // Get the ID from the dataset
                 const sid = this.dataset.sessionId;
+                
+                // ✅ Check if ID exists
+                if (!sid || sid === '') {
+                    alert('Error: Session ID not found. Please refresh and try again.');
+                    return;
+                }
+                
                 const isCurrentlyExpanded = expandedSessions.has(sid);
 
                 if (isCurrentlyExpanded) {
@@ -408,10 +417,11 @@
 
                     const loader = document.getElementById(`loader-${sid}`);
                     if (loader) {
-                        await loadMessages(sid, messagesDiv);
+                        // ✅ Pass the ID directly
+                        loadMessages(sid, messagesDiv);
                     }
                 }
-            });
+            };
 
             // ── Context Menu ──
             header.addEventListener('contextmenu', function(e) {
@@ -441,34 +451,26 @@
     // ──────────────────────────────────────────────────────────────
 
     async function loadMessages(sessionId, container) {
-        if (!sessionId) {
-            console.error('❌ [history] No session ID provided!');
-            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Invalid session</div>`;
+        // ✅ CRITICAL: Check if sessionId is valid
+        if (!sessionId || sessionId === '') {
+            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Invalid session (no ID)</div>`;
             return;
         }
 
-        console.log('🔍 [history] Loading messages for session:', sessionId);
-        
         try {
             // ✅ FIX: Use the sessionId in the URL
             const url = `${BACKEND}/api/history/${sessionId}`;
-            console.log('🔍 [history] Request URL:', url);
             
             const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            console.log('📊 [history] Response status:', res.status);
-
             if (!res.ok) {
-                const errorText = await res.text();
-                console.error('❌ [history] Failed to load messages:', res.status, errorText);
                 container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Failed to load messages (${res.status})</div>`;
                 return;
             }
 
             const messages = await res.json();
-            console.log('✅ [history] Loaded', messages.length, 'messages');
 
             if (!messages || messages.length === 0) {
                 container.innerHTML = `<div style="padding:12px 0;color:var(--t3);font-size:12px;text-align:center;">No messages in this session.</div>`;
@@ -502,11 +504,9 @@
             }
 
             container.innerHTML = html;
-            console.log('✅ [history] Messages rendered successfully');
 
         } catch (error) {
-            console.error('❌ [history] Error loading messages:', error);
-            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Connection error: ${error.message}</div>`;
+            container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Connection error</div>`;
         }
     }
 
@@ -723,4 +723,4 @@
     });
   </script>
 </body>
-                                                                                      </html>
+                                                                                </html>
