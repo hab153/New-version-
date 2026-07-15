@@ -470,7 +470,6 @@
                 const avatarLabel = role === 'ai' ? 'AI' : 'ME';
                 const textClass = role === 'ai' ? 'msg-text ai' : 'msg-text user';
                 
-                // 🔥 FIX: If content is empty, show a placeholder
                 let displayContent = content;
                 if (!displayContent || displayContent.trim() === '') {
                     displayContent = '⚠️ Empty message';
@@ -711,4 +710,4 @@
     });
   </script>
 </body>
-  </html>
+      </html>
