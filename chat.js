@@ -406,4 +406,4 @@ if (typeof window !== 'undefined') {
         getSessions,
         createSessionLink,
     };
-                                              }
+                                      }
