@@ -1,409 +1,288 @@
-// ============================================================
-//  CHAT.JS - Shared Chat Logic for Skyline AA-1
-//  Used by both page.html and history.html
-// ============================================================
+// chat.js - Central Chat Orchestrator
+// All pages share this file for session management
 
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 //  1. CONFIGURATION
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 
-const CHAT_CONFIG = {
-    BACKEND: 'https://skylineapp-backend-file.onrender.com',
-    MAX_MESSAGE_LENGTH: 800,
-    MAX_LEADS_RETURNED: 5,
-};
+const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+const TOKEN = localStorage.getItem('token');
 
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 //  2. STATE
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 
-const CHAT_STATE = {
-    token: localStorage.getItem('token'),
-    currentMode: 'lead', // 'lead' | 'assistant'
-    isChatActive: false,
-    isTyping: false,
-    currentSessionId: null,
+const ChatState = {
+    currentMode: 'lead',
+    sessionId: null,
     assistantSessionId: null,
     conversationHistory: [],
     currentGeneratedLeads: [],
+    isChatActive: false,
+    isTyping: false,
+    currentSessionType: null,
 };
 
-// ──────────────────────────────────────────────────────────────
-//  3. XSS PROTECTION
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
+//  3. SESSION MANAGER
+// ────────────────────────────────────────────────────────────────
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;')
-        .replace(/`/g, '&#x60;');
-}
-
-// ──────────────────────────────────────────────────────────────
-//  4. UTILITY FUNCTIONS
-// ──────────────────────────────────────────────────────────────
-
-function getTime() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatAI(text) {
-    if (!text) return '';
-    let s = escapeHtml(text);
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-    s = s.replace(/\n/g, '<br>');
-    return s;
-}
-
-// ──────────────────────────────────────────────────────────────
-//  5. CLEAN AI RESPONSE (Handle JSON leads)
-// ──────────────────────────────────────────────────────────────
-
-function cleanAIResponse(content) {
-    if (typeof content !== 'string') return content;
-    
-    try {
-        const parsed = JSON.parse(content);
-        if (Array.isArray(parsed)) {
-            if (parsed.length > 0) {
-                return `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. View them in the table below.`;
-            } else {
-                return '📊 No leads found. Try adjusting your search criteria.';
-            }
+const SessionManager = {
+    // ── Get all sessions ──
+    getSessions: async () => {
+        try {
+            const res = await fetch(`${BACKEND}/api/sessions`, {
+                headers: { 'Authorization': `Bearer ${TOKEN}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch sessions');
+            const sessions = await res.json();
+            return sessions;
+        } catch (error) {
+            console.error('❌ [Chat] Failed to fetch sessions:', error);
+            return [];
         }
-        if (typeof parsed === 'object' && parsed !== null) {
-            let lines = [];
-            for (const [key, value] of Object.entries(parsed)) {
-                lines.push(`<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`);
-            }
-            return lines.join('<br>');
-        }
-    } catch (e) {}
-    
-    return content;
-}
+    },
 
-// ──────────────────────────────────────────────────────────────
-//  6. RENDER MESSAGES (Shared)
-// ──────────────────────────────────────────────────────────────
-
-function renderMessages(container, messages, isAssistant = false) {
-    if (!container) return;
-    
-    container.innerHTML = '';
-    const fragment = document.createDocumentFragment();
-    
-    if (!messages || messages.length === 0) {
-        const row = document.createElement('div');
-        row.className = 'msg-row ai';
-        row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">No messages in this session.</div><div class="msg-time">${getTime()}</div></div>`;
-        fragment.appendChild(row);
-        container.appendChild(fragment);
-        return;
-    }
-    
-    for (const msg of messages) {
-        if (!msg.content) continue;
-        
-        const role = (msg.role === 'assistant' || msg.role === 'ai') ? 'ai' : 'user';
-        const row = document.createElement('div');
-        row.className = `msg-row ${role}`;
-        
-        let displayContent = msg.content;
-        if (role === 'ai') {
-            displayContent = cleanAIResponse(msg.content);
-        } else {
-            displayContent = escapeHtml(msg.content);
-        }
-        
-        const html = role === 'ai' ? formatAI(displayContent) : displayContent;
-        row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-        fragment.appendChild(row);
-    }
-    
-    container.appendChild(fragment);
-    scrollToBottom(container);
-}
-
-// ──────────────────────────────────────────────────────────────
-//  7. SCROLL HELPERS
-// ──────────────────────────────────────────────────────────────
-
-function scrollToBottom(container) {
-    if (container) {
-        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-    }
-}
-
-// ──────────────────────────────────────────────────────────────
-//  8. LOAD SESSION (Shared)
-// ──────────────────────────────────────────────────────────────
-
-async function loadSession(sessionId, container, type = null) {
-    if (!sessionId || !container) return false;
-    
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return false;
-    }
-    
-    console.log('📥 [CHAT.JS] Loading session:', sessionId, 'type:', type);
-    
-    try {
-        const res = await fetch(`${CHAT_CONFIG.BACKEND}/api/history/${sessionId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!res.ok) throw new Error('Failed to load session');
-        
-        const messages = await res.json();
-        console.log('📥 [CHAT.JS] Loaded', messages.length, 'messages');
-        
-        // Determine if assistant session
-        const isAssistant = (type === 'assistant') || (sessionId === 'assistant');
-        
-        // Render messages
-        renderMessages(container, messages, isAssistant);
-        
-        // Update state
-        CHAT_STATE.currentSessionId = sessionId;
-        if (isAssistant) {
-            CHAT_STATE.assistantSessionId = sessionId;
-        }
-        
-        // Update conversation history
-        CHAT_STATE.conversationHistory = messages.map(m => ({
-            role: m.role === 'assistant' || m.role === 'ai' ? 'assistant' : 'user',
-            content: m.content
-        }));
-        
-        return true;
-        
-    } catch (error) {
-        console.error('❌ [CHAT.JS] Error loading session:', error);
-        container.innerHTML = `<div class="msg-row ai"><div class="av">AI</div><div class="bubble-wrap"><div class="bubble">❌ Failed to load session. Please try again.</div><div class="msg-time">${getTime()}</div></div></div>`;
-        return false;
-    }
-}
-
-// ──────────────────────────────────────────────────────────────
-//  9. SEND MESSAGE (Shared)
-// ──────────────────────────────────────────────────────────────
-
-async function sendChatMessage(message, container, sessionId = null, mode = 'lead') {
-    if (!message || !container) return null;
-    
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return null;
-    }
-    
-    const isAssistant = mode === 'assistant';
-    const currentSessionId = sessionId || (isAssistant ? CHAT_STATE.assistantSessionId : CHAT_STATE.currentSessionId) || null;
-    
-    // Add user message to UI
-    addMessageToUI(container, 'user', message);
-    
-    // Show typing indicator
-    showTyping(container);
-    
-    try {
-        const endpoint = isAssistant ? '/api/assistant' : '/api/chat';
-        const payload = isAssistant ? {
-            message: message,
-            sessionId: currentSessionId
-        } : {
-            message: message,
-            history: CHAT_STATE.conversationHistory,
-            sessionId: currentSessionId
-        };
-        
-        const res = await fetch(`${CHAT_CONFIG.BACKEND}${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        hideTyping(container);
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            addMessageToUI(container, 'ai', `⚠️ ${data.message || 'Something went wrong'}`);
+    // ── Get a single session by ID ──
+    getSession: async (sessionId) => {
+        try {
+            const sessions = await SessionManager.getSessions();
+            return sessions.find(s => (s.sessionId || s._id) === sessionId) || null;
+        } catch (error) {
+            console.error('❌ [Chat] Failed to get session:', error);
             return null;
         }
-        
-        // Update session ID
-        if (data.sessionId) {
-            if (isAssistant) {
-                CHAT_STATE.assistantSessionId = data.sessionId;
-            } else {
-                CHAT_STATE.currentSessionId = data.sessionId;
-            }
-        }
-        
-        // Add AI response to UI
-        const reply = data.reply || data.response || 'No response received.';
-        
-        // Check if it's a lead response (JSON array)
+    },
+
+    // ── Create a new session ──
+    createSession: async (type, name) => {
         try {
-            const parsed = JSON.parse(reply);
-            if (Array.isArray(parsed)) {
-                CHAT_STATE.currentGeneratedLeads = parsed;
-                addMessageToUI(container, 'ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}.`);
-                // Callback for leads if provided
-                if (window.onLeadsFound) {
-                    window.onLeadsFound(parsed);
-                }
-                return { reply, leads: parsed, sessionId: data.sessionId };
+            const sessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            const res = await fetch(`${BACKEND}/api/sessions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`
+                },
+                body: JSON.stringify({
+                    sessionId: sessionId,
+                    type: type || 'lead',
+                    name: name || (type === 'assistant' ? 'Assistant Chat' : 'Lead Search')
+                })
+            });
+            if (!res.ok) throw new Error('Failed to create session');
+            const session = await res.json();
+            return session;
+        } catch (error) {
+            console.error('❌ [Chat] Failed to create session:', error);
+            return null;
+        }
+    },
+
+    // ── Rename a session ──
+    renameSession: async (sessionId, newName) => {
+        try {
+            const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/rename`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`
+                },
+                body: JSON.stringify({ name: newName })
+            });
+            if (!res.ok) throw new Error('Failed to rename session');
+            return await res.json();
+        } catch (error) {
+            console.error('❌ [Chat] Failed to rename session:', error);
+            return null;
+        }
+    },
+
+    // ── Pin/Unpin a session ──
+    pinSession: async (sessionId, pinned) => {
+        try {
+            const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/pin`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`
+                },
+                body: JSON.stringify({ pinned: pinned })
+            });
+            if (!res.ok) throw new Error('Failed to pin session');
+            return await res.json();
+        } catch (error) {
+            console.error('❌ [Chat] Failed to pin session:', error);
+            return null;
+        }
+    },
+
+    // ── Delete a session ──
+    deleteSession: async (sessionId) => {
+        try {
+            const res = await fetch(`${BACKEND}/api/sessions/${sessionId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${TOKEN}` }
+            });
+            return res.ok;
+        } catch (error) {
+            console.error('❌ [Chat] Failed to delete session:', error);
+            return false;
+        }
+    }
+};
+
+// ────────────────────────────────────────────────────────────────
+//  4. MESSAGE HANDLER
+// ────────────────────────────────────────────────────────────────
+
+const MessageHandler = {
+    // ── Get messages for a session ──
+    getMessages: async (sessionId) => {
+        try {
+            const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+                headers: { 'Authorization': `Bearer ${TOKEN}` }
+            });
+            if (!res.ok) throw new Error('Failed to load messages');
+            const messages = await res.json();
+            return messages;
+        } catch (error) {
+            console.error('❌ [Chat] Failed to get messages:', error);
+            return [];
+        }
+    },
+
+    // ── Send a message (lead mode) ──
+    sendLeadMessage: async (message, sessionId, history = []) => {
+        try {
+            const res = await fetch(`${BACKEND}/api/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`
+                },
+                body: JSON.stringify({
+                    message: message,
+                    sessionId: sessionId,
+                    history: history
+                })
+            });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || 'Failed to send message');
             }
-        } catch (e) {}
-        
-        addMessageToUI(container, 'ai', reply);
-        
-        // Update conversation history
-        CHAT_STATE.conversationHistory.push(
-            { role: 'user', content: message },
-            { role: 'assistant', content: reply }
-        );
-        
-        return { reply, sessionId: data.sessionId };
-        
-    } catch (error) {
-        console.error('❌ [CHAT.JS] Send error:', error);
-        hideTyping(container);
-        addMessageToUI(container, 'ai', '🔌 Connection error — check your network and try again.');
-        return null;
+            return await res.json();
+        } catch (error) {
+            console.error('❌ [Chat] Failed to send lead message:', error);
+            throw error;
+        }
+    },
+
+    // ── Send a message (assistant mode) ──
+    sendAssistantMessage: async (message, sessionId) => {
+        try {
+            const res = await fetch(`${BACKEND}/api/assistant`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`
+                },
+                body: JSON.stringify({
+                    message: message,
+                    sessionId: sessionId
+                })
+            });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || 'Failed to send message');
+            }
+            return await res.json();
+        } catch (error) {
+            console.error('❌ [Chat] Failed to send assistant message:', error);
+            throw error;
+        }
+    },
+
+    // ── Format messages for display ──
+    formatMessages: (messages) => {
+        return messages.map(msg => ({
+            role: msg.role === 'ai' || msg.role === 'assistant' ? 'ai' : 'user',
+            content: msg.content,
+            time: msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+            messageId: msg._id
+        }));
     }
-}
+};
 
-// ──────────────────────────────────────────────────────────────
-//  10. UI HELPERS (for adding messages)
-// ──────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
+//  5. PUBLIC EXPORTS
+// ────────────────────────────────────────────────────────────────
 
-function addMessageToUI(container, role, content) {
-    if (!container || !content) return;
-    
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    
-    let displayContent = content;
-    if (role === 'ai') {
-        displayContent = cleanAIResponse(content);
-    } else {
-        displayContent = escapeHtml(content);
-    }
-    
-    const html = role === 'ai' ? formatAI(displayContent) : displayContent;
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollToBottom(container);
-}
+window.Chat = {
+    State: ChatState,
+    Sessions: SessionManager,
+    Messages: MessageHandler,
 
-function showTyping(container, label = 'Thinking…') {
-    if (!container) return;
-    
-    let row = container.querySelector('.typing-row');
-    if (row) {
-        const lbl = row.querySelector('.t-label');
-        if (lbl) lbl.textContent = label;
-        scrollToBottom(container);
-        return;
-    }
-    
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    container.appendChild(row);
-    scrollToBottom(container);
-}
+    // ── Initialize ──
+    init: function(mode = 'lead') {
+        ChatState.currentMode = mode;
+        console.log('🚀 [Chat] Orchestrator initialized in', mode, 'mode');
+        return this;
+    },
 
-function hideTyping(container) {
-    if (!container) return;
-    const row = container.querySelector('.typing-row');
-    if (row) row.remove();
-}
+    // ── Switch mode ──
+    switchMode: function(mode) {
+        ChatState.currentMode = mode;
+        console.log('🔄 [Chat] Switched to', mode, 'mode');
+        return this;
+    },
 
-// ──────────────────────────────────────────────────────────────
-//  11. SESSION MANAGEMENT (Shared)
-// ──────────────────────────────────────────────────────────────
+    // ── Get current state ──
+    getState: function() {
+        return ChatState;
+    },
 
-async function getSessions() {
-    const token = localStorage.getItem('token');
-    if (!token) return [];
-    
-    try {
-        const res = await fetch(`${CHAT_CONFIG.BACKEND}/api/sessions`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+    // ── Clear state ──
+    clearState: function() {
+        ChatState.conversationHistory = [];
+        ChatState.currentGeneratedLeads = [];
+        ChatState.sessionId = null;
+        ChatState.isChatActive = false;
+        ChatState.isTyping = false;
+        console.log('🧹 [Chat] State cleared');
+        return this;
+    },
+
+    // ── Load a session by ID ──
+    loadSession: async function(sessionId) {
+        try {
+            const messages = await MessageHandler.getMessages(sessionId);
+            const session = await SessionManager.getSession(sessionId);
+            
+            ChatState.sessionId = sessionId;
+            ChatState.currentSessionType = session?.type || 'lead';
+            
+            return {
+                messages: messages,
+                session: session,
+                formattedMessages: MessageHandler.formatMessages(messages)
+            };
+        } catch (error) {
+            console.error('❌ [Chat] Failed to load session:', error);
+            return null;
+        }
+    },
+
+    // ── Send message (auto-detects mode) ──
+    sendMessage: async function(message, sessionId, history = []) {
+        const type = ChatState.currentSessionType || 'lead';
         
-        if (!res.ok) throw new Error('Failed to fetch sessions');
-        
-        const sessions = await res.json();
-        return sessions;
-    } catch (error) {
-        console.error('❌ [CHAT.JS] Error fetching sessions:', error);
-        return [];
+        if (type === 'assistant') {
+            return await MessageHandler.sendAssistantMessage(message, sessionId);
+        } else {
+            return await MessageHandler.sendLeadMessage(message, sessionId, history);
+        }
     }
-}
+};
 
-function createSessionLink(sessionId, type) {
-    return `page.html?session=${encodeURIComponent(sessionId)}&type=${encodeURIComponent(type || 'lead')}`;
-}
-
-// ──────────────────────────────────────────────────────────────
-//  12. EXPORTS (for use in other files)
-// ──────────────────────────────────────────────────────────────
-
-// If using ES modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        CHAT_CONFIG,
-        CHAT_STATE,
-        escapeHtml,
-        getTime,
-        formatAI,
-        cleanAIResponse,
-        renderMessages,
-        scrollToBottom,
-        loadSession,
-        sendChatMessage,
-        addMessageToUI,
-        showTyping,
-        hideTyping,
-        getSessions,
-        createSessionLink,
-    };
-}
-
-// If using in browser
-if (typeof window !== 'undefined') {
-    window.Chat = {
-        CHAT_CONFIG,
-        CHAT_STATE,
-        escapeHtml,
-        getTime,
-        formatAI,
-        cleanAIResponse,
-        renderMessages,
-        scrollToBottom,
-        loadSession,
-        sendChatMessage,
-        addMessageToUI,
-        showTyping,
-        hideTyping,
-        getSessions,
-        createSessionLink,
-    };
-                                      }
+console.log('✅ [Chat] Orchestrator loaded successfully');
