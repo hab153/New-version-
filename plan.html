@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plan & Usage | Skyline AA-1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void: #060608;
+      --bg-base: #0b0c0f;
+      --bg-surface: #111318;
+      --bg-raised: #181b22;
+      --border: rgba(255,255,255,0.06);
+      --accent: #c8ff57;
+      --accent-go: #00d2ff;
+      --text-1: #e8eaf0;
+      --text-2: #8c909e;
+      --text-3: #52566a;
+      --danger: #ff4d4d;
+      --success: #00e676;
+      --warning: #ffaa00;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-void);
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      display: none;
+      animation: slideDown 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
+    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--danger);  color: var(--danger); }
+    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--accent-go); color: var(--accent-go); }
+    .toast.warning { background: rgba(255, 170, 0, 0.15);  border: 1px solid var(--warning); color: var(--warning); }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .topbar {
+      width: 100%;
+      height: 58px;
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .brand {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+    .back-link {
+      color: var(--text-2);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .back-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      padding: 32px 20px;
+      flex: 1;
+    }
+
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-3);
+      margin-bottom: 16px;
+      margin-top: 32px;
+      padding-left: 4px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* ── Current Plan Card ── */
+    .current-plan-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .current-plan-card .plan-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .current-plan-card .plan-badge {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 16px;
+      border-radius: 20px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+    }
+    .current-plan-card .plan-badge.free { color: var(--text-3); }
+    .current-plan-card .plan-badge.go { color: var(--accent-go); border-color: var(--accent-go); }
+    .current-plan-card .plan-badge.pro { color: var(--accent); border-color: var(--accent); }
+    .current-plan-card .plan-expiry {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .current-plan-card .plan-usage {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-2);
+      text-align: right;
+    }
+    .current-plan-card .plan-usage .used {
+      color: var(--text-1);
+      font-weight: 600;
+    }
+
+    /* ── Usage Stats ── */
+    .usage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .usage-stat {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .usage-stat .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+    .usage-stat .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+    }
+    .usage-stat .stat-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--bg-raised);
+      border-radius: 2px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .usage-stat .stat-bar .fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.6s ease;
+      background: var(--accent);
+    }
+    .usage-stat .stat-bar .fill.go-fill { background: var(--accent-go); }
+    .usage-stat .stat-bar .fill.warning { background: var(--warning); }
+    .usage-stat .stat-bar .fill.danger { background: var(--danger); }
+
+    /* ── Pricing Cards ── */
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .pricing-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-1);
+    }
+    .pricing-header p {
+      color: var(--text-2);
+      font-size: 14px;
+    }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .plan-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .plan-card:hover { transform: translateY(-5px); border-color: var(--text-3); }
+    .plan-card.featured {
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 20px rgba(200, 255, 87, 0.08);
+    }
+    .plan-card.current {
+      border-color: var(--accent-go);
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.06);
+    }
+    .plan-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #060608;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .plan-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+    .plan-price {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: baseline;
+    }
+    .plan-price span {
+      font-size: 14px;
+      color: var(--text-3);
+      margin-left: 4px;
+      font-weight: 400;
+    }
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 32px 0;
+      flex-grow: 1;
+    }
+    .plan-features li {
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .plan-features li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .plan-features li.disabled {
+      color: var(--text-3);
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    .plan-features li.disabled::before {
+      content: '✕';
+      color: var(--text-3);
+    }
+
+    .plan-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-free {
+      background: var(--bg-raised);
+      color: var(--text-3);
+      cursor: default;
+    }
+    .btn-go {
+      background: var(--bg-raised);
+      color: var(--text-1);
+      border: 1px solid var(--border);
+    }
+    .btn-go:hover {
+      border-color: var(--accent-go);
+      color: var(--accent-go);
+    }
+    .btn-pro {
+      background: var(--accent);
+      color: #060608;
+      box-shadow: 0 0 15px rgba(200, 255, 87, 0.15);
+    }
+    .btn-pro:hover {
+      background: #d4ff70;
+      transform: scale(1.02);
+    }
+    .btn-pro.current-btn {
+      background: var(--bg-raised);
+      color: var(--text-3);
+      cursor: default;
+      box-shadow: none;
+    }
+    .btn-go.current-btn {
+      background: var(--bg-raised);
+      color: var(--text-3);
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .current-plan-tag {
+      display: inline-block;
+      font-size: 10px;
+      background: rgba(200, 255, 87, 0.1);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px; }
+      .current-plan-card { flex-direction: column; align-items: flex-start; }
+      .current-plan-card .plan-usage { text-align: left; width: 100%; }
+      .pricing-cards { grid-template-columns: 1fr; }
+      .topbar { padding: 0 16px; }
+      .brand { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast"></div>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="dot"></span>
+        SKYLINE AA-1
+      </div>
+    </div>
+    <div class="topbar-right">
+      <a href="dashboard.html" class="back-link">← Dashboard</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ── Current Plan ── -->
+    <div class="section-title">Your Plan</div>
+    <div class="current-plan-card" id="currentPlanCard">
+      <div class="plan-info">
+        <span class="plan-badge free" id="planBadge">FREE</span>
+        <span class="plan-expiry" id="planExpiry">—</span>
+      </div>
+      <div class="plan-usage">
+        <span id="usageText">Loading usage...</span>
+      </div>
+    </div>
+
+    <!-- ── Usage Stats ── -->
+    <div class="section-title">Daily Usage</div>
+    <div class="usage-grid" id="usageGrid">
+      <div class="usage-stat">
+        <div class="stat-value" id="requestsUsed">—</div>
+        <div class="stat-label">Requests Used</div>
+        <div class="stat-bar"><div class="fill" id="requestsBar" style="width:0%"></div></div>
+      </div>
+      <div class="usage-stat">
+        <div class="stat-value" id="autoRepliesUsed">—</div>
+        <div class="stat-label">Auto-Replies Used</div>
+        <div class="stat-bar"><div class="fill" id="autoRepliesBar" style="width:0%"></div></div>
+      </div>
+      <div class="usage-stat">
+        <div class="stat-value" id="hintsUsed">—</div>
+        <div class="stat-label">Hints Used</div>
+        <div class="stat-bar"><div class="fill" id="hintsBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- ── Pricing Cards ── -->
+    <div class="pricing-header">
+      <h2>Choose Your Power Level</h2>
+      <p>Select the plan that fits your ambition. Upgrade anytime.</p>
+    </div>
+    <div class="pricing-cards">
+
+      <!-- Free Plan -->
+      <div class="plan-card" id="freeCard">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>30 Requests / Day</li>
+          <li>Basic Model (Skyline AA-1a)</li>
+          <li>Short Memory</li>
+          <li class="disabled">Powerful Reasoning</li>
+          <li class="disabled">Early Access</li>
+        </ul>
+        <button class="plan-btn btn-free" disabled>Current Plan</button>
+      </div>
+
+      <!-- GO Plan -->
+      <div class="plan-card" id="goCard">
+        <div class="plan-name">GO</div>
+        <div class="plan-price">$9<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>18 Requests / Day</li>
+          <li>Powerful Model (Skyline AA-1mini)</li>
+          <li>Long Memory</li>
+          <li>Great Features</li>
+          <li class="disabled">Skyline AA-1a Model</li>
+        </ul>
+        <button class="plan-btn btn-go" id="goBtn" onclick="initiateUpgrade('go')">Upgrade to GO</button>
+      </div>
+
+      <!-- PRO Plan -->
+      <div class="plan-card featured" id="proCard">
+        <div class="plan-badge">Best Value</div>
+        <div class="plan-name">PRO</div>
+        <div class="plan-price">$20<span>/mo</span></div>
+        <ul class="plan-features">
+          <li>40 Requests / Day</li>
+          <li>Skyline AA-1aa Model</li>
+          <li>Advance Reasoning</li>
+          <li>Early Access to Features</li>
+          <li>Priority Support</li>
+        </ul>
+        <button class="plan-btn btn-pro" id="proBtn" onclick="initiateUpgrade('pro')">Upgrade to PRO</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function showToast(message, type = 'success', duration = 4000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type}`;
+      toast.style.display = 'block';
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+    }
+
+    // ── Load User Data ─────────────────────────────────────────────────────
+    async function loadUserData() {
+      try {
+        const res = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load user data');
+
+        const user = await res.json();
+        const plan = user.subscriptionTier || 'free';
+        const expiry = user.subscriptionEndDate || null;
+        const usage = user.usage || {};
+
+        // ── Update Plan Badge ──
+        const badge = document.getElementById('planBadge');
+        const expiryEl = document.getElementById('planExpiry');
+        const usageText = document.getElementById('usageText');
+
+        badge.textContent = plan.toUpperCase();
+        badge.className = `plan-badge ${plan}`;
+
+        if (expiry) {
+          const expDate = new Date(expiry);
+          expiryEl.textContent = `Expires: ${expDate.toLocaleDateString()}`;
+        } else if (plan === 'free') {
+          expiryEl.textContent = 'No expiry';
+        } else {
+          expiryEl.textContent = '—';
+        }
+
+        // ── Usage Text ──
+        const dailyCallCount = usage.dailyCallCount || 0;
+        const dailyHintCount = usage.dailyHintCount || 0;
+        const dailyAutoReplyCount = usage.dailyAutoFollowUpCount || 0;
+
+        let limits = getLimits(plan);
+        usageText.textContent = `${dailyCallCount}/${limits.requests} requests used today`;
+
+        // ── Update Usage Stats ──
+        updateUsageStat('requestsUsed', dailyCallCount, limits.requests);
+        updateUsageStat('autoRepliesUsed', dailyAutoReplyCount, limits.autoReplies);
+        updateUsageStat('hintsUsed', dailyHintCount, limits.hints);
+
+        // ── Update Plan Cards ──
+        updatePlanCards(plan);
+
+        // ── Store plan for later ──
+        localStorage.setItem('currentPlan', plan);
+
+      } catch (err) {
+        console.error('Error loading user data:', err);
+        document.getElementById('usageText').textContent = '⚠️ Could not load usage';
+      }
+    }
+
+    function getLimits(plan) {
+      switch (plan) {
+        case 'go':
+          return { requests: 18, autoReplies: 40, hints: 30 };
+        case 'pro':
+          return { requests: 40, autoReplies: 70, hints: 50 };
+        default:
+          return { requests: 30, autoReplies: 10, hints: 15 };
+      }
+    }
+
+    function updateUsageStat(id, used, limit) {
+      const el = document.getElementById(id);
+      const barId = id.replace('Used', 'Bar');
+      const bar = document.getElementById(barId);
+
+      if (!el || !bar) return;
+
+      el.textContent = `${used}/${limit}`;
+
+      const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
+      bar.style.width = pct + '%';
+
+      // Color coding
+      bar.className = 'fill';
+      if (pct > 85) bar.classList.add('danger');
+      else if (pct > 65) bar.classList.add('warning');
+    }
+
+    function updatePlanCards(currentPlan) {
+      const cards = ['free', 'go', 'pro'];
+      const btnMap = {
+        free: document.querySelector('#freeCard .plan-btn'),
+        go: document.getElementById('goBtn'),
+        pro: document.getElementById('proBtn')
+      };
+
+      cards.forEach(plan => {
+        const card = document.getElementById(plan + 'Card');
+        const btn = btnMap[plan];
+
+        if (!card || !btn) return;
+
+        if (plan === currentPlan) {
+          card.classList.add('current');
+          btn.disabled = true;
+          btn.classList.add('current-btn');
+          btn.textContent = 'Current Plan';
+        } else {
+          card.classList.remove('current');
+          btn.disabled = false;
+          btn.classList.remove('current-btn');
+          if (plan === 'go') {
+            btn.textContent = 'Upgrade to GO';
+            btn.className = 'plan-btn btn-go';
+          } else if (plan === 'pro') {
+            btn.textContent = 'Upgrade to PRO';
+            btn.className = 'plan-btn btn-pro';
+          } else {
+            btn.textContent = 'Current Plan';
+            btn.className = 'plan-btn btn-free';
+            btn.disabled = true;
+          }
+        }
+      });
+    }
+
+    // ── Upgrade Logic ──────────────────────────────────────────────────────
+    async function initiateUpgrade(planType) {
+      const btn = planType === 'go' ? document.getElementById('goBtn') : document.getElementById('proBtn');
+      if (!btn) return;
+
+      const originalText = btn.innerText;
+      btn.innerText = 'Connecting...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch(`${BACKEND}/api/create-flutterwave-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ planType })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Server Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.link) {
+          btn.innerText = 'Redirecting...';
+          window.location.href = data.link;
+        } else {
+          throw new Error('No payment link received from server.');
+        }
+
+      } catch (err) {
+        console.error('Upgrade Error:', err);
+        showToast(`❌ ${err.message}`, 'error');
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // ── Handle Payment Redirect ──────────────────────────────────────────
+    function handlePaymentRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      const payment = params.get('payment');
+
+      if (payment === 'success') {
+        showToast('✅ Payment successful! Your plan has been upgraded.', 'success', 6000);
+        window.history.replaceState({}, document.title, '/plan.html');
+        // Reload user data
+        setTimeout(loadUserData, 1000);
+      } else if (payment === 'failed') {
+        showToast('❌ Payment failed. Please try again.', 'error', 6000);
+        window.history.replaceState({}, document.title, '/plan.html');
+      }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      handlePaymentRedirect();
+      loadUserData();
+
+      // Auto-refresh usage every 60 seconds
+      setInterval(loadUserData, 60000);
+    });
+  </script>
+</body>
+  </html>
