@@ -472,80 +472,44 @@
   </a>
 </nav>
 
+<script src="chat.js"></script>
 <script>
   // ──────────────────────────────────────────────────────────────
-  //  GLOBAL CSRF FETCH INTERCEPTOR
+  //  PAGE-SPECIFIC CONFIGURATION
   // ──────────────────────────────────────────────────────────────
-  (function() {
-      const originalFetch = window.fetch;
-      window.fetch = function(url, options = {}) {
-          const csrfToken = localStorage.getItem('csrfToken');
-          const method = (options.method || 'GET').toUpperCase();
-          const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-          if (!safeMethods.includes(method) && csrfToken) {
-              options.headers = options.headers || {};
-              options.headers['X-CSRF-Token'] = csrfToken;
-          }
-          return originalFetch.call(this, url, options);
-      };
-  })();
-
-  // ============================================================
-  //  XSS PROTECTION & UTILS
-  // ============================================================
-  function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;')
-          .replace(/`/g, '&#x60;');
-  }
-
-  function cleanAIResponse(content) {
-      if (typeof content !== 'string') return content;
-      
-      try {
-          const parsed = JSON.parse(content);
-          if (Array.isArray(parsed)) {
-              if (parsed.length > 0) {
-                  return `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. View them in the table below.`;
-              } else {
-                  return '📊 No leads found. Try adjusting your search criteria.';
-              }
-          }
-          if (typeof parsed === 'object' && parsed !== null) {
-              let lines = [];
-              for (const [key, value] of Object.entries(parsed)) {
-                  lines.push(`<strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}`);
-              }
-              return lines.join('<br>');
-          }
-      } catch (e) {}
-      
-      return content;
-  }
-
-  function formatAI(text) {
-    let s = escapeHtml(text);
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-    s = s.replace(/\n/g, '<br>');
-    return s;
-  }
-
-  function getTime() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
 
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
   const token = localStorage.getItem('token');
   if (!token) window.location.href = 'login.html';
 
-  // ----- STATE -----
+  // ──────────────────────────────────────────────────────────────
+  //  DOM REFS
+  // ──────────────────────────────────────────────────────────────
+
+  const leadMsgContainer = document.getElementById('leadMsgContainer');
+  const assistantMsgContainer = document.getElementById('assistantMsgContainer');
+  const leadChatArea = document.getElementById('leadChatArea');
+  const assistantChatArea = document.getElementById('assistantChatArea');
+  const leadMsgInput = document.getElementById('leadMsgInput');
+  const leadSendBtn = document.getElementById('leadSendBtn');
+  const leadCharCount = document.getElementById('leadCharCount');
+  const assistantMsgInput = document.getElementById('assistantMsgInput');
+  const assistantSendBtn = document.getElementById('assistantSendBtn');
+  const assistantCharCount = document.getElementById('assistantCharCount');
+  const modeSelector = document.getElementById('modeSelector');
+  const assistantModeSelector = document.getElementById('assistantModeSelector');
+  const leadContainer = document.getElementById('leadContainer');
+  const assistantContainer = document.getElementById('assistantContainer');
+  const reviewPanel = document.getElementById('reviewPanel');
+  const leadTableContainer = document.getElementById('leadTableContainer');
+  const statusText = document.getElementById('statusText');
+  const statusBar = document.getElementById('statusBar');
+  const planChip = document.getElementById('planChip');
+
+  // ──────────────────────────────────────────────────────────────
+  //  STATE
+  // ──────────────────────────────────────────────────────────────
+
   let currentMode = 'lead';
   let isChatActive = false;
   let isTyping = false;
@@ -553,32 +517,47 @@
   let assistantSessionId = null;
   let conversationHistory = [];
   let currentGeneratedLeads = [];
-  let notifInterval = null;
-  let isSessionLoading = false;
 
-  // ----- DOM REFS -----
-  const modeSelector = document.getElementById('modeSelector');
-  const assistantModeSelector = document.getElementById('assistantModeSelector');
-  const leadContainer = document.getElementById('leadContainer');
-  const assistantContainer = document.getElementById('assistantContainer');
-  const leadChatArea = document.getElementById('leadChatArea');
-  const leadMsgContainer = document.getElementById('leadMsgContainer');
-  const leadInputBar = document.getElementById('leadInputBar');
-  const leadMsgInput = document.getElementById('leadMsgInput');
-  const leadSendBtn = document.getElementById('leadSendBtn');
-  const leadCharCount = document.getElementById('leadCharCount');
-  const reviewPanel = document.getElementById('reviewPanel');
-  const leadTableContainer = document.getElementById('leadTableContainer');
-  const assistantMsgContainer = document.getElementById('assistantMsgContainer');
-  const assistantInputBar = document.getElementById('assistantInputBar');
-  const assistantMsgInput = document.getElementById('assistantMsgInput');
-  const assistantSendBtn = document.getElementById('assistantSendBtn');
-  const assistantCharCount = document.getElementById('assistantCharCount');
-  const planChip = document.getElementById('planChip');
-  const statusText = document.getElementById('statusText');
-  const statusBar = document.getElementById('statusBar');
+  // ──────────────────────────────────────────────────────────────
+  //  SHARED CHAT FUNCTIONS (Using Chat.js)
+  // ──────────────────────────────────────────────────────────────
 
-  // ----- MODE SWITCHING -----
+  function addLeadMessage(role, content) {
+    Chat.addMessageToUI(leadMsgContainer, role, content);
+  }
+
+  function addAssistantMessage(role, content) {
+    Chat.addMessageToUI(assistantMsgContainer, role, content);
+  }
+
+  function showLeadTyping(label = 'Thinking…') {
+    Chat.showTyping(leadMsgContainer, label);
+  }
+
+  function hideLeadTyping() {
+    Chat.hideTyping(leadMsgContainer);
+  }
+
+  function showAssistantTyping(label = 'Thinking…') {
+    Chat.showTyping(assistantMsgContainer, label);
+  }
+
+  function hideAssistantTyping() {
+    Chat.hideTyping(assistantMsgContainer);
+  }
+
+  function scrollLeadDown() {
+    Chat.scrollToBottom(leadMsgContainer);
+  }
+
+  function scrollAssistantDown() {
+    Chat.scrollToBottom(assistantMsgContainer);
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  MODE SWITCHING
+  // ──────────────────────────────────────────────────────────────
+
   window.switchMode = function(mode) {
     if (isChatActive) return;
     currentMode = mode;
@@ -620,7 +599,10 @@
     });
   });
 
-  // ----- LEAD MODE - Chat Input -----
+  // ──────────────────────────────────────────────────────────────
+  //  LEAD MODE - Chat Input
+  // ──────────────────────────────────────────────────────────────
+
   leadMsgInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 130) + 'px';
@@ -643,239 +625,81 @@
     if (msg && !this.disabled) startLeadSearch(msg);
   });
 
-  function addLeadMessage(role, content) {
-    if (!content) return;
-    
-    const container = leadMsgContainer;
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    
-    let displayContent = content;
-    if (role === 'ai') {
-        displayContent = cleanAIResponse(content);
-    } else {
-        displayContent = escapeHtml(content);
-    }
-    
-    const html = role === 'ai' ? formatAI(displayContent) : displayContent;
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollLeadDown();
-  }
+  // ──────────────────────────────────────────────────────────────
+  //  ASSISTANT MODE - Chat Input
+  // ──────────────────────────────────────────────────────────────
 
-  function addAssistantMessage(role, content) {
-    if (!content) return;
-    const container = assistantMsgContainer;
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollAssistantDown();
-  }
+  assistantMsgInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+    assistantSendBtn.disabled = !this.value.trim() || isTyping;
+    assistantCharCount.textContent = this.value.length || '';
+  });
 
-  function showLeadTyping(label = 'Thinking…') {
-    let row = document.getElementById('leadTypingRow');
-    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollLeadDown(); return; }
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'leadTypingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    leadMsgContainer.appendChild(row);
-    scrollLeadDown();
-  }
-
-  function hideLeadTyping() { document.getElementById('leadTypingRow')?.remove(); }
-  function scrollLeadDown() { leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' }); }
-
-  function showAssistantTyping(label = 'Thinking…') {
-    let row = document.getElementById('assistantTypingRow');
-    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollAssistantDown(); return; }
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'assistantTypingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    assistantMsgContainer.appendChild(row);
-    scrollAssistantDown();
-  }
-
-  function hideAssistantTyping() { document.getElementById('assistantTypingRow')?.remove(); }
-  function scrollAssistantDown() { const area = document.getElementById('assistantChatArea'); area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
-
-  // ----- Show welcome message -----
-  function showWelcomeMessage() {
-    if (leadMsgContainer.children.length === 0) {
-      addLeadMessage('ai', '👋 Hello! I\'m your Skyline lead agent. Just describe what you\'re looking for in the chat below, and I\'ll find qualified leads for you.\n\nFor example: "Find me CEOs in the SaaS industry, located in London."');
-    }
-  }
-
-  // ============================================================
-  //  ✅ LOAD SESSION FROM URL (FIXED)
-  // ============================================================
-  async function loadSessionFromUrl() {
-    // Check localStorage first (from History Overlay)
-    let sessionId = localStorage.getItem('resumeSessionId');
-    let type = localStorage.getItem('resumeSessionType');
-    
-    // If not in localStorage, check URL params
-    if (!sessionId) {
-        const params = new URLSearchParams(window.location.search);
-        sessionId = params.get('session');
-        type = params.get('type');
-    }
-
-    if (!sessionId) return false;
-
-    // Clear storage
-    localStorage.removeItem('resumeSessionId');
-    localStorage.removeItem('resumeSessionType');
-
-    conversationHistory = [];
-    isSessionLoading = true;
-    console.log('[page] Loading session:', sessionId, 'type:', type);
-
-    try {
-      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to load session');
-
-      const msgs = await res.json();
-      console.log('[page] Loaded messages:', msgs.length);
-
-      const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
-
-      if (isAssistantSession) {
-        // ✅ Load Assistant Session
-        assistantSessionId = sessionId;
-        currentMode = 'assistant';
-        
-        modeSelector.classList.add('hidden');
-        if (assistantModeSelector) assistantModeSelector.style.display = 'flex';
-        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-        assistantContainer.classList.add('active');
-        assistantInputBar.classList.add('active');
-        assistantInputBar.style.display = 'block';
-        
-        assistantMsgInput.placeholder = 'Continue your conversation…';
-        assistantSendBtn.disabled = true;
-        
-        assistantMsgContainer.innerHTML = '';
-        
-        if (msgs && msgs.length > 0) {
-          for (const m of msgs) {
-            if (!m.content) continue;
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            addAssistantMessage(role, m.content);
-          }
-        } else {
-          addAssistantMessage('ai', 'No messages in this session.');
-        }
-        scrollAssistantDown();
-        isChatActive = true;
-        document.querySelector('.topbar-label').textContent = 'Assistant Session';
-        
-      } else {
-        // ✅ Load Lead Session
-        currentMode = 'lead';
-        
-        modeSelector.classList.add('hidden');
-        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-        leadContainer.classList.add('active');
-        leadChatArea.classList.add('active');
-        leadInputBar.classList.remove('lead-active');
-        leadInputBar.classList.add('lead-hidden');
-        
-        leadMsgContainer.innerHTML = '';
-        
-        if (msgs && msgs.length > 0) {
-          for (const m of msgs) {
-            if (!m.content) continue;
-            const role = m.role === 'assistant' || m.role === 'ai' ? 'ai' : 'user';
-            
-            let displayContent = m.content;
-            if (role === 'ai') {
-                displayContent = cleanAIResponse(m.content);
-            } else {
-                displayContent = escapeHtml(m.content);
-            }
-            
-            addLeadMessage(role, displayContent);
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
-          }
-        } else {
-          addLeadMessage('ai', 'No messages in this session.');
-        }
-        scrollLeadDown();
-        isChatActive = true;
-        document.querySelector('.topbar-label').textContent = 'Lead Session';
+  assistantMsgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!assistantSendBtn.disabled) {
+        const msg = this.value.trim();
+        if (msg) sendAssistantMessage(msg);
       }
-
-      currentSessionId = sessionId;
-      isSessionLoading = false;
-      return true;
-
-    } catch (err) {
-      console.error('[page] Error loading session:', err);
-      isSessionLoading = false;
-      return false;
     }
-  }
+  });
 
-  // ============================================================
-  //  START LEAD SEARCH
-  // ============================================================
+  assistantSendBtn.addEventListener('click', function() {
+    const msg = assistantMsgInput.value.trim();
+    if (msg && !this.disabled) sendAssistantMessage(msg);
+  });
+
+  // ──────────────────────────────────────────────────────────────
+  //  SEND MESSAGE - Lead
+  // ──────────────────────────────────────────────────────────────
+
   async function startLeadSearch(message) {
     if (isChatActive || isTyping) return;
     isChatActive = true;
     isTyping = true;
+    
     modeSelector.classList.add('hidden');
     leadChatArea.classList.add('active');
     leadInputBar.classList.remove('lead-active');
     leadInputBar.classList.add('lead-hidden');
+    
     addLeadMessage('user', message);
     showLeadTyping('Searching for leads…');
 
     try {
-      const res = await fetch(`${BACKEND}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
-      });
-      const data = await res.json();
+      const result = await Chat.sendChatMessage(message, leadMsgContainer, currentSessionId, 'lead');
       hideLeadTyping();
 
-      if (res.ok) {
-        if (data.sessionId && !currentSessionId) {
-          currentSessionId = data.sessionId;
+      if (result) {
+        if (result.sessionId) {
+          currentSessionId = result.sessionId;
           const url = new URL(window.location);
-          url.searchParams.set('session', data.sessionId);
+          url.searchParams.set('session', result.sessionId);
           window.history.pushState({}, '', url);
+          
           try {
             await fetch(`${BACKEND}/api/sessions`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-              body: JSON.stringify({ sessionId: data.sessionId, type: 'lead', name: message.substring(0, 50) || 'Lead Search' })
+              body: JSON.stringify({ 
+                sessionId: result.sessionId, 
+                type: 'lead', 
+                name: message.substring(0, 50) || 'Lead Search' 
+              })
             });
           } catch (sessionErr) { console.error('[page] Failed to create session:', sessionErr); }
         }
-        if (data.history) conversationHistory = data.history;
 
-        try {
-          const parsed = JSON.parse(data.reply);
-          if (Array.isArray(parsed)) {
-            currentGeneratedLeads = parsed;
-            renderLeads(parsed);
-            addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the table below.`);
-            return;
-          }
-        } catch {}
-
-        addLeadMessage('ai', data.reply || 'Request received. How can I help further?');
-      } else {
-        addLeadMessage('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
+        // Handle leads if present
+        if (result.leads && result.leads.length > 0) {
+          currentGeneratedLeads = result.leads;
+          renderLeads(result.leads);
+          addLeadMessage('ai', `📊 Found <strong>${result.leads.length}</strong> lead${result.leads.length !== 1 ? 's' : ''}. Review the table below.`);
+        }
       }
-    } catch {
+    } catch (error) {
       hideLeadTyping();
       addLeadMessage('ai', '🔌 Connection error — check your network and try again.');
     } finally {
@@ -883,9 +707,118 @@
     }
   }
 
-  // ============================================================
+  // ──────────────────────────────────────────────────────────────
+  //  SEND MESSAGE - Assistant
+  // ──────────────────────────────────────────────────────────────
+
+  async function sendAssistantMessage(message) {
+    if (isTyping) return;
+    isTyping = true;
+    
+    if (!isChatActive) {
+      isChatActive = true;
+      modeSelector.classList.add('hidden');
+      assistantModeSelector.style.display = 'none';
+    }
+    
+    addAssistantMessage('user', message);
+    assistantMsgInput.value = '';
+    assistantMsgInput.style.height = 'auto';
+    assistantSendBtn.disabled = true;
+    showAssistantTyping('Thinking…');
+
+    try {
+      const result = await Chat.sendChatMessage(message, assistantMsgContainer, assistantSessionId, 'assistant');
+      hideAssistantTyping();
+      
+      if (result && result.sessionId) {
+        assistantSessionId = result.sessionId;
+      }
+    } catch (error) {
+      hideAssistantTyping();
+      addAssistantMessage('ai', '🔌 Connection error — check your network and try again.');
+    } finally {
+      isTyping = false;
+      assistantSendBtn.disabled = !assistantMsgInput.value.trim();
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  LOAD SESSION FROM URL
+  // ──────────────────────────────────────────────────────────────
+
+  async function loadSessionFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session');
+    const type = params.get('type');
+
+    if (!sessionId) return false;
+
+    console.log('[page] Loading session from URL:', sessionId, type);
+
+    try {
+      const isAssistant = (type === 'assistant') || (sessionId === 'assistant');
+      const container = isAssistant ? assistantMsgContainer : leadMsgContainer;
+      
+      // Clear containers
+      if (isAssistant) {
+        assistantMsgContainer.innerHTML = '';
+      } else {
+        leadMsgContainer.innerHTML = '';
+      }
+      
+      // Load session using shared Chat.js
+      const loaded = await Chat.loadSession(sessionId, container, type);
+      
+      if (loaded) {
+        if (isAssistant) {
+          assistantSessionId = sessionId;
+          currentMode = 'assistant';
+          modeSelector.classList.add('hidden');
+          assistantModeSelector.style.display = 'flex';
+          document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+          assistantContainer.classList.add('active');
+          assistantInputBar.classList.add('active');
+          assistantInputBar.style.display = 'block';
+          isChatActive = true;
+          document.querySelector('.topbar-label').textContent = 'Assistant Session';
+        } else {
+          currentSessionId = sessionId;
+          currentMode = 'lead';
+          modeSelector.classList.add('hidden');
+          document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+          leadContainer.classList.add('active');
+          leadChatArea.classList.add('active');
+          leadInputBar.classList.remove('lead-active');
+          leadInputBar.classList.add('lead-hidden');
+          isChatActive = true;
+          document.querySelector('.topbar-label').textContent = 'Lead Session';
+        }
+        return true;
+      }
+      
+      return false;
+      
+    } catch (error) {
+      console.error('[page] Error loading session:', error);
+      return false;
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  SHOW WELCOME MESSAGE
+  // ──────────────────────────────────────────────────────────────
+
+  function showWelcomeMessage() {
+    if (leadMsgContainer.children.length === 0) {
+      addLeadMessage('ai', '👋 Hello! I\'m your Skyline lead agent. Just describe what you\'re looking for in the chat below, and I\'ll find qualified leads for you.\n\nFor example: "Find me CEOs in the SaaS industry, located in London."');
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
   //  RENDER LEADS TABLE
-  // ============================================================
+  // ──────────────────────────────────────────────────────────────
+
   function renderLeads(leads) {
     leadTableContainer.innerHTML = '';
     if (!leads || leads.length === 0) {
@@ -931,8 +864,8 @@
       tableHTML += `
         <tr onclick="toggleLeadDetail(${index})" style="cursor:pointer;">
           <td><span class="rank-badge ${rankClass}">${rank}</span></td>
-          <td><strong>${escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
-          <td>${escapeHtml(lead.industry || '—')}</td>
+          <td><strong>${Chat.escapeHtml(lead.company || lead.name || 'Unknown')}</strong></td>
+          <td>${Chat.escapeHtml(lead.industry || '—')}</td>
           <td>
             <span style="font-weight:600;font-size:13px;">${percent}%</span>
             <div class="score-bar"><div class="fill" style="width:${percent}%;"></div></div>
@@ -945,10 +878,10 @@
             <div class="lead-detail-grid">
               <div class="detail-section">
                 <h4>📋 Company Details</h4>
-                <div class="field"><span class="label">Company</span><span class="value">${escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
-                <div class="field"><span class="label">Domain</span><span class="value">${escapeHtml(lead.domain || '—')}</span></div>
-                <div class="field"><span class="label">Industry</span><span class="value">${escapeHtml(lead.industry || '—')}</span></div>
-                <div class="field"><span class="label">Location</span><span class="value">${escapeHtml(lead.hq || lead.location || '—')}</span></div>
+                <div class="field"><span class="label">Company</span><span class="value">${Chat.escapeHtml(lead.company || lead.name || 'Unknown')}</span></div>
+                <div class="field"><span class="label">Domain</span><span class="value">${Chat.escapeHtml(lead.domain || '—')}</span></div>
+                <div class="field"><span class="label">Industry</span><span class="value">${Chat.escapeHtml(lead.industry || '—')}</span></div>
+                <div class="field"><span class="label">Location</span><span class="value">${Chat.escapeHtml(lead.hq || lead.location || '—')}</span></div>
                 <div class="field"><span class="label">Employees</span><span class="value">${lead.employees || '—'}</span></div>
                 <div class="field"><span class="label">Tech Stack</span><span class="value">${Array.isArray(lead.tech_stack) ? lead.tech_stack.join(', ') : (lead.tech_stack || '—')}</span></div>
                 <div class="field"><span class="label">Hiring</span><span class="value">${lead.hiring || '—'}</span></div>
@@ -956,17 +889,17 @@
 
               <div class="detail-section">
                 <h4>📧 Contact</h4>
-                <div class="field"><span class="label">Email</span><span class="value">${escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
-                ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${escapeHtml(lead.emailLabel)}</span></div>` : ''}
+                <div class="field"><span class="label">Email</span><span class="value">${Chat.escapeHtml(email)} <span class="email-confidence ${confClass}">${emailConfidence}</span></span></div>
+                ${lead.emailLabel ? `<div class="field"><span class="label">Source</span><span class="value" style="font-size:11px;color:var(--t3);">${Chat.escapeHtml(lead.emailLabel)}</span></div>` : ''}
                 ${lead.contact_alternatives ? `<div class="field"><span class="label">Alternatives</span><span class="value" style="font-size:11px;color:var(--t3);">${lead.contact_alternatives.join(', ')}</span></div>` : ''}
               </div>
 
               <div class="detail-section" style="grid-column: 1 / -1;">
                 <h4>✉️ Personalized Outreach</h4>
                 <div class="outreach-preview">
-                  <div class="subj">${escapeHtml(subject)}</div>
-                  <div class="body">${escapeHtml(body)}</div>
-                  ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${escapeHtml(e)}</span>`).join('')}</div>` : ''}
+                  <div class="subj">${Chat.escapeHtml(subject)}</div>
+                  <div class="body">${Chat.escapeHtml(body)}</div>
+                  ${evidence.length > 0 ? `<div class="evidence">${evidence.map(e => `<span>${Chat.escapeHtml(e)}</span>`).join('')}</div>` : ''}
                 </div>
               </div>
 
@@ -974,7 +907,7 @@
                 <h4>🏆 Ranking & Quality</h4>
                 <div class="field"><span class="label">Lead Score</span><span class="value">${Math.round((lead.leadScore || 0) * 100)}%</span></div>
                 <div class="field"><span class="label">Rank</span><span class="value">#${lead.rank || '—'}</span></div>
-                <div class="field"><span class="label">Label</span><span class="value">${escapeHtml(lead.rank_label || '—')}</span></div>
+                <div class="field"><span class="label">Label</span><span class="value">${Chat.escapeHtml(lead.rank_label || '—')}</span></div>
                 <div class="field"><span class="label">Quality</span><span class="value"><span class="quality-badge ${qualityPassed ? '' : 'failed'}">${qualityPassed ? '✅ Passed' : '❌ Failed'}</span></span></div>
                 ${warnings.length > 0 ? `<div class="field"><span class="label">Warnings</span><span class="value" style="font-size:11px;color:var(--rose);">${warnings.join('; ')}</span></div>` : ''}
                 ${issues.length > 0 ? `<div class="field"><span class="label">Issues</span><span class="value" style="font-size:11px;color:var(--rose);">${issues.join('; ')}</span></div>` : ''}
@@ -1016,7 +949,10 @@
     reviewPanel.style.display = 'none';
   }
 
-  // ----- SEND SINGLE LEAD -----
+  // ──────────────────────────────────────────────────────────────
+  //  SEND SINGLE LEAD
+  // ──────────────────────────────────────────────────────────────
+
   async function sendSingleLead(index) {
     const lead = currentGeneratedLeads[index];
     if (!lead) return alert('Lead not found.');
@@ -1071,7 +1007,10 @@
     }
   }
 
-  // ----- SEND ALL LEADS -----
+  // ──────────────────────────────────────────────────────────────
+  //  SEND ALL LEADS
+  // ──────────────────────────────────────────────────────────────
+
   async function submitBatch() {
     const btn = document.getElementById('sendAllBtn');
     const orig = btn.textContent;
@@ -1138,70 +1077,10 @@
     }
   }
 
-  // ----- ASSISTANT MODE -----
-  assistantMsgInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
-    assistantSendBtn.disabled = !this.value.trim() || isTyping;
-    assistantCharCount.textContent = this.value.length || '';
-  });
+  // ──────────────────────────────────────────────────────────────
+  //  EMAIL STATUS CHECK
+  // ──────────────────────────────────────────────────────────────
 
-  assistantMsgInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!assistantSendBtn.disabled) {
-        const msg = this.value.trim();
-        if (msg) sendAssistantMessage(msg);
-      }
-    }
-  });
-
-  assistantSendBtn.addEventListener('click', function() {
-    const msg = assistantMsgInput.value.trim();
-    if (msg && !this.disabled) sendAssistantMessage(msg);
-  });
-
-  async function sendAssistantMessage(message) {
-    if (isTyping) return;
-    isTyping = true;
-    if (!isChatActive) {
-      isChatActive = true;
-      modeSelector.classList.add('hidden');
-      assistantModeSelector.style.display = 'none';
-    }
-    if (!assistantSessionId) {
-      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-    }
-    addAssistantMessage('user', message);
-    assistantMsgInput.value = '';
-    assistantMsgInput.style.height = 'auto';
-    assistantSendBtn.disabled = true;
-    showAssistantTyping('Thinking…');
-
-    try {
-      const res = await fetch(`${BACKEND}/api/assistant`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ message, sessionId: assistantSessionId })
-      });
-      const data = await res.json();
-      hideAssistantTyping();
-      if (res.ok) {
-        if (data.sessionId) assistantSessionId = data.sessionId;
-        addAssistantMessage('ai', data.response || 'I couldn\'t process that. Please try again.');
-      } else {
-        addAssistantMessage('ai', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
-      }
-    } catch {
-      hideAssistantTyping();
-      addAssistantMessage('ai', '🔌 Connection error — check your network and try again.');
-    } finally {
-      isTyping = false;
-      assistantSendBtn.disabled = !assistantMsgInput.value.trim();
-    }
-  }
-
-  // ----- EMAIL STATUS CHECK -----
   async function checkEmailStatus() {
     try {
       const token = localStorage.getItem('token');
@@ -1236,34 +1115,10 @@
     }
   }
 
-  // ----- NOTIFICATION BADGE -----
-  async function loadNotifCount() {
-    try {
-      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        const count = data.count || 0;
-        localStorage.setItem('lastKnownNotifCount', count);
-        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-        updateBadge(count > seen ? count : 0);
-      }
-    } catch {}
-  }
+  // ──────────────────────────────────────────────────────────────
+  //  STATUS & PLAN
+  // ──────────────────────────────────────────────────────────────
 
-  function updateBadge(count) {
-    const item = document.getElementById('navNotifBtn');
-    const badge = item?.querySelector('.nav-badge');
-    if (!item || !badge) return;
-    if (count > 0) {
-      item.classList.add('has-notifs');
-      badge.textContent = count > 9 ? '9+' : count;
-    } else {
-      item.classList.remove('has-notifs');
-      badge.textContent = '';
-    }
-  }
-
-  // ----- STATUS & PLAN -----
   async function updateStatus() {
     try {
       const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -1276,7 +1131,10 @@
     } catch {}
   }
 
-  // ----- NEW CHAT / CLEAR -----
+  // ──────────────────────────────────────────────────────────────
+  //  NEW CHAT / CLEAR
+  // ──────────────────────────────────────────────────────────────
+
   document.getElementById('newChatBtn').addEventListener('click', function() {
     if (currentMode === 'lead') {
       isChatActive = false; isTyping = false; leadMsgContainer.innerHTML = ''; reviewPanel.style.display = 'none';
@@ -1335,11 +1193,44 @@
     }
   });
 
-  // ----- INIT -----
+  // ──────────────────────────────────────────────────────────────
+  //  NOTIFICATION BADGE
+  // ──────────────────────────────────────────────────────────────
+
+  async function loadNotifCount() {
+    try {
+      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        const count = data.count || 0;
+        localStorage.setItem('lastKnownNotifCount', count);
+        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+        updateBadge(count > seen ? count : 0);
+      }
+    } catch {}
+  }
+
+  function updateBadge(count) {
+    const item = document.getElementById('navNotifBtn');
+    const badge = item?.querySelector('.nav-badge');
+    if (!item || !badge) return;
+    if (count > 0) {
+      item.classList.add('has-notifs');
+      badge.textContent = count > 9 ? '9+' : count;
+    } else {
+      item.classList.remove('has-notifs');
+      badge.textContent = '';
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  INIT
+  // ──────────────────────────────────────────────────────────────
+
   document.addEventListener('DOMContentLoaded', async function() {
     await checkEmailStatus();
     
-    // ✅ Make sure chat areas are visible by default
+    // Make sure chat areas are visible by default
     leadChatArea.classList.add('active');
     
     const sessionLoaded = await loadSessionFromUrl();
@@ -1355,7 +1246,7 @@
     }
     await updateStatus();
     loadNotifCount();
-    notifInterval = setInterval(loadNotifCount, 15000);
+    setInterval(loadNotifCount, 15000);
     setInterval(checkEmailStatus, 30000);
     document.getElementById('navNotifBtn').addEventListener('click', function() {
       localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
@@ -1364,4 +1255,4 @@
   });
 </script>
 </body>
-  </html>
+                                                                                                                                                                                                                                                                                                     </html>
