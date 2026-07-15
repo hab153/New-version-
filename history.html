@@ -24,6 +24,8 @@
     body { background: var(--void); color: var(--t1); font-family: var(--ui); font-size: 14px; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
     body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 55% 35% at 5% 0%, rgba(255,255,255,0.03) 0%, transparent 60%), radial-gradient(ellipse 40% 55% at 95% 100%, rgba(102,221,255,0.02) 0%, transparent 55%); }
     body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-size: 180px; }
+    
+    /* --- Topbar & Layout --- */
     .topbar { height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between; background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; }
     .topbar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), rgba(255,255,255,0.25), rgba(255,255,255,0.15), transparent); }
     .brand { display: flex; align-items: center; gap: 10px; }
@@ -39,10 +41,13 @@
     .topbar-right { display: flex; align-items: center; gap: 6px; }
     .back-link { color: var(--t2); text-decoration: none; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; transition: color 0.2s; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--br-dim); }
     .back-link:hover { color: var(--gold); border-color: var(--br-md); }
+    
     .archive-stage { flex: 1; overflow-y: auto; padding: 28px 16px calc(var(--nav-h) + 20px); position: relative; z-index: 1; }
     .archive-stage::-webkit-scrollbar { width: 2px; }
     .archive-stage::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
     .archive-container { max-width: 680px; margin: 0 auto; }
+    
+    /* --- Headings & Search --- */
     .page-heading { margin-bottom: 28px; animation: fadeUp 0.4s 0.05s ease both; }
     .heading-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .eyebrow-line { width: 22px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
@@ -59,6 +64,8 @@
     .search-input { flex: 1; background: transparent; border: none; color: var(--t1); padding: 13px 0; font-family: var(--ui); font-size: 13.5px; font-weight: 400; outline: none; caret-color: #ffffff; }
     .search-input::placeholder { color: var(--t3); }
     .count-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.10em; color: var(--t3); padding: 3px 8px; border-radius: 20px; border: 1px solid var(--br-dim); background: var(--raised); flex-shrink: 0; transition: color 0.2s; }
+    
+    /* --- Session Grid --- */
     .session-grid { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s 0.15s ease both; }
     .session-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); padding: 18px 18px 18px 20px; cursor: pointer; text-decoration: none; color: inherit; transition: border-color 0.22s, background 0.22s, transform 0.18s, box-shadow 0.22s; display: flex; justify-content: space-between; align-items: center; gap: 14px; position: relative; overflow: hidden; }
     .session-card::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: linear-gradient(180deg, #ffffff, transparent); opacity: 0; transition: opacity 0.22s; }
@@ -78,6 +85,8 @@
     .type-badge.assistant { background: rgba(102,221,255,0.12); color: var(--sky); border: 1px solid rgba(102,221,255,0.2); }
     .card-arrow { color: var(--t3); transition: color 0.2s, transform 0.2s; flex-shrink: 0; display: flex; align-items: center; }
     .session-card:hover .card-arrow { color: var(--gold); transform: translateX(3px); }
+    
+    /* --- States --- */
     .empty-state { text-align: center; padding: 56px 24px; color: var(--t2); }
     .empty-icon { width: 48px; height: 48px; margin: 0 auto 16px; border: 1px solid var(--br-md); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--t3); }
     .empty-title { font-family: var(--display); font-size: 18px; font-weight: 400; font-style: italic; color: var(--t2); margin-bottom: 6px; }
@@ -86,6 +95,8 @@
     .error-icon { width: 44px; height: 44px; margin: 0 auto 14px; border: 1px solid rgba(184,92,92,0.3); border-radius: 50%; background: rgba(184,92,92,0.06); display: flex; align-items: center; justify-content: center; color: var(--rose); }
     .error-title { font-family: var(--display); font-size: 17px; font-style: italic; color: var(--rose); margin-bottom: 6px; }
     .error-sub { font-size: 11px; color: var(--t3); font-family: var(--mono); letter-spacing: 0.04em; }
+    
+    /* --- Context Menu & Modals --- */
     #contextMenu { display: none; position: fixed; background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-md); padding: 6px 0; z-index: 100; min-width: 160px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
     #contextMenu .ctx-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: transparent; border: none; color: var(--t2); font-family: var(--ui); font-size: 12.5px; cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; }
     #contextMenu .ctx-btn:hover { background: var(--hover); color: var(--t1); }
@@ -93,6 +104,7 @@
     #contextMenu .ctx-btn.danger:hover { background: rgba(255,85,85,0.1); }
     #contextMenu .ctx-divider { height: 1px; background: var(--br-dim); margin: 4px 12px; }
     #contextMenu .ctx-btn svg { flex-shrink: 0; }
+    
     #renameModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     #renameModal.active { display: flex; }
     .modal-box { background: var(--surface); border: 1px solid var(--br-md); border-radius: var(--r-xl); padding: 28px; max-width: 400px; width: 90%; animation: modalIn 0.25s ease both; }
@@ -107,6 +119,8 @@
     .modal-box .modal-actions .btn-cancel:hover { background: var(--hover); color: var(--t1); }
     .modal-box .modal-actions .btn-save { background: var(--gold); color: #0d0a04; border: none; }
     .modal-box .modal-actions .btn-save:hover { background: var(--gold-bright); box-shadow: 0 4px 16px rgba(255,255,255,0.2); }
+
+    /* --- Bottom Nav --- */
     .bottom-nav { height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; position: fixed; bottom: 0; width: 100%; z-index: 20; padding: 0 8px; }
     .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); }
     .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--t3); text-decoration: none; transition: color 0.22s; position: relative; }
@@ -122,12 +136,59 @@
     .nav-item.nav-home::after { display: none; }
     .nav-badge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: #ff5555; border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono); font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(255,85,85,0.3); }
     .nav-item.has-notifs .nav-badge { display: flex; }
+
+    /* --- Animations & Skeletons --- */
     @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     .skeleton-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: var(--r-md); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; animation: skelPulse 1.6s ease-in-out infinite; }
     .skel-line { height: 11px; border-radius: 4px; background: var(--raised); }
     .skel-line.title { width: 68%; }
     .skel-line.meta { width: 36%; height: 9px; }
     @keyframes skelPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+    /* --- HISTORY CHAT OVERLAY (NEW) --- */
+    #historyOverlay {
+      display: none; position: fixed; inset: 0; background: var(--void); z-index: 1000; flex-direction: column;
+      animation: fadeIn 0.3s ease;
+    }
+    #historyOverlay.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .overlay-header {
+      height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between;
+      background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0;
+    }
+    .overlay-close {
+      background: transparent; border: 1px solid var(--br-dim); color: var(--t2); width: 32px; height: 32px;
+      border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .overlay-close:hover { background: var(--hover); color: var(--t1); border-color: var(--br-md); }
+    
+    .overlay-chat-area {
+      flex: 1; overflow-y: auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px;
+    }
+    .overlay-msg { max-width: 85%; padding: 12px 16px; border-radius: var(--r-lg); font-size: 13.5px; line-height: 1.6; }
+    .overlay-msg.user {
+      align-self: flex-end; background: var(--raised); border: 1px solid var(--br-md); color: var(--t1);
+      border-radius: var(--r-lg) var(--r-lg) var(--r-xs) var(--r-lg);
+    }
+    .overlay-msg.ai {
+      align-self: flex-start; background: var(--surface); border: 1px solid var(--br-dim); color: #ccc7bb;
+      border-left: 2px solid rgba(201,168,76,0.25); font-family: var(--mono); font-size: 12px;
+      border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-xs);
+    }
+    
+    .overlay-footer {
+      padding: 16px; background: var(--base); border-top: 1px solid var(--br-dim); display: flex; justify-content: center;
+    }
+    .continue-btn {
+      width: 100%; max-width: 400px; padding: 14px; background: var(--gold); color: #0d0a04;
+      border: none; border-radius: var(--r-md); font-family: var(--ui); font-weight: 700; font-size: 14px;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
+
     @media (min-width: 768px) { .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); } .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 1024px) { .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); } .bottom-nav { padding: 0 24%; } .topbar { padding: 0 32px; } }
     @media (max-width: 375px) { .brand-name { font-size: 16px; } .brand-sub { display: none; } .page-title { font-size: 26px; } }
@@ -144,12 +205,13 @@
     <div class="topbar-center"><span class="topbar-label">Session Archive</span></div>
     <div class="topbar-right"><a href="page.html" class="back-link">← Back</a></div>
   </header>
+
   <div class="archive-stage">
     <div class="archive-container">
       <div class="page-heading">
         <div class="heading-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">History · Archive</span><div class="eyebrow-line right"></div></div>
         <h1 class="page-title">Session <em>Archive.</em></h1>
-        <p class="page-sub">Click to open · Long press or right-click for options.</p>
+        <p class="page-sub">Click to preview · Long press for options.</p>
       </div>
       <div class="search-wrap">
         <div class="search-shell">
@@ -165,6 +227,27 @@
       </div>
     </div>
   </div>
+
+  <!-- ✅ NEW: History Chat Overlay -->
+  <div id="historyOverlay">
+    <div class="overlay-header">
+      <div class="brand" style="gap:8px;">
+        <span class="brand-name" style="font-size:16px;">Preview</span>
+        <span class="type-badge" id="overlayTypeBadge" style="font-size:9px;">LEAD</span>
+      </div>
+      <button class="overlay-close" onclick="closeOverlay()">✕</button>
+    </div>
+    <div class="overlay-chat-area" id="overlayChatArea">
+      <!-- Messages injected here -->
+    </div>
+    <div class="overlay-footer">
+      <button class="continue-btn" id="continueBtn">
+        Continue Conversation 
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
   <div id="contextMenu">
     <button class="ctx-btn" data-action="rename"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Rename</button>
     <button class="ctx-btn" data-action="pin" id="pinBtn"><span id="pinIcon"></span><span id="pinLabel">Pin</span></button>
@@ -206,17 +289,28 @@
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
+    
     let allSessions = [];
     let contextTargetId = null;
     let currentRenameId = null;
+    let currentPreviewSession = null; // Store session being previewed
+
     const contextMenu = document.getElementById('contextMenu');
     const renameModal = document.getElementById('renameModal');
     const renameInput = document.getElementById('renameInput');
     const sessionGrid = document.getElementById('sessionGrid');
     const countBadge = document.getElementById('countBadge');
     const searchInput = document.getElementById('searchInput');
+    
+    // Overlay Elements
+    const historyOverlay = document.getElementById('historyOverlay');
+    const overlayChatArea = document.getElementById('overlayChatArea');
+    const overlayTypeBadge = document.getElementById('overlayTypeBadge');
+    const continueBtn = document.getElementById('continueBtn');
+
     function pinIconSolid() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`; }
     function pinIconOutline() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`; }
+    
     async function loadSessions() {
       try {
         const res = await fetch(`${BACKEND}/api/sessions`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -228,6 +322,7 @@
         countBadge.textContent = '—';
       }
     }
+
     function renderSessions(sessions) {
       sessionGrid.innerHTML = '';
       countBadge.textContent = sessions.length;
@@ -237,20 +332,24 @@
       }
       sessions.forEach((session, i) => {
         const date = new Date(session.lastUpdated || session.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const card = document.createElement('a');
+        const card = document.createElement('div'); // Changed from 'a' to 'div'
         card.className = 'session-card';
         const isAssistant = (session.type === 'assistant');
-        // ✅ Ensure type param is passed for correct routing in page.html
-        const typeParam = isAssistant ? '&type=assistant' : '';
-        card.href = `page.html?session=${session.sessionId || session._id}${typeParam}`;
+        
+        // ✅ Click handler to open overlay instead of redirecting
+        card.onclick = () => openSessionPreview(session);
+        
         card.dataset.sessionId = session.sessionId || session._id;
         card.style.animationDelay = `${i * 0.04}s`;
         card.style.animation = 'fadeUp 0.35s ease both';
         if (session.pinned) card.classList.add('pinned');
+        
         const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
         const typeClass = isAssistant ? 'assistant' : 'lead';
         const pinnedSvg = session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : '';
+        
         card.innerHTML = `<div class="card-content"><div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div><div class="card-meta"><span class="meta-date">${date}</span><span class="meta-dot"></span><span class="meta-count">${session.messageCount || 0} messages</span><span class="meta-dot"></span><span class="type-badge ${typeClass}">${typeLabel}</span></div></div><div class="card-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>${pinnedSvg}`;
+        
         card.addEventListener('contextmenu', function(e) { e.preventDefault(); showContextMenu(e.clientX, e.clientY, this.dataset.sessionId); });
         let timer;
         card.addEventListener('touchstart', function(e) { timer = setTimeout(() => { e.preventDefault(); const touch = e.touches[0]; showContextMenu(touch.clientX, touch.clientY, this.dataset.sessionId); }, 600); });
@@ -259,6 +358,76 @@
         sessionGrid.appendChild(card);
       });
     }
+
+    // ✅ NEW: Open Preview Overlay
+    async function openSessionPreview(session) {
+      currentPreviewSession = session;
+      const sessionId = session.sessionId || session._id;
+      const isAssistant = (session.type === 'assistant');
+      
+      // Update Badge
+      overlayTypeBadge.textContent = isAssistant ? 'ASSISTANT' : 'LEAD';
+      overlayTypeBadge.className = `type-badge ${isAssistant ? 'assistant' : 'lead'}`;
+      
+      // Show Overlay
+      historyOverlay.classList.add('active');
+      overlayChatArea.innerHTML = '<div style="text-align:center;color:var(--t3);padding:20px;">Loading history...</div>';
+      
+      try {
+        const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed');
+        const msgs = await res.json();
+        
+        // Render Messages
+        overlayChatArea.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        
+        if (msgs && msgs.length > 0) {
+          msgs.forEach(m => {
+            if (!m.content) return;
+            const div = document.createElement('div');
+            const role = m.role === 'ai' || m.role === 'assistant' ? 'ai' : 'user';
+            div.className = `overlay-msg ${role}`;
+            // Simple formatting for preview
+            let text = escapeHTML(m.content);
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\n/g, '<br>');
+            div.innerHTML = text;
+            fragment.appendChild(div);
+          });
+        } else {
+          overlayChatArea.innerHTML = '<div style="text-align:center;color:var(--t3);">No messages found.</div>';
+        }
+        overlayChatArea.appendChild(fragment);
+        
+      } catch (err) {
+        console.error(err);
+        overlayChatArea.innerHTML = '<div style="text-align:center;color:var(--rose);">Failed to load history.</div>';
+      }
+    }
+
+    function closeOverlay() {
+      historyOverlay.classList.remove('active');
+      currentPreviewSession = null;
+    }
+
+    // ✅ NEW: Continue Button Logic
+    continueBtn.addEventListener('click', function() {
+      if (!currentPreviewSession) return;
+      
+      const sessionId = currentPreviewSession.sessionId || currentPreviewSession._id;
+      const type = currentPreviewSession.type;
+      
+      // Save to localStorage for page.html to pick up
+      localStorage.setItem('resumeSessionId', sessionId);
+      localStorage.setItem('resumeSessionType', type);
+      
+      // Redirect
+      window.location.href = 'page.html';
+    });
+
     function showContextMenu(x, y, sessionId) {
       contextTargetId = sessionId;
       const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
@@ -360,4 +529,4 @@
     });
   </script>
 </body>
-                                                                          </html>
+          </html>
