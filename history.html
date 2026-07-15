@@ -204,6 +204,8 @@
     <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications"><div class="nav-badge"></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
     <a href="dashboard.html" class="nav-item" aria-label="Dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
   </nav>
+
+  <script src="chat.js"></script>
   <script>
     // ──────────────────────────────────────────────────────────────
     //  GLOBAL CSRF FETCH INTERCEPTOR
@@ -222,10 +224,16 @@
         };
     })();
 
-    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
-    
+
+    // ──────────────────────────────────────────────────────────────
+    //  USE CHAT ORCHESTRATOR
+    // ──────────────────────────────────────────────────────────────
+
+    // Initialize Chat
+    Chat.init('lead');
+
     let allSessions = [];
     let contextTargetId = null;
     let currentRenameId = null;
@@ -237,160 +245,266 @@
     const countBadge = document.getElementById('countBadge');
     const searchInput = document.getElementById('searchInput');
 
-    function pinIconSolid() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`; }
-    function pinIconOutline() { return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`; }
-    
+    function pinIconSolid() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg>`;
+    }
+
+    function pinIconOutline() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`;
+    }
+
+    // ── Load Sessions using Chat.js ──
     async function loadSessions() {
-      try {
-        const res = await fetch(`${BACKEND}/api/sessions`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Failed');
-        allSessions = await res.json();
-        renderSessions(allSessions);
-      } catch {
-        sessionGrid.innerHTML = `<div class="error-state"><div class="error-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="error-title">Archive unavailable</div><div class="error-sub">Failed to connect · Check your network</div></div>`;
-        countBadge.textContent = '—';
-      }
+        try {
+            allSessions = await Chat.Sessions.getSessions();
+            renderSessions(allSessions);
+        } catch (error) {
+            console.error('Error loading sessions:', error);
+            sessionGrid.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                    <div class="error-title">Archive unavailable</div>
+                    <div class="error-sub">Failed to connect · Check your network</div>
+                </div>
+            `;
+            countBadge.textContent = '—';
+        }
     }
 
     function renderSessions(sessions) {
-      sessionGrid.innerHTML = '';
-      countBadge.textContent = sessions.length;
-      if (sessions.length === 0) {
-        sessionGrid.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="empty-title">No sessions found.</div><div class="empty-sub">Start a new search to begin</div></div>`;
-        return;
-      }
-      sessions.forEach((session, i) => {
-        const date = new Date(session.lastUpdated || session.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const card = document.createElement('div'); // Changed from 'a' to 'div'
-        card.className = 'session-card';
-        const isAssistant = (session.type === 'assistant');
-        
-        // ✅ Direct URL navigation - no overlay
-        card.onclick = () => {
+        sessionGrid.innerHTML = '';
+        countBadge.textContent = sessions.length;
+
+        if (sessions.length === 0) {
+            sessionGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                    <div class="empty-title">No sessions found.</div>
+                    <div class="empty-sub">Start a new search to begin</div>
+                </div>
+            `;
+            return;
+        }
+
+        sessions.forEach((session) => {
+            const date = new Date(session.lastUpdated || session.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const card = document.createElement('div');
+            card.className = 'session-card';
+            
+            const isAssistant = (session.type === 'assistant');
             const sessionId = session.sessionId || session._id;
-            const type = session.type || 'lead';
-            window.location.href = `page.html?session=${encodeURIComponent(sessionId)}&type=${encodeURIComponent(type)}`;
-        };
-        
-        card.dataset.sessionId = session.sessionId || session._id;
-        card.style.animationDelay = `${i * 0.04}s`;
-        card.style.animation = 'fadeUp 0.35s ease both';
-        if (session.pinned) card.classList.add('pinned');
-        
-        const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
-        const typeClass = isAssistant ? 'assistant' : 'lead';
-        const pinnedSvg = session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : '';
-        
-        card.innerHTML = `<div class="card-content"><div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div><div class="card-meta"><span class="meta-date">${date}</span><span class="meta-dot"></span><span class="meta-count">${session.messageCount || 0} messages</span><span class="meta-dot"></span><span class="type-badge ${typeClass}">${typeLabel}</span></div></div><div class="card-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>${pinnedSvg}`;
-        
-        card.addEventListener('contextmenu', function(e) { e.preventDefault(); showContextMenu(e.clientX, e.clientY, this.dataset.sessionId); });
-        let timer;
-        card.addEventListener('touchstart', function(e) { timer = setTimeout(() => { e.preventDefault(); const touch = e.touches[0]; showContextMenu(touch.clientX, touch.clientY, this.dataset.sessionId); }, 600); });
-        card.addEventListener('touchend', () => clearTimeout(timer));
-        card.addEventListener('touchmove', () => clearTimeout(timer));
-        sessionGrid.appendChild(card);
-      });
+
+            // ✅ Click to open session in page.html
+            card.onclick = () => {
+                window.location.href = `page.html?session=${encodeURIComponent(sessionId)}&type=${encodeURIComponent(session.type || 'lead')}`;
+            };
+
+            card.dataset.sessionId = sessionId;
+            if (session.pinned) card.classList.add('pinned');
+
+            const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
+            const typeClass = isAssistant ? 'assistant' : 'lead';
+            const pinnedSvg = session.pinned ? `<span class="pinned-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>` : '';
+
+            card.innerHTML = `
+                <div class="card-content">
+                    <div class="card-title">${escapeHTML(session.name || session.title || 'Untitled')}</div>
+                    <div class="card-meta">
+                        <span class="meta-date">${date}</span>
+                        <span class="meta-dot"></span>
+                        <span class="meta-count">${session.messageCount || 0} messages</span>
+                        <span class="meta-dot"></span>
+                        <span class="type-badge ${typeClass}">${typeLabel}</span>
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+                ${pinnedSvg}
+            `;
+
+            // ── Context Menu (Right Click / Long Press) ──
+            card.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showContextMenu(e.clientX, e.clientY, this.dataset.sessionId);
+            });
+
+            let timer;
+            card.addEventListener('touchstart', function(e) {
+                timer = setTimeout(() => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    showContextMenu(touch.clientX, touch.clientY, this.dataset.sessionId);
+                }, 600);
+            });
+            card.addEventListener('touchend', () => clearTimeout(timer));
+            card.addEventListener('touchmove', () => clearTimeout(timer));
+
+            sessionGrid.appendChild(card);
+        });
+    }
+
+    function escapeHTML(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function showContextMenu(x, y, sessionId) {
-      contextTargetId = sessionId;
-      const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
-      const pinned = session ? session.pinned : false;
-      const pinBtn = document.getElementById('pinBtn');
-      const pinIcon = document.getElementById('pinIcon');
-      const pinLabel = document.getElementById('pinLabel');
-      if (pinned) { pinIcon.innerHTML = pinIconOutline(); pinLabel.textContent = 'Unpin'; }
-      else { pinIcon.innerHTML = pinIconSolid(); pinLabel.textContent = 'Pin'; }
-      const menuWidth = 160; const menuHeight = 140;
-      const left = Math.min(x, window.innerWidth - menuWidth - 10);
-      const top = Math.min(y, window.innerHeight - menuHeight - 10);
-      contextMenu.style.left = Math.max(10, left) + 'px';
-      contextMenu.style.top = Math.max(10, top) + 'px';
-      contextMenu.style.display = 'block';
-    }
-    function hideContextMenu() { contextMenu.style.display = 'none'; contextTargetId = null; }
-    document.addEventListener('click', function(e) { if (!contextMenu.contains(e.target)) hideContextMenu(); });
-    document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const action = this.dataset.action;
-        const sessionId = contextTargetId;
-        hideContextMenu();
-        if (action === 'rename') openRenameModal(sessionId);
-        else if (action === 'pin') togglePin(sessionId);
-        else if (action === 'delete') deleteSession(sessionId);
-      });
-    });
-    function openRenameModal(sessionId) {
-      currentRenameId = sessionId;
-      const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
-      renameInput.value = session?.name || session?.title || '';
-      renameModal.classList.add('active');
-      renameInput.focus();
-      renameInput.select();
-    }
-    document.getElementById('renameCancel').addEventListener('click', function() { renameModal.classList.remove('active'); currentRenameId = null; });
-    document.getElementById('renameConfirm').addEventListener('click', async function() {
-      const name = renameInput.value.trim();
-      if (!name) return;
-      try {
-        const res = await fetch(`${BACKEND}/api/sessions/${currentRenameId}/rename`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name }) });
-        if (res.ok) { renameModal.classList.remove('active'); currentRenameId = null; loadSessions(); }
-        else { const data = await res.json(); alert(data.error || 'Rename failed'); }
-      } catch { alert('Connection error'); }
-    });
-    renameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('renameConfirm').click(); if (e.key === 'Escape') document.getElementById('renameCancel').click(); });
-    async function togglePin(sessionId) {
-      const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
-      if (!session) return;
-      try {
-        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}/pin`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ pinned: !session.pinned }) });
-        if (res.ok) loadSessions();
-        else { const data = await res.json(); alert(data.error || 'Failed to pin'); }
-      } catch { alert('Connection error'); }
-    }
-    async function deleteSession(sessionId) {
-      if (!confirm('Delete this session and all its messages?')) return;
-      try {
-        const res = await fetch(`${BACKEND}/api/sessions/${sessionId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) loadSessions();
-        else { const data = await res.json(); alert(data.error || 'Delete failed'); }
-      } catch { alert('Connection error'); }
-    }
-    searchInput.addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      const filtered = allSessions.filter(s => (s.name || s.title || '').toLowerCase().includes(q));
-      renderSessions(filtered);
-    });
-    async function loadNotifCount() {
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) {
-          const data = await res.json();
-          const count = data.count || 0;
-          localStorage.setItem('lastKnownNotifCount', count);
-          const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-          updateBadge(count > seen ? count : 0);
+        contextTargetId = sessionId;
+        const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
+        const pinned = session ? session.pinned : false;
+        const pinBtn = document.getElementById('pinBtn');
+        const pinIcon = document.getElementById('pinIcon');
+        const pinLabel = document.getElementById('pinLabel');
+
+        if (pinned) {
+            pinIcon.innerHTML = pinIconOutline();
+            pinLabel.textContent = 'Unpin';
+        } else {
+            pinIcon.innerHTML = pinIconSolid();
+            pinLabel.textContent = 'Pin';
         }
-      } catch {}
+
+        const menuWidth = 160;
+        const menuHeight = 140;
+        const left = Math.min(x, window.innerWidth - menuWidth - 10);
+        const top = Math.min(y, window.innerHeight - menuHeight - 10);
+        contextMenu.style.left = Math.max(10, left) + 'px';
+        contextMenu.style.top = Math.max(10, top) + 'px';
+        contextMenu.style.display = 'block';
     }
+
+    function hideContextMenu() {
+        contextMenu.style.display = 'none';
+        contextTargetId = null;
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!contextMenu.contains(e.target)) hideContextMenu();
+    });
+
+    document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const action = this.dataset.action;
+            const sessionId = contextTargetId;
+            hideContextMenu();
+
+            if (action === 'rename') openRenameModal(sessionId);
+            else if (action === 'pin') togglePin(sessionId);
+            else if (action === 'delete') deleteSession(sessionId);
+        });
+    });
+
+    function openRenameModal(sessionId) {
+        currentRenameId = sessionId;
+        const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
+        renameInput.value = session?.name || session?.title || '';
+        renameModal.classList.add('active');
+        renameInput.focus();
+        renameInput.select();
+    }
+
+    document.getElementById('renameCancel').addEventListener('click', function() {
+        renameModal.classList.remove('active');
+        currentRenameId = null;
+    });
+
+    document.getElementById('renameConfirm').addEventListener('click', async function() {
+        const name = renameInput.value.trim();
+        if (!name) return;
+
+        try {
+            const result = await Chat.Sessions.renameSession(currentRenameId, name);
+            if (result) {
+                renameModal.classList.remove('active');
+                currentRenameId = null;
+                loadSessions();
+            } else {
+                alert('Rename failed');
+            }
+        } catch (error) {
+            alert('Connection error');
+        }
+    });
+
+    renameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('renameConfirm').click();
+        if (e.key === 'Escape') document.getElementById('renameCancel').click();
+    });
+
+    async function togglePin(sessionId) {
+        const session = allSessions.find(s => (s.sessionId || s._id) === sessionId);
+        if (!session) return;
+
+        try {
+            const result = await Chat.Sessions.pinSession(sessionId, !session.pinned);
+            if (result) loadSessions();
+            else alert('Failed to pin');
+        } catch (error) {
+            alert('Connection error');
+        }
+    }
+
+    async function deleteSession(sessionId) {
+        if (!confirm('Delete this session and all its messages?')) return;
+
+        try {
+            const success = await Chat.Sessions.deleteSession(sessionId);
+            if (success) loadSessions();
+            else alert('Delete failed');
+        } catch (error) {
+            alert('Connection error');
+        }
+    }
+
+    // ── Search ──
+    searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        const filtered = allSessions.filter(s => (s.name || s.title || '').toLowerCase().includes(q));
+        renderSessions(filtered);
+    });
+
+    // ── Notifications ──
+    async function loadNotifCount() {
+        try {
+            const res = await fetch(`${BACKEND}/api/notifications/count`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const count = data.count || 0;
+                localStorage.setItem('lastKnownNotifCount', count);
+                const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+                updateBadge(count > seen ? count : 0);
+            }
+        } catch {}
+    }
+
     function updateBadge(count) {
-      const item = document.getElementById('navNotifBtn');
-      const badge = item?.querySelector('.nav-badge');
-      if (!item || !badge) return;
-      if (count > 0) { item.classList.add('has-notifs'); badge.textContent = count > 9 ? '9+' : count; }
-      else { item.classList.remove('has-notifs'); badge.textContent = ''; }
+        const item = document.getElementById('navNotifBtn');
+        const badge = item?.querySelector('.nav-badge');
+        if (!item || !badge) return;
+        if (count > 0) {
+            item.classList.add('has-notifs');
+            badge.textContent = count > 9 ? '9+' : count;
+        } else {
+            item.classList.remove('has-notifs');
+            badge.textContent = '';
+        }
     }
-    function escapeHTML(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    // ── Init ──
     document.addEventListener('DOMContentLoaded', function() {
-      loadSessions();
-      loadNotifCount();
-      setInterval(loadNotifCount, 15000);
-      document.getElementById('navNotifBtn').addEventListener('click', function() {
-        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
-        updateBadge(0);
-      });
-      document.querySelector('.archive-stage').addEventListener('scroll', hideContextMenu);
+        loadSessions();
+        loadNotifCount();
+        setInterval(loadNotifCount, 15000);
+
+        document.getElementById('navNotifBtn').addEventListener('click', function() {
+            localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
+            updateBadge(0);
+        });
+
+        document.querySelector('.archive-stage').addEventListener('scroll', hideContextMenu);
     });
   </script>
 </body>
-      </html>
+  </html>
