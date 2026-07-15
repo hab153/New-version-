@@ -29,6 +29,8 @@
       --accent-dim: rgba(200, 255, 87, 0.10);
       --accent-go: #00d2ff;
       --accent-go-dim: rgba(0, 210, 255, 0.10);
+      --danger: #ff4d4d;
+      --warning: #ffaa00;
       --font-mono: 'IBM Plex Mono', monospace;
       --font-sans: 'Syne', sans-serif;
     }
@@ -41,6 +43,26 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    .toast-msg {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      animation: slideDown 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
     /* ── Top Bar ── */
@@ -320,7 +342,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .usage-section .usage-header h3 {
       font-size: 14px;
@@ -342,65 +364,91 @@
 
     .usage-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      grid-template-columns: 1fr;
+      gap: 16px;
     }
     .usage-item {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
+      padding: 12px 16px;
+      background: var(--bg-raised);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .usage-item .usage-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .usage-item .label {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-weight: 500;
     }
     .usage-item .value {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .usage-item .value .max {
       font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+    .usage-item .value .disabled-text {
+      color: var(--danger);
+      font-size: 10px;
       font-weight: 400;
-      color: var(--text-muted);
+    }
+    .usage-item .value .unlimited-text {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 400;
     }
     .usage-item .bar-track {
       width: 100%;
-      height: 3px;
-      background: var(--bg-raised);
+      height: 4px;
+      background: var(--bg-primary);
       border-radius: 2px;
-      margin-top: 4px;
       overflow: hidden;
+      margin-top: 2px;
     }
     .usage-item .bar-track .bar-fill {
       height: 100%;
       border-radius: 2px;
-      background: var(--accent);
       transition: width 0.8s ease;
-    }
-    .usage-item .bar-track .bar-fill.go-fill {
       background: var(--accent-go);
     }
+    .usage-item .bar-track .bar-fill.green {
+      background: var(--accent);
+    }
     .usage-item .bar-track .bar-fill.warning {
-      background: #ffaa00;
+      background: var(--warning);
     }
     .usage-item .bar-track .bar-fill.danger {
-      background: #ff4d4d;
+      background: var(--danger);
+    }
+    .usage-item .bar-track .bar-fill.disabled-fill {
+      background: var(--danger);
+      opacity: 0.3;
     }
 
     /* ── Responsive ── */
+    @media (min-width: 600px) {
+      .usage-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (min-width: 900px) {
+      .usage-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+    }
+
     @media (max-width: 820px) {
       .plan-grid {
         grid-template-columns: 1fr 1fr;
       }
       .plan-card:last-child {
         grid-column: span 2;
-      }
-      .usage-grid {
-        grid-template-columns: 1fr 1fr;
       }
     }
     @media (max-width: 540px) {
@@ -409,9 +457,6 @@
       }
       .plan-card:last-child {
         grid-column: span 1;
-      }
-      .usage-grid {
-        grid-template-columns: 1fr;
       }
       .container {
         padding: 24px 16px 60px;
@@ -467,7 +512,7 @@
         <div class="plan-name">Free</div>
         <div class="plan-price">$0 <span>/mo</span></div>
         <ul class="plan-features">
-          <li><span class="check">✓</span> 30 Requests / Day</li>
+          <li><span class="check">✓</span> 10 Chat / Day</li>
           <li><span class="check">✓</span> Basic Model</li>
           <li><span class="check">✓</span> Short Memory</li>
           <li><span class="cross">✕</span> Powerful Reasoning</li>
@@ -482,10 +527,10 @@
         <div class="plan-name">GO</div>
         <div class="plan-price">$9 <span>/mo</span></div>
         <ul class="plan-features">
-          <li><span class="check">✓</span> 18 Requests / Day</li>
+          <li><span class="check">✓</span> 50 Chat / Day</li>
           <li><span class="check">✓</span> Powerful Model</li>
           <li><span class="check">✓</span> Long Memory</li>
-          <li><span class="check">✓</span> Great Features</li>
+          <li><span class="check">✓</span> 15 Auto Follow-ups</li>
           <li><span class="cross">✕</span> AA-1a Model</li>
         </ul>
         <button class="plan-btn go-btn" id="btn-go" onclick="upgrade('go')">Upgrade to GO</button>
@@ -498,10 +543,10 @@
         <div class="plan-name">PRO</div>
         <div class="plan-price">$20 <span>/mo</span></div>
         <ul class="plan-features">
-          <li><span class="check">✓</span> 40 Requests / Day</li>
+          <li><span class="check">✓</span> 150 Chat / Day</li>
           <li><span class="check">✓</span> AA-1aa Model</li>
           <li><span class="check">✓</span> Advance Reasoning</li>
-          <li><span class="check">✓</span> Early Access</li>
+          <li><span class="check">✓</span> Unlimited Lead Gen</li>
           <li><span class="check">✓</span> Priority Support</li>
         </ul>
         <button class="plan-btn primary" id="btn-pro" onclick="upgrade('pro')">Upgrade to PRO</button>
@@ -512,24 +557,71 @@
     <!-- ─── Usage Section ─── -->
     <div class="usage-section">
       <div class="usage-header">
-        <h3>📊 Daily Usage</h3>
+        <h3>📊 Daily Limits</h3>
         <span class="plan-label">Plan: <span class="highlight" id="planLabel">Free</span></span>
       </div>
       <div class="usage-grid" id="usageGrid">
+        <!-- Chat Messages -->
         <div class="usage-item">
-          <span class="label">Requests</span>
-          <span class="value" id="requestsVal">0 <span class="max">/ 30</span></span>
-          <div class="bar-track"><div class="bar-fill" id="requestsBar" style="width:0%"></div></div>
+          <div class="usage-item-header">
+            <span class="label">💬 Chat Messages</span>
+            <span class="value" id="chatMessagesVal">0/10</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="chatMessagesBar" style="width:0%"></div></div>
         </div>
+
+        <!-- Hints -->
         <div class="usage-item">
-          <span class="label">Auto-Replies</span>
-          <span class="value" id="repliesVal">0 <span class="max">/ 10</span></span>
-          <div class="bar-track"><div class="bar-fill" id="repliesBar" style="width:0%"></div></div>
-        </div>
-        <div class="usage-item">
-          <span class="label">Hints</span>
-          <span class="value" id="hintsVal">0 <span class="max">/ 15</span></span>
+          <div class="usage-item-header">
+            <span class="label">💡 Hints</span>
+            <span class="value" id="hintsVal">0/3</span>
+          </div>
           <div class="bar-track"><div class="bar-fill" id="hintsBar" style="width:0%"></div></div>
+        </div>
+
+        <!-- Emails Sent -->
+        <div class="usage-item">
+          <div class="usage-item-header">
+            <span class="label">📧 Emails Sent</span>
+            <span class="value" id="emailsVal">0/5</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="emailsBar" style="width:0%"></div></div>
+        </div>
+
+        <!-- Follow-up Suggestions -->
+        <div class="usage-item">
+          <div class="usage-item-header">
+            <span class="label">🔄 Follow-up Suggestions</span>
+            <span class="value" id="followUpVal">0/5</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="followUpBar" style="width:0%"></div></div>
+        </div>
+
+        <!-- Auto Follow-ups -->
+        <div class="usage-item">
+          <div class="usage-item-header">
+            <span class="label">⚡ Auto Follow-ups</span>
+            <span class="value" id="autoFollowUpVal">0/0 <span class="disabled-text">DISABLED</span></span>
+          </div>
+          <div class="bar-track"><div class="bar-fill disabled-fill" id="autoFollowUpBar" style="width:0%"></div></div>
+        </div>
+
+        <!-- Assistant Messages -->
+        <div class="usage-item">
+          <div class="usage-item-header">
+            <span class="label">🤖 Assistant Messages</span>
+            <span class="value" id="assistantVal">0/20</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="assistantBar" style="width:0%"></div></div>
+        </div>
+
+        <!-- Lead Generation -->
+        <div class="usage-item">
+          <div class="usage-item-header">
+            <span class="label">🎯 Lead Generation</span>
+            <span class="value" id="leadGenVal">0/1</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="leadGenBar" style="width:0%"></div></div>
         </div>
       </div>
     </div>
@@ -552,7 +644,13 @@
       const toast = document.createElement('div');
       toast.className = 'toast-msg';
       toast.textContent = message;
+      const bgColor = type === 'success' ? 'rgba(0, 230, 118, 0.12)' : 'rgba(255, 77, 77, 0.12)';
+      const borderColor = type === 'success' ? '#00e676' : '#ff4d4d';
+      const textColor = type === 'success' ? '#00e676' : '#ff4d4d';
       Object.assign(toast.style, {
+        background: bgColor,
+        border: '1px solid ' + borderColor,
+        color: textColor,
         position: 'fixed',
         top: '20px',
         left: '50%',
@@ -563,16 +661,14 @@
         fontSize: '13px',
         fontWeight: '600',
         zIndex: '9999',
-        background: type === 'success' ? 'rgba(0, 230, 118, 0.12)' : 'rgba(255, 77, 77, 0.12)',
-        border: '1px solid ' + (type === 'success' ? '#00e676' : '#ff4d4d'),
-        color: type === 'success' ? '#00e676' : '#ff4d4d',
-        animation: 'slideDown 0.3s ease'
+        maxWidth: '90%',
+        textAlign: 'center'
       });
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), duration);
     }
 
-    // ── Load Data ──
+    // ── Load User Data ──
     async function loadData() {
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, {
@@ -585,15 +681,21 @@
         const usage = user.usage || {};
 
         const limits = {
-          free: { requests: 30, replies: 10, hints: 15 },
-          go: { requests: 18, replies: 40, hints: 30 },
-          pro: { requests: 40, replies: 70, hints: 50 }
+          free: { chat: 10, hints: 3, emails: 5, followUp: 5, autoFollowUp: 0, assistant: 20, leadGen: 1 },
+          go: { chat: 50, hints: 15, emails: 200, followUp: 30, autoFollowUp: 15, assistant: 70, leadGen: 50 },
+          pro: { chat: 150, hints: 70, emails: 1000, followUp: 200, autoFollowUp: 100, assistant: 200, leadGen: Infinity }
         };
 
         const lim = limits[plan] || limits.free;
-        const req = usage.dailyCallCount || 0;
-        const rep = usage.dailyAutoFollowUpCount || 0;
-        const hint = usage.dailyHintCount || 0;
+        const current = {
+          chat: usage.dailyCallCount || 0,
+          hints: usage.dailyHintCount || 0,
+          emails: usage.dailySentCount || 0,
+          followUp: usage.dailySuggestFollowUpCount || 0,
+          autoFollowUp: usage.dailyAutoFollowUpCount || 0,
+          assistant: usage.assistantCount || 0,
+          leadGen: usage.dailyCallCount || 0
+        };
 
         // ── Update Plan Cards ──
         document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active', 'go-active'));
@@ -634,29 +736,50 @@
           }
         });
 
-        // ── Update Usage ──
+        // ── Update Plan Label ──
         document.getElementById('planLabel').textContent = plan.toUpperCase();
 
-        updateUsage('requestsVal', 'requestsBar', req, lim.requests);
-        updateUsage('repliesVal', 'repliesBar', rep, lim.replies);
-        updateUsage('hintsVal', 'hintsBar', hint, lim.hints);
+        // ── Update Usage Items ──
+        updateUsageItem('chatMessages', current.chat, lim.chat);
+        updateUsageItem('hints', current.hints, lim.hints);
+        updateUsageItem('emails', current.emails, lim.emails);
+        updateUsageItem('followUp', current.followUp, lim.followUp);
+        updateUsageItem('autoFollowUp', current.autoFollowUp, lim.autoFollowUp, lim.autoFollowUp === 0);
+        updateUsageItem('assistant', current.assistant, lim.assistant);
+        updateUsageItem('leadGen', current.leadGen, lim.leadGen, false, lim.leadGen === Infinity);
 
       } catch (err) {
         console.error('Error loading data:', err);
       }
     }
 
-    function updateUsage(valId, barId, used, limit) {
-      const valEl = document.getElementById(valId);
-      const barEl = document.getElementById(barId);
+    function updateUsageItem(id, used, limit, isDisabled = false, isUnlimited = false) {
+      const valEl = document.getElementById(`${id}Val`);
+      const barEl = document.getElementById(`${id}Bar`);
       if (!valEl || !barEl) return;
 
+      if (isUnlimited) {
+        valEl.innerHTML = `♾️ <span class="unlimited-text">UNLIMITED</span>`;
+        barEl.style.width = '0%';
+        barEl.className = 'bar-fill green';
+        return;
+      }
+
+      if (isDisabled) {
+        valEl.innerHTML = `${used}/0 <span class="disabled-text">DISABLED</span>`;
+        barEl.style.width = '0%';
+        barEl.className = 'bar-fill disabled-fill';
+        return;
+      }
+
       const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-      valEl.innerHTML = `${used} <span class="max">/ ${limit}</span>`;
+      valEl.innerHTML = `${used}/${limit}`;
+
       barEl.style.width = pct + '%';
       barEl.className = 'bar-fill';
       if (pct > 85) barEl.classList.add('danger');
       else if (pct > 65) barEl.classList.add('warning');
+      else barEl.classList.add('green');
     }
 
     // ── Upgrade ──
@@ -712,9 +835,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       handleRedirect();
       loadData();
-      setInterval(loadData, 60000);
+      setInterval(loadData, 30000);
     });
   </script>
 
 </body>
-      </html>
+                </html>
