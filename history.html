@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ... keep all your existing CSS ... */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
     :root {
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a;
@@ -164,9 +163,82 @@
     @media (min-width: 768px) { .archive-stage { padding: 36px 24px calc(var(--nav-h) + 28px); } .session-grid { display: grid; grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 1024px) { .archive-stage { padding: 40px 12% calc(var(--nav-h) + 32px); } .bottom-nav { padding: 0 24%; } .topbar { padding: 0 32px; } }
     @media (max-width: 375px) { .brand-name { font-size: 16px; } .brand-sub { display: none; } .page-title { font-size: 26px; } }
+
+    /* Debug Panel Styles */
+    #debugPanel {
+      background: #0d0d0d;
+      border-bottom: 2px solid #ff5555;
+      padding: 6px 12px;
+      font-family: monospace;
+      font-size: 10px;
+      color: #66ddff;
+      display: none;
+      max-height: 120px;
+      overflow-y: auto;
+      z-index: 9999;
+      position: relative;
+      flex-shrink: 0;
+    }
+    #debugPanel::-webkit-scrollbar { width: 2px; }
+    #debugPanel::-webkit-scrollbar-thumb { background: rgba(255,85,85,0.3); border-radius: 2px; }
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .debug-header span { font-weight: bold; font-size: 11px; }
+    .debug-actions button {
+      background: none;
+      border: none;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .debug-actions .clear { color: #66dd99; }
+    .debug-actions .clear:hover { background: rgba(102,221,153,0.1); }
+    .debug-actions .close { color: #ff5555; }
+    .debug-actions .close:hover { background: rgba(255,85,85,0.1); }
+    #debugContent {
+      white-space: pre-wrap;
+      font-size: 9px;
+      color: #cccccc;
+      line-height: 1.6;
+    }
+    .debug-toggle {
+      position: fixed;
+      bottom: 80px;
+      left: 10px;
+      z-index: 9999;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid #ff5555;
+      color: #ff5555;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .debug-toggle:hover { background: rgba(255,85,85,0.1); }
   </style>
 </head>
 <body>
+  <!-- 🔍 DEBUG PANEL -->
+  <div id="debugPanel">
+    <div class="debug-header">
+      <span>🔍 DEBUG LOG</span>
+      <div class="debug-actions">
+        <button class="clear" onclick="clearDebug()">Clear</button>
+        <button class="close" onclick="document.getElementById('debugPanel').style.display='none'">✕</button>
+      </div>
+    </div>
+    <div id="debugContent"></div>
+  </div>
+
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark">
@@ -199,6 +271,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Debug Toggle Button -->
+  <button class="debug-toggle" onclick="toggleDebug()">🐛</button>
 
   <div id="contextMenu">
     <button class="ctx-btn" data-action="rename"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Rename</button>
@@ -242,6 +317,47 @@
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
+
+    // ──────────────────────────────────────────────────────────────
+    //  DEBUG FUNCTIONS
+    // ──────────────────────────────────────────────────────────────
+
+    function toggleDebug() {
+        const panel = document.getElementById('debugPanel');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            debugLog('🐛 Debug panel opened');
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    function debugLog(message) {
+        const panel = document.getElementById('debugPanel');
+        const content = document.getElementById('debugContent');
+        
+        if (!panel || !content) return;
+        
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+        }
+        
+        const timestamp = new Date().toLocaleTimeString();
+        content.innerHTML += `[${timestamp}] ${message}\n`;
+        panel.scrollTop = panel.scrollHeight;
+        
+        if (window.console) {
+            console.log('🔍 [DEBUG]', message);
+        }
+    }
+
+    function clearDebug() {
+        const content = document.getElementById('debugContent');
+        if (content) {
+            content.innerHTML = '';
+            debugLog('🧹 Debug cleared');
+        }
+    }
 
     // ──────────────────────────────────────────────────────────────
     //  STATE
@@ -311,15 +427,24 @@
     // ──────────────────────────────────────────────────────────────
 
     async function loadSessions() {
+        debugLog('📂 Loading sessions...');
         try {
             const res = await fetch(`${BACKEND}/api/sessions`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) throw new Error('Failed to fetch sessions');
+            if (!res.ok) {
+                debugLog('❌ Failed to fetch sessions: ' + res.status);
+                throw new Error('Failed to fetch sessions');
+            }
             allSessions = await res.json();
+            debugLog('✅ Loaded ' + allSessions.length + ' sessions');
+            allSessions.forEach((s, i) => {
+                const id = s.sessionId || s._id;
+                debugLog(`  ${i+1}. "${s.name}" ID: ${id.substring(0, 15)}...`);
+            });
             renderSessions(allSessions);
         } catch (error) {
-            console.error('Error loading sessions:', error);
+            debugLog('❌ Error loading sessions: ' + error.message);
             sessionGrid.innerHTML = `
                 <div class="error-state">
                     <div class="error-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
@@ -332,10 +457,11 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  RENDER SESSIONS - FIXED with onclick
+    //  RENDER SESSIONS
     // ──────────────────────────────────────────────────────────────
 
     function renderSessions(sessions) {
+        debugLog('🎨 Rendering ' + sessions.length + ' sessions');
         sessionGrid.innerHTML = '';
         countBadge.textContent = sessions.length;
 
@@ -350,13 +476,15 @@
             return;
         }
 
-        sessions.forEach((session) => {
+        sessions.forEach((session, index) => {
             const isAssistant = (session.type === 'assistant');
             const sessionId = session.sessionId || session._id;
             const date = formatDate(session.lastUpdated || session.createdAt);
             const isExpanded = expandedSessions.has(sessionId);
             const typeLabel = isAssistant ? 'ASSISTANT' : 'LEAD';
             const typeClass = isAssistant ? 'assistant' : 'lead';
+
+            debugLog(`  📝 Session ${index+1}: "${session.name}" ID: ${sessionId.substring(0, 20)}...`);
 
             const card = document.createElement('div');
             card.className = 'session-card' + (session.pinned ? ' pinned' : '');
@@ -386,20 +514,21 @@
                 </div>
             `;
 
-            // ── Click handler using onclick (more reliable) ──
             const header = card.querySelector('.session-header');
             const messagesDiv = card.querySelector('.session-messages');
             const arrow = card.querySelector('.card-arrow');
 
-            // ✅ FIXED: Use onclick instead of addEventListener
+            // ── Click handler ──
             header.onclick = function(e) {
                 if (e.button === 2) return;
                 
-                // Get the ID from the dataset
                 const sid = this.dataset.sessionId;
+                debugLog(`👆 Clicked session! ID from dataset: "${sid}"`);
+                debugLog(`  ID type: ${typeof sid}`);
+                debugLog(`  ID length: ${sid ? sid.length : 0}`);
                 
-                // ✅ Check if ID exists
                 if (!sid || sid === '') {
+                    debugLog('❌ ERROR: Session ID is empty or undefined!');
                     alert('Error: Session ID not found. Please refresh and try again.');
                     return;
                 }
@@ -410,14 +539,15 @@
                     expandedSessions.delete(sid);
                     messagesDiv.classList.remove('open');
                     arrow.classList.remove('expanded');
+                    debugLog(`📂 Collapsed session: ${sid.substring(0, 15)}...`);
                 } else {
                     expandedSessions.add(sid);
                     messagesDiv.classList.add('open');
                     arrow.classList.add('expanded');
+                    debugLog(`📂 Expanded session: ${sid.substring(0, 15)}...`);
 
                     const loader = document.getElementById(`loader-${sid}`);
                     if (loader) {
-                        // ✅ Pass the ID directly
                         loadMessages(sid, messagesDiv);
                     }
                 }
@@ -447,35 +577,50 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  LOAD MESSAGES FOR A SESSION (COMPLETE FIX)
+    //  LOAD MESSAGES FOR A SESSION
     // ──────────────────────────────────────────────────────────────
 
     async function loadMessages(sessionId, container) {
-        // ✅ CRITICAL: Check if sessionId is valid
+        debugLog(`📥 loadMessages called with sessionId: "${sessionId}"`);
+        debugLog(`  SessionId type: ${typeof sessionId}`);
+        debugLog(`  SessionId length: ${sessionId ? sessionId.length : 0}`);
+        
         if (!sessionId || sessionId === '') {
+            debugLog('❌ ERROR: Invalid session ID!');
             container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Invalid session (no ID)</div>`;
             return;
         }
 
+        const url = `${BACKEND}/api/history/${sessionId}`;
+        debugLog(`🌐 Making request to: ${url}`);
+        
         try {
-            // ✅ FIX: Use the sessionId in the URL
-            const url = `${BACKEND}/api/history/${sessionId}`;
-            
             const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
+            debugLog(`📊 Response status: ${res.status}`);
+
             if (!res.ok) {
+                debugLog(`❌ Failed to load messages: ${res.status}`);
                 container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Failed to load messages (${res.status})</div>`;
                 return;
             }
 
             const messages = await res.json();
+            debugLog(`✅ Loaded ${messages.length} messages`);
 
             if (!messages || messages.length === 0) {
+                debugLog('ℹ️ No messages in this session');
                 container.innerHTML = `<div style="padding:12px 0;color:var(--t3);font-size:12px;text-align:center;">No messages in this session.</div>`;
                 return;
             }
+
+            // Log each message
+            messages.forEach((msg, i) => {
+                const content = msg.content || msg.text || '';
+                debugLog(`  📝 Msg ${i+1}: ${msg.role} - "${content.substring(0, 30)}..."`);
+            });
 
             let html = '';
             for (const msg of messages) {
@@ -504,8 +649,10 @@
             }
 
             container.innerHTML = html;
+            debugLog('✅ Messages rendered successfully');
 
         } catch (error) {
+            debugLog(`❌ Connection error: ${error.message}`);
             container.innerHTML = `<div style="padding:12px 0;color:var(--rose);font-size:12px;">❌ Connection error</div>`;
         }
     }
@@ -710,6 +857,7 @@
     // ──────────────────────────────────────────────────────────────
 
     document.addEventListener('DOMContentLoaded', function() {
+        debugLog('🚀 Page loaded');
         loadSessions();
         loadNotifCount();
         setInterval(loadNotifCount, 15000);
@@ -723,4 +871,4 @@
     });
   </script>
 </body>
-                                                                                </html>
+  </html>
