@@ -658,8 +658,13 @@ leadData = parsed;
 }
 if (leadData) {
 currentGeneratedLeads = leadData;
-renderReview(leadData);
-appendMsg('ai', `📊 Found <strong>${leadData.length}</strong> lead${leadData.length !== 1 ? 's' : ''}. Review the emails below.`);
+// Render the new Card UI directly in chat
+const cardHtml = renderLeadCards(leadData);
+const row = document.createElement('div');
+row.className = 'msg-row ai';
+row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">${cardHtml}</div><div class="msg-time">${now()}</div></div>`;
+document.getElementById('msgContainer').appendChild(row);
+scrollDown();
 } else {
 appendMsg('ai', data.reply || "Request received. How can I help further?");
 }
