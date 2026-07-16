@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ... (all your existing styles remain the same) ... */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -104,7 +103,7 @@
     .reply-notif.active { display: block; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* MODE SELECTOR - Small, sleek, at the TOP of content area */
+    /* MODE SELECTOR */
     #modeSelector {
       display: flex;
       gap: 12px;
@@ -184,16 +183,14 @@
     .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; overflow: hidden; }
     .mode-container.active { display: flex; }
 
-    /* LEAD CONTAINER - override input visibility */
     #leadContainer .input-bar { display: none !important; }
     #leadContainer .input-bar.lead-active { display: block !important; }
     #leadContainer .input-bar.lead-hidden { display: none !important; }
 
-    /* ASSISTANT CONTAINER - input bar ALWAYS visible */
     #assistantContainer .input-bar { display: block !important; }
     #assistantContainer .input-bar.active { display: block !important; }
 
-    /* Setup wizard - centered below mode selector */
+    /* Setup wizard */
     #setupWizard { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px 24px; overflow-y: auto; position: relative; z-index: 1; }
     #setupWizard.hidden { display: none; }
 
@@ -396,6 +393,262 @@
       font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(184,92,92,0.4);
     }
     .nav-item.has-notifs .nav-badge { display: flex; }
+
+    /* ── LEAD CARDS ── */
+    .leads-container {
+      width: 100%;
+      background: var(--bg-surface);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--br-dim);
+    }
+    .leads-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--br-dim);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .leads-count {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--t2);
+    }
+    .leads-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .send-all-leads-btn {
+      padding: 8px 20px;
+      border-radius: 6px;
+      border: none;
+      background: var(--accent);
+      color: #060608;
+      font-family: var(--ui);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .send-all-leads-btn:hover:not(:disabled) {
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(200, 255, 87, 0.3);
+    }
+    .send-all-leads-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .leads-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 600px) {
+      .leads-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .lead-card-container {
+      background: var(--bg-raised);
+      border: 1px solid var(--br-dim);
+      border-radius: 10px;
+      padding: 14px;
+      transition: all 0.2s;
+    }
+    .lead-card-container:hover {
+      border-color: var(--br-md);
+      transform: translateY(-2px);
+    }
+
+    .lead-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .lead-rank {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    .lead-rank-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--t3);
+      background: var(--bg-surface);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .lead-email-status {
+      font-size: 11px;
+      margin-left: auto;
+      opacity: 0.6;
+    }
+    .quality-badge {
+      font-size: 8px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .quality-badge.high {
+      background: rgba(102, 221, 153, 0.15);
+      color: var(--sage);
+    }
+    .quality-badge.medium {
+      background: rgba(255, 170, 0, 0.15);
+      color: var(--warning);
+    }
+    .quality-badge.low {
+      background: rgba(255, 85, 85, 0.15);
+      color: var(--rose);
+    }
+
+    .lead-company {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--t1);
+      margin-bottom: 4px;
+    }
+    .lead-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-bottom: 8px;
+    }
+    .lead-detail {
+      font-size: 11px;
+      color: var(--t2);
+      font-family: var(--mono);
+    }
+    .lead-message-preview {
+      background: var(--bg-surface);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin: 6px 0 10px;
+    }
+    .lead-subject {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gold-pale);
+      margin-bottom: 2px;
+    }
+    .lead-body-preview {
+      font-size: 11px;
+      color: var(--t3);
+      line-height: 1.5;
+      font-family: var(--mono);
+      max-height: 60px;
+      overflow: hidden;
+    }
+
+    .lead-card-footer {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .lead-view-btn, .lead-send-btn {
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: none;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lead-view-btn {
+      background: var(--bg-surface);
+      color: var(--t2);
+      border: 1px solid var(--br-dim);
+    }
+    .lead-view-btn:hover {
+      background: var(--bg-raised);
+      color: var(--t1);
+    }
+    .lead-send-btn {
+      background: var(--accent-go);
+      color: #000;
+    }
+    .lead-send-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+    }
+    .lead-send-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .no-leads {
+      text-align: center;
+      color: var(--t3);
+      padding: 20px;
+      font-family: var(--mono);
+    }
+
+    /* ── Pending Emails Notification ── */
+    .pending-emails-notif {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-surface);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 1000;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s ease;
+      max-width: 90%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .pending-emails-notif span {
+      color: var(--t1);
+      font-size: 13px;
+    }
+    .pending-emails-notif button {
+      padding: 6px 16px;
+      border-radius: 6px;
+      border: none;
+      font-family: var(--ui);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pending-emails-notif button:first-of-type {
+      background: var(--accent);
+      color: #060608;
+    }
+    .pending-emails-notif button:first-of-type:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 16px rgba(200,255,87,0.3);
+    }
+    .pending-emails-notif button:last-of-type {
+      background: transparent;
+      color: var(--t3);
+    }
+    .pending-emails-notif button:last-of-type:hover {
+      color: var(--t1);
+    }
 
     @media (min-width: 1024px) {
       .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
@@ -623,19 +876,16 @@
           const csrfToken = localStorage.getItem('csrfToken');
           const method = (options.method || 'GET').toUpperCase();
           const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-
-          // Only add CSRF token for state-changing requests
           if (!safeMethods.includes(method) && csrfToken) {
               options.headers = options.headers || {};
               options.headers['X-CSRF-Token'] = csrfToken;
           }
-
           return originalFetch.call(this, url, options);
       };
   })();
 
   // ============================================================
-  //  XSS PROTECTION – ENHANCED (Full 5-character escaping)
+  //  XSS PROTECTION
   // ============================================================
   function escapeHtml(str) {
       if (!str) return '';
@@ -658,8 +908,6 @@
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
   }
-
-  // ============================================================
 
   const BACKEND = 'https://skylineapp-backend-file.onrender.com';
   const token = localStorage.getItem('token');
@@ -703,12 +951,9 @@
   window.switchMode = function(mode) {
     if (isChatActive) return;
     currentMode = mode;
-
     modeSelector.classList.add('hidden');
     assistantModeSelector.style.display = 'none';
-
     document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-
     if (mode === 'lead') {
       leadContainer.classList.add('active');
       setupWizard.style.display = 'flex';
@@ -780,17 +1025,13 @@
     if (isChatActive || isTyping) return;
     isChatActive = true;
     isTyping = true;
-
     modeSelector.classList.add('hidden');
-
     setupWizard.style.display = 'none';
     leadChatArea.classList.add('active');
     leadInputBar.classList.remove('lead-active');
     leadInputBar.classList.add('lead-hidden');
-
     addLeadMessage('user', message);
     showLeadTyping('Searching for leads…');
-
     try {
       const res = await fetch(`${BACKEND}/api/chat`, {
         method: 'POST',
@@ -799,14 +1040,12 @@
       });
       const data = await res.json();
       hideLeadTyping();
-
       if (res.ok) {
         if (data.sessionId && !currentSessionId) {
           currentSessionId = data.sessionId;
           const url = new URL(window.location);
           url.searchParams.set('session', data.sessionId);
           window.history.pushState({}, '', url);
-
           try {
             await fetch(`${BACKEND}/api/sessions`, {
               method: 'POST',
@@ -822,7 +1061,6 @@
           }
         }
         if (data.history) conversationHistory = data.history;
-
         try {
           const parsed = JSON.parse(data.reply);
           if (Array.isArray(parsed)) {
@@ -832,7 +1070,6 @@
             return;
           }
         } catch {}
-
         addLeadMessage('ai', data.reply || 'Request received. How can I help further?');
       } else {
         addLeadMessage('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
@@ -850,15 +1087,12 @@
     const container = leadMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
-    
-    // ✅ AI: format only (NO escape), User: escape
     let displayContent;
     if (role === 'ai') {
-      displayContent = formatAI(content);  // Safe - no escaping needed
+      displayContent = formatAI(content);
     } else {
-      displayContent = escapeHtml(content);  // User input - MUST escape
+      displayContent = escapeHtml(content);
     }
-    
     row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
     scrollLeadDown();
@@ -888,7 +1122,7 @@
     leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
   }
 
-  // ----- REVIEW PANEL (All user content escaped) -----
+  // ----- REVIEW PANEL -----
   function renderReview(leads) {
     emailList.innerHTML = '';
     leads.forEach((lead, i) => {
@@ -990,24 +1224,19 @@
   async function sendAssistantMessage(message) {
     if (isTyping) return;
     isTyping = true;
-
     if (!isChatActive) {
       isChatActive = true;
       modeSelector.classList.add('hidden');
       assistantModeSelector.style.display = 'none';
     }
-
     if (!assistantSessionId) {
       assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
-
     addAssistantMessage('user', message);
     assistantMsgInput.value = '';
     assistantMsgInput.style.height = 'auto';
     assistantSendBtn.disabled = true;
-
     showAssistantTyping('Thinking…');
-
     try {
       const res = await fetch(`${BACKEND}/api/assistant`, {
         method: 'POST',
@@ -1019,7 +1248,6 @@
       });
       const data = await res.json();
       hideAssistantTyping();
-
       if (res.ok) {
         if (data.sessionId) {
           assistantSessionId = data.sessionId;
@@ -1042,15 +1270,12 @@
     const container = assistantMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
-    
-    // ✅ AI: format only (NO escape), User: escape
     let displayContent;
     if (role === 'ai') {
-      displayContent = formatAI(content);  // Safe - no escaping needed
+      displayContent = formatAI(content);
     } else {
-      displayContent = escapeHtml(content);  // User input - MUST escape
+      displayContent = escapeHtml(content);
     }
-    
     row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
     scrollAssistantDown();
@@ -1082,10 +1307,24 @@
   }
 
   // ----- UTILITY FUNCTIONS -----
-  // ✅ FIXED: formatAI does NOT call escapeHtml
+  // ✅ FIXED: formatAI with lead detection
   function formatAI(text) {
     if (!text) return '';
-    let s = text;  // DON'T escape AI content
+    
+    // ✅ Check if this is a JSON array (leads data)
+    try {
+      const trimmed = text.trim();
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].name && parsed[0].company) {
+          return renderLeadCards(parsed);
+        }
+      }
+    } catch (e) {
+      // Not JSON, continue with normal formatting
+    }
+    
+    let s = text;
     s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
     s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
@@ -1093,16 +1332,495 @@
     return s;
   }
 
+  // ── Render Lead Cards ──
+  function renderLeadCards(leads) {
+    if (!leads || leads.length === 0) return '<div class="no-leads">No leads found.</div>';
+    
+    window.currentLeads = leads;
+    
+    let html = `
+        <div class="leads-container">
+            <div class="leads-header">
+                <span class="leads-count">${leads.length} leads found</span>
+                <div class="leads-actions">
+                    <button class="send-all-leads-btn" onclick="sendAllLeads()">
+                        📤 Send All (${leads.length})
+                    </button>
+                </div>
+            </div>
+            <div class="leads-grid">
+    `;
+    
+    leads.forEach((lead, index) => {
+      const rank = lead.rank || index + 1;
+      const rankLabel = lead.rank_label || 'Opportunity';
+      const company = lead.company || lead.name || 'Unknown';
+      const email = lead.email || 'No email found';
+      const subject = lead.outreach?.subject || lead.messages?.[0]?.subject || 'No subject';
+      const body = lead.outreach?.body || lead.messages?.[0]?.body || 'No message';
+      const qualityScore = lead.quality_score || 0;
+      const qualityPassed = lead.quality_passed || false;
+      const fitScore = Math.round((lead.leadScore || 0) * 100);
+      const hasEmail = email && email !== 'No email found' && email !== 'No email' && email !== '';
+      
+      let qualityBadge = '';
+      if (qualityPassed && qualityScore >= 0.8) {
+        qualityBadge = '<span class="quality-badge high">✅ High Quality</span>';
+      } else if (qualityPassed && qualityScore >= 0.5) {
+        qualityBadge = '<span class="quality-badge medium">📊 Medium Quality</span>';
+      } else {
+        qualityBadge = '<span class="quality-badge low">⚠️ Needs Review</span>';
+      }
+      
+      let rankEmoji = '📊';
+      if (rank <= 3) rankEmoji = '🏆';
+      else if (rank <= 5) rankEmoji = '⭐';
+      
+      html += `
+          <div class="lead-card-container" data-index="${index}">
+              <div class="lead-card-header">
+                  <div class="lead-rank">${rankEmoji} #${rank}</div>
+                  <div class="lead-rank-label">${rankLabel}</div>
+                  ${qualityBadge}
+                  <div class="lead-email-status">${hasEmail ? '✅' : '❌'}</div>
+              </div>
+              <div class="lead-card-body">
+                  <div class="lead-company">${escapeHtml(company)}</div>
+                  <div class="lead-details">
+                      <span class="lead-detail">📧 ${escapeHtml(email)}</span>
+                      <span class="lead-detail">🎯 Fit: ${fitScore}%</span>
+                      ${lead.industry ? `<span class="lead-detail">🏢 ${escapeHtml(lead.industry)}</span>` : ''}
+                      ${lead.hq ? `<span class="lead-detail">📍 ${escapeHtml(lead.hq)}</span>` : ''}
+                  </div>
+                  <div class="lead-message-preview">
+                      <div class="lead-subject">📝 ${escapeHtml(subject)}</div>
+                      <div class="lead-body-preview">${escapeHtml(body.substring(0, 150))}${body.length > 150 ? '...' : ''}</div>
+                  </div>
+              </div>
+              <div class="lead-card-footer">
+                  <button class="lead-view-btn" onclick="viewLead(${index})">👁️ View Full</button>
+                  <button class="lead-send-btn" onclick="sendSingleLead(${index})" ${!hasEmail ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
+                      ✉️ Send
+                  </button>
+              </div>
+          </div>
+      `;
+    });
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    return html;
+  }
+
+  // ── View Full Lead Details ──
+  function viewLead(index) {
+    const leads = window.currentLeads || [];
+    const lead = leads[index];
+    if (!lead) {
+      showToast('Lead not found.', 'error');
+      return;
+    }
+    const company = lead.company || lead.name || 'Unknown';
+    const email = lead.email || 'No email';
+    const subject = lead.outreach?.subject || lead.messages?.[0]?.subject || 'No subject';
+    const body = lead.outreach?.body || lead.messages?.[0]?.body || 'No message';
+    const rank = lead.rank || index + 1;
+    const fitScore = Math.round((lead.leadScore || 0) * 100);
+    alert(`
+📋 LEAD DETAILS
+
+Company: ${company}
+Email: ${email}
+Rank: #${rank}
+Fit Score: ${fitScore}%
+Industry: ${lead.industry || 'N/A'}
+Location: ${lead.hq || 'N/A'}
+
+📝 MESSAGE:
+Subject: ${subject}
+
+${body}
+    `);
+  }
+
+  // ── Send All Leads ──
+  async function sendAllLeads() {
+    const leads = window.currentLeads || [];
+    if (!leads || leads.length === 0) {
+      showToast('No leads to send.', 'error');
+      return;
+    }
+    const validLeads = leads.filter(l => l.email && l.email !== 'No email found' && l.email !== 'No email' && l.email !== '');
+    if (validLeads.length === 0) {
+      showToast('No leads have valid email addresses.', 'error');
+      return;
+    }
+    try {
+      const userRes = await fetch(`${BACKEND}/api/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!userRes.ok) {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+        return;
+      }
+      const user = await userRes.json();
+      if (!user.nylasIntegration?.isConnected) {
+        const payload = {
+          leads: validLeads.map(lead => ({
+            name: lead.name || lead.company || 'Unknown',
+            email: lead.email,
+            company: lead.company || '',
+            messages: lead.messages || [{
+              subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
+              body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
+            }]
+          }))
+        };
+        localStorage.setItem('pendingEmailPayload', JSON.stringify({
+          ...payload,
+          _timestamp: Date.now(),
+          _count: validLeads.length
+        }));
+        showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
+        setTimeout(() => {
+          window.location.href = 'dashboard.html?connect=true';
+        }, 1500);
+        return;
+      }
+    } catch (err) {
+      console.error('Error checking email status:', err);
+      showToast('❌ Failed to check email connection. Please try again.', 'error');
+      return;
+    }
+    const btn = document.querySelector('.send-all-leads-btn');
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Sending...';
+    btn.disabled = true;
+    try {
+      const payload = {
+        leads: validLeads.map(lead => ({
+          name: lead.name || lead.company || 'Unknown',
+          email: lead.email,
+          company: lead.company || '',
+          messages: lead.messages || [{
+            subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
+            body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
+          }]
+        }))
+      };
+      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+        localStorage.setItem('pendingEmailPayload', JSON.stringify({
+          ...payload,
+          _timestamp: Date.now(),
+          _count: validLeads.length
+        }));
+        showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+        setTimeout(() => {
+          window.location.href = 'dashboard.html?connect=true';
+        }, 1500);
+        return;
+      }
+      if (data.success) {
+        showToast(`✅ Sent ${validLeads.length} emails successfully!`, 'success');
+        validLeads.forEach((lead, i) => {
+          const card = document.querySelector(`.lead-card-container[data-index="${i}"]`);
+          if (card) {
+            const sendBtn = card.querySelector('.lead-send-btn');
+            if (sendBtn) {
+              sendBtn.textContent = '✅ Sent';
+              sendBtn.disabled = true;
+              sendBtn.style.opacity = '0.4';
+            }
+          }
+        });
+      } else {
+        showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+      }
+    } catch (err) {
+      console.error('Send all error:', err);
+      showToast('❌ Connection error. Please try again.', 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  // ── Send Single Lead ──
+  async function sendSingleLead(index) {
+    const leads = window.currentLeads || [];
+    const lead = leads[index];
+    if (!lead) {
+      showToast('Lead not found.', 'error');
+      return;
+    }
+    if (!lead.email || lead.email === 'No email found' || lead.email === 'No email' || lead.email === '') {
+      showToast('This lead has no email address.', 'error');
+      return;
+    }
+    try {
+      const userRes = await fetch(`${BACKEND}/api/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!userRes.ok) {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+        return;
+      }
+      const user = await userRes.json();
+      if (!user.nylasIntegration?.isConnected) {
+        const payload = {
+          leads: [{
+            name: lead.name || lead.company || 'Unknown',
+            email: lead.email,
+            company: lead.company || '',
+            messages: lead.messages || [{
+              subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
+              body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
+            }]
+          }]
+        };
+        localStorage.setItem('pendingEmailPayload', JSON.stringify({
+          ...payload,
+          _timestamp: Date.now(),
+          _count: 1
+        }));
+        showToast('📧 Email pending. Please connect your email to send.', 'warning', 4000);
+        setTimeout(() => {
+          window.location.href = 'dashboard.html?connect=true';
+        }, 1500);
+        return;
+      }
+    } catch (err) {
+      console.error('Error checking email status:', err);
+      showToast('❌ Failed to check email connection. Please try again.', 'error');
+      return;
+    }
+    const card = document.querySelector(`.lead-card-container[data-index="${index}"]`);
+    const sendBtn = card?.querySelector('.lead-send-btn');
+    if (sendBtn) {
+      sendBtn.textContent = '⏳ Sending...';
+      sendBtn.disabled = true;
+    }
+    try {
+      const payload = {
+        leads: [{
+          name: lead.name || lead.company || 'Unknown',
+          email: lead.email,
+          company: lead.company || '',
+          messages: lead.messages || [{
+            subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
+            body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
+          }]
+        }]
+      };
+      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+        localStorage.setItem('pendingEmailPayload', JSON.stringify({
+          ...payload,
+          _timestamp: Date.now(),
+          _count: 1
+        }));
+        showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+        setTimeout(() => {
+          window.location.href = 'dashboard.html?connect=true';
+        }, 1500);
+        return;
+      }
+      if (data.success) {
+        showToast(`✅ Email sent to ${lead.name || lead.company || 'lead'}!`, 'success');
+        if (sendBtn) {
+          sendBtn.textContent = '✅ Sent';
+          sendBtn.disabled = true;
+          sendBtn.style.opacity = '0.4';
+        }
+      } else {
+        showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+      }
+    } catch (err) {
+      console.error('Send error:', err);
+      showToast('❌ Connection error. Please try again.', 'error');
+    } finally {
+      if (sendBtn && !sendBtn.textContent.includes('Sent')) {
+        sendBtn.textContent = '✉️ Send';
+        sendBtn.disabled = false;
+      }
+    }
+  }
+
+  // ── Pending Email Functions ──
+  async function checkAndSendPendingEmails() {
+    const pending = localStorage.getItem('pendingEmailPayload');
+    if (!pending) return;
+    const params = new URLSearchParams(window.location.search);
+    const nylasSuccess = params.get('nylas');
+    if (nylasSuccess !== 'success') {
+      showPendingNotification();
+      return;
+    }
+    try {
+      const payload = JSON.parse(pending);
+      const count = payload.leads?.length || 0;
+      if (count === 0) return;
+      showToast(`📧 Sending ${count} pending emails...`, 'info', 3000);
+      const cleanPayload = { leads: payload.leads };
+      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(cleanPayload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`✅ ${count} pending emails sent successfully!`, 'success', 5000);
+        localStorage.removeItem('pendingEmailPayload');
+        const notif = document.querySelector('.pending-emails-notif');
+        if (notif) notif.remove();
+      } else {
+        showToast(`❌ Failed to send pending emails: ${data.message || 'Unknown error'}`, 'error');
+      }
+    } catch (err) {
+      console.error('Auto-send error:', err);
+      showToast('❌ Failed to send pending emails. Please try again.', 'error');
+    }
+  }
+
+  function showPendingNotification() {
+    const pending = localStorage.getItem('pendingEmailPayload');
+    if (!pending) return;
+    try {
+      const payload = JSON.parse(pending);
+      const count = payload.leads?.length || 0;
+      if (count === 0) return;
+      if (document.querySelector('.pending-emails-notif')) return;
+      const notif = document.createElement('div');
+      notif.className = 'pending-emails-notif';
+      notif.innerHTML = `
+          <span>📧 You have ${count} pending email${count > 1 ? 's' : ''} to send.</span>
+          <button onclick="sendPendingEmails()">Send Now</button>
+          <button onclick="clearPendingEmails()">Dismiss</button>
+      `;
+      document.body.appendChild(notif);
+    } catch (e) {
+      console.error('Error showing pending notification:', e);
+    }
+  }
+
+  async function sendPendingEmails() {
+    const pending = localStorage.getItem('pendingEmailPayload');
+    if (!pending) {
+      showToast('No pending emails.', 'info');
+      return;
+    }
+    try {
+      const payload = JSON.parse(pending);
+      const count = payload.leads?.length || 0;
+      if (count === 0) {
+        localStorage.removeItem('pendingEmailPayload');
+        const notif = document.querySelector('.pending-emails-notif');
+        if (notif) notif.remove();
+        showToast('No pending emails.', 'info');
+        return;
+      }
+      const notif = document.querySelector('.pending-emails-notif');
+      if (notif) notif.remove();
+      showToast(`📧 Sending ${count} pending emails...`, 'info', 3000);
+      const cleanPayload = { leads: payload.leads };
+      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(cleanPayload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`✅ ${count} pending emails sent successfully!`, 'success', 5000);
+        localStorage.removeItem('pendingEmailPayload');
+      } else {
+        showToast(`❌ Failed to send pending emails: ${data.message || 'Unknown error'}`, 'error');
+      }
+    } catch (err) {
+      console.error('Send pending error:', err);
+      showToast('❌ Failed to send pending emails.', 'error');
+    }
+  }
+
+  function clearPendingEmails() {
+    localStorage.removeItem('pendingEmailPayload');
+    const notif = document.querySelector('.pending-emails-notif');
+    if (notif) notif.remove();
+    showToast('Pending emails dismissed.', 'info', 2000);
+  }
+
   function getTime() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  // ----- ✅ EMAIL STATUS CHECK -----
+  // ── Toast Function ──
+  function showToast(message, type = 'info', duration = 4000) {
+    const existing = document.querySelector('.toast-msg');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg';
+    toast.textContent = message;
+    const colors = {
+      success: { bg: 'rgba(0, 230, 118, 0.12)', border: '#00e676', text: '#00e676' },
+      error: { bg: 'rgba(255, 77, 77, 0.12)', border: '#ff4d4d', text: '#ff4d4d' },
+      warning: { bg: 'rgba(255, 170, 0, 0.12)', border: '#ffaa00', text: '#ffaa00' },
+      info: { bg: 'rgba(0, 210, 255, 0.12)', border: '#00d2ff', text: '#00d2ff' }
+    };
+    const color = colors[type] || colors.info;
+    Object.assign(toast.style, {
+      position: 'fixed',
+      top: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      padding: '12px 24px',
+      borderRadius: '8px',
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: '13px',
+      fontWeight: '600',
+      zIndex: '9999',
+      maxWidth: '90%',
+      textAlign: 'center',
+      background: color.bg,
+      border: '1px solid ' + color.border,
+      color: color.text,
+      animation: 'slideDown 0.3s ease'
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), duration);
+  }
+
+  // ----- EMAIL STATUS CHECK -----
   async function checkEmailStatus() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-
       const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
         method: 'GET',
         headers: {
@@ -1110,17 +1828,13 @@
           'Content-Type': 'application/json'
         }
       });
-
       if (!res.ok) {
         throw new Error(`Status check failed: ${res.status}`);
       }
-
       const data = await res.json();
       console.log('📊 [PAGE] Email status:', data);
-
       const statusTextEl = document.getElementById('statusText');
       const statusBarEl = document.getElementById('statusBar');
-
       if (data.connected && !data.isExpired) {
         statusBarEl.className = 'status-bar connected';
         statusTextEl.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
@@ -1134,9 +1848,7 @@
         statusBarEl.className = 'status-bar disconnected';
         statusTextEl.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
       }
-
       return data;
-
     } catch (err) {
       console.error('❌ Error checking email status:', err);
       const statusTextEl = document.getElementById('statusText');
@@ -1152,20 +1864,16 @@
     const sessionId = params.get('session');
     const type = params.get('type');
     if (!sessionId) return false;
-
     conversationHistory = [];
     isSessionLoading = true;
     console.log('[page] Loading session:', sessionId, 'type:', type);
-
     try {
       const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to load session');
-
       const msgs = await res.json();
       const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
-
       if (isAssistantSession) {
         assistantSessionId = sessionId;
         currentMode = 'assistant';
@@ -1212,11 +1920,9 @@
         isChatActive = true;
         document.querySelector('.topbar-label').textContent = 'Lead Session';
       }
-
       currentSessionId = sessionId;
       isSessionLoading = false;
       return true;
-
     } catch (err) {
       console.error('[page] Error loading session:', err);
       isSessionLoading = false;
@@ -1345,6 +2051,17 @@
   document.addEventListener('DOMContentLoaded', async function() {
     await checkEmailStatus();
 
+    // ── Check if returning from OAuth ──
+    const params = new URLSearchParams(window.location.search);
+    const nylasSuccess = params.get('nylas');
+
+    if (nylasSuccess === 'success') {
+      await checkAndSendPendingEmails();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      showPendingNotification();
+    }
+
     const sessionLoaded = await loadSessionFromUrl();
 
     if (!sessionLoaded) {
@@ -1358,7 +2075,6 @@
     await updateStatus();
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
-
     setInterval(checkEmailStatus, 30000);
 
     document.getElementById('navNotifBtn').addEventListener('click', function() {
@@ -1368,4 +2084,4 @@
   });
 </script>
 </body>
-                  </html>
+  </html>
