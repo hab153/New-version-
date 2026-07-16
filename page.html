@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    /* ... (all your existing styles remain the same) ... */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -844,12 +845,21 @@
     }
   }
 
+  // ✅ FIXED: addLeadMessage - AI messages are NOT escaped
   function addLeadMessage(role, content) {
     const container = leadMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    
+    // ✅ AI: format only (NO escape), User: escape
+    let displayContent;
+    if (role === 'ai') {
+      displayContent = formatAI(content);  // Safe - no escaping needed
+    } else {
+      displayContent = escapeHtml(content);  // User input - MUST escape
+    }
+    
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
     scrollLeadDown();
   }
@@ -1027,12 +1037,21 @@
     }
   }
 
+  // ✅ FIXED: addAssistantMessage - AI messages are NOT escaped
   function addAssistantMessage(role, content) {
     const container = assistantMsgContainer;
     const row = document.createElement('div');
     row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : escapeHtml(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${getTime()}</div></div>`;
+    
+    // ✅ AI: format only (NO escape), User: escape
+    let displayContent;
+    if (role === 'ai') {
+      displayContent = formatAI(content);  // Safe - no escaping needed
+    } else {
+      displayContent = escapeHtml(content);  // User input - MUST escape
+    }
+    
+    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
     container.appendChild(row);
     scrollAssistantDown();
   }
@@ -1063,8 +1082,10 @@
   }
 
   // ----- UTILITY FUNCTIONS -----
+  // ✅ FIXED: formatAI does NOT call escapeHtml
   function formatAI(text) {
-    let s = escapeHtml(text);
+    if (!text) return '';
+    let s = text;  // DON'T escape AI content
     s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
     s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
@@ -1101,19 +1122,15 @@
       const statusBarEl = document.getElementById('statusBar');
 
       if (data.connected && !data.isExpired) {
-        // ✅ Connected
         statusBarEl.className = 'status-bar connected';
         statusTextEl.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
-        // Show email if available
         if (data.email && data.email !== 'Connected') {
           statusTextEl.innerHTML = `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>`;
         }
       } else if (data.connected && data.isExpired) {
-        // ⚠️ Expired
         statusBarEl.className = 'status-bar disconnected';
         statusTextEl.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
       } else {
-        // ❌ Not connected
         statusBarEl.className = 'status-bar disconnected';
         statusTextEl.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
       }
@@ -1240,7 +1257,6 @@
       const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) {
         const user = await res.json();
-        // Email status is now handled by checkEmailStatus()
         const p = user.subscriptionTier || 'free';
         planChip.className = `plan-chip ${p}`;
         planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
@@ -1327,7 +1343,6 @@
 
   // ----- INIT -----
   document.addEventListener('DOMContentLoaded', async function() {
-    // ✅ Check email status first
     await checkEmailStatus();
 
     const sessionLoaded = await loadSessionFromUrl();
@@ -1344,7 +1359,6 @@
     loadNotifCount();
     notifInterval = setInterval(loadNotifCount, 15000);
 
-    // ✅ Refresh email status every 30 seconds
     setInterval(checkEmailStatus, 30000);
 
     document.getElementById('navNotifBtn').addEventListener('click', function() {
@@ -1354,4 +1368,4 @@
   });
 </script>
 </body>
-      </html>
+                  </html>
