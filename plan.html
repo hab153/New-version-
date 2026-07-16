@@ -770,65 +770,52 @@
 
     // ── Load Usage Data ──
     async function loadData() {
-      // Show loading state
       const loadingEl = document.getElementById('loadingState');
       const gridEl = document.getElementById('usageGrid');
       loadingEl.style.display = 'flex';
       gridEl.style.display = 'none';
 
       try {
-        // ✅ Use the NEW /api/usage endpoint
+        // ✅ Use the /api/usage endpoint
         const res = await fetch(`${BACKEND}/api/usage`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
         if (!res.ok) {
-          // Fallback to /api/users/me
-          const fallbackRes = await fetch(`${BACKEND}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (!fallbackRes.ok) throw new Error('Failed to load data');
-          const user = await fallbackRes.json();
-          const plan = user.subscriptionTier || 'free';
-          const usage = user.usage || {};
-
-          const limits = {
-            free: { chat: 10, hints: 3, emails: 5, followUp: 5, autoFollowUp: 0, assistant: 20, leadGen: 1 },
-            go: { chat: 50, hints: 15, emails: 200, followUp: 30, autoFollowUp: 15, assistant: 70, leadGen: 50 },
-            pro: { chat: 150, hints: 70, emails: 1000, followUp: 200, autoFollowUp: 100, assistant: 200, leadGen: Infinity }
-          };
-
-          const lim = limits[plan] || limits.free;
-          const current = {
-            chat: usage.dailyCallCount || 0,
-            hints: usage.dailyHintCount || 0,
-            emails: usage.dailySentCount || 0,
-            followUp: usage.dailySuggestFollowUpCount || 0,
-            autoFollowUp: usage.dailyAutoFollowUpCount || 0,
-            assistant: usage.assistantCount || 0,
-            leadGen: usage.dailyCallCount || 0
-          };
-
-          updatePlanCards(plan);
-          updatePlanLabel(plan);
-          updateAllUsageItems(current, lim);
-
-        } else {
-          const data = await res.json();
-          console.log('📊 [USAGE] Data:', data);
-
-          const plan = data.plan || 'free';
-          const usage = data.usage || {};
-          const limits = data.limits || {};
-
-          updatePlanCards(plan);
-          updatePlanLabel(plan);
-          updateAllUsageItems(usage, limits);
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         }
 
+        const data = await res.json();
+        console.log('📊 [USAGE] Data:', data);
+
+        const plan = data.plan || 'free';
+        const usage = data.usage || {};
+        const limits = data.limits || {};
+
+        // ── Update Plan Cards ──
+        updatePlanCards(plan);
+
+        // ── Update Plan Label ──
+        document.getElementById('planLabel').textContent = plan.toUpperCase();
+
+        // ── Update ALL 7 Usage Items ──
+        updateUsageItem('chatMessages', usage.chatMessages || 0, limits.chatMessages || 10);
+        updateUsageItem('hints', usage.hints || 0, limits.hints || 3);
+        updateUsageItem('emails', usage.emailsSent || 0, limits.emailsSent || 5);
+        updateUsageItem('followUp', usage.followUpSuggestions || 0, limits.followUpSuggestions || 5);
+        
+        // Auto Follow-ups - Check if disabled
+        const autoDisabled = (limits.autoFollowUps === 0);
+        updateUsageItem('autoFollowUp', usage.autoFollowUps || 0, limits.autoFollowUps || 0, autoDisabled, false);
+        
+        updateUsageItem('assistant', usage.assistantMessages || 0, limits.assistantMessages || 20);
+        
+        // Lead Generation - Check if unlimited
+        const leadUnlimited = (limits.leadGeneration === Infinity || limits.leadGeneration === null);
+        updateUsageItem('leadGen', usage.leadGeneration || 0, limits.leadGeneration || 1, false, leadUnlimited);
+
       } catch (err) {
-        console.error('Error loading usage data:', err);
-        // Show error state in usage items
+        console.error('❌ Error loading usage data:', err);
         document.querySelectorAll('.usage-item .value').forEach(el => {
           el.textContent = '⚠️ Error';
         });
@@ -839,6 +826,7 @@
       }
     }
 
+    // ── Update Plan Cards ──
     function updatePlanCards(plan) {
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active', 'go-active'));
       const cardMap = { free: 'card-free', go: 'card-go', pro: 'card-pro' };
@@ -879,32 +867,14 @@
       });
     }
 
-    function updatePlanLabel(plan) {
-      document.getElementById('planLabel').textContent = plan.toUpperCase();
-    }
-
-    function updateAllUsageItems(usage, limits) {
-      const items = [
-        { id: 'chatMessages', used: usage.chatMessages || 0, limit: limits.chatMessages || 10 },
-        { id: 'hints', used: usage.hints || 0, limit: limits.hints || 3 },
-        { id: 'emails', used: usage.emailsSent || 0, limit: limits.emailsSent || 5 },
-        { id: 'followUp', used: usage.followUpSuggestions || 0, limit: limits.followUpSuggestions || 5 },
-        { id: 'autoFollowUp', used: usage.autoFollowUps || 0, limit: limits.autoFollowUps || 0, disabled: limits.autoFollowUps === 0 },
-        { id: 'assistant', used: usage.assistantMessages || 0, limit: limits.assistantMessages || 20 },
-        { id: 'leadGen', used: usage.leadGeneration || 0, limit: limits.leadGeneration || 1, unlimited: limits.leadGeneration === Infinity }
-      ];
-
-      items.forEach(item => {
-        updateUsageItem(item.id, item.used, item.limit, item.disabled || false, item.unlimited || false);
-      });
-    }
-
+    // ── Update Single Usage Item ──
     function updateUsageItem(id, used, limit, isDisabled = false, isUnlimited = false) {
       const valEl = document.getElementById(`${id}Val`);
       const barEl = document.getElementById(`${id}Bar`);
       const itemEl = document.getElementById(`item-${id}`);
       if (!valEl || !barEl) return;
 
+      // ── UNLIMITED ──
       if (isUnlimited) {
         valEl.innerHTML = `<span class="unlimited-text">♾️ UNLIMITED</span>`;
         barEl.style.width = '0%';
@@ -913,6 +883,7 @@
         return;
       }
 
+      // ── DISABLED ──
       if (isDisabled) {
         valEl.innerHTML = `${used}/0 <span class="disabled-text">DISABLED</span>`;
         barEl.style.width = '0%';
@@ -921,6 +892,7 @@
         return;
       }
 
+      // ── NORMAL ──
       const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
       valEl.innerHTML = `${used}/${limit}`;
 
@@ -993,6 +965,5 @@
       setInterval(loadData, 30000);
     });
   </script>
-
 </body>
-          </html>
+      </html>
