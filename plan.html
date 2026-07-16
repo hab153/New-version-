@@ -65,6 +65,33 @@
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
+    /* ── Loading Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0;
+      gap: 10px;
+    }
+
     /* ── Top Bar ── */
     .topbar {
       width: 100%;
@@ -348,6 +375,9 @@
       font-size: 14px;
       font-weight: 600;
       letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .usage-section .usage-header .plan-label {
       font-family: var(--font-mono);
@@ -375,6 +405,10 @@
       background: var(--bg-raised);
       border-radius: 10px;
       border: 1px solid var(--border);
+      transition: border-color 0.2s ease;
+    }
+    .usage-item:hover {
+      border-color: var(--border-light);
     }
     .usage-item .usage-item-header {
       display: flex;
@@ -386,12 +420,20 @@
       color: var(--text-secondary);
       font-family: var(--font-sans);
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .usage-item .label svg {
+      flex-shrink: 0;
+      opacity: 0.6;
     }
     .usage-item .value {
       font-size: 14px;
       font-weight: 600;
       font-family: var(--font-mono);
       color: var(--text-primary);
+      transition: color 0.3s ease;
     }
     .usage-item .value .disabled-text {
       color: var(--danger);
@@ -429,6 +471,13 @@
     .usage-item .bar-track .bar-fill.disabled-fill {
       background: var(--danger);
       opacity: 0.3;
+    }
+
+    .usage-item.loading .value {
+      color: var(--text-muted);
+    }
+    .usage-item.loading .bar-fill {
+      opacity: 0.2;
     }
 
     /* ── Responsive ── */
@@ -557,69 +606,120 @@
     <!-- ─── Usage Section ─── -->
     <div class="usage-section">
       <div class="usage-header">
-        <h3>📊 Daily Limits</h3>
-        <span class="plan-label">Plan: <span class="highlight" id="planLabel">Free</span></span>
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          Daily Limits
+        </h3>
+        <span class="plan-label">Plan: <span class="highlight" id="planLabel">—</span></span>
       </div>
-      <div class="usage-grid" id="usageGrid">
+
+      <!-- Loading State -->
+      <div id="loadingState" class="loading-text">
+        <span class="spinner"></span> Loading usage data…
+      </div>
+
+      <!-- Usage Grid -->
+      <div class="usage-grid" id="usageGrid" style="display:none;">
         <!-- Chat Messages -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-chatMessages">
           <div class="usage-item-header">
-            <span class="label">💬 Chat Messages</span>
-            <span class="value" id="chatMessagesVal">0/10</span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Chat Messages
+            </span>
+            <span class="value" id="chatMessagesVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="chatMessagesBar" style="width:0%"></div></div>
         </div>
 
         <!-- Hints -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-hints">
           <div class="usage-item-header">
-            <span class="label">💡 Hints</span>
-            <span class="value" id="hintsVal">0/3</span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              Hints
+            </span>
+            <span class="value" id="hintsVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="hintsBar" style="width:0%"></div></div>
         </div>
 
         <!-- Emails Sent -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-emails">
           <div class="usage-item-header">
-            <span class="label">📧 Emails Sent</span>
-            <span class="value" id="emailsVal">0/5</span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              Emails Sent
+            </span>
+            <span class="value" id="emailsVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="emailsBar" style="width:0%"></div></div>
         </div>
 
         <!-- Follow-up Suggestions -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-followUp">
           <div class="usage-item-header">
-            <span class="label">🔄 Follow-up Suggestions</span>
-            <span class="value" id="followUpVal">0/5</span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              </svg>
+              Follow-up Suggestions
+            </span>
+            <span class="value" id="followUpVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="followUpBar" style="width:0%"></div></div>
         </div>
 
         <!-- Auto Follow-ups -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-autoFollowUp">
           <div class="usage-item-header">
-            <span class="label">⚡ Auto Follow-ups</span>
-            <span class="value" id="autoFollowUpVal">0/0 <span class="disabled-text">DISABLED</span></span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Auto Follow-ups
+            </span>
+            <span class="value" id="autoFollowUpVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill disabled-fill" id="autoFollowUpBar" style="width:0%"></div></div>
         </div>
 
         <!-- Assistant Messages -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-assistant">
           <div class="usage-item-header">
-            <span class="label">🤖 Assistant Messages</span>
-            <span class="value" id="assistantVal">0/20</span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.27A7 7 0 0 1 14 23h-4a7 7 0 0 1-6.73-4H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+              </svg>
+              Assistant Messages
+            </span>
+            <span class="value" id="assistantVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="assistantBar" style="width:0%"></div></div>
         </div>
 
         <!-- Lead Generation -->
-        <div class="usage-item">
+        <div class="usage-item" id="item-leadGen">
           <div class="usage-item-header">
-            <span class="label">🎯 Lead Generation</span>
-            <span class="value" id="leadGenVal">0/1</span>
+            <span class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+              Lead Generation
+            </span>
+            <span class="value" id="leadGenVal">—</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="leadGenBar" style="width:0%"></div></div>
         </div>
@@ -668,100 +768,148 @@
       setTimeout(() => toast.remove(), duration);
     }
 
-    // ── Load User Data ──
+    // ── Load Usage Data ──
     async function loadData() {
+      // Show loading state
+      const loadingEl = document.getElementById('loadingState');
+      const gridEl = document.getElementById('usageGrid');
+      loadingEl.style.display = 'flex';
+      gridEl.style.display = 'none';
+
       try {
-        const res = await fetch(`${BACKEND}/api/users/me`, {
+        // ✅ Use the NEW /api/usage endpoint
+        const res = await fetch(`${BACKEND}/api/usage`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Failed');
 
-        const user = await res.json();
-        const plan = user.subscriptionTier || 'free';
-        const usage = user.usage || {};
+        if (!res.ok) {
+          // Fallback to /api/users/me
+          const fallbackRes = await fetch(`${BACKEND}/api/users/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (!fallbackRes.ok) throw new Error('Failed to load data');
+          const user = await fallbackRes.json();
+          const plan = user.subscriptionTier || 'free';
+          const usage = user.usage || {};
 
-        const limits = {
-          free: { chat: 10, hints: 3, emails: 5, followUp: 5, autoFollowUp: 0, assistant: 20, leadGen: 1 },
-          go: { chat: 50, hints: 15, emails: 200, followUp: 30, autoFollowUp: 15, assistant: 70, leadGen: 50 },
-          pro: { chat: 150, hints: 70, emails: 1000, followUp: 200, autoFollowUp: 100, assistant: 200, leadGen: Infinity }
-        };
+          const limits = {
+            free: { chat: 10, hints: 3, emails: 5, followUp: 5, autoFollowUp: 0, assistant: 20, leadGen: 1 },
+            go: { chat: 50, hints: 15, emails: 200, followUp: 30, autoFollowUp: 15, assistant: 70, leadGen: 50 },
+            pro: { chat: 150, hints: 70, emails: 1000, followUp: 200, autoFollowUp: 100, assistant: 200, leadGen: Infinity }
+          };
 
-        const lim = limits[plan] || limits.free;
-        const current = {
-          chat: usage.dailyCallCount || 0,
-          hints: usage.dailyHintCount || 0,
-          emails: usage.dailySentCount || 0,
-          followUp: usage.dailySuggestFollowUpCount || 0,
-          autoFollowUp: usage.dailyAutoFollowUpCount || 0,
-          assistant: usage.assistantCount || 0,
-          leadGen: usage.dailyCallCount || 0
-        };
+          const lim = limits[plan] || limits.free;
+          const current = {
+            chat: usage.dailyCallCount || 0,
+            hints: usage.dailyHintCount || 0,
+            emails: usage.dailySentCount || 0,
+            followUp: usage.dailySuggestFollowUpCount || 0,
+            autoFollowUp: usage.dailyAutoFollowUpCount || 0,
+            assistant: usage.assistantCount || 0,
+            leadGen: usage.dailyCallCount || 0
+          };
 
-        // ── Update Plan Cards ──
-        document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active', 'go-active'));
-        const cardMap = { free: 'card-free', go: 'card-go', pro: 'card-pro' };
-        const activeCard = document.getElementById(cardMap[plan]);
-        if (activeCard) {
-          activeCard.classList.add('active');
-          if (plan === 'go') activeCard.classList.add('go-active');
+          updatePlanCards(plan);
+          updatePlanLabel(plan);
+          updateAllUsageItems(current, lim);
+
+        } else {
+          const data = await res.json();
+          console.log('📊 [USAGE] Data:', data);
+
+          const plan = data.plan || 'free';
+          const usage = data.usage || {};
+          const limits = data.limits || {};
+
+          updatePlanCards(plan);
+          updatePlanLabel(plan);
+          updateAllUsageItems(usage, limits);
         }
 
-        const btnMap = {
-          free: document.getElementById('btn-free'),
-          go: document.getElementById('btn-go'),
-          pro: document.getElementById('btn-pro')
-        };
-
-        Object.keys(btnMap).forEach(p => {
-          const btn = btnMap[p];
-          if (p === plan) {
-            btn.disabled = true;
-            btn.textContent = '✓ Current Plan';
-            if (p === 'free') btn.className = 'plan-btn';
-            else if (p === 'go') btn.className = 'plan-btn go-btn';
-            else btn.className = 'plan-btn primary';
-          } else {
-            btn.disabled = false;
-            if (p === 'go') {
-              btn.textContent = 'Upgrade to GO';
-              btn.className = 'plan-btn go-btn';
-            } else if (p === 'pro') {
-              btn.textContent = 'Upgrade to PRO';
-              btn.className = 'plan-btn primary';
-            } else {
-              btn.textContent = 'Current Plan';
-              btn.className = 'plan-btn';
-              btn.disabled = true;
-            }
-          }
-        });
-
-        // ── Update Plan Label ──
-        document.getElementById('planLabel').textContent = plan.toUpperCase();
-
-        // ── Update Usage Items ──
-        updateUsageItem('chatMessages', current.chat, lim.chat);
-        updateUsageItem('hints', current.hints, lim.hints);
-        updateUsageItem('emails', current.emails, lim.emails);
-        updateUsageItem('followUp', current.followUp, lim.followUp);
-        updateUsageItem('autoFollowUp', current.autoFollowUp, lim.autoFollowUp, lim.autoFollowUp === 0);
-        updateUsageItem('assistant', current.assistant, lim.assistant);
-        updateUsageItem('leadGen', current.leadGen, lim.leadGen, false, lim.leadGen === Infinity);
-
       } catch (err) {
-        console.error('Error loading data:', err);
+        console.error('Error loading usage data:', err);
+        // Show error state in usage items
+        document.querySelectorAll('.usage-item .value').forEach(el => {
+          el.textContent = '⚠️ Error';
+        });
+        showToast('❌ Failed to load usage data', 'error');
+      } finally {
+        loadingEl.style.display = 'none';
+        gridEl.style.display = 'grid';
       }
+    }
+
+    function updatePlanCards(plan) {
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active', 'go-active'));
+      const cardMap = { free: 'card-free', go: 'card-go', pro: 'card-pro' };
+      const activeCard = document.getElementById(cardMap[plan]);
+      if (activeCard) {
+        activeCard.classList.add('active');
+        if (plan === 'go') activeCard.classList.add('go-active');
+      }
+
+      const btnMap = {
+        free: document.getElementById('btn-free'),
+        go: document.getElementById('btn-go'),
+        pro: document.getElementById('btn-pro')
+      };
+
+      Object.keys(btnMap).forEach(p => {
+        const btn = btnMap[p];
+        if (p === plan) {
+          btn.disabled = true;
+          btn.textContent = '✓ Current Plan';
+          if (p === 'free') btn.className = 'plan-btn';
+          else if (p === 'go') btn.className = 'plan-btn go-btn';
+          else btn.className = 'plan-btn primary';
+        } else {
+          btn.disabled = false;
+          if (p === 'go') {
+            btn.textContent = 'Upgrade to GO';
+            btn.className = 'plan-btn go-btn';
+          } else if (p === 'pro') {
+            btn.textContent = 'Upgrade to PRO';
+            btn.className = 'plan-btn primary';
+          } else {
+            btn.textContent = 'Current Plan';
+            btn.className = 'plan-btn';
+            btn.disabled = true;
+          }
+        }
+      });
+    }
+
+    function updatePlanLabel(plan) {
+      document.getElementById('planLabel').textContent = plan.toUpperCase();
+    }
+
+    function updateAllUsageItems(usage, limits) {
+      const items = [
+        { id: 'chatMessages', used: usage.chatMessages || 0, limit: limits.chatMessages || 10 },
+        { id: 'hints', used: usage.hints || 0, limit: limits.hints || 3 },
+        { id: 'emails', used: usage.emailsSent || 0, limit: limits.emailsSent || 5 },
+        { id: 'followUp', used: usage.followUpSuggestions || 0, limit: limits.followUpSuggestions || 5 },
+        { id: 'autoFollowUp', used: usage.autoFollowUps || 0, limit: limits.autoFollowUps || 0, disabled: limits.autoFollowUps === 0 },
+        { id: 'assistant', used: usage.assistantMessages || 0, limit: limits.assistantMessages || 20 },
+        { id: 'leadGen', used: usage.leadGeneration || 0, limit: limits.leadGeneration || 1, unlimited: limits.leadGeneration === Infinity }
+      ];
+
+      items.forEach(item => {
+        updateUsageItem(item.id, item.used, item.limit, item.disabled || false, item.unlimited || false);
+      });
     }
 
     function updateUsageItem(id, used, limit, isDisabled = false, isUnlimited = false) {
       const valEl = document.getElementById(`${id}Val`);
       const barEl = document.getElementById(`${id}Bar`);
+      const itemEl = document.getElementById(`item-${id}`);
       if (!valEl || !barEl) return;
 
       if (isUnlimited) {
-        valEl.innerHTML = `♾️ <span class="unlimited-text">UNLIMITED</span>`;
+        valEl.innerHTML = `<span class="unlimited-text">♾️ UNLIMITED</span>`;
         barEl.style.width = '0%';
         barEl.className = 'bar-fill green';
+        if (itemEl) itemEl.style.borderColor = 'rgba(200, 255, 87, 0.2)';
         return;
       }
 
@@ -769,6 +917,7 @@
         valEl.innerHTML = `${used}/0 <span class="disabled-text">DISABLED</span>`;
         barEl.style.width = '0%';
         barEl.className = 'bar-fill disabled-fill';
+        if (itemEl) itemEl.style.borderColor = 'rgba(255, 77, 77, 0.2)';
         return;
       }
 
@@ -780,6 +929,12 @@
       if (pct > 85) barEl.classList.add('danger');
       else if (pct > 65) barEl.classList.add('warning');
       else barEl.classList.add('green');
+
+      if (itemEl) {
+        if (pct > 85) itemEl.style.borderColor = 'rgba(255, 77, 77, 0.2)';
+        else if (pct > 65) itemEl.style.borderColor = 'rgba(255, 170, 0, 0.2)';
+        else itemEl.style.borderColor = 'rgba(0, 210, 255, 0.15)';
+      }
     }
 
     // ── Upgrade ──
@@ -840,4 +995,4 @@
   </script>
 
 </body>
-                </html>
+          </html>
