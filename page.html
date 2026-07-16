@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    /* ... (all your existing styles remain the same - keep your current CSS) ... */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -682,754 +683,824 @@
   </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+  <!-- ════════════════════════════════════════════ -->
+  <!-- TOP BAR & STATUS BAR (unchanged) -->
+  <!-- ════════════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Sky<em>line</em></span>
+        <span class="brand-sub">AA-1 · Agent</span>
+      </div>
+      <div id="planChip" class="plan-chip free">FREE</div>
     </div>
-    <div class="brand-text">
-      <span class="brand-name">Sky<em>line</em></span>
-      <span class="brand-sub">AA-1 · Agent</span>
+    <div class="topbar-center">
+      <div class="pulse-ring"></div>
+      <span class="topbar-label">Business Agent</span>
     </div>
-    <div id="planChip" class="plan-chip free">FREE</div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </header>
+  <div id="statusBar" class="status-bar">
+    <span class="status-pip"></span>
+    <span id="statusText">Checking email connection…</span>
   </div>
-  <div class="topbar-center">
-    <div class="pulse-ring"></div>
-    <span class="topbar-label">Business Agent</span>
-  </div>
-  <div class="topbar-right">
-    <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
-    <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
-    </button>
-  </div>
-</header>
-<div id="statusBar" class="status-bar">
-  <span class="status-pip"></span>
-  <span id="statusText">Checking email connection…</span>
-</div>
-<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
-  ↑ New reply detected — tap to open Dashboard
-</div>
-
-<!-- LEAD MODE CONTAINER -->
-<div id="leadContainer" class="mode-container active">
-  <div id="modeSelector">
-    <button class="mode-btn lead-mode active" data-mode="lead">
-      <span class="mode-icon">⚡</span>
-      <span class="mode-label">Lead</span>
-      <span class="mode-badge">Search</span>
-    </button>
-    <button class="mode-btn assistant-mode" data-mode="assistant">
-      <span class="mode-icon">🤖</span>
-      <span class="mode-label">Assistant</span>
-      <span class="mode-badge">Chat</span>
-    </button>
+  <div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
+    ↑ New reply detected — tap to open Dashboard
   </div>
 
-  <div id="setupWizard">
-    <div class="wizard-eyebrow">
-      <div class="eyebrow-line"></div>
-      <span class="eyebrow-text">Prospecting Engine · v2</span>
-      <div class="eyebrow-line right"></div>
+  <!-- LEAD MODE CONTAINER -->
+  <div id="leadContainer" class="mode-container active">
+    <div id="modeSelector">
+      <button class="mode-btn lead-mode active" data-mode="lead">
+        <span class="mode-icon">⚡</span>
+        <span class="mode-label">Lead</span>
+        <span class="mode-badge">Search</span>
+      </button>
+      <button class="mode-btn assistant-mode" data-mode="assistant">
+        <span class="mode-icon">🤖</span>
+        <span class="mode-label">Assistant</span>
+        <span class="mode-badge">Chat</span>
+      </button>
     </div>
-    <div class="wizard-card">
-      <div class="wizard-card-bar"></div>
-      <div class="wizard-body">
-        <h2 class="wizard-heading">Define your <em>target.</em></h2>
-        <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
-        <div class="wizard-divider">
-          <div class="wizard-divider-line"></div>
-          <span class="wizard-divider-text">Search Parameters</span>
-          <div class="wizard-divider-line"></div>
-        </div>
-        <form id="targetForm" autocomplete="off">
-          <div class="form-stack">
-            <div class="form-row">
-              <div class="form-field">
-                <label class="field-label" for="industry">Industry</label>
-                <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
-              </div>
-              <div class="form-field">
-                <label class="field-label" for="region">Region</label>
-                <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-field">
-                <label class="field-label" for="companySize">Company size</label>
-                <select id="companySize" class="field-input">
-                  <option value="Any">Any size</option>
-                  <option value="1-10">1–10</option>
-                  <option value="11-50">11–50</option>
-                  <option value="51-200">51–200</option>
-                  <option value="201-500">201–500</option>
-                  <option value="500+">500+</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label class="field-label" for="jobTitle">Job title</label>
-                <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
-              </div>
-            </div>
+
+    <div id="setupWizard">
+      <div class="wizard-eyebrow">
+        <div class="eyebrow-line"></div>
+        <span class="eyebrow-text">Prospecting Engine · v2</span>
+        <div class="eyebrow-line right"></div>
+      </div>
+      <div class="wizard-card">
+        <div class="wizard-card-bar"></div>
+        <div class="wizard-body">
+          <h2 class="wizard-heading">Define your <em>target.</em></h2>
+          <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
+          <div class="wizard-divider">
+            <div class="wizard-divider-line"></div>
+            <span class="wizard-divider-text">Search Parameters</span>
+            <div class="wizard-divider-line"></div>
           </div>
-          <button type="submit" class="launch-btn" id="launchBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            Start Search
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="chat-area" id="leadChatArea">
-    <div id="leadMsgContainer"></div>
-  </div>
-  <div id="reviewPanel">
-    <div class="rv-header">
-      <span class="rv-title">Review Generated Emails</span>
-      <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
-    </div>
-    <div id="emailList"></div>
-    <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect &amp; Send All</button>
-  </div>
-  <div class="input-bar lead-active" id="leadInputBar">
-    <div class="input-shell">
-      <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
-      <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      </button>
-    </div>
-    <div class="input-foot">
-      <span class="input-tag">Lead Search</span>
-      <span class="char-ct" id="leadCharCount"></span>
-    </div>
-  </div>
-</div>
-
-<!-- ASSISTANT MODE CONTAINER -->
-<div id="assistantContainer" class="mode-container">
-  <div id="assistantModeSelector" style="display:flex; gap:12px; justify-content:center; padding:16px 20px 8px 20px; flex-shrink:0; position:relative; z-index:20;">
-    <button class="mode-btn lead-mode" data-mode="lead" onclick="switchMode('lead')">
-      <span class="mode-icon">⚡</span>
-      <span class="mode-label">Lead</span>
-      <span class="mode-badge">Search</span>
-    </button>
-    <button class="mode-btn assistant-mode active" data-mode="assistant" onclick="switchMode('assistant')">
-      <span class="mode-icon">🤖</span>
-      <span class="mode-label">Assistant</span>
-      <span class="mode-badge">Chat</span>
-    </button>
-  </div>
-
-  <div class="chat-area active" id="assistantChatArea">
-    <div id="assistantMsgContainer">
-      <div class="msg-row ai">
-        <div class="av">AI</div>
-        <div class="bubble-wrap">
-          <div class="bubble">👋 Hello! I'm your business assistant, ask me anything!</div>
-          <div class="msg-time">Just now</div>
+          <form id="targetForm" autocomplete="off">
+            <div class="form-stack">
+              <div class="form-row">
+                <div class="form-field">
+                  <label class="field-label" for="industry">Industry</label>
+                  <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
+                </div>
+                <div class="form-field">
+                  <label class="field-label" for="region">Region</label>
+                  <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label class="field-label" for="companySize">Company size</label>
+                  <select id="companySize" class="field-input">
+                    <option value="Any">Any size</option>
+                    <option value="1-10">1–10</option>
+                    <option value="11-50">11–50</option>
+                    <option value="51-200">51–200</option>
+                    <option value="201-500">201–500</option>
+                    <option value="500+">500+</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label class="field-label" for="jobTitle">Job title</label>
+                  <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="launch-btn" id="launchBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Start Search
+            </button>
+          </form>
         </div>
       </div>
     </div>
+    <div class="chat-area" id="leadChatArea">
+      <div id="leadMsgContainer"></div>
+    </div>
+    <div id="reviewPanel">
+      <div class="rv-header">
+        <span class="rv-title">Review Generated Emails</span>
+        <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
+      </div>
+      <div id="emailList"></div>
+      <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect &amp; Send All</button>
+    </div>
+    <div class="input-bar lead-active" id="leadInputBar">
+      <div class="input-shell">
+        <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
+        <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </button>
+      </div>
+      <div class="input-foot">
+        <span class="input-tag">Lead Search</span>
+        <span class="char-ct" id="leadCharCount"></span>
+      </div>
+    </div>
   </div>
-  <div class="input-bar active" id="assistantInputBar">
-    <div class="input-shell">
-      <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
-      <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+
+  <!-- ASSISTANT MODE CONTAINER -->
+  <div id="assistantContainer" class="mode-container">
+    <div id="assistantModeSelector" style="display:flex; gap:12px; justify-content:center; padding:16px 20px 8px 20px; flex-shrink:0; position:relative; z-index:20;">
+      <button class="mode-btn lead-mode" data-mode="lead" onclick="switchMode('lead')">
+        <span class="mode-icon">⚡</span>
+        <span class="mode-label">Lead</span>
+        <span class="mode-badge">Search</span>
+      </button>
+      <button class="mode-btn assistant-mode active" data-mode="assistant" onclick="switchMode('assistant')">
+        <span class="mode-icon">🤖</span>
+        <span class="mode-label">Assistant</span>
+        <span class="mode-badge">Chat</span>
       </button>
     </div>
-    <div class="input-foot">
-      <span class="input-tag">Assistant</span>
-      <span class="char-ct" id="assistantCharCount"></span>
+
+    <div class="chat-area active" id="assistantChatArea">
+      <div id="assistantMsgContainer">
+        <div class="msg-row ai">
+          <div class="av">AI</div>
+          <div class="bubble-wrap">
+            <div class="bubble">👋 Hello! I'm your business assistant, ask me anything!</div>
+            <div class="msg-time">Just now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="input-bar active" id="assistantInputBar">
+      <div class="input-shell">
+        <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
+        <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </button>
+      </div>
+      <div class="input-foot">
+        <span class="input-tag">Assistant</span>
+        <span class="char-ct" id="assistantCharCount"></span>
+      </div>
     </div>
   </div>
-</div>
 
-<nav class="bottom-nav" aria-label="Main navigation">
-  <a href="page.html" class="nav-item nav-home active" aria-label="Home">
-    <div class="home-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
-    </div>
-  </a>
-  <a href="history.html" class="nav-item" aria-label="History">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg>
-  </a>
-  <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
-    <div class="nav-badge"></div>
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-  </a>
-  <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-  </a>
-</nav>
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <a href="page.html" class="nav-item nav-home active" aria-label="Home">
+      <div class="home-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+      </div>
+    </a>
+    <a href="history.html" class="nav-item" aria-label="History">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg>
+    </a>
+    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
+      <div class="nav-badge"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </a>
+    <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </a>
+  </nav>
 
-<script>
-  // ──────────────────────────────────────────────────────────────
-  //  GLOBAL CSRF FETCH INTERCEPTOR
-  // ──────────────────────────────────────────────────────────────
-  (function() {
-      const originalFetch = window.fetch;
-      window.fetch = function(url, options = {}) {
-          const csrfToken = localStorage.getItem('csrfToken');
-          const method = (options.method || 'GET').toUpperCase();
-          const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
-          if (!safeMethods.includes(method) && csrfToken) {
-              options.headers = options.headers || {};
-              options.headers['X-CSRF-Token'] = csrfToken;
-          }
-          return originalFetch.call(this, url, options);
-      };
-  })();
+  <script>
+    // ──────────────────────────────────────────────────────────────
+    //  GLOBAL CSRF FETCH INTERCEPTOR
+    // ──────────────────────────────────────────────────────────────
+    (function() {
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const csrfToken = localStorage.getItem('csrfToken');
+            const method = (options.method || 'GET').toUpperCase();
+            const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+            if (!safeMethods.includes(method) && csrfToken) {
+                options.headers = options.headers || {};
+                options.headers['X-CSRF-Token'] = csrfToken;
+            }
+            return originalFetch.call(this, url, options);
+        };
+    })();
 
-  // ============================================================
-  //  XSS PROTECTION
-  // ============================================================
-  function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;')
-          .replace(/`/g, '&#x60;');
-  }
-
-  function escapeAttr(str) {
-      if (!str) return '';
-      return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#x27;')
-          .replace(/`/g, '&#x60;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-  }
-
-  const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-  const token = localStorage.getItem('token');
-  if (!token) window.location.href = 'login.html';
-
-  // ----- STATE -----
-  let currentMode = 'lead';
-  let isChatActive = false;
-  let isTyping = false;
-  let currentSessionId = null;
-  let assistantSessionId = null;
-  let conversationHistory = [];
-  let currentGeneratedLeads = [];
-  let notifInterval = null;
-  let isSessionLoading = false;
-
-  // ----- DOM REFS -----
-  const modeSelector = document.getElementById('modeSelector');
-  const assistantModeSelector = document.getElementById('assistantModeSelector');
-  const leadContainer = document.getElementById('leadContainer');
-  const assistantContainer = document.getElementById('assistantContainer');
-  const setupWizard = document.getElementById('setupWizard');
-  const leadChatArea = document.getElementById('leadChatArea');
-  const leadMsgContainer = document.getElementById('leadMsgContainer');
-  const leadInputBar = document.getElementById('leadInputBar');
-  const leadMsgInput = document.getElementById('leadMsgInput');
-  const leadSendBtn = document.getElementById('leadSendBtn');
-  const leadCharCount = document.getElementById('leadCharCount');
-  const reviewPanel = document.getElementById('reviewPanel');
-  const emailList = document.getElementById('emailList');
-  const assistantMsgContainer = document.getElementById('assistantMsgContainer');
-  const assistantInputBar = document.getElementById('assistantInputBar');
-  const assistantMsgInput = document.getElementById('assistantMsgInput');
-  const assistantSendBtn = document.getElementById('assistantSendBtn');
-  const assistantCharCount = document.getElementById('assistantCharCount');
-  const planChip = document.getElementById('planChip');
-  const statusText = document.getElementById('statusText');
-  const statusBar = document.getElementById('statusBar');
-
-  // ----- MODE SWITCHING -----
-  window.switchMode = function(mode) {
-    if (isChatActive) return;
-    currentMode = mode;
-    modeSelector.classList.add('hidden');
-    assistantModeSelector.style.display = 'none';
-    document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-    if (mode === 'lead') {
-      leadContainer.classList.add('active');
-      setupWizard.style.display = 'flex';
-      leadChatArea.classList.remove('active');
-      leadInputBar.classList.add('lead-active');
-      leadInputBar.classList.remove('lead-hidden');
-      reviewPanel.style.display = 'none';
-      modeSelector.classList.remove('hidden');
-      currentSessionId = null;
-    } else {
-      assistantContainer.classList.add('active');
-      assistantModeSelector.style.display = 'flex';
-      assistantInputBar.classList.add('active');
-      assistantInputBar.style.display = 'block';
-      if (!assistantSessionId) {
-        assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-        assistantMsgContainer.innerHTML = '';
-        addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
-      }
-      if (assistantMsgContainer.children.length === 0) {
-        addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
-      }
+    // ============================================================
+    //  XSS PROTECTION
+    // ============================================================
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/`/g, '&#x60;');
     }
-  };
 
-  document.querySelectorAll('#modeSelector .mode-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+    function escapeAttr(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
+            .replace(/`/g, '&#x60;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    // ----- STATE -----
+    let currentMode = 'lead';
+    let isChatActive = false;
+    let isTyping = false;
+    let currentSessionId = null;
+    let assistantSessionId = null;
+    let conversationHistory = [];
+    let currentGeneratedLeads = [];
+    let notifInterval = null;
+    let isSessionLoading = false;
+
+    // ----- DOM REFS -----
+    const modeSelector = document.getElementById('modeSelector');
+    const assistantModeSelector = document.getElementById('assistantModeSelector');
+    const leadContainer = document.getElementById('leadContainer');
+    const assistantContainer = document.getElementById('assistantContainer');
+    const setupWizard = document.getElementById('setupWizard');
+    const leadChatArea = document.getElementById('leadChatArea');
+    const leadMsgContainer = document.getElementById('leadMsgContainer');
+    const leadInputBar = document.getElementById('leadInputBar');
+    const leadMsgInput = document.getElementById('leadMsgInput');
+    const leadSendBtn = document.getElementById('leadSendBtn');
+    const leadCharCount = document.getElementById('leadCharCount');
+    const reviewPanel = document.getElementById('reviewPanel');
+    const emailList = document.getElementById('emailList');
+    const assistantMsgContainer = document.getElementById('assistantMsgContainer');
+    const assistantInputBar = document.getElementById('assistantInputBar');
+    const assistantMsgInput = document.getElementById('assistantMsgInput');
+    const assistantSendBtn = document.getElementById('assistantSendBtn');
+    const assistantCharCount = document.getElementById('assistantCharCount');
+    const planChip = document.getElementById('planChip');
+    const statusText = document.getElementById('statusText');
+    const statusBar = document.getElementById('statusBar');
+
+    // ----- MODE SWITCHING -----
+    window.switchMode = function(mode) {
       if (isChatActive) return;
-      const mode = this.dataset.mode;
-      switchMode(mode);
-    });
-  });
-
-  // ----- LEAD MODE -----
-  document.getElementById('targetForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    if (isChatActive) return;
-    const industry = document.getElementById('industry').value.trim();
-    const region = document.getElementById('region').value.trim();
-    const companySize = document.getElementById('companySize').value;
-    const jobTitle = document.getElementById('jobTitle').value.trim();
-    const msg = `Find me ${jobTitle}s in the ${industry} industry, located in ${region}. Company size: ${companySize}.`;
-    startLeadSearch(msg);
-  });
-
-  leadMsgInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
-    leadSendBtn.disabled = !this.value.trim() || isTyping;
-    leadCharCount.textContent = this.value.length || '';
-  });
-
-  leadMsgInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!leadSendBtn.disabled) {
-        const msg = this.value.trim();
-        if (msg) startLeadSearch(msg);
-      }
-    }
-  });
-
-  leadSendBtn.addEventListener('click', function() {
-    const msg = leadMsgInput.value.trim();
-    if (msg && !this.disabled) startLeadSearch(msg);
-  });
-
-  async function startLeadSearch(message) {
-    if (isChatActive || isTyping) return;
-    isChatActive = true;
-    isTyping = true;
-    modeSelector.classList.add('hidden');
-    setupWizard.style.display = 'none';
-    leadChatArea.classList.add('active');
-    leadInputBar.classList.remove('lead-active');
-    leadInputBar.classList.add('lead-hidden');
-    addLeadMessage('user', message);
-    showLeadTyping('Searching for leads…');
-    try {
-      const res = await fetch(`${BACKEND}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
-      });
-      const data = await res.json();
-      hideLeadTyping();
-      if (res.ok) {
-        if (data.sessionId && !currentSessionId) {
-          currentSessionId = data.sessionId;
-          const url = new URL(window.location);
-          url.searchParams.set('session', data.sessionId);
-          window.history.pushState({}, '', url);
-          try {
-            await fetch(`${BACKEND}/api/sessions`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-              body: JSON.stringify({
-                sessionId: data.sessionId,
-                type: 'lead',
-                name: message.substring(0, 50) || 'Lead Search'
-              })
-            });
-          } catch (sessionErr) {
-            console.error('[page] Failed to create session:', sessionErr);
-          }
-        }
-        if (data.history) conversationHistory = data.history;
-        try {
-          const parsed = JSON.parse(data.reply);
-          if (Array.isArray(parsed)) {
-            currentGeneratedLeads = parsed;
-            renderReview(parsed);
-            addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the emails below.`);
-            return;
-          }
-        } catch {}
-        addLeadMessage('ai', data.reply || 'Request received. How can I help further?');
-      } else {
-        addLeadMessage('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
-      }
-    } catch {
-      hideLeadTyping();
-      addLeadMessage('ai', '🔌 Connection error — check your network and try again.');
-    } finally {
-      isTyping = false;
-    }
-  }
-
-  // ✅ FIXED: addLeadMessage - AI messages are NOT escaped
-  function addLeadMessage(role, content) {
-    const container = leadMsgContainer;
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    let displayContent;
-    if (role === 'ai') {
-      displayContent = formatAI(content);
-    } else {
-      displayContent = escapeHtml(content);
-    }
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollLeadDown();
-  }
-
-  function showLeadTyping(label = 'Thinking…') {
-    let row = document.getElementById('leadTypingRow');
-    if (row) {
-      const lbl = row.querySelector('.t-label');
-      if (lbl) lbl.textContent = label;
-      scrollLeadDown();
-      return;
-    }
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'leadTypingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    leadMsgContainer.appendChild(row);
-    scrollLeadDown();
-  }
-
-  function hideLeadTyping() {
-    document.getElementById('leadTypingRow')?.remove();
-  }
-
-  function scrollLeadDown() {
-    leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
-  }
-
-  // ----- REVIEW PANEL -----
-  function renderReview(leads) {
-    emailList.innerHTML = '';
-    leads.forEach((lead, i) => {
-      const d = document.createElement('div');
-      d.className = 'lead-card';
-      const subj = lead.messages?.[0]?.subject || 'Hello from Skyline';
-      const body = lead.messages?.[0]?.body || '';
-      const safeName = escapeHtml(lead.name || 'Unknown');
-      const safeCompany = escapeHtml(lead.company || '');
-      const safeEmail = escapeHtml(lead.email || '');
-      const safeSubj = escapeHtml(subj);
-      const safeBody = escapeHtml(body);
-      d.innerHTML = `<div class="lead-name">${safeName} · ${safeCompany}</div><div class="lead-email-guess">${safeEmail}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${safeEmail}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${safeSubj}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${safeBody}</textarea></div>`;
-      emailList.appendChild(d);
-    });
-    reviewPanel.style.display = 'block';
-    scrollLeadDown();
-  }
-
-  function closeReview() {
-    reviewPanel.style.display = 'none';
-  }
-
-  async function submitBatch() {
-    const btn = document.getElementById('sendAllBtn');
-    const orig = btn.textContent;
-    btn.textContent = 'Verifying…';
-    btn.disabled = true;
-    try {
-      const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
-      const user = await userRes.json();
-      const payload = {
-        leads: currentGeneratedLeads.map((lead, i) => ({
-          name: lead.name,
-          email: document.getElementById(`email-${i}`).value,
-          company: lead.company,
-          messages: [{ subject: document.getElementById(`subject-${i}`).value, body: document.getElementById(`body-${i}`).value }]
-        }))
-      };
-      if (!user.nylasIntegration?.isConnected) {
-        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert('⚠️ Email connection expired. Please reconnect.');
-        window.location.href = 'dashboard.html?connect=true';
-        return;
-      }
-      btn.textContent = 'Sending…';
-      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert('⚠️ Session expired. Please reconnect.');
-        window.location.href = 'dashboard.html?connect=true';
-        return;
-      }
-      if (data.success) {
-        alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
-        addLeadMessage('ai', '✅ Emails sent! Track replies in Dashboard.');
-        closeReview();
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
-      } else {
-        alert('Error: ' + JSON.stringify(data.errors));
-      }
-    } catch {
-      alert('Connection error. Reconnect in Dashboard if session expired.');
-    } finally {
-      btn.textContent = orig;
-      btn.disabled = false;
-    }
-  }
-
-  // ----- ASSISTANT MODE -----
-  assistantMsgInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
-    assistantSendBtn.disabled = !this.value.trim() || isTyping;
-    assistantCharCount.textContent = this.value.length || '';
-  });
-
-  assistantMsgInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!assistantSendBtn.disabled) {
-        const msg = this.value.trim();
-        if (msg) sendAssistantMessage(msg);
-      }
-    }
-  });
-
-  assistantSendBtn.addEventListener('click', function() {
-    const msg = assistantMsgInput.value.trim();
-    if (msg && !this.disabled) sendAssistantMessage(msg);
-  });
-
-  async function sendAssistantMessage(message) {
-    if (isTyping) return;
-    isTyping = true;
-    if (!isChatActive) {
-      isChatActive = true;
+      currentMode = mode;
       modeSelector.classList.add('hidden');
       assistantModeSelector.style.display = 'none';
-    }
-    if (!assistantSessionId) {
-      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-    }
-    addAssistantMessage('user', message);
-    assistantMsgInput.value = '';
-    assistantMsgInput.style.height = 'auto';
-    assistantSendBtn.disabled = true;
-    showAssistantTyping('Thinking…');
-    try {
-      const res = await fetch(`${BACKEND}/api/assistant`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          message: message,
-          sessionId: assistantSessionId
-        })
-      });
-      const data = await res.json();
-      hideAssistantTyping();
-      if (res.ok) {
-        if (data.sessionId) {
-          assistantSessionId = data.sessionId;
-        }
-        addAssistantMessage('ai', data.response || 'I couldn\'t process that. Please try again.');
+      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+      if (mode === 'lead') {
+        leadContainer.classList.add('active');
+        setupWizard.style.display = 'flex';
+        leadChatArea.classList.remove('active');
+        leadInputBar.classList.add('lead-active');
+        leadInputBar.classList.remove('lead-hidden');
+        reviewPanel.style.display = 'none';
+        modeSelector.classList.remove('hidden');
+        currentSessionId = null;
       } else {
-        addAssistantMessage('ai', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
-      }
-    } catch {
-      hideAssistantTyping();
-      addAssistantMessage('ai', '🔌 Connection error — check your network and try again.');
-    } finally {
-      isTyping = false;
-      assistantSendBtn.disabled = !assistantMsgInput.value.trim();
-    }
-  }
-
-  // ✅ FIXED: addAssistantMessage - AI messages are NOT escaped
-  function addAssistantMessage(role, content) {
-    const container = assistantMsgContainer;
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    let displayContent;
-    if (role === 'ai') {
-      displayContent = formatAI(content);
-    } else {
-      displayContent = escapeHtml(content);
-    }
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
-    container.appendChild(row);
-    scrollAssistantDown();
-  }
-
-  function showAssistantTyping(label = 'Thinking…') {
-    let row = document.getElementById('assistantTypingRow');
-    if (row) {
-      const lbl = row.querySelector('.t-label');
-      if (lbl) lbl.textContent = label;
-      scrollAssistantDown();
-      return;
-    }
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'assistantTypingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    assistantMsgContainer.appendChild(row);
-    scrollAssistantDown();
-  }
-
-  function hideAssistantTyping() {
-    document.getElementById('assistantTypingRow')?.remove();
-  }
-
-  function scrollAssistantDown() {
-    const area = document.getElementById('assistantChatArea');
-    area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-  }
-
-  // ----- UTILITY FUNCTIONS -----
-  // ✅ FIXED: formatAI with lead detection
-  function formatAI(text) {
-    if (!text) return '';
-    
-    // ✅ Check if this is a JSON array (leads data)
-    try {
-      const trimmed = text.trim();
-      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        const parsed = JSON.parse(trimmed);
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].name && parsed[0].company) {
-          return renderLeadCards(parsed);
+        assistantContainer.classList.add('active');
+        assistantModeSelector.style.display = 'flex';
+        assistantInputBar.classList.add('active');
+        assistantInputBar.style.display = 'block';
+        if (!assistantSessionId) {
+          assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+          assistantMsgContainer.innerHTML = '';
+          addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+        }
+        if (assistantMsgContainer.children.length === 0) {
+          addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
         }
       }
-    } catch (e) {
-      // Not JSON, continue with normal formatting
-    }
-    
-    let s = text;
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-    s = s.replace(/\n/g, '<br>');
-    return s;
-  }
+    };
 
-  // ── Render Lead Cards ──
-  function renderLeadCards(leads) {
-    if (!leads || leads.length === 0) return '<div class="no-leads">No leads found.</div>';
-    
-    window.currentLeads = leads;
-    
-    let html = `
-        <div class="leads-container">
-            <div class="leads-header">
-                <span class="leads-count">${leads.length} leads found</span>
-                <div class="leads-actions">
-                    <button class="send-all-leads-btn" onclick="sendAllLeads()">
-                        📤 Send All (${leads.length})
+    document.querySelectorAll('#modeSelector .mode-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (isChatActive) return;
+        const mode = this.dataset.mode;
+        switchMode(mode);
+      });
+    });
+
+    // ----- LEAD MODE -----
+    document.getElementById('targetForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (isChatActive) return;
+      const industry = document.getElementById('industry').value.trim();
+      const region = document.getElementById('region').value.trim();
+      const companySize = document.getElementById('companySize').value;
+      const jobTitle = document.getElementById('jobTitle').value.trim();
+      const msg = `Find me ${jobTitle}s in the ${industry} industry, located in ${region}. Company size: ${companySize}.`;
+      startLeadSearch(msg);
+    });
+
+    leadMsgInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+      leadSendBtn.disabled = !this.value.trim() || isTyping;
+      leadCharCount.textContent = this.value.length || '';
+    });
+
+    leadMsgInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!leadSendBtn.disabled) {
+          const msg = this.value.trim();
+          if (msg) startLeadSearch(msg);
+        }
+      }
+    });
+
+    leadSendBtn.addEventListener('click', function() {
+      const msg = leadMsgInput.value.trim();
+      if (msg && !this.disabled) startLeadSearch(msg);
+    });
+
+    async function startLeadSearch(message) {
+      if (isChatActive || isTyping) return;
+      isChatActive = true;
+      isTyping = true;
+      modeSelector.classList.add('hidden');
+      setupWizard.style.display = 'none';
+      leadChatArea.classList.add('active');
+      leadInputBar.classList.remove('lead-active');
+      leadInputBar.classList.add('lead-hidden');
+      addLeadMessage('user', message);
+      showLeadTyping('Searching for leads…');
+      try {
+        const res = await fetch(`${BACKEND}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
+        });
+        const data = await res.json();
+        hideLeadTyping();
+        if (res.ok) {
+          if (data.sessionId && !currentSessionId) {
+            currentSessionId = data.sessionId;
+            const url = new URL(window.location);
+            url.searchParams.set('session', data.sessionId);
+            window.history.pushState({}, '', url);
+            try {
+              await fetch(`${BACKEND}/api/sessions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                  sessionId: data.sessionId,
+                  type: 'lead',
+                  name: message.substring(0, 50) || 'Lead Search'
+                })
+              });
+            } catch (sessionErr) {
+              console.error('[page] Failed to create session:', sessionErr);
+            }
+          }
+          if (data.history) conversationHistory = data.history;
+          try {
+            const parsed = JSON.parse(data.reply);
+            if (Array.isArray(parsed)) {
+              currentGeneratedLeads = parsed;
+              renderReview(parsed);
+              addLeadMessage('ai', `📊 Found <strong>${parsed.length}</strong> lead${parsed.length !== 1 ? 's' : ''}. Review the emails below.`);
+              return;
+            }
+          } catch {}
+          addLeadMessage('ai', data.reply || 'Request received. How can I help further?');
+        } else {
+          addLeadMessage('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
+        }
+      } catch {
+        hideLeadTyping();
+        addLeadMessage('ai', '🔌 Connection error — check your network and try again.');
+      } finally {
+        isTyping = false;
+      }
+    }
+
+    // ✅ FIXED: addLeadMessage - AI messages are NOT escaped
+    function addLeadMessage(role, content) {
+      const container = leadMsgContainer;
+      const row = document.createElement('div');
+      row.className = `msg-row ${role}`;
+      let displayContent;
+      if (role === 'ai') {
+        displayContent = formatAI(content);
+      } else {
+        displayContent = escapeHtml(content);
+      }
+      row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
+      container.appendChild(row);
+      scrollLeadDown();
+    }
+
+    function showLeadTyping(label = 'Thinking…') {
+      let row = document.getElementById('leadTypingRow');
+      if (row) {
+        const lbl = row.querySelector('.t-label');
+        if (lbl) lbl.textContent = label;
+        scrollLeadDown();
+        return;
+      }
+      row = document.createElement('div');
+      row.className = 'typing-row';
+      row.id = 'leadTypingRow';
+      row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+      leadMsgContainer.appendChild(row);
+      scrollLeadDown();
+    }
+
+    function hideLeadTyping() {
+      document.getElementById('leadTypingRow')?.remove();
+    }
+
+    function scrollLeadDown() {
+      leadChatArea?.scrollTo({ top: leadChatArea.scrollHeight, behavior: 'smooth' });
+    }
+
+    // ----- REVIEW PANEL -----
+    function renderReview(leads) {
+      emailList.innerHTML = '';
+      leads.forEach((lead, i) => {
+        const d = document.createElement('div');
+        d.className = 'lead-card';
+        const subj = lead.messages?.[0]?.subject || 'Hello from Skyline';
+        const body = lead.messages?.[0]?.body || '';
+        const safeName = escapeHtml(lead.name || 'Unknown');
+        const safeCompany = escapeHtml(lead.company || '');
+        const safeEmail = escapeHtml(lead.email || '');
+        const safeSubj = escapeHtml(subj);
+        const safeBody = escapeHtml(body);
+        d.innerHTML = `<div class="lead-name">${safeName} · ${safeCompany}</div><div class="lead-email-guess">${safeEmail}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${safeEmail}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${safeSubj}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${safeBody}</textarea></div>`;
+        emailList.appendChild(d);
+      });
+      reviewPanel.style.display = 'block';
+      scrollLeadDown();
+    }
+
+    function closeReview() {
+      reviewPanel.style.display = 'none';
+    }
+
+    async function submitBatch() {
+      const btn = document.getElementById('sendAllBtn');
+      const orig = btn.textContent;
+      btn.textContent = 'Verifying…';
+      btn.disabled = true;
+      try {
+        const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+        const user = await userRes.json();
+        const payload = {
+          leads: currentGeneratedLeads.map((lead, i) => ({
+            name: lead.name,
+            email: document.getElementById(`email-${i}`).value,
+            company: lead.company,
+            messages: [{ subject: document.getElementById(`subject-${i}`).value, body: document.getElementById(`body-${i}`).value }]
+          }))
+        };
+        if (!user.nylasIntegration?.isConnected) {
+          localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+          alert('⚠️ Email connection expired. Please reconnect.');
+          window.location.href = 'dashboard.html?connect=true';
+          return;
+        }
+        btn.textContent = 'Sending…';
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+          localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+          alert('⚠️ Session expired. Please reconnect.');
+          window.location.href = 'dashboard.html?connect=true';
+          return;
+        }
+        if (data.success) {
+          alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
+          addLeadMessage('ai', '✅ Emails sent! Track replies in Dashboard.');
+          closeReview();
+          setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+        } else {
+          alert('Error: ' + JSON.stringify(data.errors));
+        }
+      } catch {
+        alert('Connection error. Reconnect in Dashboard if session expired.');
+      } finally {
+        btn.textContent = orig;
+        btn.disabled = false;
+      }
+    }
+
+    // ----- ASSISTANT MODE -----
+    assistantMsgInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+      assistantSendBtn.disabled = !this.value.trim() || isTyping;
+      assistantCharCount.textContent = this.value.length || '';
+    });
+
+    assistantMsgInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!assistantSendBtn.disabled) {
+          const msg = this.value.trim();
+          if (msg) sendAssistantMessage(msg);
+        }
+      }
+    });
+
+    assistantSendBtn.addEventListener('click', function() {
+      const msg = assistantMsgInput.value.trim();
+      if (msg && !this.disabled) sendAssistantMessage(msg);
+    });
+
+    async function sendAssistantMessage(message) {
+      if (isTyping) return;
+      isTyping = true;
+      if (!isChatActive) {
+        isChatActive = true;
+        modeSelector.classList.add('hidden');
+        assistantModeSelector.style.display = 'none';
+      }
+      if (!assistantSessionId) {
+        assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+      }
+      addAssistantMessage('user', message);
+      assistantMsgInput.value = '';
+      assistantMsgInput.style.height = 'auto';
+      assistantSendBtn.disabled = true;
+      showAssistantTyping('Thinking…');
+      try {
+        const res = await fetch(`${BACKEND}/api/assistant`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            message: message,
+            sessionId: assistantSessionId
+          })
+        });
+        const data = await res.json();
+        hideAssistantTyping();
+        if (res.ok) {
+          if (data.sessionId) {
+            assistantSessionId = data.sessionId;
+          }
+          addAssistantMessage('ai', data.response || 'I couldn\'t process that. Please try again.');
+        } else {
+          addAssistantMessage('ai', `⚠️ ${data.error || 'Something went wrong. Please try again.'}`);
+        }
+      } catch {
+        hideAssistantTyping();
+        addAssistantMessage('ai', '🔌 Connection error — check your network and try again.');
+      } finally {
+        isTyping = false;
+        assistantSendBtn.disabled = !assistantMsgInput.value.trim();
+      }
+    }
+
+    // ✅ FIXED: addAssistantMessage - AI messages are NOT escaped
+    function addAssistantMessage(role, content) {
+      const container = assistantMsgContainer;
+      const row = document.createElement('div');
+      row.className = `msg-row ${role}`;
+      let displayContent;
+      if (role === 'ai') {
+        displayContent = formatAI(content);
+      } else {
+        displayContent = escapeHtml(content);
+      }
+      row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${displayContent}</div><div class="msg-time">${getTime()}</div></div>`;
+      container.appendChild(row);
+      scrollAssistantDown();
+    }
+
+    function showAssistantTyping(label = 'Thinking…') {
+      let row = document.getElementById('assistantTypingRow');
+      if (row) {
+        const lbl = row.querySelector('.t-label');
+        if (lbl) lbl.textContent = label;
+        scrollAssistantDown();
+        return;
+      }
+      row = document.createElement('div');
+      row.className = 'typing-row';
+      row.id = 'assistantTypingRow';
+      row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+      assistantMsgContainer.appendChild(row);
+      scrollAssistantDown();
+    }
+
+    function hideAssistantTyping() {
+      document.getElementById('assistantTypingRow')?.remove();
+    }
+
+    function scrollAssistantDown() {
+      const area = document.getElementById('assistantChatArea');
+      area?.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // ✅ ENHANCED formatAI() - Detects JSON leads in multiple ways
+    // ════════════════════════════════════════════════════════════
+    function formatAI(text) {
+        if (!text) return '';
+        
+        console.log('🔍 [formatAI] Input length:', text.length);
+        console.log('🔍 [formatAI] First 200 chars:', text.substring(0, 200));
+        
+        // ── Step 1: Try to extract JSON ──
+        let rawText = text;
+        
+        // Remove markdown code blocks
+        rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+        
+        // Decode HTML entities (if any)
+        if (rawText.includes('&quot;') || rawText.includes('&#039;') || rawText.includes('&amp;')) {
+            const div = document.createElement('div');
+            div.innerHTML = rawText;
+            rawText = div.textContent || div.innerText || rawText;
+            console.log('🔍 [formatAI] Decoded HTML entities');
+        }
+        
+        // ── Step 2: Try to parse as JSON ──
+        const trimmed = rawText.trim();
+        console.log('🔍 [formatAI] Trimmed first 200:', trimmed.substring(0, 200));
+        
+        // Try direct JSON parse
+        try {
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                const parsed = JSON.parse(trimmed);
+                console.log('✅ [formatAI] JSON parsed successfully, length:', parsed.length);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Check if it's leads data (has name or company)
+                    if (parsed[0].name || parsed[0].company) {
+                        console.log('✅ [formatAI] Detected leads data, rendering cards...');
+                        return renderLeadCards(parsed);
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('⚠️ [formatAI] Direct JSON parse failed:', e.message);
+        }
+        
+        // ── Step 3: Try to extract JSON from text ──
+        try {
+            const jsonMatch = trimmed.match(/\[\s*\{[\s\S]*?\}\s*\]/);
+            if (jsonMatch) {
+                console.log('🔍 [formatAI] Found JSON match:', jsonMatch[0].substring(0, 100));
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
+                    console.log('✅ [formatAI] Extracted leads data, rendering cards...');
+                    return renderLeadCards(parsed);
+                }
+            }
+        } catch (e) {
+            console.log('⚠️ [formatAI] JSON extraction failed:', e.message);
+        }
+        
+        // ── Step 4: Check if text contains JSON-like pattern ──
+        if (trimmed.includes('"name"') && trimmed.includes('"company"') && trimmed.includes('"email"')) {
+            console.log('🔍 [formatAI] Found JSON-like pattern, attempting repair...');
+            try {
+                // Try to repair common JSON issues
+                let fixed = trimmed;
+                // Fix single quotes to double quotes
+                fixed = fixed.replace(/'/g, '"');
+                // Fix trailing commas
+                fixed = fixed.replace(/,\s*}/g, '}');
+                fixed = fixed.replace(/,\s*]/g, ']');
+                // Fix unquoted property names
+                fixed = fixed.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+                
+                const repaired = JSON.parse(fixed);
+                if (Array.isArray(repaired) && repaired.length > 0 && (repaired[0].name || repaired[0].company)) {
+                    console.log('✅ [formatAI] Repaired JSON, rendering cards...');
+                    return renderLeadCards(repaired);
+                }
+            } catch (e) {
+                console.log('⚠️ [formatAI] JSON repair failed:', e.message);
+            }
+        }
+        
+        // ── Step 5: Normal AI formatting ──
+        console.log('🔍 [formatAI] Using normal formatting');
+        let s = text;
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+        s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+        s = s.replace(/\n/g, '<br>');
+        return s;
+    }
+
+    // ── Render Lead Cards ──
+    function renderLeadCards(leads) {
+      if (!leads || leads.length === 0) return '<div class="no-leads">No leads found.</div>';
+      
+      window.currentLeads = leads;
+      
+      let html = `
+          <div class="leads-container">
+              <div class="leads-header">
+                  <span class="leads-count">${leads.length} leads found</span>
+                  <div class="leads-actions">
+                      <button class="send-all-leads-btn" onclick="sendAllLeads()">
+                          📤 Send All (${leads.length})
+                      </button>
+                  </div>
+              </div>
+              <div class="leads-grid">
+      `;
+      
+      leads.forEach((lead, index) => {
+        const rank = lead.rank || index + 1;
+        const rankLabel = lead.rank_label || 'Opportunity';
+        const company = lead.company || lead.name || 'Unknown';
+        const email = lead.email || 'No email found';
+        const subject = lead.outreach?.subject || lead.messages?.[0]?.subject || 'No subject';
+        const body = lead.outreach?.body || lead.messages?.[0]?.body || 'No message';
+        const qualityScore = lead.quality_score || 0;
+        const qualityPassed = lead.quality_passed || false;
+        const fitScore = Math.round((lead.leadScore || 0) * 100);
+        const hasEmail = email && email !== 'No email found' && email !== 'No email' && email !== '';
+        
+        let qualityBadge = '';
+        if (qualityPassed && qualityScore >= 0.8) {
+          qualityBadge = '<span class="quality-badge high">✅ High Quality</span>';
+        } else if (qualityPassed && qualityScore >= 0.5) {
+          qualityBadge = '<span class="quality-badge medium">📊 Medium Quality</span>';
+        } else {
+          qualityBadge = '<span class="quality-badge low">⚠️ Needs Review</span>';
+        }
+        
+        let rankEmoji = '📊';
+        if (rank <= 3) rankEmoji = '🏆';
+        else if (rank <= 5) rankEmoji = '⭐';
+        
+        html += `
+            <div class="lead-card-container" data-index="${index}">
+                <div class="lead-card-header">
+                    <div class="lead-rank">${rankEmoji} #${rank}</div>
+                    <div class="lead-rank-label">${rankLabel}</div>
+                    ${qualityBadge}
+                    <div class="lead-email-status">${hasEmail ? '✅' : '❌'}</div>
+                </div>
+                <div class="lead-card-body">
+                    <div class="lead-company">${escapeHtml(company)}</div>
+                    <div class="lead-details">
+                        <span class="lead-detail">📧 ${escapeHtml(email)}</span>
+                        <span class="lead-detail">🎯 Fit: ${fitScore}%</span>
+                        ${lead.industry ? `<span class="lead-detail">🏢 ${escapeHtml(lead.industry)}</span>` : ''}
+                        ${lead.hq ? `<span class="lead-detail">📍 ${escapeHtml(lead.hq)}</span>` : ''}
+                    </div>
+                    <div class="lead-message-preview">
+                        <div class="lead-subject">📝 ${escapeHtml(subject)}</div>
+                        <div class="lead-body-preview">${escapeHtml(body.substring(0, 150))}${body.length > 150 ? '...' : ''}</div>
+                    </div>
+                </div>
+                <div class="lead-card-footer">
+                    <button class="lead-view-btn" onclick="viewLead(${index})">👁️ View Full</button>
+                    <button class="lead-send-btn" onclick="sendSingleLead(${index})" ${!hasEmail ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
+                        ✉️ Send
                     </button>
                 </div>
             </div>
-            <div class="leads-grid">
-    `;
-    
-    leads.forEach((lead, index) => {
-      const rank = lead.rank || index + 1;
-      const rankLabel = lead.rank_label || 'Opportunity';
-      const company = lead.company || lead.name || 'Unknown';
-      const email = lead.email || 'No email found';
-      const subject = lead.outreach?.subject || lead.messages?.[0]?.subject || 'No subject';
-      const body = lead.outreach?.body || lead.messages?.[0]?.body || 'No message';
-      const qualityScore = lead.quality_score || 0;
-      const qualityPassed = lead.quality_passed || false;
-      const fitScore = Math.round((lead.leadScore || 0) * 100);
-      const hasEmail = email && email !== 'No email found' && email !== 'No email' && email !== '';
-      
-      let qualityBadge = '';
-      if (qualityPassed && qualityScore >= 0.8) {
-        qualityBadge = '<span class="quality-badge high">✅ High Quality</span>';
-      } else if (qualityPassed && qualityScore >= 0.5) {
-        qualityBadge = '<span class="quality-badge medium">📊 Medium Quality</span>';
-      } else {
-        qualityBadge = '<span class="quality-badge low">⚠️ Needs Review</span>';
-      }
-      
-      let rankEmoji = '📊';
-      if (rank <= 3) rankEmoji = '🏆';
-      else if (rank <= 5) rankEmoji = '⭐';
+        `;
+      });
       
       html += `
-          <div class="lead-card-container" data-index="${index}">
-              <div class="lead-card-header">
-                  <div class="lead-rank">${rankEmoji} #${rank}</div>
-                  <div class="lead-rank-label">${rankLabel}</div>
-                  ${qualityBadge}
-                  <div class="lead-email-status">${hasEmail ? '✅' : '❌'}</div>
-              </div>
-              <div class="lead-card-body">
-                  <div class="lead-company">${escapeHtml(company)}</div>
-                  <div class="lead-details">
-                      <span class="lead-detail">📧 ${escapeHtml(email)}</span>
-                      <span class="lead-detail">🎯 Fit: ${fitScore}%</span>
-                      ${lead.industry ? `<span class="lead-detail">🏢 ${escapeHtml(lead.industry)}</span>` : ''}
-                      ${lead.hq ? `<span class="lead-detail">📍 ${escapeHtml(lead.hq)}</span>` : ''}
-                  </div>
-                  <div class="lead-message-preview">
-                      <div class="lead-subject">📝 ${escapeHtml(subject)}</div>
-                      <div class="lead-body-preview">${escapeHtml(body.substring(0, 150))}${body.length > 150 ? '...' : ''}</div>
-                  </div>
-              </div>
-              <div class="lead-card-footer">
-                  <button class="lead-view-btn" onclick="viewLead(${index})">👁️ View Full</button>
-                  <button class="lead-send-btn" onclick="sendSingleLead(${index})" ${!hasEmail ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
-                      ✉️ Send
-                  </button>
               </div>
           </div>
       `;
-    });
-    
-    html += `
-            </div>
-        </div>
-    `;
-    
-    return html;
-  }
-
-  // ── View Full Lead Details ──
-  function viewLead(index) {
-    const leads = window.currentLeads || [];
-    const lead = leads[index];
-    if (!lead) {
-      showToast('Lead not found.', 'error');
-      return;
+      
+      return html;
     }
-    const company = lead.company || lead.name || 'Unknown';
-    const email = lead.email || 'No email';
-    const subject = lead.outreach?.subject || lead.messages?.[0]?.subject || 'No subject';
-    const body = lead.outreach?.body || lead.messages?.[0]?.body || 'No message';
-    const rank = lead.rank || index + 1;
-    const fitScore = Math.round((lead.leadScore || 0) * 100);
-    alert(`
+
+    // ── View Full Lead Details ──
+    function viewLead(index) {
+      const leads = window.currentLeads || [];
+      const lead = leads[index];
+      if (!lead) {
+        showToast('Lead not found.', 'error');
+        return;
+      }
+      const company = lead.company || lead.name || 'Unknown';
+      const email = lead.email || 'No email';
+      const subject = lead.outreach?.subject || lead.messages?.[0]?.subject || 'No subject';
+      const body = lead.outreach?.body || lead.messages?.[0]?.body || 'No message';
+      const rank = lead.rank || index + 1;
+      const fitScore = Math.round((lead.leadScore || 0) * 100);
+      alert(`
 📋 LEAD DETAILS
 
 Company: ${company}
@@ -1443,32 +1514,64 @@ Location: ${lead.hq || 'N/A'}
 Subject: ${subject}
 
 ${body}
-    `);
-  }
+      `);
+    }
 
-  // ── Send All Leads ──
-  async function sendAllLeads() {
-    const leads = window.currentLeads || [];
-    if (!leads || leads.length === 0) {
-      showToast('No leads to send.', 'error');
-      return;
-    }
-    const validLeads = leads.filter(l => l.email && l.email !== 'No email found' && l.email !== 'No email' && l.email !== '');
-    if (validLeads.length === 0) {
-      showToast('No leads have valid email addresses.', 'error');
-      return;
-    }
-    try {
-      const userRes = await fetch(`${BACKEND}/api/users/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!userRes.ok) {
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
+    // ── Send All Leads ──
+    async function sendAllLeads() {
+      const leads = window.currentLeads || [];
+      if (!leads || leads.length === 0) {
+        showToast('No leads to send.', 'error');
         return;
       }
-      const user = await userRes.json();
-      if (!user.nylasIntegration?.isConnected) {
+      const validLeads = leads.filter(l => l.email && l.email !== 'No email found' && l.email !== 'No email' && l.email !== '');
+      if (validLeads.length === 0) {
+        showToast('No leads have valid email addresses.', 'error');
+        return;
+      }
+      try {
+        const userRes = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!userRes.ok) {
+          localStorage.removeItem('token');
+          window.location.href = 'login.html';
+          return;
+        }
+        const user = await userRes.json();
+        if (!user.nylasIntegration?.isConnected) {
+          const payload = {
+            leads: validLeads.map(lead => ({
+              name: lead.name || lead.company || 'Unknown',
+              email: lead.email,
+              company: lead.company || '',
+              messages: lead.messages || [{
+                subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
+                body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
+              }]
+            }))
+          };
+          localStorage.setItem('pendingEmailPayload', JSON.stringify({
+            ...payload,
+            _timestamp: Date.now(),
+            _count: validLeads.length
+          }));
+          showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
+          setTimeout(() => {
+            window.location.href = 'dashboard.html?connect=true';
+          }, 1500);
+          return;
+        }
+      } catch (err) {
+        console.error('Error checking email status:', err);
+        showToast('❌ Failed to check email connection. Please try again.', 'error');
+        return;
+      }
+      const btn = document.querySelector('.send-all-leads-btn');
+      const originalText = btn.textContent;
+      btn.textContent = '⏳ Sending...';
+      btn.disabled = true;
+      try {
         const payload = {
           leads: validLeads.map(lead => ({
             name: lead.name || lead.company || 'Unknown',
@@ -1480,107 +1583,109 @@ ${body}
             }]
           }))
         };
-        localStorage.setItem('pendingEmailPayload', JSON.stringify({
-          ...payload,
-          _timestamp: Date.now(),
-          _count: validLeads.length
-        }));
-        showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
-        setTimeout(() => {
-          window.location.href = 'dashboard.html?connect=true';
-        }, 1500);
-        return;
-      }
-    } catch (err) {
-      console.error('Error checking email status:', err);
-      showToast('❌ Failed to check email connection. Please try again.', 'error');
-      return;
-    }
-    const btn = document.querySelector('.send-all-leads-btn');
-    const originalText = btn.textContent;
-    btn.textContent = '⏳ Sending...';
-    btn.disabled = true;
-    try {
-      const payload = {
-        leads: validLeads.map(lead => ({
-          name: lead.name || lead.company || 'Unknown',
-          email: lead.email,
-          company: lead.company || '',
-          messages: lead.messages || [{
-            subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
-            body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
-          }]
-        }))
-      };
-      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-        localStorage.setItem('pendingEmailPayload', JSON.stringify({
-          ...payload,
-          _timestamp: Date.now(),
-          _count: validLeads.length
-        }));
-        showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-        setTimeout(() => {
-          window.location.href = 'dashboard.html?connect=true';
-        }, 1500);
-        return;
-      }
-      if (data.success) {
-        showToast(`✅ Sent ${validLeads.length} emails successfully!`, 'success');
-        validLeads.forEach((lead, i) => {
-          const card = document.querySelector(`.lead-card-container[data-index="${i}"]`);
-          if (card) {
-            const sendBtn = card.querySelector('.lead-send-btn');
-            if (sendBtn) {
-              sendBtn.textContent = '✅ Sent';
-              sendBtn.disabled = true;
-              sendBtn.style.opacity = '0.4';
-            }
-          }
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
         });
-      } else {
-        showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+        const data = await res.json();
+        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+          localStorage.setItem('pendingEmailPayload', JSON.stringify({
+            ...payload,
+            _timestamp: Date.now(),
+            _count: validLeads.length
+          }));
+          showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+          setTimeout(() => {
+            window.location.href = 'dashboard.html?connect=true';
+          }, 1500);
+          return;
+        }
+        if (data.success) {
+          showToast(`✅ Sent ${validLeads.length} emails successfully!`, 'success');
+          validLeads.forEach((lead, i) => {
+            const card = document.querySelector(`.lead-card-container[data-index="${i}"]`);
+            if (card) {
+              const sendBtn = card.querySelector('.lead-send-btn');
+              if (sendBtn) {
+                sendBtn.textContent = '✅ Sent';
+                sendBtn.disabled = true;
+                sendBtn.style.opacity = '0.4';
+              }
+            }
+          });
+        } else {
+          showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        console.error('Send all error:', err);
+        showToast('❌ Connection error. Please try again.', 'error');
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
       }
-    } catch (err) {
-      console.error('Send all error:', err);
-      showToast('❌ Connection error. Please try again.', 'error');
-    } finally {
-      btn.textContent = originalText;
-      btn.disabled = false;
     }
-  }
 
-  // ── Send Single Lead ──
-  async function sendSingleLead(index) {
-    const leads = window.currentLeads || [];
-    const lead = leads[index];
-    if (!lead) {
-      showToast('Lead not found.', 'error');
-      return;
-    }
-    if (!lead.email || lead.email === 'No email found' || lead.email === 'No email' || lead.email === '') {
-      showToast('This lead has no email address.', 'error');
-      return;
-    }
-    try {
-      const userRes = await fetch(`${BACKEND}/api/users/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!userRes.ok) {
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
+    // ── Send Single Lead ──
+    async function sendSingleLead(index) {
+      const leads = window.currentLeads || [];
+      const lead = leads[index];
+      if (!lead) {
+        showToast('Lead not found.', 'error');
         return;
       }
-      const user = await userRes.json();
-      if (!user.nylasIntegration?.isConnected) {
+      if (!lead.email || lead.email === 'No email found' || lead.email === 'No email' || lead.email === '') {
+        showToast('This lead has no email address.', 'error');
+        return;
+      }
+      try {
+        const userRes = await fetch(`${BACKEND}/api/users/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!userRes.ok) {
+          localStorage.removeItem('token');
+          window.location.href = 'login.html';
+          return;
+        }
+        const user = await userRes.json();
+        if (!user.nylasIntegration?.isConnected) {
+          const payload = {
+            leads: [{
+              name: lead.name || lead.company || 'Unknown',
+              email: lead.email,
+              company: lead.company || '',
+              messages: lead.messages || [{
+                subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
+                body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
+              }]
+            }]
+          };
+          localStorage.setItem('pendingEmailPayload', JSON.stringify({
+            ...payload,
+            _timestamp: Date.now(),
+            _count: 1
+          }));
+          showToast('📧 Email pending. Please connect your email to send.', 'warning', 4000);
+          setTimeout(() => {
+            window.location.href = 'dashboard.html?connect=true';
+          }, 1500);
+          return;
+        }
+      } catch (err) {
+        console.error('Error checking email status:', err);
+        showToast('❌ Failed to check email connection. Please try again.', 'error');
+        return;
+      }
+      const card = document.querySelector(`.lead-card-container[data-index="${index}"]`);
+      const sendBtn = card?.querySelector('.lead-send-btn');
+      if (sendBtn) {
+        sendBtn.textContent = '⏳ Sending...';
+        sendBtn.disabled = true;
+      }
+      try {
         const payload = {
           leads: [{
             name: lead.name || lead.company || 'Unknown',
@@ -1592,496 +1697,462 @@ ${body}
             }]
           }]
         };
-        localStorage.setItem('pendingEmailPayload', JSON.stringify({
-          ...payload,
-          _timestamp: Date.now(),
-          _count: 1
-        }));
-        showToast('📧 Email pending. Please connect your email to send.', 'warning', 4000);
-        setTimeout(() => {
-          window.location.href = 'dashboard.html?connect=true';
-        }, 1500);
-        return;
-      }
-    } catch (err) {
-      console.error('Error checking email status:', err);
-      showToast('❌ Failed to check email connection. Please try again.', 'error');
-      return;
-    }
-    const card = document.querySelector(`.lead-card-container[data-index="${index}"]`);
-    const sendBtn = card?.querySelector('.lead-send-btn');
-    if (sendBtn) {
-      sendBtn.textContent = '⏳ Sending...';
-      sendBtn.disabled = true;
-    }
-    try {
-      const payload = {
-        leads: [{
-          name: lead.name || lead.company || 'Unknown',
-          email: lead.email,
-          company: lead.company || '',
-          messages: lead.messages || [{
-            subject: lead.outreach?.subject || lead.messages?.[0]?.subject || 'Introduction',
-            body: lead.outreach?.body || lead.messages?.[0]?.body || 'Hello, we wanted to reach out.'
-          }]
-        }]
-      };
-      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-        localStorage.setItem('pendingEmailPayload', JSON.stringify({
-          ...payload,
-          _timestamp: Date.now(),
-          _count: 1
-        }));
-        showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-        setTimeout(() => {
-          window.location.href = 'dashboard.html?connect=true';
-        }, 1500);
-        return;
-      }
-      if (data.success) {
-        showToast(`✅ Email sent to ${lead.name || lead.company || 'lead'}!`, 'success');
-        if (sendBtn) {
-          sendBtn.textContent = '✅ Sent';
-          sendBtn.disabled = true;
-          sendBtn.style.opacity = '0.4';
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+          localStorage.setItem('pendingEmailPayload', JSON.stringify({
+            ...payload,
+            _timestamp: Date.now(),
+            _count: 1
+          }));
+          showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+          setTimeout(() => {
+            window.location.href = 'dashboard.html?connect=true';
+          }, 1500);
+          return;
         }
-      } else {
-        showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+        if (data.success) {
+          showToast(`✅ Email sent to ${lead.name || lead.company || 'lead'}!`, 'success');
+          if (sendBtn) {
+            sendBtn.textContent = '✅ Sent';
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.4';
+          }
+        } else {
+          showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        console.error('Send error:', err);
+        showToast('❌ Connection error. Please try again.', 'error');
+      } finally {
+        if (sendBtn && !sendBtn.textContent.includes('Sent')) {
+          sendBtn.textContent = '✉️ Send';
+          sendBtn.disabled = false;
+        }
       }
-    } catch (err) {
-      console.error('Send error:', err);
-      showToast('❌ Connection error. Please try again.', 'error');
-    } finally {
-      if (sendBtn && !sendBtn.textContent.includes('Sent')) {
-        sendBtn.textContent = '✉️ Send';
-        sendBtn.disabled = false;
+    }
+
+    // ── Pending Email Functions ──
+    async function checkAndSendPendingEmails() {
+      const pending = localStorage.getItem('pendingEmailPayload');
+      if (!pending) return;
+      const params = new URLSearchParams(window.location.search);
+      const nylasSuccess = params.get('nylas');
+      if (nylasSuccess !== 'success') {
+        showPendingNotification();
+        return;
+      }
+      try {
+        const payload = JSON.parse(pending);
+        const count = payload.leads?.length || 0;
+        if (count === 0) return;
+        showToast(`📧 Sending ${count} pending emails...`, 'info', 3000);
+        const cleanPayload = { leads: payload.leads };
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(cleanPayload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`✅ ${count} pending emails sent successfully!`, 'success', 5000);
+          localStorage.removeItem('pendingEmailPayload');
+          const notif = document.querySelector('.pending-emails-notif');
+          if (notif) notif.remove();
+        } else {
+          showToast(`❌ Failed to send pending emails: ${data.message || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        console.error('Auto-send error:', err);
+        showToast('❌ Failed to send pending emails. Please try again.', 'error');
       }
     }
-  }
 
-  // ── Pending Email Functions ──
-  async function checkAndSendPendingEmails() {
-    const pending = localStorage.getItem('pendingEmailPayload');
-    if (!pending) return;
-    const params = new URLSearchParams(window.location.search);
-    const nylasSuccess = params.get('nylas');
-    if (nylasSuccess !== 'success') {
-      showPendingNotification();
-      return;
-    }
-    try {
-      const payload = JSON.parse(pending);
-      const count = payload.leads?.length || 0;
-      if (count === 0) return;
-      showToast(`📧 Sending ${count} pending emails...`, 'info', 3000);
-      const cleanPayload = { leads: payload.leads };
-      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(cleanPayload)
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`✅ ${count} pending emails sent successfully!`, 'success', 5000);
-        localStorage.removeItem('pendingEmailPayload');
-        const notif = document.querySelector('.pending-emails-notif');
-        if (notif) notif.remove();
-      } else {
-        showToast(`❌ Failed to send pending emails: ${data.message || 'Unknown error'}`, 'error');
+    function showPendingNotification() {
+      const pending = localStorage.getItem('pendingEmailPayload');
+      if (!pending) return;
+      try {
+        const payload = JSON.parse(pending);
+        const count = payload.leads?.length || 0;
+        if (count === 0) return;
+        if (document.querySelector('.pending-emails-notif')) return;
+        const notif = document.createElement('div');
+        notif.className = 'pending-emails-notif';
+        notif.innerHTML = `
+            <span>📧 You have ${count} pending email${count > 1 ? 's' : ''} to send.</span>
+            <button onclick="sendPendingEmails()">Send Now</button>
+            <button onclick="clearPendingEmails()">Dismiss</button>
+        `;
+        document.body.appendChild(notif);
+      } catch (e) {
+        console.error('Error showing pending notification:', e);
       }
-    } catch (err) {
-      console.error('Auto-send error:', err);
-      showToast('❌ Failed to send pending emails. Please try again.', 'error');
     }
-  }
 
-  function showPendingNotification() {
-    const pending = localStorage.getItem('pendingEmailPayload');
-    if (!pending) return;
-    try {
-      const payload = JSON.parse(pending);
-      const count = payload.leads?.length || 0;
-      if (count === 0) return;
-      if (document.querySelector('.pending-emails-notif')) return;
-      const notif = document.createElement('div');
-      notif.className = 'pending-emails-notif';
-      notif.innerHTML = `
-          <span>📧 You have ${count} pending email${count > 1 ? 's' : ''} to send.</span>
-          <button onclick="sendPendingEmails()">Send Now</button>
-          <button onclick="clearPendingEmails()">Dismiss</button>
-      `;
-      document.body.appendChild(notif);
-    } catch (e) {
-      console.error('Error showing pending notification:', e);
-    }
-  }
-
-  async function sendPendingEmails() {
-    const pending = localStorage.getItem('pendingEmailPayload');
-    if (!pending) {
-      showToast('No pending emails.', 'info');
-      return;
-    }
-    try {
-      const payload = JSON.parse(pending);
-      const count = payload.leads?.length || 0;
-      if (count === 0) {
-        localStorage.removeItem('pendingEmailPayload');
-        const notif = document.querySelector('.pending-emails-notif');
-        if (notif) notif.remove();
+    async function sendPendingEmails() {
+      const pending = localStorage.getItem('pendingEmailPayload');
+      if (!pending) {
         showToast('No pending emails.', 'info');
         return;
       }
+      try {
+        const payload = JSON.parse(pending);
+        const count = payload.leads?.length || 0;
+        if (count === 0) {
+          localStorage.removeItem('pendingEmailPayload');
+          const notif = document.querySelector('.pending-emails-notif');
+          if (notif) notif.remove();
+          showToast('No pending emails.', 'info');
+          return;
+        }
+        const notif = document.querySelector('.pending-emails-notif');
+        if (notif) notif.remove();
+        showToast(`📧 Sending ${count} pending emails...`, 'info', 3000);
+        const cleanPayload = { leads: payload.leads };
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(cleanPayload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`✅ ${count} pending emails sent successfully!`, 'success', 5000);
+          localStorage.removeItem('pendingEmailPayload');
+        } else {
+          showToast(`❌ Failed to send pending emails: ${data.message || 'Unknown error'}`, 'error');
+        }
+      } catch (err) {
+        console.error('Send pending error:', err);
+        showToast('❌ Failed to send pending emails.', 'error');
+      }
+    }
+
+    function clearPendingEmails() {
+      localStorage.removeItem('pendingEmailPayload');
       const notif = document.querySelector('.pending-emails-notif');
       if (notif) notif.remove();
-      showToast(`📧 Sending ${count} pending emails...`, 'info', 3000);
-      const cleanPayload = { leads: payload.leads };
-      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(cleanPayload)
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`✅ ${count} pending emails sent successfully!`, 'success', 5000);
-        localStorage.removeItem('pendingEmailPayload');
-      } else {
-        showToast(`❌ Failed to send pending emails: ${data.message || 'Unknown error'}`, 'error');
-      }
-    } catch (err) {
-      console.error('Send pending error:', err);
-      showToast('❌ Failed to send pending emails.', 'error');
+      showToast('Pending emails dismissed.', 'info', 2000);
     }
-  }
 
-  function clearPendingEmails() {
-    localStorage.removeItem('pendingEmailPayload');
-    const notif = document.querySelector('.pending-emails-notif');
-    if (notif) notif.remove();
-    showToast('Pending emails dismissed.', 'info', 2000);
-  }
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
 
-  function getTime() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-
-  // ── Toast Function ──
-  function showToast(message, type = 'info', duration = 4000) {
-    const existing = document.querySelector('.toast-msg');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast-msg';
-    toast.textContent = message;
-    const colors = {
-      success: { bg: 'rgba(0, 230, 118, 0.12)', border: '#00e676', text: '#00e676' },
-      error: { bg: 'rgba(255, 77, 77, 0.12)', border: '#ff4d4d', text: '#ff4d4d' },
-      warning: { bg: 'rgba(255, 170, 0, 0.12)', border: '#ffaa00', text: '#ffaa00' },
-      info: { bg: 'rgba(0, 210, 255, 0.12)', border: '#00d2ff', text: '#00d2ff' }
-    };
-    const color = colors[type] || colors.info;
-    Object.assign(toast.style, {
-      position: 'fixed',
-      top: '20px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      padding: '12px 24px',
-      borderRadius: '8px',
-      fontFamily: "'IBM Plex Mono', monospace",
-      fontSize: '13px',
-      fontWeight: '600',
-      zIndex: '9999',
-      maxWidth: '90%',
-      textAlign: 'center',
-      background: color.bg,
-      border: '1px solid ' + color.border,
-      color: color.text,
-      animation: 'slideDown 0.3s ease'
-    });
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), duration);
-  }
-
-  // ----- EMAIL STATUS CHECK -----
-  async function checkEmailStatus() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+    // ── Toast Function ──
+    function showToast(message, type = 'info', duration = 4000) {
+      const existing = document.querySelector('.toast-msg');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.textContent = message;
+      const colors = {
+        success: { bg: 'rgba(0, 230, 118, 0.12)', border: '#00e676', text: '#00e676' },
+        error: { bg: 'rgba(255, 77, 77, 0.12)', border: '#ff4d4d', text: '#ff4d4d' },
+        warning: { bg: 'rgba(255, 170, 0, 0.12)', border: '#ffaa00', text: '#ffaa00' },
+        info: { bg: 'rgba(0, 210, 255, 0.12)', border: '#00d2ff', text: '#00d2ff' }
+      };
+      const color = colors[type] || colors.info;
+      Object.assign(toast.style, {
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: '13px',
+        fontWeight: '600',
+        zIndex: '9999',
+        maxWidth: '90%',
+        textAlign: 'center',
+        background: color.bg,
+        border: '1px solid ' + color.border,
+        color: color.text,
+        animation: 'slideDown 0.3s ease'
       });
-      if (!res.ok) {
-        throw new Error(`Status check failed: ${res.status}`);
-      }
-      const data = await res.json();
-      console.log('📊 [PAGE] Email status:', data);
-      const statusTextEl = document.getElementById('statusText');
-      const statusBarEl = document.getElementById('statusBar');
-      if (data.connected && !data.isExpired) {
-        statusBarEl.className = 'status-bar connected';
-        statusTextEl.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
-        if (data.email && data.email !== 'Connected') {
-          statusTextEl.innerHTML = `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), duration);
+    }
+
+    // ----- EMAIL STATUS CHECK -----
+    async function checkEmailStatus() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!res.ok) {
+          throw new Error(`Status check failed: ${res.status}`);
         }
-      } else if (data.connected && data.isExpired) {
-        statusBarEl.className = 'status-bar disconnected';
-        statusTextEl.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
-      } else {
-        statusBarEl.className = 'status-bar disconnected';
-        statusTextEl.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
-      }
-      return data;
-    } catch (err) {
-      console.error('❌ Error checking email status:', err);
-      const statusTextEl = document.getElementById('statusText');
-      if (statusTextEl) {
-        statusTextEl.textContent = '⚠️ Status unknown';
+        const data = await res.json();
+        console.log('📊 [PAGE] Email status:', data);
+        const statusTextEl = document.getElementById('statusText');
+        const statusBarEl = document.getElementById('statusBar');
+        if (data.connected && !data.isExpired) {
+          statusBarEl.className = 'status-bar connected';
+          statusTextEl.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
+          if (data.email && data.email !== 'Connected') {
+            statusTextEl.innerHTML = `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>`;
+          }
+        } else if (data.connected && data.isExpired) {
+          statusBarEl.className = 'status-bar disconnected';
+          statusTextEl.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
+        } else {
+          statusBarEl.className = 'status-bar disconnected';
+          statusTextEl.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
+        }
+        return data;
+      } catch (err) {
+        console.error('❌ Error checking email status:', err);
+        const statusTextEl = document.getElementById('statusText');
+        if (statusTextEl) {
+          statusTextEl.textContent = '⚠️ Status unknown';
+        }
       }
     }
-  }
 
-  // ----- LOAD SESSION FROM URL -----
-  async function loadSessionFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('session');
-    const type = params.get('type');
-    if (!sessionId) return false;
-    conversationHistory = [];
-    isSessionLoading = true;
-    console.log('[page] Loading session:', sessionId, 'type:', type);
-    try {
-      const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to load session');
-      const msgs = await res.json();
-      const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
-      if (isAssistantSession) {
-        assistantSessionId = sessionId;
-        currentMode = 'assistant';
-        modeSelector.classList.add('hidden');
+    // ----- LOAD SESSION FROM URL -----
+    async function loadSessionFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session');
+      const type = params.get('type');
+      if (!sessionId) return false;
+      conversationHistory = [];
+      isSessionLoading = true;
+      console.log('[page] Loading session:', sessionId, 'type:', type);
+      try {
+        const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to load session');
+        const msgs = await res.json();
+        const isAssistantSession = (type === 'assistant') || (sessionId === 'assistant');
+        if (isAssistantSession) {
+          assistantSessionId = sessionId;
+          currentMode = 'assistant';
+          modeSelector.classList.add('hidden');
+          assistantModeSelector.style.display = 'flex';
+          document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+          assistantContainer.classList.add('active');
+          assistantInputBar.classList.add('active');
+          assistantInputBar.style.display = 'block';
+          assistantMsgInput.placeholder = 'Continue your conversation…';
+          assistantSendBtn.disabled = true;
+          assistantMsgContainer.innerHTML = '';
+          if (msgs && msgs.length > 0) {
+            for (const m of msgs) {
+              const role = m.role === 'ai' ? 'ai' : 'user';
+              addAssistantMessage(role, m.content);
+            }
+          } else {
+            addAssistantMessage('ai', 'No messages in this session.');
+          }
+          scrollAssistantDown();
+          isChatActive = true;
+          document.querySelector('.topbar-label').textContent = 'Assistant Session';
+        } else {
+          currentMode = 'lead';
+          modeSelector.classList.add('hidden');
+          document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+          leadContainer.classList.add('active');
+          setupWizard.style.display = 'none';
+          leadChatArea.classList.add('active');
+          leadInputBar.classList.remove('lead-active');
+          leadInputBar.classList.add('lead-hidden');
+          leadMsgContainer.innerHTML = '';
+          if (msgs && msgs.length > 0) {
+            for (const m of msgs) {
+              const role = m.role === 'ai' ? 'ai' : 'user';
+              addLeadMessage(role, m.content);
+              conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
+            }
+          } else {
+            addLeadMessage('ai', 'No messages in this session.');
+          }
+          scrollLeadDown();
+          isChatActive = true;
+          document.querySelector('.topbar-label').textContent = 'Lead Session';
+        }
+        currentSessionId = sessionId;
+        isSessionLoading = false;
+        return true;
+      } catch (err) {
+        console.error('[page] Error loading session:', err);
+        isSessionLoading = false;
+        return false;
+      }
+    }
+
+    // ----- NOTIFICATION BADGE -----
+    async function loadNotifCount() {
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const data = await res.json();
+          const count = data.count || 0;
+          localStorage.setItem('lastKnownNotifCount', count);
+          const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+          updateBadge(count > seen ? count : 0);
+        }
+      } catch {}
+    }
+
+    function updateBadge(count) {
+      const item = document.getElementById('navNotifBtn');
+      const badge = item?.querySelector('.nav-badge');
+      if (!item || !badge) return;
+      if (count > 0) {
+        item.classList.add('has-notifs');
+        badge.textContent = count > 9 ? '9+' : count;
+      } else {
+        item.classList.remove('has-notifs');
+        badge.textContent = '';
+      }
+    }
+
+    // ----- STATUS & PLAN -----
+    async function updateStatus() {
+      try {
+        const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const user = await res.json();
+          const p = user.subscriptionTier || 'free';
+          planChip.className = `plan-chip ${p}`;
+          planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+        }
+      } catch {}
+    }
+
+    // ----- NEW CHAT / CLEAR -----
+    document.getElementById('newChatBtn').addEventListener('click', function() {
+      if (currentMode === 'lead') {
+        isChatActive = false;
+        isTyping = false;
+        leadMsgContainer.innerHTML = '';
+        reviewPanel.style.display = 'none';
+        setupWizard.style.display = 'flex';
+        leadChatArea.classList.remove('active');
+        leadInputBar.classList.add('lead-active');
+        leadInputBar.classList.remove('lead-hidden');
+        currentGeneratedLeads = [];
+        conversationHistory = [];
+        currentSessionId = null;
+        modeSelector.classList.remove('hidden');
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+        leadContainer.classList.add('active');
+        document.querySelector('.topbar-label').textContent = 'Business Agent';
+        const url = new URL(window.location);
+        url.searchParams.delete('session');
+        url.searchParams.delete('type');
+        window.history.pushState({}, '', url);
+      } else {
+        isChatActive = false;
+        isTyping = false;
+        assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        assistantMsgContainer.innerHTML = '';
+        addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
         assistantModeSelector.style.display = 'flex';
         document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
         assistantContainer.classList.add('active');
         assistantInputBar.classList.add('active');
         assistantInputBar.style.display = 'block';
-        assistantMsgInput.placeholder = 'Continue your conversation…';
-        assistantSendBtn.disabled = true;
-        assistantMsgContainer.innerHTML = '';
-        if (msgs && msgs.length > 0) {
-          for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            addAssistantMessage(role, m.content);
-          }
-        } else {
-          addAssistantMessage('ai', 'No messages in this session.');
-        }
-        scrollAssistantDown();
-        isChatActive = true;
-        document.querySelector('.topbar-label').textContent = 'Assistant Session';
-      } else {
-        currentMode = 'lead';
-        modeSelector.classList.add('hidden');
-        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-        leadContainer.classList.add('active');
-        setupWizard.style.display = 'none';
-        leadChatArea.classList.add('active');
-        leadInputBar.classList.remove('lead-active');
-        leadInputBar.classList.add('lead-hidden');
-        leadMsgContainer.innerHTML = '';
-        if (msgs && msgs.length > 0) {
-          for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            addLeadMessage(role, m.content);
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
-          }
-        } else {
-          addLeadMessage('ai', 'No messages in this session.');
-        }
-        scrollLeadDown();
-        isChatActive = true;
-        document.querySelector('.topbar-label').textContent = 'Lead Session';
+        document.querySelector('.topbar-label').textContent = 'Business Agent';
+        const url = new URL(window.location);
+        url.searchParams.delete('session');
+        url.searchParams.delete('type');
+        window.history.pushState({}, '', url);
       }
-      currentSessionId = sessionId;
-      isSessionLoading = false;
-      return true;
-    } catch (err) {
-      console.error('[page] Error loading session:', err);
-      isSessionLoading = false;
-      return false;
-    }
-  }
-
-  // ----- NOTIFICATION BADGE -----
-  async function loadNotifCount() {
-    try {
-      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        const count = data.count || 0;
-        localStorage.setItem('lastKnownNotifCount', count);
-        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-        updateBadge(count > seen ? count : 0);
-      }
-    } catch {}
-  }
-
-  function updateBadge(count) {
-    const item = document.getElementById('navNotifBtn');
-    const badge = item?.querySelector('.nav-badge');
-    if (!item || !badge) return;
-    if (count > 0) {
-      item.classList.add('has-notifs');
-      badge.textContent = count > 9 ? '9+' : count;
-    } else {
-      item.classList.remove('has-notifs');
-      badge.textContent = '';
-    }
-  }
-
-  // ----- STATUS & PLAN -----
-  async function updateStatus() {
-    try {
-      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const user = await res.json();
-        const p = user.subscriptionTier || 'free';
-        planChip.className = `plan-chip ${p}`;
-        planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-      }
-    } catch {}
-  }
-
-  // ----- NEW CHAT / CLEAR -----
-  document.getElementById('newChatBtn').addEventListener('click', function() {
-    if (currentMode === 'lead') {
-      isChatActive = false;
-      isTyping = false;
-      leadMsgContainer.innerHTML = '';
-      reviewPanel.style.display = 'none';
-      setupWizard.style.display = 'flex';
-      leadChatArea.classList.remove('active');
-      leadInputBar.classList.add('lead-active');
-      leadInputBar.classList.remove('lead-hidden');
-      currentGeneratedLeads = [];
-      conversationHistory = [];
-      currentSessionId = null;
-      modeSelector.classList.remove('hidden');
-      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-      leadContainer.classList.add('active');
-      document.querySelector('.topbar-label').textContent = 'Business Agent';
-      const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
-      window.history.pushState({}, '', url);
-    } else {
-      isChatActive = false;
-      isTyping = false;
-      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-      assistantMsgContainer.innerHTML = '';
-      addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
-      assistantModeSelector.style.display = 'flex';
-      document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-      assistantContainer.classList.add('active');
-      assistantInputBar.classList.add('active');
-      assistantInputBar.style.display = 'block';
-      document.querySelector('.topbar-label').textContent = 'Business Agent';
-      const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
-      window.history.pushState({}, '', url);
-    }
-  });
-
-  document.getElementById('clearSessionBtn').addEventListener('click', function() {
-    if (currentMode === 'lead') {
-      leadMsgContainer.innerHTML = '';
-      reviewPanel.style.display = 'none';
-      setupWizard.style.display = 'flex';
-      leadChatArea.classList.remove('active');
-      leadInputBar.classList.add('lead-active');
-      leadInputBar.classList.remove('lead-hidden');
-      currentGeneratedLeads = [];
-      conversationHistory = [];
-      currentSessionId = null;
-      isChatActive = false;
-      isTyping = false;
-      modeSelector.classList.remove('hidden');
-      const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
-      window.history.pushState({}, '', url);
-      document.querySelector('.topbar-label').textContent = 'Business Agent';
-    } else {
-      isChatActive = false;
-      isTyping = false;
-      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-      assistantMsgContainer.innerHTML = '';
-      addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
-      assistantModeSelector.style.display = 'flex';
-      assistantInputBar.classList.add('active');
-      assistantInputBar.style.display = 'block';
-      const url = new URL(window.location);
-      url.searchParams.delete('session');
-      url.searchParams.delete('type');
-      window.history.pushState({}, '', url);
-      document.querySelector('.topbar-label').textContent = 'Business Agent';
-    }
-  });
-
-  // ----- INIT -----
-  document.addEventListener('DOMContentLoaded', async function() {
-    await checkEmailStatus();
-
-    // ── Check if returning from OAuth ──
-    const params = new URLSearchParams(window.location.search);
-    const nylasSuccess = params.get('nylas');
-
-    if (nylasSuccess === 'success') {
-      await checkAndSendPendingEmails();
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-      showPendingNotification();
-    }
-
-    const sessionLoaded = await loadSessionFromUrl();
-
-    if (!sessionLoaded) {
-      leadContainer.classList.add('active');
-      setupWizard.style.display = 'flex';
-      modeSelector.classList.remove('hidden');
-      document.querySelector('.topbar-label').textContent = 'Business Agent';
-      assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-    }
-
-    await updateStatus();
-    loadNotifCount();
-    notifInterval = setInterval(loadNotifCount, 15000);
-    setInterval(checkEmailStatus, 30000);
-
-    document.getElementById('navNotifBtn').addEventListener('click', function() {
-      localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
-      updateBadge(0);
     });
-  });
-</script>
+
+    document.getElementById('clearSessionBtn').addEventListener('click', function() {
+      if (currentMode === 'lead') {
+        leadMsgContainer.innerHTML = '';
+        reviewPanel.style.display = 'none';
+        setupWizard.style.display = 'flex';
+        leadChatArea.classList.remove('active');
+        leadInputBar.classList.add('lead-active');
+        leadInputBar.classList.remove('lead-hidden');
+        currentGeneratedLeads = [];
+        conversationHistory = [];
+        currentSessionId = null;
+        isChatActive = false;
+        isTyping = false;
+        modeSelector.classList.remove('hidden');
+        const url = new URL(window.location);
+        url.searchParams.delete('session');
+        url.searchParams.delete('type');
+        window.history.pushState({}, '', url);
+        document.querySelector('.topbar-label').textContent = 'Business Agent';
+      } else {
+        isChatActive = false;
+        isTyping = false;
+        assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        assistantMsgContainer.innerHTML = '';
+        addAssistantMessage('ai', '👋 Hello! I\'m your Skyline assistant. I know everything about your account — your leads, chats, subscription, and activity. Ask me anything!');
+        assistantModeSelector.style.display = 'flex';
+        assistantInputBar.classList.add('active');
+        assistantInputBar.style.display = 'block';
+        const url = new URL(window.location);
+        url.searchParams.delete('session');
+        url.searchParams.delete('type');
+        window.history.pushState({}, '', url);
+        document.querySelector('.topbar-label').textContent = 'Business Agent';
+      }
+    });
+
+    // ----- INIT -----
+    document.addEventListener('DOMContentLoaded', async function() {
+      await checkEmailStatus();
+
+      // ── Check if returning from OAuth ──
+      const params = new URLSearchParams(window.location.search);
+      const nylasSuccess = params.get('nylas');
+
+      if (nylasSuccess === 'success') {
+        await checkAndSendPendingEmails();
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        showPendingNotification();
+      }
+
+      const sessionLoaded = await loadSessionFromUrl();
+
+      if (!sessionLoaded) {
+        leadContainer.classList.add('active');
+        setupWizard.style.display = 'flex';
+        modeSelector.classList.remove('hidden');
+        document.querySelector('.topbar-label').textContent = 'Business Agent';
+        assistantSessionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+      }
+
+      await updateStatus();
+      loadNotifCount();
+      notifInterval = setInterval(loadNotifCount, 15000);
+      setInterval(checkEmailStatus, 30000);
+
+      document.getElementById('navNotifBtn').addEventListener('click', function() {
+        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
+        updateBadge(0);
+      });
+    });
+  </script>
 </body>
   </html>
