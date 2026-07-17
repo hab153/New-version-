@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
   <title>Inbox | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -310,14 +310,36 @@
     .contact-item.unread .contact-preview { font-weight: 500; color: var(--text-1); }
     .contact-item.unread .contact-time { color: var(--accent); }
 
-    .loading-text {
+    /* ─── LOADING INDICATOR ─── */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 28px;
       text-align: center;
+    }
+    .loading-text {
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.06em;
+      margin-bottom: 16px;
     }
+    .rolling-circle {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255, 255, 255, 0.08);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -817,7 +839,11 @@
       </div>
 
       <div class="contact-list" id="contactList">
-        <div class="loading-text">LOADING CONTACTS…</div>
+        <!-- UPDATED LOADING STATE WITH ROLLING CIRCLE -->
+        <div class="loading-container">
+          <div class="loading-text">LOADING CONTACTS…</div>
+          <div class="rolling-circle"></div>
+        </div>
       </div>
     </div>
 
@@ -1056,6 +1082,13 @@
     async function loadContacts() {
       console.log('📡 [loadContacts] Fetching /api/conversations...');
       const list = document.getElementById('contactList');
+      // Show loading spinner with rolling circle
+      list.innerHTML = `
+        <div class="loading-container">
+          <div class="loading-text">LOADING CONTACTS…</div>
+          <div class="rolling-circle"></div>
+        </div>
+      `;
       try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -1176,7 +1209,6 @@
         contact.unreadCount = 0;
         updateStats(allContacts);
         renderContacts(allContacts);
-        // markAsRead
         fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
@@ -1510,11 +1542,11 @@
       btn.classList.add('active');
       if (tab === 'leads') {
         document.getElementById('viewList').style.display = 'flex';
-        document.getElementById('viewAdmin').style.display = 'none';
+        // viewAdmin is not in the HTML, so we only handle leads for now.
         closeChat();
       } else {
+        // Team tab could be implemented later
         document.getElementById('viewList').style.display = 'none';
-        document.getElementById('viewAdmin').style.display = 'flex';
         closeChat();
       }
     }
