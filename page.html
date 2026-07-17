@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-/* ── All your existing styles stay exactly the same ── */
+/* ── ALL YOUR EXISTING STYLES STAY EXACTLY THE SAME ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -750,7 +750,7 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FORMAT AI RESPONSE - DETECTS LEADS IN JSON
+//  ULTIMATE FIX: FORMAT AI RESPONSE - DETECTS LEADS IN JSON
 // ──────────────────────────────────────────────────────────────
 
 function formatAI(text) {
@@ -758,12 +758,13 @@ if (!text) return '';
 
 console.log('🔍 [formatAI] Processing response...');
 
+// ── Step 1: Clean the text ──
 let rawText = text;
 
-// ── Remove markdown ──
+// Remove markdown code blocks
 rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
 
-// ── Decode HTML entities ──
+// Decode HTML entities
 if (rawText.includes('&quot;') || rawText.includes('&#039;') || rawText.includes('&amp;')) {
 const div = document.createElement('div');
 div.innerHTML = rawText;
@@ -772,69 +773,66 @@ rawText = div.textContent || div.innerText || rawText;
 
 const trimmed = rawText.trim();
 
-// ── TRY TO FIND JSON ARRAY ──
-let jsonStr = null;
-
-// Method 1: Direct array match
-const arrayMatch = trimmed.match(/\[\s*\{[\s\S]*?\}\s*\]/);
-if (arrayMatch) {
-jsonStr = arrayMatch[0];
-}
-
-// Method 2: Find JSON with escaped quotes
-if (!jsonStr) {
-const escapedMatch = trimmed.match(/\[\s*\{[\s\S]*?"name"[\s\S]*?\}\s*\]/);
-if (escapedMatch) {
-jsonStr = escapedMatch[0];
-}
-}
-
-// Method 3: Find JSON containing "messages"
-if (!jsonStr) {
-const messagesMatch = trimmed.match(/\[\s*\{[\s\S]*?"messages"[\s\S]*?\}\s*\]/);
-if (messagesMatch) {
-jsonStr = messagesMatch[0];
-}
-}
-
-// Method 4: Find JSON containing "outreach"
-if (!jsonStr) {
-const outreachMatch = trimmed.match(/\[\s*\{[\s\S]*?"outreach"[\s\S]*?\}\s*\]/);
-if (outreachMatch) {
-jsonStr = outreachMatch[0];
-}
-}
-
-// ── PARSE THE JSON ──
-if (jsonStr) {
+// ── Step 2: Check if it's already a JSON array ──
+if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
 try {
-// Clean up the JSON
-let cleanJson = jsonStr
-.replace(/,\s*}/g, '}')
-.replace(/,\s*]/g, ']')
-.replace(/\s+/g, ' ')
-.trim();
+const parsed = JSON.parse(trimmed);
+if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
+console.log('✅ [formatAI] Parsed JSON directly, count:', parsed.length);
+window.currentLeads = parsed;
+return renderLeadCards(parsed);
+}
+} catch (e) {
+console.log('⚠️ [formatAI] Direct parse failed');
+}
+}
 
-const parsed = JSON.parse(cleanJson);
+// ── Step 3: Find JSON array anywhere in the text ──
+let jsonMatch = null;
+
+// Try to find a JSON array
+const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
+const match = trimmed.match(arrayPattern);
+
+if (match) {
+jsonMatch = match[0];
+console.log('🔍 [formatAI] Found JSON array match');
+}
+
+// ── Step 4: Try to parse the found JSON ──
+if (jsonMatch) {
+try {
+// Clean the JSON
+let clean = jsonMatch;
+// Remove trailing commas
+clean = clean.replace(/,\s*}/g, '}');
+clean = clean.replace(/,\s*]/g, ']');
+// Remove extra whitespace
+clean = clean.replace(/\s+/g, ' ').trim();
+
+const parsed = JSON.parse(clean);
 
 if (Array.isArray(parsed) && parsed.length > 0) {
-// Check if it's leads data
-if (parsed[0].name || parsed[0].company) {
-console.log('✅ [formatAI] Parsed', parsed.length, 'leads');
+// Check if it's lead data
+if (parsed[0].name || parsed[0].company || parsed[0].company_name) {
+console.log('✅ [formatAI] Parsed JSON from match, count:', parsed.length);
 window.currentLeads = parsed;
 return renderLeadCards(parsed);
 }
 }
 } catch (e) {
-console.log('⚠️ [formatAI] Parse failed, trying fallback...');
+console.log('⚠️ [formatAI] JSON parse failed:', e.message);
 
-// ── FALLBACK: Try to repair ──
+// ── Try emergency repair ──
 try {
-let fixed = jsonStr;
-const startIdx = fixed.indexOf('[');
-if (startIdx > 0) fixed = fixed.substring(startIdx);
-const endIdx = fixed.lastIndexOf(']');
-if (endIdx > 0) fixed = fixed.substring(0, endIdx + 1);
+let fixed = jsonMatch;
+// Remove any text before the first [
+const start = fixed.indexOf('[');
+if (start > 0) fixed = fixed.substring(start);
+// Remove any text after the last ]
+const end = fixed.lastIndexOf(']');
+if (end > 0) fixed = fixed.substring(0, end + 1);
+// Fix common JSON issues
 fixed = fixed.replace(/'/g, '"');
 fixed = fixed.replace(/,\s*}/g, '}');
 fixed = fixed.replace(/,\s*]/g, ']');
@@ -842,17 +840,45 @@ fixed = fixed.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
 
 const repaired = JSON.parse(fixed);
 if (Array.isArray(repaired) && repaired.length > 0) {
-console.log('✅ [formatAI] Repaired JSON, rendering cards...');
+console.log('✅ [formatAI] Repaired JSON, count:', repaired.length);
 window.currentLeads = repaired;
 return renderLeadCards(repaired);
 }
 } catch (e2) {
-console.log('⚠️ [formatAI] Fallback also failed');
+console.log('⚠️ [formatAI] Repair failed:', e2.message);
 }
 }
 }
 
-// ── FALLBACK: Normal text formatting ──
+// ── Step 5: Check if the text looks like JSON but is malformed ──
+if (trimmed.includes('"name"') && trimmed.includes('"company"')) {
+console.log('🔍 [formatAI] Text looks like JSON, attempting emergency extraction...');
+try {
+// Try to extract just the array part
+const startIdx = trimmed.indexOf('[');
+const endIdx = trimmed.lastIndexOf(']') + 1;
+if (startIdx >= 0 && endIdx > startIdx) {
+let extracted = trimmed.substring(startIdx, endIdx);
+// Clean up
+extracted = extracted.replace(/'/g, '"');
+extracted = extracted.replace(/,\s*}/g, '}');
+extracted = extracted.replace(/,\s*]/g, ']');
+extracted = extracted.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+
+const parsed = JSON.parse(extracted);
+if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
+console.log('✅ [formatAI] Emergency extraction successful, count:', parsed.length);
+window.currentLeads = parsed;
+return renderLeadCards(parsed);
+}
+}
+} catch (e) {
+console.log('⚠️ [formatAI] Emergency extraction failed:', e.message);
+}
+}
+
+// ── Step 6: Fallback - normal formatting ──
+console.log('🔍 [formatAI] Using fallback text formatting');
 let s = text;
 s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
