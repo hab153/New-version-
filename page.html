@@ -320,7 +320,7 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
 .wizard-card { animation: cardIn 0.55s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-/* ── LEAD CARDS ── */
+/* ── REDESIGNED LEAD CARDS AS EMAIL BOXES ── */
 .leads-container {
 width: 100%;
 background: var(--bg-surface);
@@ -344,125 +344,122 @@ font-family: var(--mono);
 font-size: 11px;
 color: var(--t2);
 }
-.leads-actions {
-display: flex;
-gap: 8px;
-}
-.send-all-leads-btn {
-padding: 8px 20px;
-border-radius: 6px;
-border: none;
-background: var(--accent);
-color: #060608;
-font-family: var(--ui);
-font-size: 12px;
-font-weight: 600;
-cursor: pointer;
-transition: all 0.2s;
-}
-.send-all-leads-btn:hover:not(:disabled) {
-transform: scale(1.02);
-box-shadow: 0 0 20px rgba(200,255,87,0.3);
-}
-.send-all-leads-btn:disabled {
-opacity: 0.5;
-cursor: not-allowed;
-transform: none;
-}
 .leads-grid {
-display: grid;
-grid-template-columns: 1fr;
+display: flex;
+flex-direction: column;
 gap: 12px;
+max-height: 380px;
+overflow-y: auto;
+padding-right: 4px;
 }
-@media (min-width: 600px) {
-.leads-grid { grid-template-columns: 1fr 1fr; }
-}
-.lead-card-container {
+.leads-grid::-webkit-scrollbar { width: 2px; }
+.leads-grid::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 2px; }
+
+/* ── Email Box Card ── */
+.email-box {
 background: var(--bg-raised);
 border: 1px solid var(--br-dim);
 border-radius: 10px;
-padding: 14px;
+padding: 14px 16px;
 transition: all 0.2s;
 }
-.lead-card-container:hover {
+.email-box:hover {
 border-color: var(--br-md);
-transform: translateY(-2px);
 }
-.lead-card-header {
+.email-box .box-header {
 display: flex;
+justify-content: space-between;
 align-items: center;
-gap: 8px;
 margin-bottom: 8px;
 flex-wrap: wrap;
+gap: 6px;
 }
-.lead-rank {
-font-family: var(--mono);
-font-size: 12px;
+.email-box .box-company {
+font-size: 14px;
 font-weight: 600;
-color: var(--gold);
+color: var(--t1);
 }
-.lead-rank-label {
+.email-box .box-rank {
 font-family: var(--mono);
-font-size: 9px;
+font-size: 10px;
 color: var(--t3);
 background: var(--bg-surface);
 padding: 2px 8px;
 border-radius: 10px;
 }
-.lead-email-status {
-font-size: 11px;
-margin-left: auto;
-opacity: 0.6;
-}
-.quality-badge {
-font-size: 8px;
-padding: 2px 8px;
-border-radius: 10px;
-font-weight: 600;
-text-transform: uppercase;
-letter-spacing: 0.05em;
-}
-.quality-badge.high { background: rgba(102,221,153,0.15); color: var(--sage); }
-.quality-badge.medium { background: rgba(255,170,0,0.15); color: #ffaa00; }
-.quality-badge.low { background: rgba(255,85,85,0.15); color: var(--rose); }
-.lead-company { font-size: 15px; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
-.lead-details { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 8px; }
-.lead-detail { font-size: 11px; color: var(--t2); font-family: var(--mono); }
-.lead-message-preview {
-background: var(--bg-surface);
-border-radius: 6px;
-padding: 8px 10px;
-margin: 6px 0 10px;
-}
-.lead-subject { font-size: 12px; font-weight: 500; color: var(--gold-pale); margin-bottom: 2px; }
-.lead-body-preview { font-size: 11px; color: var(--t3); line-height: 1.5; font-family: var(--mono); max-height: 60px; overflow: hidden; }
-.lead-card-footer { display: flex; gap: 8px; justify-content: flex-end; }
-.lead-view-btn, .lead-send-btn {
-padding: 5px 14px;
-border-radius: 6px;
-border: none;
+.email-box .box-email {
 font-family: var(--mono);
-font-size: 10px;
-font-weight: 600;
+font-size: 11px;
+color: var(--t2);
+margin-bottom: 8px;
+word-break: break-all;
+}
+.email-box .box-subject {
+font-size: 12px;
+font-weight: 500;
+color: var(--gold-pale);
+margin-bottom: 4px;
+}
+.email-box .box-body {
+font-size: 12px;
+color: var(--t3);
+line-height: 1.6;
+font-family: var(--mono);
+max-height: 80px;
+overflow-y: auto;
+white-space: pre-wrap;
+padding: 6px 0;
+}
+.email-box .box-body::-webkit-scrollbar { width: 2px; }
+.email-box .box-body::-webkit-scrollbar-thumb { background: var(--br-dim); border-radius: 2px; }
+
+/* ── Send All Button ── */
+.send-all-emails-btn {
+width: 100%;
+padding: 12px;
+border-radius: 8px;
+border: none;
+background: var(--accent);
+color: #060608;
+font-family: var(--ui);
+font-size: 13px;
+font-weight: 700;
 cursor: pointer;
 transition: all 0.2s;
+margin-top: 14px;
+text-transform: uppercase;
+letter-spacing: 0.06em;
 }
-.lead-view-btn {
-background: var(--bg-surface);
-color: var(--t2);
-border: 1px solid var(--br-dim);
+.send-all-emails-btn:hover:not(:disabled) {
+transform: scale(1.01);
+box-shadow: 0 0 24px rgba(200,255,87,0.25);
 }
-.lead-view-btn:hover { background: var(--bg-raised); color: var(--t1); }
-.lead-send-btn {
-background: var(--accent-go);
-color: #000;
+.send-all-emails-btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+transform: none;
 }
-.lead-send-btn:hover:not(:disabled) {
-transform: scale(1.05);
-box-shadow: 0 0 12px rgba(0,210,255,0.3);
+.send-all-emails-btn .btn-count {
+font-weight: 400;
+opacity: 0.7;
 }
-.lead-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .no-leads { text-align: center; color: var(--t3); padding: 20px; font-family: var(--mono); }
+
+.toast-msg {
+position: fixed;
+top: 20px;
+left: 50%;
+transform: translateX(-50%);
+padding: 12px 24px;
+border-radius: 8px;
+font-family: 'IBM Plex Mono', monospace;
+font-size: 13px;
+font-weight: 600;
+z-index: 9999;
+max-width: 90%;
+text-align: center;
+animation: slideDown 0.3s ease;
+}
 .pending-emails-notif {
 position: fixed;
 bottom: 80px;
@@ -510,21 +507,6 @@ background: transparent;
 color: var(--t3);
 }
 .pending-emails-notif button:last-of-type:hover { color: var(--t1); }
-.toast-msg {
-position: fixed;
-top: 20px;
-left: 50%;
-transform: translateX(-50%);
-padding: 12px 24px;
-border-radius: 8px;
-font-family: 'IBM Plex Mono', monospace;
-font-size: 13px;
-font-weight: 600;
-z-index: 9999;
-max-width: 90%;
-text-align: center;
-animation: slideDown 0.3s ease;
-}
 </style>
 </head>
 <body>
@@ -750,145 +732,7 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ULTIMATE FIX: FORMAT AI RESPONSE - DETECTS LEADS IN JSON
-// ──────────────────────────────────────────────────────────────
-
-function formatAI(text) {
-if (!text) return '';
-
-console.log('🔍 [formatAI] Processing response...');
-
-// ── Step 1: Clean the text ──
-let rawText = text;
-
-// Remove markdown code blocks
-rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
-
-// Decode HTML entities
-if (rawText.includes('&quot;') || rawText.includes('&#039;') || rawText.includes('&amp;')) {
-const div = document.createElement('div');
-div.innerHTML = rawText;
-rawText = div.textContent || div.innerText || rawText;
-}
-
-const trimmed = rawText.trim();
-
-// ── Step 2: Check if it's already a JSON array ──
-if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-try {
-const parsed = JSON.parse(trimmed);
-if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
-console.log('✅ [formatAI] Parsed JSON directly, count:', parsed.length);
-window.currentLeads = parsed;
-return renderLeadCards(parsed);
-}
-} catch (e) {
-console.log('⚠️ [formatAI] Direct parse failed');
-}
-}
-
-// ── Step 3: Find JSON array anywhere in the text ──
-let jsonMatch = null;
-
-// Try to find a JSON array
-const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
-const match = trimmed.match(arrayPattern);
-
-if (match) {
-jsonMatch = match[0];
-console.log('🔍 [formatAI] Found JSON array match');
-}
-
-// ── Step 4: Try to parse the found JSON ──
-if (jsonMatch) {
-try {
-// Clean the JSON
-let clean = jsonMatch;
-// Remove trailing commas
-clean = clean.replace(/,\s*}/g, '}');
-clean = clean.replace(/,\s*]/g, ']');
-// Remove extra whitespace
-clean = clean.replace(/\s+/g, ' ').trim();
-
-const parsed = JSON.parse(clean);
-
-if (Array.isArray(parsed) && parsed.length > 0) {
-// Check if it's lead data
-if (parsed[0].name || parsed[0].company || parsed[0].company_name) {
-console.log('✅ [formatAI] Parsed JSON from match, count:', parsed.length);
-window.currentLeads = parsed;
-return renderLeadCards(parsed);
-}
-}
-} catch (e) {
-console.log('⚠️ [formatAI] JSON parse failed:', e.message);
-
-// ── Try emergency repair ──
-try {
-let fixed = jsonMatch;
-// Remove any text before the first [
-const start = fixed.indexOf('[');
-if (start > 0) fixed = fixed.substring(start);
-// Remove any text after the last ]
-const end = fixed.lastIndexOf(']');
-if (end > 0) fixed = fixed.substring(0, end + 1);
-// Fix common JSON issues
-fixed = fixed.replace(/'/g, '"');
-fixed = fixed.replace(/,\s*}/g, '}');
-fixed = fixed.replace(/,\s*]/g, ']');
-fixed = fixed.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
-
-const repaired = JSON.parse(fixed);
-if (Array.isArray(repaired) && repaired.length > 0) {
-console.log('✅ [formatAI] Repaired JSON, count:', repaired.length);
-window.currentLeads = repaired;
-return renderLeadCards(repaired);
-}
-} catch (e2) {
-console.log('⚠️ [formatAI] Repair failed:', e2.message);
-}
-}
-}
-
-// ── Step 5: Check if the text looks like JSON but is malformed ──
-if (trimmed.includes('"name"') && trimmed.includes('"company"')) {
-console.log('🔍 [formatAI] Text looks like JSON, attempting emergency extraction...');
-try {
-// Try to extract just the array part
-const startIdx = trimmed.indexOf('[');
-const endIdx = trimmed.lastIndexOf(']') + 1;
-if (startIdx >= 0 && endIdx > startIdx) {
-let extracted = trimmed.substring(startIdx, endIdx);
-// Clean up
-extracted = extracted.replace(/'/g, '"');
-extracted = extracted.replace(/,\s*}/g, '}');
-extracted = extracted.replace(/,\s*]/g, ']');
-extracted = extracted.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
-
-const parsed = JSON.parse(extracted);
-if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
-console.log('✅ [formatAI] Emergency extraction successful, count:', parsed.length);
-window.currentLeads = parsed;
-return renderLeadCards(parsed);
-}
-}
-} catch (e) {
-console.log('⚠️ [formatAI] Emergency extraction failed:', e.message);
-}
-}
-
-// ── Step 6: Fallback - normal formatting ──
-console.log('🔍 [formatAI] Using fallback text formatting');
-let s = text;
-s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-s = s.replace(/\n/g, '<br>');
-return s;
-}
-
-// ──────────────────────────────────────────────────────────────
-//  RENDER LEAD CARDS
+//  RENDER LEAD CARDS AS EMAIL BOXES
 // ──────────────────────────────────────────────────────────────
 
 function renderLeadCards(leads) {
@@ -899,25 +743,14 @@ window.currentLeads = leads;
 let html = `
 <div class="leads-container">
 <div class="leads-header">
-<span class="leads-count">${leads.length} leads found</span>
-<div class="leads-actions">
-<button class="send-all-leads-btn" onclick="sendAllLeads()">
-📤 Send All (${leads.length})
-</button>
+<span class="leads-count">📧 ${leads.length} emails ready</span>
 </div>
-</div>
-<div class="leads-grid">
+<div class="leads-grid" id="leadsGrid">
 `;
 
 leads.forEach((lead, index) => {
-const rank = lead.rank || index + 1;
-const rankLabel = lead.rank_label || 'Opportunity';
 const company = lead.company || lead.name || 'Unknown';
-
-// Get email from multiple fields
 const email = lead.email || lead.contact_email || lead.emailAddress || 'No email found';
-
-// Get subject and body
 let subject = 'No subject';
 let body = 'No message';
 if (lead.messages && lead.messages.length > 0) {
@@ -927,108 +760,44 @@ body = lead.messages[0].body || 'No message';
 subject = lead.outreach.subject || 'No subject';
 body = lead.outreach.body || 'No message';
 }
-
-const qualityScore = lead.quality_score || 0;
-const qualityPassed = lead.quality_passed || false;
-const fitScore = Math.round((lead.leadScore || lead.confidence || 0) * 100);
-const hasEmail = email && email !== 'No email found' && email !== 'No email' && email !== '';
-
-let qualityBadge = '';
-if (qualityPassed && qualityScore >= 0.8) qualityBadge = '<span class="quality-badge high">✅ High Quality</span>';
-else if (qualityPassed && qualityScore >= 0.5) qualityBadge = '<span class="quality-badge medium">📊 Medium Quality</span>';
-else qualityBadge = '<span class="quality-badge low">⚠️ Needs Review</span>';
-
-let rankEmoji = '📊';
-if (rank <= 3) rankEmoji = '🏆';
-else if (rank <= 5) rankEmoji = '⭐';
+const rank = lead.rank || index + 1;
+const rankEmoji = rank <= 3 ? '🏆' : rank <= 5 ? '⭐' : '📊';
 
 html += `
-<div class="lead-card-container" data-index="${index}">
-<div class="lead-card-header">
-<div class="lead-rank">${rankEmoji} #${rank}</div>
-<div class="lead-rank-label">${esc(rankLabel)}</div>
-${qualityBadge}
-<div class="lead-email-status">${hasEmail ? '✅' : '❌'}</div>
+<div class="email-box" data-index="${index}">
+<div class="box-header">
+<span class="box-company">${esc(company)}</span>
+<span class="box-rank">${rankEmoji} #${rank}</span>
 </div>
-<div class="lead-card-body">
-<div class="lead-company">${esc(company)}</div>
-<div class="lead-details">
-<span class="lead-detail">📧 ${esc(email)}</span>
-<span class="lead-detail">🎯 Fit: ${fitScore}%</span>
-${lead.industry ? `<span class="lead-detail">🏢 ${esc(lead.industry)}</span>` : ''}
-${lead.hq || lead.location ? `<span class="lead-detail">📍 ${esc(lead.hq || lead.location)}</span>` : ''}
-</div>
-<div class="lead-message-preview">
-<div class="lead-subject">📝 ${esc(subject)}</div>
-<div class="lead-body-preview">${esc(body.substring(0, 150))}${body.length > 150 ? '...' : ''}</div>
-</div>
-</div>
-<div class="lead-card-footer">
-<button class="lead-view-btn" onclick="viewLead(${index})">👁️ View Full</button>
-<button class="lead-send-btn" onclick="sendSingleLead(${index})" ${!hasEmail ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
-✉️ Send
-</button>
-</div>
+<div class="box-email">📧 ${esc(email)}</div>
+<div class="box-subject">📝 ${esc(subject)}</div>
+<div class="box-body">${esc(body)}</div>
 </div>
 `;
 });
 
-html += `</div></div>`;
+html += `
+</div>
+<button class="send-all-emails-btn" onclick="sendAllEmails()" id="sendAllEmailsBtn">
+📤 Send All <span class="btn-count">(${leads.length} emails)</span>
+</button>
+</div>
+`;
+
 return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  VIEW LEAD DETAILS
+//  SEND ALL EMAILS
 // ──────────────────────────────────────────────────────────────
 
-function viewLead(index) {
-const leads = window.currentLeads || [];
-const lead = leads[index];
-if (!lead) { showToast('Lead not found.', 'error'); return; }
-
-const company = lead.company || lead.name || 'Unknown';
-const email = lead.email || lead.contact_email || lead.emailAddress || 'No email';
-let subject = 'No subject';
-let body = 'No message';
-if (lead.messages && lead.messages.length > 0) {
-subject = lead.messages[0].subject || 'No subject';
-body = lead.messages[0].body || 'No message';
-} else if (lead.outreach) {
-subject = lead.outreach.subject || 'No subject';
-body = lead.outreach.body || 'No message';
-}
-const rank = lead.rank || index + 1;
-const fitScore = Math.round((lead.leadScore || lead.confidence || 0) * 100);
-
-alert(`
-📋 LEAD DETAILS
-
-Company: ${company}
-Email: ${email}
-Rank: #${rank}
-Fit Score: ${fitScore}%
-Industry: ${lead.industry || 'N/A'}
-Location: ${lead.hq || lead.location || 'N/A'}
-
-📝 MESSAGE:
-Subject: ${subject}
-
-${body}
-`);
-}
-
-// ──────────────────────────────────────────────────────────────
-//  SEND ALL LEADS
-// ──────────────────────────────────────────────────────────────
-
-async function sendAllLeads() {
+async function sendAllEmails() {
 const leads = window.currentLeads || [];
 if (!leads || leads.length === 0) {
-showToast('No leads to send.', 'error');
+showToast('No emails to send.', 'error');
 return;
 }
 
-// Get valid leads with email
 const validLeads = leads.filter(l => {
 const email = l.email || l.contact_email || l.emailAddress || '';
 return email && email !== 'No email found' && email !== 'No email' && email !== '';
@@ -1039,7 +808,11 @@ showToast('No leads have valid email addresses.', 'error');
 return;
 }
 
-// ── Check email connection ──
+const btn = document.getElementById('sendAllEmailsBtn');
+const originalText = btn.textContent;
+btn.textContent = '⏳ Sending...';
+btn.disabled = true;
+
 try {
 const userRes = await fetch(`${BACKEND}/api/users/me`, {
 headers: { 'Authorization': `Bearer ${token}` }
@@ -1050,6 +823,7 @@ window.location.href = 'login.html';
 return;
 }
 const user = await userRes.json();
+
 if (!user.nylasIntegration?.isConnected) {
 const payload = {
 leads: validLeads.map(lead => {
@@ -1078,21 +852,11 @@ _count: validLeads.length
 }));
 showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
 setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-return;
-}
-} catch (err) {
-console.error('Error checking email status:', err);
-showToast('❌ Failed to check email connection.', 'error');
+btn.textContent = originalText;
+btn.disabled = false;
 return;
 }
 
-// ── Send emails ──
-const btn = document.querySelector('.send-all-leads-btn');
-const originalText = btn.textContent;
-btn.textContent = '⏳ Sending...';
-btn.disabled = true;
-
-try {
 const payload = {
 leads: validLeads.map(lead => {
 const email = lead.email || lead.contact_email || lead.emailAddress || '';
@@ -1137,137 +901,121 @@ return;
 }
 
 if (data.success) {
-showToast(`✅ Sent ${validLeads.length} emails successfully!`, 'success');
-validLeads.forEach((lead, i) => {
-const card = document.querySelector(`.lead-card-container[data-index="${i}"]`);
-if (card) {
-const sendBtn = card.querySelector('.lead-send-btn');
-if (sendBtn) { sendBtn.textContent = '✅ Sent'; sendBtn.disabled = true; sendBtn.style.opacity = '0.4'; }
-}
-});
+showToast(`✅ ${validLeads.length} emails sent successfully!`, 'success');
+btn.textContent = '✅ Sent!';
+btn.style.background = 'var(--sage)';
+btn.style.color = '#060608';
 } else {
 showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+btn.textContent = originalText;
 }
 } catch (err) {
 console.error('Send all error:', err);
 showToast('❌ Connection error. Please try again.', 'error');
-} finally {
 btn.textContent = originalText;
+} finally {
 btn.disabled = false;
 }
 }
 
 // ──────────────────────────────────────────────────────────────
-//  SEND SINGLE LEAD
+//  LEGACY FUNCTIONS (kept for compatibility)
 // ──────────────────────────────────────────────────────────────
 
-async function sendSingleLead(index) {
-const leads = window.currentLeads || [];
-const lead = leads[index];
-if (!lead) { showToast('Lead not found.', 'error'); return; }
+// These are kept but not used in the new UI
+async function sendAllLeads() { /* Legacy - kept for compatibility */ }
+async function sendSingleLead(index) { /* Legacy - kept for compatibility */ }
+function viewLead(index) { /* Legacy - kept for compatibility */ }
 
-const email = lead.email || lead.contact_email || lead.emailAddress || '';
-if (!email || email === 'No email found' || email === 'No email' || email === '') {
-showToast('This lead has no email address.', 'error');
-return;
+// ──────────────────────────────────────────────────────────────
+//  FORMAT AI RESPONSE - DETECTS LEADS IN JSON
+// ──────────────────────────────────────────────────────────────
+
+function formatAI(text) {
+if (!text) return '';
+
+console.log('🔍 [formatAI] Processing response...');
+
+let rawText = text;
+rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+if (rawText.includes('&quot;') || rawText.includes('&#039;') || rawText.includes('&amp;')) {
+const div = document.createElement('div');
+div.innerHTML = rawText;
+rawText = div.textContent || div.innerText || rawText;
 }
+const trimmed = rawText.trim();
 
-// ── Check email connection ──
+if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
 try {
-const userRes = await fetch(`${BACKEND}/api/users/me`, {
-headers: { 'Authorization': `Bearer ${token}` }
-});
-if (!userRes.ok) {
-localStorage.removeItem('token');
-window.location.href = 'login.html';
-return;
+const parsed = JSON.parse(trimmed);
+if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
+window.currentLeads = parsed;
+return renderLeadCards(parsed);
 }
-const user = await userRes.json();
-if (!user.nylasIntegration?.isConnected) {
-let subject = 'Introduction';
-let body = 'Hello, we wanted to reach out.';
-if (lead.messages && lead.messages.length > 0) {
-subject = lead.messages[0].subject || subject;
-body = lead.messages[0].body || body;
-} else if (lead.outreach) {
-subject = lead.outreach.subject || subject;
-body = lead.outreach.body || body;
-}
-const payload = {
-leads: [{
-name: lead.name || lead.company || 'Unknown',
-email: email,
-company: lead.company || '',
-messages: [{ subject, body }]
-}]
-};
-localStorage.setItem('pendingEmailPayload', JSON.stringify({ ...payload, _timestamp: Date.now(), _count: 1 }));
-showToast('📧 Email pending. Please connect your email to send.', 'warning', 4000);
-setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-return;
-}
-} catch (err) {
-console.error('Error checking email status:', err);
-showToast('❌ Failed to check email connection.', 'error');
-return;
+} catch (e) {}
 }
 
-const card = document.querySelector(`.lead-card-container[data-index="${index}"]`);
-const sendBtn = card?.querySelector('.lead-send-btn');
-if (sendBtn) { sendBtn.textContent = '⏳ Sending...'; sendBtn.disabled = true; }
+let jsonMatch = null;
+const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
+const match = trimmed.match(arrayPattern);
+if (match) jsonMatch = match[0];
 
+if (jsonMatch) {
 try {
-let subject = 'Introduction';
-let body = 'Hello, we wanted to reach out.';
-if (lead.messages && lead.messages.length > 0) {
-subject = lead.messages[0].subject || subject;
-body = lead.messages[0].body || body;
-} else if (lead.outreach) {
-subject = lead.outreach.subject || subject;
-body = lead.outreach.body || body;
+let clean = jsonMatch;
+clean = clean.replace(/,\s*}/g, '}');
+clean = clean.replace(/,\s*]/g, ']');
+clean = clean.replace(/\s+/g, ' ').trim();
+const parsed = JSON.parse(clean);
+if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company || parsed[0].company_name)) {
+window.currentLeads = parsed;
+return renderLeadCards(parsed);
 }
-const payload = {
-leads: [{
-name: lead.name || lead.company || 'Unknown',
-email: email,
-company: lead.company || '',
-messages: [{ subject, body }]
-}]
-};
-
-const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'Authorization': `Bearer ${token}`
-},
-body: JSON.stringify(payload)
-});
-
-const data = await res.json();
-
-if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-localStorage.setItem('pendingEmailPayload', JSON.stringify({ ...payload, _timestamp: Date.now(), _count: 1 }));
-showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-return;
+} catch (e) {
+try {
+let fixed = jsonMatch;
+const start = fixed.indexOf('[');
+if (start > 0) fixed = fixed.substring(start);
+const end = fixed.lastIndexOf(']');
+if (end > 0) fixed = fixed.substring(0, end + 1);
+fixed = fixed.replace(/'/g, '"');
+fixed = fixed.replace(/,\s*}/g, '}');
+fixed = fixed.replace(/,\s*]/g, ']');
+fixed = fixed.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+const repaired = JSON.parse(fixed);
+if (Array.isArray(repaired) && repaired.length > 0) {
+window.currentLeads = repaired;
+return renderLeadCards(repaired);
+}
+} catch (e2) {}
+}
 }
 
-if (data.success) {
-showToast(`✅ Email sent to ${lead.name || lead.company || 'lead'}!`, 'success');
-if (sendBtn) { sendBtn.textContent = '✅ Sent'; sendBtn.disabled = true; sendBtn.style.opacity = '0.4'; }
-} else {
-showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+if (trimmed.includes('"name"') && trimmed.includes('"company"')) {
+try {
+const startIdx = trimmed.indexOf('[');
+const endIdx = trimmed.lastIndexOf(']') + 1;
+if (startIdx >= 0 && endIdx > startIdx) {
+let extracted = trimmed.substring(startIdx, endIdx);
+extracted = extracted.replace(/'/g, '"');
+extracted = extracted.replace(/,\s*}/g, '}');
+extracted = extracted.replace(/,\s*]/g, ']');
+extracted = extracted.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+const parsed = JSON.parse(extracted);
+if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
+window.currentLeads = parsed;
+return renderLeadCards(parsed);
 }
-} catch (err) {
-console.error('Send error:', err);
-showToast('❌ Connection error. Please try again.', 'error');
-} finally {
-if (sendBtn && !sendBtn.textContent.includes('Sent')) {
-sendBtn.textContent = '✉️ Send';
-sendBtn.disabled = false;
 }
+} catch (e) {}
 }
+
+let s = text;
+s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
+s = s.replace(/\n/g, '<br>');
+return s;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1350,7 +1098,6 @@ window.history.pushState({}, '', url);
 }
 if (data.history) conversationHistory = data.history;
 
-// ── Check for leads ──
 let leadData = null;
 if (data.leads && Array.isArray(data.leads)) {
 leadData = data.leads;
@@ -1365,8 +1112,8 @@ leadData = parsed;
 
 if (leadData) {
 currentGeneratedLeads = leadData;
-renderReview(leadData);
 appendMsg('ai', `📊 Found <strong>${leadData.length}</strong> lead${leadData.length !== 1 ? 's' : ''}. Review the emails below.`);
+renderReview(leadData);
 } else {
 appendMsg('ai', data.reply || "Request received. How can I help further?");
 }
@@ -1394,7 +1141,7 @@ await fetchResponse(text);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  REVIEW PANEL (Legacy - for backward compatibility)
+//  REVIEW PANEL (Legacy)
 // ──────────────────────────────────────────────────────────────
 
 function renderReview(leads) {
@@ -1734,7 +1481,6 @@ msgContainer = document.getElementById('msgContainer');
 reviewPanel = document.getElementById('reviewPanel');
 emailList = document.getElementById('emailList');
 
-// ── Event Listeners ──
 document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
 document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
 
@@ -1762,14 +1508,12 @@ if (!sendBtn.disabled) sendMessage();
 
 sendBtn.addEventListener('click', sendMessage);
 
-// ── Load Data ──
 await checkPlan();
 await updateStatus();
 loadNotifCount();
 notifInterval = setInterval(loadNotifCount, 15000);
 setInterval(updateStatus, 30000);
 
-// ── Target Form ──
 document.getElementById('targetForm').addEventListener('submit', async e => {
 e.preventDefault();
 const industry = document.getElementById('industry').value.trim();
@@ -1784,7 +1528,6 @@ appendMsg('user', msg);
 await fetchResponse(msg);
 });
 
-// ── Handle OAuth Redirect ──
 const params = new URLSearchParams(window.location.search);
 const nylasSuccess = params.get('nylas');
 if (nylasSuccess === 'success') {
@@ -1794,7 +1537,6 @@ window.history.replaceState({}, document.title, window.location.pathname);
 showPendingNotification();
 }
 
-// ── Load Session ──
 if (currentSessionId) {
 setupWizard.style.display = 'none';
 chatArea.classList.add('active');
@@ -1802,10 +1544,8 @@ inputBar.classList.add('active');
 await loadSession();
 }
 
-// ── Expose functions globally ──
-window.sendAllLeads = sendAllLeads;
-window.sendSingleLead = sendSingleLead;
-window.viewLead = viewLead;
+// Expose functions globally
+window.sendAllEmails = sendAllEmails;
 window.sendPendingEmails = sendPendingEmails;
 window.clearPendingEmails = clearPendingEmails;
 });
