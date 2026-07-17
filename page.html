@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-/* ── All your existing styles remain exactly the same ── */
+/* ── All your existing styles stay exactly the same ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -756,37 +756,103 @@ setTimeout(() => toast.remove(), duration);
 function formatAI(text) {
 if (!text) return '';
 
-console.log('🔍 [formatAI] Input length:', text.length);
+console.log('🔍 [formatAI] Processing response...');
 
 let rawText = text;
+
+// ── Remove markdown ──
 rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+
+// ── Decode HTML entities ──
+if (rawText.includes('&quot;') || rawText.includes('&#039;') || rawText.includes('&amp;')) {
+const div = document.createElement('div');
+div.innerHTML = rawText;
+rawText = div.textContent || div.innerText || rawText;
+}
+
 const trimmed = rawText.trim();
 
-// ── Try to parse as JSON ──
+// ── TRY TO FIND JSON ARRAY ──
+let jsonStr = null;
+
+// Method 1: Direct array match
+const arrayMatch = trimmed.match(/\[\s*\{[\s\S]*?\}\s*\]/);
+if (arrayMatch) {
+jsonStr = arrayMatch[0];
+}
+
+// Method 2: Find JSON with escaped quotes
+if (!jsonStr) {
+const escapedMatch = trimmed.match(/\[\s*\{[\s\S]*?"name"[\s\S]*?\}\s*\]/);
+if (escapedMatch) {
+jsonStr = escapedMatch[0];
+}
+}
+
+// Method 3: Find JSON containing "messages"
+if (!jsonStr) {
+const messagesMatch = trimmed.match(/\[\s*\{[\s\S]*?"messages"[\s\S]*?\}\s*\]/);
+if (messagesMatch) {
+jsonStr = messagesMatch[0];
+}
+}
+
+// Method 4: Find JSON containing "outreach"
+if (!jsonStr) {
+const outreachMatch = trimmed.match(/\[\s*\{[\s\S]*?"outreach"[\s\S]*?\}\s*\]/);
+if (outreachMatch) {
+jsonStr = outreachMatch[0];
+}
+}
+
+// ── PARSE THE JSON ──
+if (jsonStr) {
 try {
-if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-const parsed = JSON.parse(trimmed);
-if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
-console.log('✅ [formatAI] Detected leads data, rendering cards...');
+// Clean up the JSON
+let cleanJson = jsonStr
+.replace(/,\s*}/g, '}')
+.replace(/,\s*]/g, ']')
+.replace(/\s+/g, ' ')
+.trim();
+
+const parsed = JSON.parse(cleanJson);
+
+if (Array.isArray(parsed) && parsed.length > 0) {
+// Check if it's leads data
+if (parsed[0].name || parsed[0].company) {
+console.log('✅ [formatAI] Parsed', parsed.length, 'leads');
 window.currentLeads = parsed;
 return renderLeadCards(parsed);
 }
 }
-} catch (e) { /* Ignore */ }
+} catch (e) {
+console.log('⚠️ [formatAI] Parse failed, trying fallback...');
 
-// ── Try to extract JSON from text ──
+// ── FALLBACK: Try to repair ──
 try {
-const jsonMatch = trimmed.match(/\[\s*\{[\s\S]*?\}\s*\]/);
-if (jsonMatch) {
-const parsed = JSON.parse(jsonMatch[0]);
-if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].company)) {
-window.currentLeads = parsed;
-return renderLeadCards(parsed);
-}
-}
-} catch (e) { /* Ignore */ }
+let fixed = jsonStr;
+const startIdx = fixed.indexOf('[');
+if (startIdx > 0) fixed = fixed.substring(startIdx);
+const endIdx = fixed.lastIndexOf(']');
+if (endIdx > 0) fixed = fixed.substring(0, endIdx + 1);
+fixed = fixed.replace(/'/g, '"');
+fixed = fixed.replace(/,\s*}/g, '}');
+fixed = fixed.replace(/,\s*]/g, ']');
+fixed = fixed.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
 
-// ── Normal AI formatting ──
+const repaired = JSON.parse(fixed);
+if (Array.isArray(repaired) && repaired.length > 0) {
+console.log('✅ [formatAI] Repaired JSON, rendering cards...');
+window.currentLeads = repaired;
+return renderLeadCards(repaired);
+}
+} catch (e2) {
+console.log('⚠️ [formatAI] Fallback also failed');
+}
+}
+}
+
+// ── FALLBACK: Normal text formatting ──
 let s = text;
 s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
@@ -822,10 +888,10 @@ const rank = lead.rank || index + 1;
 const rankLabel = lead.rank_label || 'Opportunity';
 const company = lead.company || lead.name || 'Unknown';
 
-// ✅ FIX: Get email from multiple fields
+// Get email from multiple fields
 const email = lead.email || lead.contact_email || lead.emailAddress || 'No email found';
 
-// ✅ FIX: Get subject and body
+// Get subject and body
 let subject = 'No subject';
 let body = 'No message';
 if (lead.messages && lead.messages.length > 0) {
@@ -936,7 +1002,7 @@ showToast('No leads to send.', 'error');
 return;
 }
 
-// ✅ FIX: Get valid leads with email
+// Get valid leads with email
 const validLeads = leads.filter(l => {
 const email = l.email || l.contact_email || l.emailAddress || '';
 return email && email !== 'No email found' && email !== 'No email' && email !== '';
@@ -1719,4 +1785,4 @@ window.clearPendingEmails = clearPendingEmails;
 });
 </script>
 </body>
-                                      </html>
+  </html>
