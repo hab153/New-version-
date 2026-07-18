@@ -377,7 +377,7 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 .leads-grid::-webkit-scrollbar { width: 3px; }
 .leads-grid::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 3px; }
 
-/* ── SQUARE EMAIL BOX ── */
+/* ── SQUARE EMAIL BOX WITH EDITABLE FIELDS ── */
 .email-box {
     background: var(--surface);
     border: 1px solid var(--br-dim);
@@ -399,24 +399,42 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     background: var(--raised);
     transform: scale(1.01);
 }
-.email-box .box-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-    flex-wrap: wrap;
-    gap: 4px;
+
+/* Editable fields inside the square card */
+.email-box .box-field {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--t1);
+    font-family: var(--ui);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    padding: 2px 4px;
+    margin: 0 -4px;
 }
-.email-box .box-company {
+
+.email-box .box-field:hover {
+    border-color: var(--br-dim);
+    background: rgba(255,255,255,0.02);
+}
+
+.email-box .box-field:focus {
+    border-color: rgba(201,168,76,0.35);
+    background: var(--hover);
+    box-shadow: 0 0 0 2px rgba(201,168,76,0.06);
+}
+
+/* Company field - larger, bold */
+.email-box .box-company-field {
     font-size: 15px;
     font-weight: 600;
     color: var(--t1);
     letter-spacing: 0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 70%;
+    width: 70%;
 }
+
+/* Rank badge - non-editable */
 .email-box .box-rank {
     font-family: var(--mono);
     font-size: 10px;
@@ -427,38 +445,52 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     border: 1px solid var(--br-dim);
     flex-shrink: 0;
 }
-.email-box .box-email {
+
+/* Email field - mono font */
+.email-box .box-email-field {
     font-family: var(--mono);
     font-size: 11px;
     color: var(--t2);
-    margin-bottom: 4px;
-    word-break: break-all;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin-bottom: 2px;
 }
-.email-box .box-subject {
+
+/* Subject field */
+.email-box .box-subject-field {
     font-size: 13px;
     font-weight: 500;
     color: var(--gold-pale);
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-bottom: 2px;
 }
-.email-box .box-body {
+
+/* Body textarea - scrollable */
+.email-box .box-body-field {
     font-size: 11px;
     color: var(--t3);
     line-height: 1.6;
     font-family: var(--mono);
-    overflow-y: auto;
-    white-space: pre-wrap;
-    padding: 4px 0;
+    resize: none;
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: 0 -4px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
 }
-.email-box .box-body::-webkit-scrollbar { width: 2px; }
-.email-box .box-body::-webkit-scrollbar-thumb { background: var(--br-dim); border-radius: 2px; }
+.email-box .box-body-field:hover {
+    border-color: var(--br-dim);
+    background: rgba(255,255,255,0.02);
+}
+.email-box .box-body-field:focus {
+    border-color: rgba(201,168,76,0.35);
+    background: var(--hover);
+    box-shadow: 0 0 0 2px rgba(201,168,76,0.06);
+}
+.email-box .box-body-field::-webkit-scrollbar { width: 2px; }
+.email-box .box-body-field::-webkit-scrollbar-thumb { background: var(--br-dim); border-radius: 2px; }
 
 /* ── Send All Button ── */
 .send-all-emails-btn {
@@ -744,6 +776,11 @@ if (!s) return '';
 return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function escAttr(s) {
+if (!s) return '';
+return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
 function now() {
 return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -782,6 +819,32 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
+//  GET EDITED LEAD DATA FROM CARDS
+// ──────────────────────────────────────────────────────────────
+
+function getEditedLeads() {
+const cards = document.querySelectorAll('.email-box');
+const leads = [];
+cards.forEach((card, index) => {
+const companyField = card.querySelector('.box-company-field');
+const emailField = card.querySelector('.box-email-field');
+const subjectField = card.querySelector('.box-subject-field');
+const bodyField = card.querySelector('.box-body-field');
+
+leads.push({
+name: companyField ? companyField.value : 'Unknown',
+company: companyField ? companyField.value : 'Unknown',
+email: emailField ? emailField.value : '',
+messages: [{
+subject: subjectField ? subjectField.value : '',
+body: bodyField ? bodyField.value : ''
+}]
+});
+});
+return leads;
+}
+
+// ──────────────────────────────────────────────────────────────
 //  RENDER LEAD CARDS AS SQUARE EMAIL BOXES (BOTTOM SECTION)
 // ──────────────────────────────────────────────────────────────
 
@@ -813,15 +876,21 @@ body = lead.outreach.body || 'No message';
 const rank = lead.rank || index + 1;
 const rankEmoji = rank <= 3 ? '🏆' : rank <= 5 ? '⭐' : '📊';
 
+// Escape values for HTML attributes and content
+const safeCompany = escAttr(company);
+const safeEmail = escAttr(email);
+const safeSubject = escAttr(subject);
+const safeBody = escAttr(body);
+
 html += `
 <div class="email-box" data-index="${index}">
 <div class="box-header">
-<span class="box-company">${esc(company)}</span>
+<input type="text" class="box-field box-company-field" value="${safeCompany}" placeholder="Company name" />
 <span class="box-rank">${rankEmoji} #${rank}</span>
 </div>
-<div class="box-email">📧 ${esc(email)}</div>
-<div class="box-subject">📝 ${esc(subject)}</div>
-<div class="box-body">${esc(body)}</div>
+<input type="text" class="box-field box-email-field" value="${safeEmail}" placeholder="Email address" />
+<input type="text" class="box-field box-subject-field" value="${safeSubject}" placeholder="Subject" />
+<textarea class="box-field box-body-field" placeholder="Email body">${safeBody}</textarea>
 </div>
 `;
 });
@@ -838,19 +907,19 @@ return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  SEND ALL EMAILS
+//  SEND ALL EMAILS (Uses edited values from cards)
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
-const leads = window.currentLeads || [];
+const leads = getEditedLeads();
 if (!leads || leads.length === 0) {
 showToast('No emails to send.', 'error');
 return;
 }
 
 const validLeads = leads.filter(l => {
-const email = l.email || l.contact_email || l.emailAddress || '';
-return email && email !== 'No email found' && email !== 'No email' && email !== '';
+const email = l.email || '';
+return email && email.trim() !== '' && email !== 'No email found';
 });
 
 if (validLeads.length === 0) {
@@ -876,24 +945,12 @@ const user = await userRes.json();
 
 if (!user.nylasIntegration?.isConnected) {
 const payload = {
-leads: validLeads.map(lead => {
-const email = lead.email || lead.contact_email || lead.emailAddress || '';
-let subject = 'Introduction';
-let body = 'Hello, we wanted to reach out.';
-if (lead.messages && lead.messages.length > 0) {
-subject = lead.messages[0].subject || subject;
-body = lead.messages[0].body || body;
-} else if (lead.outreach) {
-subject = lead.outreach.subject || subject;
-body = lead.outreach.body || body;
-}
-return {
+leads: validLeads.map(lead => ({
 name: lead.name || lead.company || 'Unknown',
-email: email,
+email: lead.email,
 company: lead.company || '',
-messages: [{ subject, body }]
-};
-})
+messages: lead.messages || [{ subject: '', body: '' }]
+}))
 };
 localStorage.setItem('pendingEmailPayload', JSON.stringify({
 ...payload,
@@ -908,24 +965,12 @@ return;
 }
 
 const payload = {
-leads: validLeads.map(lead => {
-const email = lead.email || lead.contact_email || lead.emailAddress || '';
-let subject = 'Introduction';
-let body = 'Hello, we wanted to reach out.';
-if (lead.messages && lead.messages.length > 0) {
-subject = lead.messages[0].subject || subject;
-body = lead.messages[0].body || body;
-} else if (lead.outreach) {
-subject = lead.outreach.subject || subject;
-body = lead.outreach.body || body;
-}
-return {
+leads: validLeads.map(lead => ({
 name: lead.name || lead.company || 'Unknown',
-email: email,
+email: lead.email,
 company: lead.company || '',
-messages: [{ subject, body }]
-};
-})
+messages: lead.messages || [{ subject: '', body: '' }]
+}))
 };
 
 const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
@@ -1531,4 +1576,4 @@ window.clearPendingEmails = clearPendingEmails;
 });
 </script>
 </body>
-  </html>
+    </html>
