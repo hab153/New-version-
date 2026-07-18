@@ -137,6 +137,86 @@
       50% { opacity: 0.3; }
     }
 
+    /* ─── 3-DOT MENU BUTTON ─── */
+    .three-dot-btn {
+      background: none;
+      border: 1px solid #555;
+      border-radius: 6px;
+      color: white;
+      padding: 4px 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .three-dot-btn:hover {
+      border-color: var(--text-2);
+      background: var(--raised);
+    }
+    .menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 6px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 6px;
+      min-width: 170px;
+      z-index: 99999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    }
+    .menu-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font-sans);
+      font-size: 13px;
+    }
+    .menu-dropdown button:hover {
+      background: #2a2a2a;
+      color: #fff;
+    }
+    .menu-dropdown .submenu {
+      display: none;
+      border-top: 1px solid #333;
+    }
+    .menu-dropdown .submenu button {
+      padding-left: 24px;
+      color: #aaa;
+      font-size: 12px;
+    }
+    .menu-dropdown .submenu button:hover {
+      color: #fff;
+    }
+    .menu-divider {
+      border-top: 1px solid #333;
+    }
+    .auto-status {
+      margin-left: auto;
+      font-size: 9px;
+      font-weight: bold;
+      font-family: var(--font-mono);
+    }
+
+    /* ─── CHAT HEADER 3-DOT MENU ─── */
+    .chat-three-dot-wrap {
+      position: relative;
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+    .chat-three-dot-wrap .menu-dropdown {
+      min-width: 160px;
+    }
+
     /* ─── MAIN CONTAINER ─── */
     .main-container {
       flex: 1;
@@ -310,14 +390,34 @@
     .contact-item.unread .contact-preview { font-weight: 500; color: var(--text-1); }
     .contact-item.unread .contact-time { color: var(--accent); }
 
-    .loading-text {
+    /* ─── LOADING ─── */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 28px;
       text-align: center;
+    }
+    .loading-text {
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.06em;
+      margin-bottom: 16px;
     }
+    .rolling-circle {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255,255,255,0.08);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .spin-icon { animation: spin 1s linear infinite; }
+
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -730,9 +830,6 @@
       border-color: var(--accent);
     }
 
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .spin-icon { animation: spin 1s linear infinite; }
-
     /* ─── RESPONSIVE ─── */
     @media (max-width: 640px) {
       .view-chat { position: fixed; inset: 0; z-index: 50; border-left: none; }
@@ -782,33 +879,39 @@
       Live
     </div>
 
-    <!-- ─── MENU DROPDOWN ─── -->
+    <!-- ─── MAIN PAGE 3-DOT MENU ─── -->
     <div style="position: relative; display: inline-block; margin-left: 8px;">
-      <button id="menuBtn" style="background: none; border: 1px solid #555; border-radius: 6px; color: white; padding: 6px 10px; cursor: pointer; font-size: 14px;">☰</button>
-      <div id="menuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; min-width: 170px; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.6);">
-        <button id="aiHintBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+      <button class="three-dot-btn" id="mainMenuBtn" title="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="2"/>
+          <circle cx="12" cy="12" r="2"/>
+          <circle cx="12" cy="19" r="2"/>
+        </svg>
+      </button>
+      <div class="menu-dropdown" id="mainMenuDropdown">
+        <button id="aiHintBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
           AI Hint
         </button>
-        <div style="border-top: 1px solid #333;"></div>
-        <button id="followUpMainBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+        <div class="menu-divider"></div>
+        <button id="followUpMainBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           Follow‑up
           <span style="margin-left: auto;">▼</span>
         </button>
-        <div id="followUpSubmenu" style="display: none; border-top: 1px solid #333;">
-          <button id="suggestFollowUpBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px 8px 24px; background: none; border: none; color: #aaa; cursor: pointer; text-align: left;">
+        <div class="submenu" id="followUpSubmenu">
+          <button id="suggestFollowUpBtn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Suggest Follow‑up
           </button>
-          <button id="autoFollowUpBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px 8px 24px; background: none; border: none; color: #aaa; cursor: pointer; text-align: left;">
+          <button id="autoFollowUpBtn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Auto Follow‑up
-            <span id="autoStatusSpan" style="margin-left: auto; font-size: 9px; font-weight: bold;">OFF</span>
+            <span class="auto-status" id="autoStatusSpan">OFF</span>
           </button>
         </div>
-        <div style="border-top: 1px solid #333;"></div>
-        <button id="revenueTrackingBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+        <div class="menu-divider"></div>
+        <button id="revenueTrackingBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
           Revenue Tracking
         </button>
@@ -853,7 +956,10 @@
       </div>
 
       <div class="contact-list" id="contactList">
-        <div class="loading-text">LOADING CONTACTS…</div>
+        <div class="loading-container">
+          <div class="loading-text">LOADING CONTACTS…</div>
+          <div class="rolling-circle"></div>
+        </div>
       </div>
     </div>
 
@@ -902,6 +1008,38 @@
               <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
+        </div>
+
+        <!-- ─── CHAT HEADER 3-DOT MENU ─── -->
+        <div class="chat-three-dot-wrap">
+          <button class="three-dot-btn" id="chatMenuBtn" title="Chat Options">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="12" cy="19" r="2"/>
+            </svg>
+          </button>
+          <div class="menu-dropdown" id="chatMenuDropdown">
+            <button id="chatAiHintBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              AI Hint
+            </button>
+            <div class="menu-divider"></div>
+            <button id="chatSuggestFollowUpBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Suggest Follow‑up
+            </button>
+            <button id="chatAutoFollowUpBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Auto Follow‑up
+              <span class="auto-status" id="chatAutoStatusSpan">OFF</span>
+            </button>
+            <div class="menu-divider"></div>
+            <button id="chatRevenueTrackingBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              Revenue Tracking
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1082,7 +1220,7 @@
     async function loadContacts() {
       console.log('📡 [loadContacts] Fetching /api/conversations...');
       const list = document.getElementById('contactList');
-      list.innerHTML = '<div class="loading-text">LOADING CONTACTS…</div>';
+      list.innerHTML = '<div class="loading-container"><div class="loading-text">LOADING CONTACTS…</div><div class="rolling-circle"></div></div>';
 
       try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
@@ -1225,6 +1363,7 @@
         isAutoReplyEnabled = data.lead?.autoReplyEnabled || false;
         autoReplyInstructions = data.lead?.autoReplyInstructions || "";
         updateAutoReplyUI();
+        loadAutoFollowUpStatus(); // Load follow-up status for this lead
 
         if (!data.messages || data.messages.length === 0) {
           container.innerHTML = `
@@ -1310,9 +1449,8 @@
         if (data.success) {
           document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '38px';
-          // Reopen chat to refresh messages
           openChat(currentLeadId, currentLeadName, currentLeadEmail);
-          loadContacts(); // Refresh list
+          loadContacts();
         } else {
           alert(`Failed to send: ${data.message || 'Unknown error'}`);
         }
@@ -1449,15 +1587,12 @@
     }
 
     // ── REVENUE TRACKING ──
-    let revenueModal = null;
-    let revenueContent = null;
-
     function openRevenueTracking() {
       const modal = document.getElementById('revenueModal');
       const content = document.getElementById('revenueContent');
       if (!modal || !content) return;
       modal.classList.add('active');
-      content.innerHTML = '<div style="text-align:center;padding:30px;"><div style="display:inline-block;animation:spin 1s linear infinite;">↻</div> Loading revenue data...</div>';
+      content.innerHTML = '<div style="text-align:center;padding:30px;"><div class="rolling-circle" style="display:inline-block;"></div> Loading revenue data...</div>';
       fetch(`${BACKEND}/api/revenue/tracking`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -1500,13 +1635,44 @@
     let autoFollowUpEnabled = false;
     let selectedDelayDays = 3;
 
+    async function loadAutoFollowUpStatus() {
+      if (!currentLeadId) return;
+      try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          autoFollowUpEnabled = data.autoFollowUpEnabled || false;
+          updateAutoFollowUpStatusUI();
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    function updateAutoFollowUpStatusUI() {
+      const statusSpans = document.querySelectorAll('#autoStatusSpan, #chatAutoStatusSpan');
+      statusSpans.forEach(span => {
+        span.textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
+        span.style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
+      });
+    }
+
     function openAutoFollowUpModal() {
       document.getElementById('autoFollowUpModal').classList.add('active');
-      updateAutoFollowUpUI();
+      updateAutoFollowUpModalUI();
     }
 
     function closeAutoFollowUpModal() {
       document.getElementById('autoFollowUpModal').classList.remove('active');
+    }
+
+    function updateAutoFollowUpModalUI() {
+      document.querySelectorAll('.delay-day-btn').forEach(btn => {
+        btn.classList.toggle('selected', parseInt(btn.getAttribute('data-days')) === selectedDelayDays);
+      });
+      document.getElementById('confirmAutoFollowUpBtn').textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
+      document.getElementById('confirmAutoFollowUpBtn').disabled = false;
+      document.getElementById('offFollowUpBtn').style.display = autoFollowUpEnabled ? 'block' : 'none';
     }
 
     async function toggleAutoFollowUp() {
@@ -1521,8 +1687,7 @@
         const data = await res.json();
         if (data.success) {
           autoFollowUpEnabled = data.autoFollowUpEnabled;
-          document.getElementById('autoStatusSpan').textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
-          document.getElementById('autoStatusSpan').style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
+          updateAutoFollowUpStatusUI();
           alert(autoFollowUpEnabled ? `Auto follow-up enabled. First follow-up in ${selectedDelayDays} day(s).` : 'Auto follow-up disabled.');
           closeAutoFollowUpModal();
         } else {
@@ -1584,6 +1749,29 @@
       }
     }
 
+    // ── SETUP MENU DROPDOWNS ──
+    function setupMenuDropdown(menuBtnId, dropdownId, options = {}) {
+      const menuBtn = document.getElementById(menuBtnId);
+      const dropdown = document.getElementById(dropdownId);
+      if (!menuBtn || !dropdown) return;
+
+      menuBtn.onclick = function(e) {
+        e.stopPropagation();
+        // Close all other dropdowns first
+        document.querySelectorAll('.menu-dropdown').forEach(d => {
+          if (d !== dropdown) d.style.display = 'none';
+        });
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      };
+
+      // Close on outside click
+      document.addEventListener('click', function(e) {
+        if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+
     // ── INIT ──
     document.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -1607,90 +1795,103 @@
       } catch (err) { /* ignore */ }
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
 
-      // Load contacts
       await loadContacts();
 
-      // Auto-refresh every 15 seconds
       refreshInterval = setInterval(() => {
         if (document.visibilityState === 'visible') {
           loadContacts();
         }
       }, 15000);
 
-      // ── MENU DROPDOWN ──
-      const menuBtn = document.getElementById('menuBtn');
-      const dropdown = document.getElementById('menuDropdown');
-      const followUpMain = document.getElementById('followUpMainBtn');
-      const submenu = document.getElementById('followUpSubmenu');
-      const aiHintBtn = document.getElementById('aiHintBtn');
-      const suggestBtn = document.getElementById('suggestFollowUpBtn');
-      const autoBtn = document.getElementById('autoFollowUpBtn');
-      const revenueBtn = document.getElementById('revenueTrackingBtn');
+      // ── SETUP MAIN PAGE 3-DOT MENU ──
+      setupMenuDropdown('mainMenuBtn', 'mainMenuDropdown');
 
-      if (menuBtn) {
-        menuBtn.onclick = function(e) {
+      // Follow-up submenu toggle
+      const followUpMainBtn = document.getElementById('followUpMainBtn');
+      const followUpSubmenu = document.getElementById('followUpSubmenu');
+      if (followUpMainBtn && followUpSubmenu) {
+        followUpMainBtn.onclick = function(e) {
           e.stopPropagation();
-          dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+          followUpSubmenu.style.display = followUpSubmenu.style.display === 'none' ? 'block' : 'none';
         };
       }
 
-      if (followUpMain) {
-        followUpMain.onclick = function(e) {
-          e.stopPropagation();
-          submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
-        };
-      }
+      // ── SETUP CHAT HEADER 3-DOT MENU ──
+      setupMenuDropdown('chatMenuBtn', 'chatMenuDropdown');
 
-      if (aiHintBtn) {
-        aiHintBtn.onclick = function(e) {
-          e.stopPropagation();
-          triggerHint();
-          if (dropdown) dropdown.style.display = 'none';
-        };
-      }
+      // ── MAIN MENU BUTTON HANDLERS ──
+      document.getElementById('aiHintBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        triggerHint();
+        document.getElementById('mainMenuDropdown').style.display = 'none';
+      });
 
-      if (suggestBtn) {
-        suggestBtn.onclick = function(e) {
-          e.stopPropagation();
-          suggestFollowUp();
-          if (submenu) submenu.style.display = 'none';
-          if (dropdown) dropdown.style.display = 'none';
-        };
-      }
+      document.getElementById('suggestFollowUpBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        suggestFollowUp();
+        document.getElementById('followUpSubmenu').style.display = 'none';
+        document.getElementById('mainMenuDropdown').style.display = 'none';
+      });
 
-      if (autoBtn) {
-        autoBtn.onclick = function(e) {
-          e.stopPropagation();
-          if (isAutoReplyEnabled) {
-            alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
-            return;
-          }
-          if (!currentLeadId) {
-            alert('Open a chat first.');
-            return;
-          }
-          openAutoFollowUpModal();
-          if (submenu) submenu.style.display = 'none';
-          if (dropdown) dropdown.style.display = 'none';
-        };
-      }
+      document.getElementById('autoFollowUpBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (isAutoReplyEnabled) {
+          alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
+          return;
+        }
+        if (!currentLeadId) {
+          alert('Open a chat first.');
+          return;
+        }
+        openAutoFollowUpModal();
+        document.getElementById('followUpSubmenu').style.display = 'none';
+        document.getElementById('mainMenuDropdown').style.display = 'none';
+      });
 
-      if (revenueBtn) {
-        revenueBtn.onclick = function(e) {
-          e.stopPropagation();
-          openRevenueTracking();
-          if (dropdown) dropdown.style.display = 'none';
-        };
-      }
+      document.getElementById('revenueTrackingBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openRevenueTracking();
+        document.getElementById('mainMenuDropdown').style.display = 'none';
+      });
+
+      // ── CHAT MENU BUTTON HANDLERS ──
+      document.getElementById('chatAiHintBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        triggerHint();
+        document.getElementById('chatMenuDropdown').style.display = 'none';
+      });
+
+      document.getElementById('chatSuggestFollowUpBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        suggestFollowUp();
+        document.getElementById('chatMenuDropdown').style.display = 'none';
+      });
+
+      document.getElementById('chatAutoFollowUpBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (isAutoReplyEnabled) {
+          alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
+          return;
+        }
+        if (!currentLeadId) {
+          alert('Open a chat first.');
+          return;
+        }
+        openAutoFollowUpModal();
+        document.getElementById('chatMenuDropdown').style.display = 'none';
+      });
+
+      document.getElementById('chatRevenueTrackingBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openRevenueTracking();
+        document.getElementById('chatMenuDropdown').style.display = 'none';
+      });
 
       // ── AUTO FOLLOW-UP MODAL ──
       document.querySelectorAll('.delay-day-btn').forEach(btn => {
         btn.onclick = function() {
-          document.querySelectorAll('.delay-day-btn').forEach(b => b.classList.remove('selected'));
-          this.classList.add('selected');
           selectedDelayDays = parseInt(this.getAttribute('data-days'));
-          document.getElementById('confirmAutoFollowUpBtn').textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
-          document.getElementById('confirmAutoFollowUpBtn').disabled = false;
+          updateAutoFollowUpModalUI();
         };
       });
 
@@ -1700,25 +1901,14 @@
           alert('Please enter a valid number of days (at least 1).');
           return;
         }
-        document.querySelectorAll('.delay-day-btn').forEach(b => b.classList.remove('selected'));
         selectedDelayDays = customVal;
-        document.getElementById('confirmAutoFollowUpBtn').textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
-        document.getElementById('confirmAutoFollowUpBtn').disabled = false;
+        updateAutoFollowUpModalUI();
       });
 
       document.getElementById('confirmAutoFollowUpBtn')?.addEventListener('click', toggleAutoFollowUp);
       document.getElementById('offFollowUpBtn')?.addEventListener('click', toggleAutoFollowUp);
       document.getElementById('cancelAutoFollowUpBtn')?.addEventListener('click', closeAutoFollowUpModal);
       document.getElementById('closeAutoFollowUpModalBtn')?.addEventListener('click', closeAutoFollowUpModal);
-
-      document.addEventListener('click', function(e) {
-        if (dropdown && menuBtn && !menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.style.display = 'none';
-        }
-        if (submenu && followUpMain && !followUpMain.contains(e.target) && !submenu.contains(e.target)) {
-          submenu.style.display = 'none';
-        }
-      });
     });
 
     // ── EXPOSE GLOBALLY ──
