@@ -29,6 +29,8 @@
       --text-3: #52566a;
       --font-mono: 'IBM Plex Mono', monospace;
       --font-sans: 'Syne', sans-serif;
+      --nav-h: 64px;
+      --top-h: 58px;
     }
     html, body { height: 100%; overflow: hidden; }
     body {
@@ -43,7 +45,7 @@
 
     /* ─── TOP NAV ─── */
     .top-nav {
-      height: 58px;
+      height: var(--top-h);
       background: var(--base);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -136,23 +138,14 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
-
-    /* ─── 3-DOT MENU BUTTON ─── */
-    .three-dot-btn {
+    .menu-btn {
       background: none;
       border: 1px solid #555;
       border-radius: 6px;
       color: white;
-      padding: 4px 8px;
+      padding: 6px 10px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .three-dot-btn:hover {
-      border-color: var(--text-2);
-      background: var(--raised);
+      font-size: 14px;
     }
     .menu-dropdown {
       display: none;
@@ -167,7 +160,8 @@
       z-index: 99999;
       box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
-    .menu-dropdown button {
+    .menu-dropdown.show { display: block; }
+    .menu-item {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -181,41 +175,12 @@
       font-family: var(--font-sans);
       font-size: 13px;
     }
-    .menu-dropdown button:hover {
-      background: #2a2a2a;
-      color: #fff;
-    }
-    .menu-dropdown .submenu {
-      display: none;
-      border-top: 1px solid #333;
-    }
-    .menu-dropdown .submenu button {
-      padding-left: 24px;
-      color: #aaa;
-      font-size: 12px;
-    }
-    .menu-dropdown .submenu button:hover {
-      color: #fff;
-    }
-    .menu-divider {
-      border-top: 1px solid #333;
-    }
-    .auto-status {
-      margin-left: auto;
-      font-size: 9px;
-      font-weight: bold;
-      font-family: var(--font-mono);
-    }
-
-    /* ─── CHAT HEADER 3-DOT MENU ─── */
-    .chat-three-dot-wrap {
-      position: relative;
-      flex-shrink: 0;
-      margin-left: 4px;
-    }
-    .chat-three-dot-wrap .menu-dropdown {
-      min-width: 160px;
-    }
+    .menu-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .menu-item svg { flex-shrink: 0; }
+    .menu-divider { border-top: 1px solid #333; }
+    .submenu { display: none; border-top: 1px solid #333; }
+    .submenu.show { display: block; }
+    .submenu .menu-item { padding-left: 24px; font-size: 12px; color: #aaa; }
 
     /* ─── MAIN CONTAINER ─── */
     .main-container {
@@ -233,6 +198,7 @@
       overflow: hidden;
       min-width: 0;
     }
+    .view-list.hidden { display: none; }
     .search-section {
       padding: 12px 16px 8px;
       flex-shrink: 0;
@@ -247,20 +213,9 @@
       padding: 0 12px;
       transition: border-color 0.2s;
     }
-    .search-wrap:focus-within {
-      border-color: rgba(255,255,255,0.15);
-    }
-    .search-icon {
-      color: var(--text-3);
-      display: flex;
-      align-items: center;
-    }
-    .search-icon svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      fill: none;
-    }
+    .search-wrap:focus-within { border-color: rgba(255,255,255,0.15); }
+    .search-icon { color: var(--text-3); display: flex; align-items: center; }
+    .search-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
     .search-input {
       flex: 1;
       background: transparent;
@@ -273,7 +228,6 @@
     }
     .search-input::placeholder { color: var(--text-3); }
 
-    /* ─── STATS ROW ─── */
     .stats-row {
       display: flex;
       gap: 8px;
@@ -297,16 +251,12 @@
       color: var(--text-3);
       letter-spacing: 0.06em;
     }
-    .stat-chip-val {
-      font-weight: 700;
-      font-size: 14px;
-    }
+    .stat-chip-val { font-weight: 700; font-size: 14px; }
     .stat-chip-val.accent { color: var(--accent); }
     .stat-chip-val.red { color: var(--red); }
     .stat-chip-val.green { color: var(--green); }
     .stat-chip-val.amber { color: var(--amber); }
 
-    /* ─── CONTACT LIST ─── */
     .contact-list {
       flex: 1;
       overflow-y: auto;
@@ -326,10 +276,7 @@
       border: 1px solid transparent;
       margin-bottom: 4px;
     }
-    .contact-item:hover {
-      background: var(--raised);
-      border-color: var(--border);
-    }
+    .contact-item:hover { background: var(--raised); border-color: var(--border); }
     .contact-item.unread {
       background: rgba(255,59,48,0.04);
       border-left: 3px solid #ff3b30;
@@ -349,28 +296,42 @@
       flex-shrink: 0;
       border: 1px solid var(--border);
     }
-    .contact-info {
-      flex: 1;
-      min-width: 0;
+    .contact-body { flex: 1; min-width: 0; }
+    .contact-row1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .contact-row2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
     }
     .contact-name {
       font-size: 14px;
       font-weight: 500;
       color: var(--text-1);
     }
+    .contact-item.unread .contact-name { font-weight: 700; color: var(--text-1); }
     .contact-preview {
       font-size: 12px;
       color: var(--text-3);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex: 1;
     }
+    .contact-item.unread .contact-preview { font-weight: 500; color: var(--text-1); }
     .contact-time {
       font-family: var(--font-mono);
       font-size: 9px;
       color: var(--text-3);
       flex-shrink: 0;
     }
+    .contact-item.unread .contact-time { color: var(--accent); }
     .unread-badge {
       background: #ff3b30;
       color: #fff;
@@ -386,38 +347,42 @@
       justify-content: center;
       flex-shrink: 0;
     }
-    .contact-item.unread .contact-name { font-weight: 600; color: var(--text-1); }
-    .contact-item.unread .contact-preview { font-weight: 500; color: var(--text-1); }
-    .contact-item.unread .contact-time { color: var(--accent); }
+    .conf-badge {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .conf-badge.high { background: rgba(0,230,118,0.15); color: var(--green); }
+    .conf-badge.med { background: rgba(255,170,0,0.15); color: var(--amber); }
+    .conf-badge.low { background: rgba(255,77,77,0.15); color: var(--red); }
+    .company-tag {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      color: var(--text-3);
+      background: var(--raised);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .unread-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #4a9eff;
+      border-radius: 50%;
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
 
-    /* ─── LOADING ─── */
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    .loading-text {
       padding: 28px;
       text-align: center;
-    }
-    .loading-text {
       color: var(--text-3);
       font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.06em;
-      margin-bottom: 16px;
     }
-    .rolling-circle {
-      width: 32px;
-      height: 32px;
-      border: 3px solid rgba(255,255,255,0.08);
-      border-top: 3px solid var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .spin-icon { animation: spin 1s linear infinite; }
-
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -456,10 +421,7 @@
       display: none;
     }
     .back-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; }
-    .chat-avatar-wrap {
-      position: relative;
-      flex-shrink: 0;
-    }
+    .chat-avatar-wrap { position: relative; flex-shrink: 0; }
     .chat-avatar {
       width: 36px;
       height: 36px;
@@ -485,19 +447,8 @@
       border: 2px solid var(--surface);
     }
     .chat-info { flex: 1; min-width: 0; }
-    .chat-info h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-1);
-    }
-    .chat-info p {
-      font-size: 11px;
-      color: var(--text-3);
-      font-family: var(--font-mono);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .chat-info h3 { font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .chat-info p { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ai-toggle {
       display: flex;
       align-items: center;
@@ -515,13 +466,7 @@
     }
     .ai-toggle:hover { border-color: var(--text-3); }
     .ai-toggle.active { border-color: var(--accent); color: var(--accent); }
-    .ai-icon {
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .ai-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
     .ai-icon svg { width: 18px; height: 18px; }
     .ai-toggle-indicator {
       width: 6px;
@@ -531,12 +476,8 @@
       transition: background 0.3s;
     }
     .ai-toggle.active .ai-toggle-indicator { background: var(--accent); }
-    .chat-actions {
-      display: flex;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-    .edit-details-btn, .icon-btn {
+    .chat-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .chat-actions button {
       background: none;
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -548,16 +489,8 @@
       align-items: center;
       justify-content: center;
     }
-    .edit-details-btn:hover, .icon-btn:hover {
-      border-color: var(--text-3);
-      color: var(--text-1);
-    }
-    .edit-details-btn svg, .icon-btn svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      fill: none;
-    }
+    .chat-actions button:hover { border-color: var(--text-3); color: var(--text-1); }
+    .chat-actions button svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
 
     /* ─── MESSAGES ─── */
     .messages-container {
@@ -571,7 +504,10 @@
     .messages-container::-webkit-scrollbar { width: 2px; }
     .messages-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    .msg {
+    .msg-group { display: flex; flex-direction: column; }
+    .msg-group.from-lead { align-items: flex-start; }
+    .msg-group.from-ai { align-items: flex-end; }
+    .message-bubble {
       max-width: 80%;
       padding: 10px 14px;
       border-radius: 12px;
@@ -579,27 +515,25 @@
       line-height: 1.6;
       word-break: break-word;
     }
-    .msg.user {
-      align-self: flex-end;
-      background: var(--accent);
-      color: #060608;
-      border-bottom-right-radius: 4px;
-    }
-    .msg.ai {
-      align-self: flex-start;
+    .message-bubble.lead {
       background: var(--raised);
       color: var(--text-1);
       border-bottom-left-radius: 4px;
       border: 1px solid var(--border);
     }
-    .msg .msg-time {
+    .message-bubble.ai {
+      background: var(--accent);
+      color: #060608;
+      border-bottom-right-radius: 4px;
+    }
+    .message-time {
       font-family: var(--font-mono);
       font-size: 8px;
       color: var(--text-3);
       margin-top: 4px;
       opacity: 0.7;
     }
-    .msg.user .msg-time { color: rgba(6,6,8,0.6); }
+    .message-bubble.ai .message-time { color: rgba(6,6,8,0.6); }
 
     /* ─── REPLY INPUT ─── */
     .reply-input-area {
@@ -608,6 +542,7 @@
       background: var(--surface);
       flex-shrink: 0;
     }
+    .reply-input-area.hidden { display: none; }
     .reply-toolbar {
       display: flex;
       justify-content: space-between;
@@ -629,9 +564,7 @@
       padding: 8px 8px 8px 12px;
       transition: border-color 0.2s;
     }
-    .reply-wrap:focus-within {
-      border-color: rgba(255,255,255,0.15);
-    }
+    .reply-wrap:focus-within { border-color: rgba(255,255,255,0.15); }
     .reply-wrap textarea {
       flex: 1;
       background: transparent;
@@ -661,21 +594,21 @@
       transition: all 0.2s;
     }
     .send-btn:hover { transform: scale(1.05); }
-    .send-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .send-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+
+    /* ─── VIEW: ADMIN ─── */
+    .view-admin {
+      display: none;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
     }
-    .send-btn svg {
-      width: 18px;
-      height: 18px;
-      stroke: currentColor;
-      fill: none;
-    }
+    .view-admin.active { display: flex; }
 
     /* ─── BOTTOM NAV ─── */
     .bottom-nav {
-      height: 64px;
+      height: var(--nav-h);
       background: var(--base);
       border-top: 1px solid var(--border);
       display: flex;
@@ -771,9 +704,7 @@
       min-height: 80px;
     }
     .modal-field textarea:focus,
-    .modal-field input:focus {
-      border-color: rgba(255,255,255,0.15);
-    }
+    .modal-field input:focus { border-color: rgba(255,255,255,0.15); }
     .modal-footer {
       display: flex;
       gap: 8px;
@@ -791,10 +722,7 @@
       font-size: 12px;
       transition: all 0.2s;
     }
-    .btn-ghost:hover {
-      border-color: var(--text-3);
-      color: var(--text-1);
-    }
+    .btn-ghost:hover { border-color: var(--text-3); color: var(--text-1); }
     .btn-primary {
       background: var(--accent);
       color: #060608;
@@ -819,16 +747,83 @@
       font-size: 12px;
       transition: all 0.2s;
     }
-    .delay-day-btn:hover {
-      background: var(--hover);
-      border-color: var(--accent);
-      color: #fff;
+    .delay-day-btn:hover { background: var(--hover); border-color: var(--accent); color: #fff; }
+    .delay-day-btn.selected { background: var(--accent); color: #060608; border-color: var(--accent); }
+    .spin-icon { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ─── REVENUE MODAL ─── */
+    .revenue-category {
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: var(--raised);
+      border-radius: 8px;
     }
-    .delay-day-btn.selected {
+    .revenue-category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .revenue-category-title { font-size: 13px; font-weight: 500; color: var(--text-1); }
+    .revenue-category-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-2); }
+    .revenue-lead-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .revenue-lead-name {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-2);
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .revenue-lead-name:hover { border-color: var(--accent); color: var(--accent); }
+    .revenue-advice {
+      background: var(--surface);
+      border-left: 2px solid var(--accent);
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+    .revenue-actions { display: flex; flex-direction: column; gap: 6px; }
+    .revenue-action-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .revenue-action-lead { font-weight: 600; color: var(--text-1); }
+    .revenue-action-text { color: var(--text-2); flex: 1; }
+    .upgrade-message {
+      text-align: center;
+      padding: 12px;
+      background: rgba(200,255,87,0.05);
+      border: 1px solid rgba(200,255,87,0.1);
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    .upgrade-message span { font-size: 13px; color: var(--text-2); display: block; margin-bottom: 8px; }
+    .upgrade-button {
+      padding: 6px 16px;
+      border-radius: 6px;
+      border: none;
       background: var(--accent);
       color: #060608;
-      border-color: var(--accent);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
     }
+    .upgrade-button:hover { transform: scale(1.02); }
 
     /* ─── RESPONSIVE ─── */
     @media (max-width: 640px) {
@@ -855,66 +850,29 @@
   <div class="top-nav">
     <div class="nav-logo">
       <div class="nav-logo-mark">
-        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="1" y="9" width="2" height="5" rx="0.5" fill="#000"/>
-          <rect x="4" y="6" width="2" height="8" rx="0.5" fill="#000"/>
-          <rect x="7" y="3" width="2" height="11" rx="0.5" fill="#000"/>
-          <rect x="10" y="6" width="2" height="8" rx="0.5" fill="#000"/>
-          <rect x="13" y="8" width="2" height="6" rx="0.5" fill="#000"/>
-        </svg>
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="2" height="5" rx="0.5" fill="#000"/><rect x="4" y="6" width="2" height="8" rx="0.5" fill="#000"/><rect x="7" y="3" width="2" height="11" rx="0.5" fill="#000"/><rect x="10" y="6" width="2" height="8" rx="0.5" fill="#000"/><rect x="13" y="8" width="2" height="6" rx="0.5" fill="#000"/></svg>
       </div>
       <span class="nav-logo-text">Skyline <span>AA-1</span></span>
     </div>
     <div class="nav-divider"></div>
     <div class="tab-group">
-      <button class="tab-pill active" id="tabLeads" onclick="switchTab('leads', this)">
-        Leads
-        <span class="tab-badge" id="leadsTabBadge" style="display:none">0</span>
-      </button>
+      <button class="tab-pill active" id="tabLeads" onclick="switchTab('leads', this)">Leads <span class="tab-badge" id="leadsTabBadge" style="display:none">0</span></button>
       <button class="tab-pill" id="tabTeam" onclick="switchTab('team', this)">Team</button>
     </div>
     <div class="nav-spacer"></div>
-    <div class="nav-status">
-      <div class="status-dot"></div>
-      Live
-    </div>
-
-    <!-- ─── MAIN PAGE 3-DOT MENU ─── -->
-    <div style="position: relative; display: inline-block; margin-left: 8px;">
-      <button class="three-dot-btn" id="mainMenuBtn" title="Menu">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="5" r="2"/>
-          <circle cx="12" cy="12" r="2"/>
-          <circle cx="12" cy="19" r="2"/>
-        </svg>
-      </button>
-      <div class="menu-dropdown" id="mainMenuDropdown">
-        <button id="aiHintBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-          AI Hint
-        </button>
+    <div class="nav-status"><div class="status-dot"></div>Live</div>
+    <div style="position:relative;display:inline-block;margin-left:8px;">
+      <button class="menu-btn" id="menuBtn">☰</button>
+      <div class="menu-dropdown" id="menuDropdown">
+        <button class="menu-item" id="aiHintBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI Hint</button>
         <div class="menu-divider"></div>
-        <button id="followUpMainBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          Follow‑up
-          <span style="margin-left: auto;">▼</span>
-        </button>
+        <button class="menu-item" id="followUpMainBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Follow‑up <span style="margin-left:auto;">▼</span></button>
         <div class="submenu" id="followUpSubmenu">
-          <button id="suggestFollowUpBtn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Suggest Follow‑up
-          </button>
-          <button id="autoFollowUpBtn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Auto Follow‑up
-            <span class="auto-status" id="autoStatusSpan">OFF</span>
-          </button>
+          <button class="menu-item" id="suggestFollowUpBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Suggest Follow‑up</button>
+          <button class="menu-item" id="autoFollowUpBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Auto Follow‑up <span id="autoStatusSpan" style="margin-left:auto;font-size:9px;font-weight:bold;">OFF</span></button>
         </div>
         <div class="menu-divider"></div>
-        <button id="revenueTrackingBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          Revenue Tracking
-        </button>
+        <button class="menu-item" id="revenueTrackingBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Revenue Tracking</button>
       </div>
     </div>
   </div>
@@ -926,207 +884,72 @@
     <div id="viewList" class="view-list">
       <div class="search-section">
         <div class="search-wrap">
-          <div class="search-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="7.5" stroke-width="1.8"/>
-              <path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-          </div>
+          <div class="search-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7.5" stroke-width="1.8"/><path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/></svg></div>
           <input class="search-input" type="text" placeholder="Search leads, companies…" oninput="filterContacts(this.value)" />
         </div>
       </div>
-
       <div class="stats-row" id="statsRow">
-        <div class="stat-chip">
-          <div class="stat-chip-label">Total</div>
-          <div class="stat-chip-val accent" id="statTotal">—</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-label">Unread</div>
-          <div class="stat-chip-val red" id="statUnread">—</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-label">Active</div>
-          <div class="stat-chip-val green" id="statHigh">—</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-label">Moderate</div>
-          <div class="stat-chip-val amber" id="statMed">—</div>
-        </div>
+        <div class="stat-chip"><div class="stat-chip-label">Total</div><div class="stat-chip-val accent" id="statTotal">—</div></div>
+        <div class="stat-chip"><div class="stat-chip-label">Unread</div><div class="stat-chip-val red" id="statUnread">—</div></div>
+        <div class="stat-chip"><div class="stat-chip-label">Active</div><div class="stat-chip-val green" id="statHigh">—</div></div>
+        <div class="stat-chip"><div class="stat-chip-label">Moderate</div><div class="stat-chip-val amber" id="statMed">—</div></div>
       </div>
-
-      <div class="contact-list" id="contactList">
-        <div class="loading-container">
-          <div class="loading-text">LOADING CONTACTS…</div>
-          <div class="rolling-circle"></div>
-        </div>
-      </div>
+      <div class="contact-list" id="contactList"><div class="loading-text">LOADING CONTACTS…</div></div>
     </div>
 
     <!-- ─── VIEW: CHAT ─── -->
     <div id="viewChat" class="view-chat">
       <div class="chat-header">
-        <button class="back-btn" onclick="closeChat()">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <div class="chat-avatar-wrap">
-          <div class="chat-avatar" id="chatAvatar">?</div>
-          <div class="chat-online-dot"></div>
-        </div>
-        <div class="chat-info">
-          <h3 id="chatName">Customer Name</h3>
-          <p id="chatEmail">email@example.com</p>
-        </div>
+        <button class="back-btn" onclick="closeChat()"><svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7 7M5 12l7-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="chat-avatar-wrap"><div class="chat-avatar" id="chatAvatar">?</div><div class="chat-online-dot"></div></div>
+        <div class="chat-info"><h3 id="chatName">Customer Name</h3><p id="chatEmail">email@example.com</p></div>
         <button class="ai-toggle" id="aiToggle" onclick="toggleAutoReply()" title="Toggle AI Auto-Reply">
-          <div class="ai-icon">
-            <svg viewBox="0 0 20 20" fill="none">
-              <rect x="4" y="5" width="12" height="9" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M10 5V2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="10" cy="2" r="1" fill="currentColor"/>
-              <rect x="6.5" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
-              <rect x="11.3" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
-              <path d="M7 12h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              <path d="M7 14v1.5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M4 8.5H2.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5H4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-              <path d="M16 8.5h1.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            </svg>
-          </div>
+          <div class="ai-icon"><svg viewBox="0 0 20 20" fill="none"><rect x="4" y="5" width="12" height="9" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 5V2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="2" r="1" fill="currentColor"/><rect x="6.5" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/><rect x="11.3" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/><path d="M7 12h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M7 14v1.5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 8.5H2.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5H4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M16 8.5h1.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
           <span class="ai-toggle-text">AI Reply</span>
           <div class="ai-toggle-indicator"></div>
         </button>
         <div class="chat-actions">
-          <button class="edit-details-btn" onclick="openInstructionsModal()">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <button class="icon-btn" onclick="renameCustomer()">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- ─── CHAT HEADER 3-DOT MENU ─── -->
-        <div class="chat-three-dot-wrap">
-          <button class="three-dot-btn" id="chatMenuBtn" title="Chat Options">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="2"/>
-              <circle cx="12" cy="12" r="2"/>
-              <circle cx="12" cy="19" r="2"/>
-            </svg>
-          </button>
-          <div class="menu-dropdown" id="chatMenuDropdown">
-            <button id="chatAiHintBtn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-              AI Hint
-            </button>
-            <div class="menu-divider"></div>
-            <button id="chatSuggestFollowUpBtn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              Suggest Follow‑up
-            </button>
-            <button id="chatAutoFollowUpBtn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Auto Follow‑up
-              <span class="auto-status" id="chatAutoStatusSpan">OFF</span>
-            </button>
-            <div class="menu-divider"></div>
-            <button id="chatRevenueTrackingBtn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-              Revenue Tracking
-            </button>
-          </div>
+          <button onclick="openInstructionsModal()"><svg viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="renameCustomer()"><svg viewBox="0 0 24 24" fill="none"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
-
-      <div id="messagesContainer" class="messages-container">
-        <div class="empty-state">
-          <span class="icon">💬</span>
-          <h3>No chat open</h3>
-          <p>Select a lead to view the conversation.</p>
-        </div>
-      </div>
-
+      <div id="messagesContainer" class="messages-container"><div class="empty-state"><span class="icon">💬</span><h3>No chat open</h3><p>Select a lead to view the conversation.</p></div></div>
       <div class="reply-input-area" id="replyInputArea">
-        <div class="reply-toolbar">
-          <span class="reply-toolbar-label">Reply as Agent</span>
-        </div>
+        <div class="reply-toolbar"><span class="reply-toolbar-label">Reply as Agent</span></div>
         <div class="reply-wrap">
           <textarea id="replyText" placeholder="Type a reply…" rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
-          <button class="send-btn" id="sendBtn" onclick="sendReply()">
-            <svg viewBox="0 0 24 24">
-              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+          <button class="send-btn" id="sendBtn" onclick="sendReply()"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
     </div>
+
+    <!-- ─── VIEW: ADMIN ─── -->
+    <div id="viewAdmin" class="view-admin"><div class="empty-state"><span class="icon">👥</span><h3>Team Notifications</h3><p>Admin notifications and team messages will appear here.</p></div></div>
   </div>
 
   <!-- ─── BOTTOM NAV ─── -->
   <nav class="bottom-nav">
-    <a href="page.html" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      <span>Architect</span>
-    </a>
-    <a href="history.html" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-      <span>History</span>
-    </a>
-    <a href="notifications.html" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
-      <span>Inbox</span>
-    </a>
-    <a href="dashboard.html" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
-      </svg>
-      <span>Dashboard</span>
-    </a>
+    <a href="page.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Architect</a>
+    <a href="history.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History</a>
+    <a href="notifications.html" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Inbox</a>
+    <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
   </nav>
 
   <!-- ─── MODALS ─── -->
   <div class="modal-overlay" id="instructionsModal">
     <div class="modal-content">
-      <div class="modal-header">
-        <div><h3>AI Auto-Reply Setup</h3><p>AI · AUTO-REPLY INSTRUCTIONS</p></div>
-        <button class="modal-close" onclick="closeInstructionsModal()">×</button>
-      </div>
-      <div class="modal-field">
-        <label>Instructions for AI</label>
-        <textarea id="instructionsText" placeholder="E.g., Be concise and professional. Offer a 10% discount if they hesitate. Always sign off with 'Best, Team Skyline'."></textarea>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-ghost" onclick="closeInstructionsModal()">Cancel</button>
-        <button class="btn-primary" onclick="handleSaveInstructions()">Activate AI Reply</button>
-      </div>
+      <div class="modal-header"><div><h3>AI Auto-Reply Setup</h3><p>AI · AUTO-REPLY INSTRUCTIONS</p></div><button class="modal-close" onclick="closeInstructionsModal()">×</button></div>
+      <div class="modal-field"><label>Instructions for AI</label><textarea id="instructionsText" placeholder="E.g., Be concise and professional. Offer a 10% discount if they hesitate. Always sign off with 'Best, Team Skyline'."></textarea></div>
+      <div class="modal-footer"><button class="btn-ghost" onclick="closeInstructionsModal()">Cancel</button><button class="btn-primary" onclick="handleSaveInstructions()">Activate AI Reply</button></div>
     </div>
   </div>
 
   <div class="modal-overlay" id="autoFollowUpModal">
-    <div class="modal-content" style="max-width: 380px;">
-      <div class="modal-header">
-        <div><h3>Auto Follow‑up Delay</h3><p>Choose when to send the first follow‑up</p></div>
-        <button class="modal-close" id="closeAutoFollowUpModalBtn">×</button>
-      </div>
+    <div class="modal-content" style="max-width:380px;">
+      <div class="modal-header"><div><h3>Auto Follow‑up Delay</h3><p>Choose when to send the first follow‑up</p></div><button class="modal-close" id="closeAutoFollowUpModalBtn">×</button></div>
       <div class="modal-field">
         <label>Preset days</label>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
           <button class="delay-day-btn" data-days="1">1 day</button>
           <button class="delay-day-btn" data-days="2">2 days</button>
           <button class="delay-day-btn" data-days="3">3 days</button>
@@ -1136,63 +959,47 @@
           <button class="delay-day-btn" data-days="7">7 days</button>
         </div>
         <label>Custom days</label>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="number" id="customDelayDays" min="1" max="365" step="1" style="flex:1; background: var(--bg-raised); border:1px solid var(--border); color:white; padding:8px; border-radius:6px;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="number" id="customDelayDays" min="1" max="365" step="1" style="flex:1;background:var(--raised);border:1px solid var(--border);color:white;padding:8px;border-radius:6px;">
           <button id="applyCustomDelay" class="btn-primary" style="padding:8px 12px;">Apply</button>
         </div>
       </div>
-      <div class="modal-footer" style="justify-content: space-between;">
-        <button id="offFollowUpBtn" class="btn-ghost" style="color:#ff5555; display: none;">Off Follow‑up</button>
-        <div>
-          <button id="cancelAutoFollowUpBtn" class="btn-ghost">Cancel</button>
-          <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
-        </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <button id="offFollowUpBtn" class="btn-ghost" style="color:#ff5555;display:none;">Off Follow‑up</button>
+        <div><button id="cancelAutoFollowUpBtn" class="btn-ghost">Cancel</button><button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button></div>
       </div>
     </div>
   </div>
 
   <div class="modal-overlay" id="revenueModal">
-    <div class="modal-content revenue-modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-      <div class="modal-header">
-        <div><h3>Revenue Tracking</h3><p>AI‑powered analysis of your leads</p></div>
-        <button class="modal-close" id="closeRevenueModalBtn">×</button>
-      </div>
-      <div id="revenueContent" style="padding: 4px 0 16px;">
-        <div style="text-align: center; padding: 30px;">Loading revenue data...</div>
-      </div>
+    <div class="modal-content revenue-modal" style="max-width:600px;max-height:80vh;overflow-y:auto;">
+      <div class="modal-header"><div><h3>Revenue Tracking</h3><p>AI‑powered analysis of your leads</p></div><button class="modal-close" id="closeRevenueModalBtn">×</button></div>
+      <div id="revenueContent" style="padding:4px 0 16px;"><div style="text-align:center;padding:30px;">Loading revenue data...</div></div>
     </div>
   </div>
 
-  <!-- ─── SINGLE SCRIPT WITH ALL LOGIC ─── -->
+  <!-- ─── ALL JAVASCRIPT BUILT IN ─── -->
   <script>
-    // ── CONFIG ──
+    // ─── CONFIG ───
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
 
-    // ── GLOBAL STATE ──
+    // ─── GLOBAL STATE ───
     let allContacts = [];
     let userTier = 'free';
     let currentLeadId = null;
-    let currentLeadName = '';
-    let currentLeadEmail = '';
     let isAutoReplyEnabled = false;
     let autoReplyInstructions = "";
+    let autoFollowUpEnabled = false;
     let refreshInterval = null;
 
-    // ── ESCAPE HTML ──
+    // ─── UTILITY FUNCTIONS ───
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;')
-        .replace(/`/g, '&#x60;');
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;').replace(/`/g,'&#x60;');
     }
 
-    // ── UTILITY ──
     function getInitials(name) {
       if (!name) return '?';
       return name.charAt(0).toUpperCase();
@@ -1202,6 +1009,21 @@
       if (!textarea) return;
       textarea.style.height = 'auto';
       textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    function formatTime(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        const now = new Date();
+        const diff = now - d;
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+        if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } catch { return ''; }
     }
 
     function calculateEngagementScore(lead, messages) {
@@ -1216,12 +1038,9 @@
       return { score, tier };
     }
 
-    // ── LOAD CONTACTS ──
+    // ─── LOAD CONTACTS (FIXED) ───
     async function loadContacts() {
       console.log('📡 [loadContacts] Fetching /api/conversations...');
-      const list = document.getElementById('contactList');
-      list.innerHTML = '<div class="loading-container"><div class="loading-text">LOADING CONTACTS…</div><div class="rolling-circle"></div></div>';
-
       try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -1229,23 +1048,24 @@
         console.log(`📡 [loadContacts] Response status: ${res.status}`);
         if (!res.ok) {
           const text = await res.text();
-          console.error(`❌ HTTP ${res.status} - body:`, text);
+          console.error(`❌ [loadContacts] HTTP ${res.status} - body:`, text);
           throw new Error(`HTTP ${res.status}`);
         }
         const contacts = await res.json();
-        console.log(`✅ Received ${contacts.length} contacts`);
+        console.log(`✅ [loadContacts] Received ${contacts.length} contacts`);
         allContacts = contacts;
         updateStats(contacts);
         renderContacts(contacts);
         return contacts;
       } catch (err) {
         console.error('❌ [loadContacts] Error:', err);
-        list.innerHTML = '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
+        document.getElementById('contactList').innerHTML =
+          '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">⚠️ FAILED TO LOAD · REFRESH TO RETRY</div>';
         return [];
       }
     }
 
-    // ── UPDATE STATS ──
+    // ─── UPDATE STATS ───
     function updateStats(contacts) {
       const total = contacts.length;
       const unread = contacts.filter(c => (c.unreadCount || 0) > 0).length;
@@ -1268,11 +1088,11 @@
       }
     }
 
-    // ── RENDER CONTACTS ──
+    // ─── RENDER CONTACTS ───
     function renderContacts(contacts) {
       const list = document.getElementById('contactList');
       if (!contacts || contacts.length === 0) {
-        list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">NO CONVERSATIONS YET</div>';
+        list.innerHTML = '<div style="padding:36px 20px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">📭 NO CONVERSATIONS YET</div>';
         return;
       }
       const sorted = [...contacts].sort((a, b) => {
@@ -1292,33 +1112,33 @@
         const safeEmail = escapeHtml(c.email || '');
         const safeCompany = escapeHtml(c.company || '');
         const safeLastMsg = escapeHtml(c.lastMessage || 'No messages yet');
+        const safeId = escapeHtml(c.id || '');
         const safeTier = escapeHtml(rating.tier);
-        const safeId = c.id || '';
+        const unreadDot = unread > 0 ? `<span class="unread-dot"></span>` : '';
+        const nameStyle = unread > 0 ? 'font-weight:700;' : 'font-weight:400;';
         return `
-          <div class="contact-item ${unread > 0 ? 'unread' : ''}"
-               onclick="openChat('${safeId}', '${safeName}', '${safeEmail}')">
+          <div class="contact-item ${unread > 0 ? 'unread' : ''}" onclick="openChat('${safeId}', '${safeName}', '${safeEmail}')">
             <div class="contact-avatar">${getInitials(c.name)}</div>
-            <div class="contact-info">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span class="contact-name">${safeName}</span>
+            <div class="contact-body">
+              <div class="contact-row1">
+                <span class="contact-name" style="${nameStyle}">${safeName}${unreadDot}</span>
                 <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
               </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <div class="contact-row2">
                 <span class="contact-preview">${safeLastMsg}</span>
-                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                <div class="contact-meta">
                   ${unread > 0 ? `<span class="unread-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
-                  <span class="conf-badge ${confClass}" style="font-size:9px;padding:2px 6px;border-radius:4px;background:${confClass === 'high' ? 'rgba(0,230,118,0.15)' : confClass === 'med' ? 'rgba(255,170,0,0.15)' : 'rgba(255,77,77,0.15)'};color:${confClass === 'high' ? 'var(--green)' : confClass === 'med' ? 'var(--amber)' : 'var(--red)'};">
-                    ${rating.score} ${safeTier}
-                  </span>
-                  ${c.company ? `<span style="font-size:9px;color:var(--text-3);background:var(--raised);padding:1px 6px;border-radius:4px;">${safeCompany}</span>` : ''}
+                  <span class="conf-badge ${confClass}">${rating.score} <span style="opacity:0.7;font-weight:400;">${safeTier}</span></span>
+                  ${c.company ? `<span class="company-tag">${safeCompany}</span>` : ''}
                 </div>
               </div>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join('');
     }
 
-    // ── FILTER CONTACTS ──
+    // ─── FILTER CONTACTS ───
     function filterContacts(query) {
       if (!query.trim()) { renderContacts(allContacts); return; }
       const q = query.toLowerCase();
@@ -1329,24 +1149,31 @@
       ));
     }
 
-    // ── OPEN CHAT ──
+    // ─── OPEN CHAT ───
     async function openChat(leadId, name, email) {
       console.log(`💬 [openChat] Opening chat with ${name} (${leadId})`);
       currentLeadId = leadId;
-      currentLeadName = name;
-      currentLeadEmail = email;
       window.currentLeadId = leadId;
       window.currentLeadName = name;
       window.currentLeadEmail = email;
 
-      document.getElementById('chatName').textContent = name;
+      const leadData = allContacts.find(l => l.id === leadId);
+      let badgeHtml = '';
+      if (leadData) {
+        const rating = calculateEngagementScore(leadData, []);
+        let cls = 'low';
+        if (rating.score >= 75) cls = 'high';
+        else if (rating.score >= 40) cls = 'med';
+        const safeTier = escapeHtml(rating.tier);
+        badgeHtml = `<span class="conf-badge ${cls}" style="margin-left:6px;font-size:8px;">${rating.score} ${safeTier}</span>`;
+      }
+      document.getElementById('chatName').innerHTML = `${escapeHtml(name)} ${badgeHtml}`;
       document.getElementById('chatEmail').textContent = email;
       document.getElementById('chatAvatar').textContent = getInitials(name);
       document.getElementById('replyText').value = '';
       document.getElementById('replyText').style.height = '38px';
       document.getElementById('viewChat').classList.add('active');
 
-      // Mark as read
       const contact = allContacts.find(c => c.id === leadId);
       if (contact && contact.unreadCount > 0) {
         contact.unreadCount = 0;
@@ -1356,43 +1183,45 @@
       }
 
       const container = document.getElementById('messagesContainer');
-      container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-3); font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em;">LOADING MESSAGES…</div>';
+      container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-3);font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;">⏳ LOADING MESSAGES…</div>';
 
       try {
         const data = await fetchConversationDetails(leadId);
         isAutoReplyEnabled = data.lead?.autoReplyEnabled || false;
         autoReplyInstructions = data.lead?.autoReplyInstructions || "";
         updateAutoReplyUI();
-        loadAutoFollowUpStatus(); // Load follow-up status for this lead
+        await loadFollowUpStatus();
 
         if (!data.messages || data.messages.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <span class="icon">💬</span>
-              <h3>No messages yet</h3>
-              <p>Send the first message to start the conversation.</p>
-            </div>`;
+          container.innerHTML = `<div class="empty-state"><span class="icon">💬</span><h3>No messages yet</h3><p>Send the first message to start the conversation.</p></div>`;
           return;
         }
-
         container.innerHTML = data.messages.map(msg => {
           const safeContent = escapeHtml(msg.content || '');
           const safeTime = msg.date ? new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-          const from = msg.from === 'lead' ? 'lead' : 'ai';
           return `
-            <div class="msg ${from === 'lead' ? 'ai' : 'user'}">
-              ${safeContent}
-              <div class="msg-time">${safeTime}</div>
-            </div>`;
+            <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
+              <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
+                ${safeContent}
+                <div class="message-time">${safeTime}</div>
+              </div>
+            </div>
+          `;
         }).join('');
         container.scrollTop = container.scrollHeight;
       } catch (err) {
         console.error('❌ [openChat] Error loading messages:', err);
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-3); font-size:12px;">Failed to load messages.</div>';
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);font-size:12px;">⚠️ Failed to load messages.</div>';
       }
     }
 
-    // ── FETCH CONVERSATION DETAILS ──
+    // ─── CLOSE CHAT ───
+    function closeChat() {
+      document.getElementById('viewChat').classList.remove('active');
+      currentLeadId = null;
+    }
+
+    // ─── FETCH CONVERSATION DETAILS ───
     async function fetchConversationDetails(leadId) {
       const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -1400,7 +1229,7 @@
       return await res.json();
     }
 
-    // ── MARK AS READ ──
+    // ─── MARK AS READ ───
     async function markAsRead(leadId) {
       try {
         await fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
@@ -1410,29 +1239,20 @@
       } catch (err) { console.error('❌ [markAsRead] Error:', err); }
     }
 
-    // ── CLOSE CHAT ──
-    function closeChat() {
-      document.getElementById('viewChat').classList.remove('active');
-      currentLeadId = null;
-    }
-
-    // ── SEND REPLY ──
+    // ─── SEND REPLY ───
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
       if (!text || !currentLeadId) return;
-      console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
       const btn = document.getElementById('sendBtn');
       btn.disabled = true;
-
       const payload = {
         leads: [{
-          name: currentLeadName || 'Unknown',
-          email: currentLeadEmail || '',
+          name: window.currentLeadName || 'Lead',
+          email: window.currentLeadEmail || '',
           company: '',
           messages: [{ subject: "Re: Conversation", body: text }]
         }]
       };
-
       try {
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
           method: 'POST',
@@ -1449,20 +1269,22 @@
         if (data.success) {
           document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '38px';
-          openChat(currentLeadId, currentLeadName, currentLeadEmail);
           loadContacts();
+          openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
         } else {
-          alert(`Failed to send: ${data.message || 'Unknown error'}`);
+          alert(`Failed to send: ${data.message || data.error || JSON.stringify(data.errors)}`);
         }
       } catch (err) {
-        console.error('❌ [sendReply] Network error:', err);
-        alert("Connection error. Please try again.");
+        console.error('❌ [sendReply] Error:', err);
+        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
+        alert("Connection error. Message saved.");
+        window.location.href = 'dashboard.html?connect=true';
       } finally {
         btn.disabled = false;
       }
     }
 
-    // ── HANDLE KEY ──
+    // ─── HANDLE KEY ───
     function handleKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -1470,24 +1292,47 @@
       }
     }
 
-    // ── SWITCH TAB ──
+    // ─── SWITCH TAB ───
     function switchTab(tab, btn) {
       document.querySelectorAll('.tab-pill').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       if (tab === 'leads') {
-        document.getElementById('viewList').style.display = 'flex';
-        document.getElementById('viewChat').classList.remove('active');
+        document.getElementById('viewList').classList.remove('hidden');
+        document.getElementById('viewAdmin').classList.remove('active');
+        closeChat();
       } else {
-        document.getElementById('viewList').style.display = 'none';
-        document.getElementById('viewChat').classList.remove('active');
+        document.getElementById('viewList').classList.add('hidden');
+        document.getElementById('viewAdmin').classList.add('active');
+        closeChat();
       }
     }
 
-    // ── AUTO-REPLY ──
+    // ─── RENAME CUSTOMER ───
+    async function renameCustomer() {
+      const newName = prompt('Enter new name:', window.currentLeadName || '');
+      if (newName && newName !== window.currentLeadName && currentLeadId) {
+        try {
+          await fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ newName })
+          });
+          window.currentLeadName = newName;
+          document.getElementById('chatName').innerHTML = escapeHtml(newName);
+          document.getElementById('chatAvatar').textContent = getInitials(newName);
+          loadContacts();
+        } catch (err) {
+          console.error('❌ [renameCustomer] Error:', err);
+          alert("Failed to rename.");
+        }
+      }
+    }
+
+    // ─── AUTO-REPLY ───
     function toggleAutoReply() {
       const tier = (userTier || 'free').toLowerCase();
       if (tier === 'free') {
-        alert("Auto-reply is not available on the Free plan. Upgrade to Go or Pro.");
+        alert("Auto-reply is not available on the Free plan. Upgrade to Go or Pro to use AI auto-replies.");
         return;
       }
       if (isAutoReplyEnabled) {
@@ -1511,12 +1356,6 @@
     async function handleSaveInstructions() {
       const instructions = document.getElementById('instructionsText').value.trim();
       if (!instructions) { alert("Please enter AI instructions."); return; }
-      const success = await saveAutoReplyInstructions(instructions);
-      if (success) closeInstructionsModal();
-    }
-
-    async function saveAutoReplyInstructions(instructions) {
-      if (!currentLeadId) { alert("No lead selected."); return false; }
       try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
           method: 'PUT',
@@ -1527,20 +1366,17 @@
           isAutoReplyEnabled = true;
           autoReplyInstructions = instructions;
           updateAutoReplyUI();
-          return true;
+          closeInstructionsModal();
         } else {
           alert("Failed to save.");
-          return false;
         }
       } catch (err) {
-        console.error('❌ [saveAutoReplyInstructions] Error:', err);
+        console.error('❌ [handleSaveInstructions] Error:', err);
         alert("Connection error.");
-        return false;
       }
     }
 
     async function saveAutoReplyStatus() {
-      if (!currentLeadId) return;
       try {
         await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
           method: 'PUT',
@@ -1548,94 +1384,25 @@
           body: JSON.stringify({ enabled: isAutoReplyEnabled })
         });
         updateAutoReplyUI();
-      } catch (err) { console.error('❌ [saveAutoReplyStatus] Error:', err); }
+      } catch (err) {
+        console.error('❌ [saveAutoReplyStatus] Error:', err);
+      }
     }
 
     function updateAutoReplyUI() {
       const toggle = document.getElementById('aiToggle');
-      const editBtn = document.querySelector('.edit-details-btn');
       const inputArea = document.getElementById('replyInputArea');
       if (isAutoReplyEnabled) {
         toggle.classList.add('active');
-        if (editBtn) editBtn.style.display = 'flex';
-        if (inputArea) inputArea.style.display = 'none';
+        inputArea.classList.add('hidden');
       } else {
         toggle.classList.remove('active');
-        if (editBtn) editBtn.style.display = 'none';
-        if (inputArea) inputArea.style.display = 'block';
+        inputArea.classList.remove('hidden');
       }
     }
 
-    // ── RENAME CUSTOMER ──
-    function renameCustomer() {
-      const newName = prompt('Enter new name:', currentLeadName);
-      if (newName && newName !== currentLeadName && currentLeadId) {
-        fetch(`${BACKEND}/api/leads/${currentLeadId}/rename`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ newName })
-        }).then(() => {
-          currentLeadName = newName;
-          document.getElementById('chatName').textContent = newName;
-          document.getElementById('chatAvatar').textContent = getInitials(newName);
-          loadContacts();
-        }).catch(err => {
-          console.error('❌ [renameCustomer] Error:', err);
-          alert("Failed to rename.");
-        });
-      }
-    }
-
-    // ── REVENUE TRACKING ──
-    function openRevenueTracking() {
-      const modal = document.getElementById('revenueModal');
-      const content = document.getElementById('revenueContent');
-      if (!modal || !content) return;
-      modal.classList.add('active');
-      content.innerHTML = '<div style="text-align:center;padding:30px;"><div class="rolling-circle" style="display:inline-block;"></div> Loading revenue data...</div>';
-      fetch(`${BACKEND}/api/revenue/tracking`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        let html = '';
-        const order = ['contacted', 'replied', 'interested', 'ongoing', 'win'];
-        const labels = {
-          contacted: 'Customers Contacted',
-          replied: 'Customers Replied',
-          interested: 'Interested Customers',
-          ongoing: 'Ongoing Conversation',
-          win: 'Win Conversation'
-        };
-        for (const key of order) {
-          const leads = data.categories?.[key] || [];
-          html += `<div style="margin-bottom:12px;padding:10px;background:var(--raised);border-radius:8px;border:1px solid var(--border);">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-              <strong style="color:var(--text-1);">${labels[key]}</strong>
-              <span style="color:var(--text-2);">${leads.length}</span>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;">
-              ${leads.map(l => `<span style="font-size:11px;color:var(--text-2);background:var(--bg-surface);padding:2px 8px;border-radius:4px;">${escapeHtml(l.name || 'Unknown')}</span>`).join('')}
-              ${leads.length === 0 ? '<span style="font-size:11px;color:var(--text-3);">—</span>' : ''}
-            </div>
-          </div>`;
-        }
-        content.innerHTML = html || '<div style="text-align:center;color:var(--text-3);padding:20px;">No revenue data available.</div>';
-      })
-      .catch(err => {
-        content.innerHTML = `<div style="color:var(--red);text-align:center;padding:20px;">❌ ${err.message}</div>`;
-      });
-    }
-
-    function closeRevenueModal() {
-      document.getElementById('revenueModal')?.classList.remove('active');
-    }
-
-    // ── AUTO FOLLOW-UP ──
-    let autoFollowUpEnabled = false;
-    let selectedDelayDays = 3;
-
-    async function loadAutoFollowUpStatus() {
+    // ─── AUTO FOLLOW-UP ───
+    async function loadFollowUpStatus() {
       if (!currentLeadId) return;
       try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
@@ -1643,90 +1410,43 @@
         });
         if (res.ok) {
           const data = await res.json();
-          autoFollowUpEnabled = data.autoFollowUpEnabled || false;
-          updateAutoFollowUpStatusUI();
-        }
-      } catch(e) { console.error(e); }
-    }
-
-    function updateAutoFollowUpStatusUI() {
-      const statusSpans = document.querySelectorAll('#autoStatusSpan, #chatAutoStatusSpan');
-      statusSpans.forEach(span => {
-        span.textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
-        span.style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
-      });
-    }
-
-    function openAutoFollowUpModal() {
-      document.getElementById('autoFollowUpModal').classList.add('active');
-      updateAutoFollowUpModalUI();
-    }
-
-    function closeAutoFollowUpModal() {
-      document.getElementById('autoFollowUpModal').classList.remove('active');
-    }
-
-    function updateAutoFollowUpModalUI() {
-      document.querySelectorAll('.delay-day-btn').forEach(btn => {
-        btn.classList.toggle('selected', parseInt(btn.getAttribute('data-days')) === selectedDelayDays);
-      });
-      document.getElementById('confirmAutoFollowUpBtn').textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
-      document.getElementById('confirmAutoFollowUpBtn').disabled = false;
-      document.getElementById('offFollowUpBtn').style.display = autoFollowUpEnabled ? 'block' : 'none';
-    }
-
-    async function toggleAutoFollowUp() {
-      if (!currentLeadId) return;
-      const newState = !autoFollowUpEnabled;
-      try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled: newState, delayDays: selectedDelayDays })
-        });
-        const data = await res.json();
-        if (data.success) {
           autoFollowUpEnabled = data.autoFollowUpEnabled;
-          updateAutoFollowUpStatusUI();
-          alert(autoFollowUpEnabled ? `Auto follow-up enabled. First follow-up in ${selectedDelayDays} day(s).` : 'Auto follow-up disabled.');
-          closeAutoFollowUpModal();
-        } else {
-          alert(data.message || 'Failed to toggle auto follow-up.');
+          updateAutoFollowUpUI();
         }
-      } catch (err) {
-        console.error(err);
-        alert('Connection error.');
+      } catch (err) { console.error('Failed to load follow-up status:', err); }
+    }
+
+    function updateAutoFollowUpUI() {
+      const statusSpan = document.getElementById('autoStatusSpan');
+      if (!statusSpan) return;
+      if (autoFollowUpEnabled) {
+        statusSpan.textContent = 'ON';
+        statusSpan.style.color = '#66dd99';
+      } else {
+        statusSpan.textContent = 'OFF';
+        statusSpan.style.color = '#ff5555';
       }
     }
 
-    async function suggestFollowUp() {
-      if (!currentLeadId) { alert("Open a chat first."); return; }
-      try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/suggest-follow-up`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-        });
-        const data = await res.json();
-        if (data.success && data.suggestion) {
-          document.getElementById('replyText').value = data.suggestion;
-          autoResize(document.getElementById('replyText'));
-          document.getElementById('replyText').focus();
-        } else {
-          alert(data.message || 'Failed to generate follow-up suggestion.');
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Connection error.');
-      }
-    }
-
+    // ─── AI HINT ───
     async function triggerHint() {
-      if (isAutoReplyEnabled) { alert("Please turn off Auto‑Reply to use AI Hint."); return; }
-      if (!currentLeadId) { alert("Open a chat first."); return; }
+      if (isAutoReplyEnabled) {
+        alert("Please turn off Auto‑Reply to use AI Hint.");
+        return;
+      }
+      if (!currentLeadId) {
+        alert("Open a chat first to get a hint.");
+        return;
+      }
+      const btn = document.getElementById('aiHintBtn');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<svg class="spin-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Loading...`;
+      btn.disabled = true;
       try {
         const convRes = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (!convRes.ok) throw new Error('Failed to fetch conversation');
         const convData = await convRes.json();
         const messages = convData.messages || [];
         if (messages.length === 0) { alert("No messages to base a hint on."); return; }
@@ -1736,200 +1456,321 @@
           body: JSON.stringify({ messages: messages.slice(-3) })
         });
         const hintData = await hintRes.json();
+        if (!hintRes.ok) {
+          if (hintRes.status === 403) {
+            alert(hintData.message || "Hint limit reached.");
+          } else {
+            alert(hintData.error || "Failed to get hint.");
+          }
+          return;
+        }
         if (hintData.suggestion) {
-          document.getElementById('replyText').value = hintData.suggestion;
-          autoResize(document.getElementById('replyText'));
-          document.getElementById('replyText').focus();
+          const textArea = document.getElementById('replyText');
+          textArea.value = hintData.suggestion;
+          autoResize(textArea);
+          textArea.focus();
         } else {
           alert("No suggestion returned.");
         }
       } catch (err) {
         console.error(err);
         alert("Connection error.");
+      } finally {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
       }
     }
 
-    // ── SETUP MENU DROPDOWNS ──
-    function setupMenuDropdown(menuBtnId, dropdownId, options = {}) {
-      const menuBtn = document.getElementById(menuBtnId);
-      const dropdown = document.getElementById(dropdownId);
-      if (!menuBtn || !dropdown) return;
-
-      menuBtn.onclick = function(e) {
-        e.stopPropagation();
-        // Close all other dropdowns first
-        document.querySelectorAll('.menu-dropdown').forEach(d => {
-          if (d !== dropdown) d.style.display = 'none';
+    // ─── SUGGEST FOLLOW-UP ───
+    async function suggestFollowUp() {
+      if (isAutoReplyEnabled) {
+        alert("Please turn off Auto‑Reply to use Suggest Follow‑up.");
+        return;
+      }
+      if (!currentLeadId) {
+        alert('Open a chat first.');
+        return;
+      }
+      const btn = document.getElementById('suggestFollowUpBtn');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generating...`;
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/suggest-follow-up`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
-        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-      };
-
-      // Close on outside click
-      document.addEventListener('click', function(e) {
-        if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.style.display = 'none';
+        const data = await res.json();
+        if (data.success && data.suggestion) {
+          const textArea = document.getElementById('replyText');
+          textArea.value = data.suggestion;
+          autoResize(textArea);
+          textArea.focus();
+        } else {
+          alert(data.message || 'Failed to generate follow-up suggestion.');
         }
+      } catch (err) {
+        console.error(err);
+        alert('Connection error.');
+      } finally {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      }
+    }
+
+    // ─── TOGGLE AUTO FOLLOW-UP MODAL ───
+    let selectedDelayDays = 3;
+    const modal = document.getElementById('autoFollowUpModal');
+    const confirmBtn = document.getElementById('confirmAutoFollowUpBtn');
+
+    function openAutoFollowUpModal() {
+      loadFollowUpStatus().then(() => {
+        selectedDelayDays = 3;
+        updateModalUI();
+        modal.classList.add('active');
       });
     }
 
-    // ── INIT ──
-    document.addEventListener('DOMContentLoaded', async () => {
+    function closeAutoFollowUpModal() {
+      modal.classList.remove('active');
+    }
+
+    function updateModalUI() {
+      document.querySelectorAll('.delay-day-btn').forEach(btn => {
+        const days = parseInt(btn.getAttribute('data-days'));
+        btn.classList.toggle('selected', days === selectedDelayDays);
+      });
+      confirmBtn.textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
+      confirmBtn.disabled = false;
+    }
+
+    document.querySelectorAll('.delay-day-btn').forEach(btn => {
+      btn.onclick = () => {
+        selectedDelayDays = parseInt(btn.getAttribute('data-days'));
+        updateModalUI();
+      };
+    });
+
+    document.getElementById('applyCustomDelay').onclick = () => {
+      const val = parseInt(document.getElementById('customDelayDays').value);
+      if (isNaN(val) || val < 1) { alert('Please enter a valid number of days (at least 1).'); return; }
+      selectedDelayDays = val;
+      updateModalUI();
+    };
+
+    confirmBtn.onclick = async () => {
+      closeAutoFollowUpModal();
+      if (!currentLeadId) { alert('Open a chat first.'); return; }
       try {
-        const userRes = await fetch(`${BACKEND}/api/users/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: true, delayDays: selectedDelayDays })
         });
-        if (userRes.ok) {
-          const user = await userRes.json();
+        const data = await res.json();
+        if (data.success) {
+          autoFollowUpEnabled = true;
+          updateAutoFollowUpUI();
+          alert(data.message || `Auto follow-up enabled. First follow-up in ${selectedDelayDays} day(s).`);
+        } else {
+          alert(data.message || 'Failed to enable auto follow-up.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Connection error.');
+      }
+    };
+
+    document.getElementById('offFollowUpBtn').onclick = async () => {
+      closeAutoFollowUpModal();
+      if (!currentLeadId) { alert('Open a chat first.'); return; }
+      try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: false })
+        });
+        const data = await res.json();
+        if (data.success) {
+          autoFollowUpEnabled = false;
+          updateAutoFollowUpUI();
+          alert('Auto follow-up disabled.');
+        } else {
+          alert(data.message || 'Failed to disable auto follow-up.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Connection error.');
+      }
+    };
+
+    document.getElementById('closeAutoFollowUpModalBtn').onclick = closeAutoFollowUpModal;
+    document.getElementById('cancelAutoFollowUpBtn').onclick = closeAutoFollowUpModal;
+
+    // ─── REVENUE TRACKING ───
+    function openRevenueTracking() {
+      const modal = document.getElementById('revenueModal');
+      const content = document.getElementById('revenueContent');
+      modal.classList.add('active');
+      content.innerHTML = '<div style="text-align:center;padding:30px;"><div class="spin-icon" style="display:inline-block;">↻</div> Loading revenue data...</div>';
+      fetchRevenueTracking()
+        .then(data => renderRevenueData(data, content))
+        .catch(err => {
+          content.innerHTML = `<div style="color:var(--red);text-align:center;padding:20px;">❌ ${err.message}</div>`;
+        });
+    }
+
+    async function fetchRevenueTracking() {
+      const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to load revenue data');
+      }
+      return await res.json();
+    }
+
+    function renderRevenueData(data, content) {
+      const tier = data.tier || userTier;
+      const categories = data.categories || {};
+      const advice = data.advice || {};
+      const actions = data.actions || [];
+      let html = '';
+      const order = ['contacted', 'replied', 'interested', 'ongoing', 'win'];
+      const labels = { contacted: 'Customers Contacted', replied: 'Customers Replied', interested: 'Interested Customers', ongoing: 'Ongoing Conversation', win: 'Win Conversation' };
+      for (const key of order) {
+        const leads = categories[key] || [];
+        html += `
+          <div class="revenue-category">
+            <div class="revenue-category-header"><span class="revenue-category-title">${labels[key]}</span><span class="revenue-category-count">${leads.length}</span></div>
+            <div class="revenue-lead-list">${leads.map(l => `<span class="revenue-lead-name" data-lead-id="${l.id}" data-lead-name="${escapeHtml(l.name)}">${escapeHtml(l.name)}</span>`).join('')}${leads.length === 0 ? '<span style="color:var(--text-3);font-size:11px;">—</span>' : ''}</div>
+          </div>`;
+      }
+      if (tier === 'go' || tier === 'pro') {
+        let adviceHtml = '';
+        for (const key of order) {
+          const adviceKey = key + 'Advice';
+          const adviceText = advice[adviceKey];
+          if (adviceText && categories[key] && categories[key].length > 0) {
+            adviceHtml += `<div class="revenue-advice"><strong>${labels[key]}:</strong><br>${escapeHtml(adviceText)}</div>`;
+          }
+        }
+        html += adviceHtml ? `<div style="margin:16px 0 8px;"><strong>🤖 AI Advice</strong></div>${adviceHtml}` : `<div class="revenue-advice">No specific advice available.</div>`;
+      }
+      if (tier === 'pro' && actions && actions.length > 0) {
+        html += `<div style="margin:20px 0 8px;"><strong>⚡ AI Actions (Top ${actions.length})</strong></div><div class="revenue-actions">`;
+        actions.forEach(a => {
+          html += `<div class="revenue-action-item"><div class="revenue-action-lead">${escapeHtml(a.leadName || 'Lead')}</div><div class="revenue-action-text">▶ ${escapeHtml(a.action)}</div></div>`;
+        });
+        html += `</div>`;
+      }
+      if (tier === 'free') {
+        html += `<div class="upgrade-message"><span>✨ Unlock AI Advice – Upgrade to Go or Pro</span><div><button class="upgrade-button" onclick="alert('Upgrade to Go or Pro plan to unlock AI Advice.')">View Plans</button></div></div>`;
+      } else if (tier === 'go') {
+        html += `<div class="upgrade-message"><span>🚀 Unlock AI Actions – Upgrade to Pro</span><div><button class="upgrade-button" onclick="alert('Upgrade to Pro plan to unlock AI Actions.')">View Plans</button></div></div>`;
+      }
+      content.innerHTML = html;
+      document.querySelectorAll('.revenue-lead-name').forEach(el => {
+        el.onclick = () => {
+          const leadId = el.getAttribute('data-lead-id');
+          const leadName = el.getAttribute('data-lead-name');
+          const contact = allContacts.find(c => c.id === leadId);
+          if (contact && typeof openChat === 'function') {
+            document.getElementById('revenueModal').classList.remove('active');
+            openChat(leadId, contact.name, contact.email);
+          } else {
+            alert(`Open chat for ${leadName} not available`);
+          }
+        };
+      });
+    }
+
+    document.getElementById('closeRevenueModalBtn').onclick = () => document.getElementById('revenueModal').classList.remove('active');
+    document.getElementById('revenueModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
+    });
+
+    // ─── MENU DROPDOWN ───
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuBtn = document.getElementById('menuBtn');
+      const dropdown = document.getElementById('menuDropdown');
+      const followUpMain = document.getElementById('followUpMainBtn');
+      const submenu = document.getElementById('followUpSubmenu');
+
+      if (menuBtn && dropdown) {
+        menuBtn.onclick = function(e) {
+          e.stopPropagation();
+          dropdown.classList.toggle('show');
+        };
+      }
+
+      if (followUpMain && submenu) {
+        followUpMain.onclick = function(e) {
+          e.stopPropagation();
+          submenu.classList.toggle('show');
+        };
+      }
+
+      document.getElementById('aiHintBtn').onclick = function(e) {
+        e.stopPropagation();
+        if (dropdown) dropdown.classList.remove('show');
+        if (submenu) submenu.classList.remove('show');
+        triggerHint();
+      };
+
+      document.getElementById('suggestFollowUpBtn').onclick = function(e) {
+        e.stopPropagation();
+        if (dropdown) dropdown.classList.remove('show');
+        if (submenu) submenu.classList.remove('show');
+        suggestFollowUp();
+      };
+
+      document.getElementById('autoFollowUpBtn').onclick = function(e) {
+        e.stopPropagation();
+        if (isAutoReplyEnabled) {
+          alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
+          return;
+        }
+        if (!currentLeadId) { alert('Open a chat first.'); return; }
+        openAutoFollowUpModal();
+      };
+
+      document.getElementById('revenueTrackingBtn').onclick = function(e) {
+        e.stopPropagation();
+        if (dropdown) dropdown.classList.remove('show');
+        openRevenueTracking();
+      };
+
+      document.addEventListener('click', function(e) {
+        if (menuBtn && dropdown && !menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.remove('show');
+        }
+        if (submenu && followUpMain && !followUpMain.contains(e.target) && !submenu.contains(e.target)) {
+          submenu.classList.remove('show');
+        }
+      });
+
+      // ─── CHECK PLAN ───
+      fetch(`${BACKEND}/api/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(user => {
           userTier = user.subscriptionTier || 'free';
-        }
-      } catch (e) { console.error(e); }
+        })
+        .catch(e => console.error(e));
 
-      try {
-        const res = await fetch(`${BACKEND}/api/notifications/count`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem('lastSeenNotifCount', data.count || 0);
-        }
-      } catch (err) { /* ignore */ }
-      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+      // ─── LOAD CONTACTS ───
+      loadContacts();
 
-      await loadContacts();
-
+      // ─── AUTO-REFRESH ───
       refreshInterval = setInterval(() => {
         if (document.visibilityState === 'visible') {
           loadContacts();
         }
       }, 15000);
-
-      // ── SETUP MAIN PAGE 3-DOT MENU ──
-      setupMenuDropdown('mainMenuBtn', 'mainMenuDropdown');
-
-      // Follow-up submenu toggle
-      const followUpMainBtn = document.getElementById('followUpMainBtn');
-      const followUpSubmenu = document.getElementById('followUpSubmenu');
-      if (followUpMainBtn && followUpSubmenu) {
-        followUpMainBtn.onclick = function(e) {
-          e.stopPropagation();
-          followUpSubmenu.style.display = followUpSubmenu.style.display === 'none' ? 'block' : 'none';
-        };
-      }
-
-      // ── SETUP CHAT HEADER 3-DOT MENU ──
-      setupMenuDropdown('chatMenuBtn', 'chatMenuDropdown');
-
-      // ── MAIN MENU BUTTON HANDLERS ──
-      document.getElementById('aiHintBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        triggerHint();
-        document.getElementById('mainMenuDropdown').style.display = 'none';
-      });
-
-      document.getElementById('suggestFollowUpBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        suggestFollowUp();
-        document.getElementById('followUpSubmenu').style.display = 'none';
-        document.getElementById('mainMenuDropdown').style.display = 'none';
-      });
-
-      document.getElementById('autoFollowUpBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (isAutoReplyEnabled) {
-          alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
-          return;
-        }
-        if (!currentLeadId) {
-          alert('Open a chat first.');
-          return;
-        }
-        openAutoFollowUpModal();
-        document.getElementById('followUpSubmenu').style.display = 'none';
-        document.getElementById('mainMenuDropdown').style.display = 'none';
-      });
-
-      document.getElementById('revenueTrackingBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        openRevenueTracking();
-        document.getElementById('mainMenuDropdown').style.display = 'none';
-      });
-
-      // ── CHAT MENU BUTTON HANDLERS ──
-      document.getElementById('chatAiHintBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        triggerHint();
-        document.getElementById('chatMenuDropdown').style.display = 'none';
-      });
-
-      document.getElementById('chatSuggestFollowUpBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        suggestFollowUp();
-        document.getElementById('chatMenuDropdown').style.display = 'none';
-      });
-
-      document.getElementById('chatAutoFollowUpBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (isAutoReplyEnabled) {
-          alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
-          return;
-        }
-        if (!currentLeadId) {
-          alert('Open a chat first.');
-          return;
-        }
-        openAutoFollowUpModal();
-        document.getElementById('chatMenuDropdown').style.display = 'none';
-      });
-
-      document.getElementById('chatRevenueTrackingBtn')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        openRevenueTracking();
-        document.getElementById('chatMenuDropdown').style.display = 'none';
-      });
-
-      // ── AUTO FOLLOW-UP MODAL ──
-      document.querySelectorAll('.delay-day-btn').forEach(btn => {
-        btn.onclick = function() {
-          selectedDelayDays = parseInt(this.getAttribute('data-days'));
-          updateAutoFollowUpModalUI();
-        };
-      });
-
-      document.getElementById('applyCustomDelay')?.addEventListener('click', function() {
-        const customVal = parseInt(document.getElementById('customDelayDays').value);
-        if (isNaN(customVal) || customVal < 1) {
-          alert('Please enter a valid number of days (at least 1).');
-          return;
-        }
-        selectedDelayDays = customVal;
-        updateAutoFollowUpModalUI();
-      });
-
-      document.getElementById('confirmAutoFollowUpBtn')?.addEventListener('click', toggleAutoFollowUp);
-      document.getElementById('offFollowUpBtn')?.addEventListener('click', toggleAutoFollowUp);
-      document.getElementById('cancelAutoFollowUpBtn')?.addEventListener('click', closeAutoFollowUpModal);
-      document.getElementById('closeAutoFollowUpModalBtn')?.addEventListener('click', closeAutoFollowUpModal);
     });
-
-    // ── EXPOSE GLOBALLY ──
-    window.openChat = openChat;
-    window.closeChat = closeChat;
-    window.sendReply = sendReply;
-    window.filterContacts = filterContacts;
-    window.loadContacts = loadContacts;
-    window.switchTab = switchTab;
-    window.autoResize = autoResize;
-    window.handleKey = handleKey;
-    window.toggleAutoReply = toggleAutoReply;
-    window.openInstructionsModal = openInstructionsModal;
-    window.closeInstructionsModal = closeInstructionsModal;
-    window.handleSaveInstructions = handleSaveInstructions;
-    window.renameCustomer = renameCustomer;
-    window.openRevenueTracking = openRevenueTracking;
-    window.closeRevenueModal = closeRevenueModal;
-    window.suggestFollowUp = suggestFollowUp;
-    window.toggleAutoFollowUp = toggleAutoFollowUp;
-    window.triggerHint = triggerHint;
   </script>
 </body>
   </html>
