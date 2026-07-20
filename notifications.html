@@ -1038,7 +1038,7 @@
       return { score, tier };
     }
 
-    // ─── LOAD CONTACTS (FIXED) ───
+    // ─── LOAD CONTACTS ───
     async function loadContacts() {
       console.log('📡 [loadContacts] Fetching /api/conversations...');
       try {
@@ -1112,7 +1112,8 @@
         const safeEmail = escapeHtml(c.email || '');
         const safeCompany = escapeHtml(c.company || '');
         const safeLastMsg = escapeHtml(c.lastMessage || 'No messages yet');
-        const safeId = escapeHtml(c.id || '');
+        // ✅ FIX: Convert id to string and escape safely
+        const safeId = c.id ? String(c.id).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
         const safeTier = escapeHtml(rating.tier);
         const unreadDot = unread > 0 ? `<span class="unread-dot"></span>` : '';
         const nameStyle = unread > 0 ? 'font-weight:700;' : 'font-weight:400;';
@@ -1149,15 +1150,25 @@
       ));
     }
 
-    // ─── OPEN CHAT ───
+    // ─── OPEN CHAT (FIXED) ───
     async function openChat(leadId, name, email) {
-      console.log(`💬 [openChat] Opening chat with ${name} (${leadId})`);
-      currentLeadId = leadId;
-      window.currentLeadId = leadId;
+      // ✅ Ensure leadId is a valid string
+      if (!leadId || typeof leadId !== 'string' || leadId === '[object Object]' || leadId === 'undefined') {
+        console.error('❌ [openChat] Invalid leadId:', leadId);
+        alert('Error: Invalid conversation. Please refresh and try again.');
+        return;
+      }
+      
+      // ✅ Clean the ID - remove any HTML entities
+      const cleanId = leadId.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+      
+      console.log(`💬 [openChat] Opening chat with ${name} (${cleanId})`);
+      currentLeadId = cleanId;
+      window.currentLeadId = cleanId;
       window.currentLeadName = name;
       window.currentLeadEmail = email;
 
-      const leadData = allContacts.find(l => l.id === leadId);
+      const leadData = allContacts.find(l => String(l.id) === String(cleanId));
       let badgeHtml = '';
       if (leadData) {
         const rating = calculateEngagementScore(leadData, []);
@@ -1174,19 +1185,19 @@
       document.getElementById('replyText').style.height = '38px';
       document.getElementById('viewChat').classList.add('active');
 
-      const contact = allContacts.find(c => c.id === leadId);
+      const contact = allContacts.find(c => String(c.id) === String(cleanId));
       if (contact && contact.unreadCount > 0) {
         contact.unreadCount = 0;
         updateStats(allContacts);
         renderContacts(allContacts);
-        markAsRead(leadId);
+        markAsRead(cleanId);
       }
 
       const container = document.getElementById('messagesContainer');
       container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-3);font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;">⏳ LOADING MESSAGES…</div>';
 
       try {
-        const data = await fetchConversationDetails(leadId);
+        const data = await fetchConversationDetails(cleanId);
         isAutoReplyEnabled = data.lead?.autoReplyEnabled || false;
         autoReplyInstructions = data.lead?.autoReplyInstructions || "";
         updateAutoReplyUI();
@@ -1221,11 +1232,28 @@
       currentLeadId = null;
     }
 
-    // ─── FETCH CONVERSATION DETAILS ───
+    // ─── FETCH CONVERSATION DETAILS (FIXED) ───
     async function fetchConversationDetails(leadId) {
-      const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+      // ✅ Ensure leadId is a clean string
+      if (!leadId || typeof leadId !== 'string') {
+        console.error('❌ [fetchConversationDetails] Invalid leadId:', leadId);
+        throw new Error('Invalid conversation ID');
+      }
+      
+      // ✅ Remove any HTML entities
+      const cleanId = leadId.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+      
+      console.log(`📡 [fetchConversationDetails] Fetching for leadId: ${cleanId}`);
+      
+      const res = await fetch(`${BACKEND}/api/conversations/${encodeURIComponent(cleanId)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      if (!res.ok) {
+        console.error(`❌ [fetchConversationDetails] HTTP ${res.status}`);
+        throw new Error(`HTTP ${res.status}`);
+      }
+      
       return await res.json();
     }
 
