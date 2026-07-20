@@ -2,787 +2,946 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Skyline · Business Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inbox | Skyline AA-1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="notif-styles.css">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
-      --card: #1a1a1a; --card-hi: #242424;
-      --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
-      --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
-      --platinum: #d4d0c8; --sage: #66dd99; --sage-dim: rgba(102,221,153,0.10);
-      --rose: #ff5555; --rose-dim: rgba(255,85,85,0.10); --sky: #66ddff;
-      --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
-      --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --mono: 'Monaco', 'Menlo', monospace;
-      --nav-h: 68px; --top-h: 54px; --bar-h: 30px;
-      --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .spin-icon { animation: spin 1s linear infinite; }
+    .delay-day-btn {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
     }
-    html, body { height: 100%; overflow: hidden; }
-    body {
-      background: var(--void); color: var(--t1); font-family: var(--ui); font-size: 14px; line-height: 1.6;
-      display: flex; flex-direction: column; height: 100vh; height: 100dvh;
+    .delay-day-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
+      color: white;
     }
-    body::before {
-      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(201,168,76,0.055) 0%, transparent 60%),
-                  radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%),
-                  radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%);
+    .delay-day-btn.selected {
+      background: var(--accent);
+      color: black;
+      border-color: var(--accent);
     }
-    body::after {
-      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      background-size: 180px;
+
+    /* ----- ADDED: WhatsApp-style unread badge styling ----- */
+    .contact-item .unread-badge {
+      background: #ff3b30;
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      line-height: 1;
+      border: 1px solid var(--bg-base);
+      box-shadow: 0 1px 4px rgba(255,59,48,0.3);
+      flex-shrink: 0;
     }
-    .status-bar {
-      height: var(--bar-h); padding: 0 20px; display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em; flex-shrink: 0; position: relative; z-index: 10;
-      transition: background 0.5s, border-color 0.5s, color 0.5s;
-      background: rgba(201,168,76,0.03); border-bottom: 1px solid rgba(201,168,76,0.08); color: rgba(201,168,76,0.45);
+
+    .contact-item.unread .contact-name {
+      font-weight: 600;
+      color: var(--text-1);
     }
-    .status-bar.connected { background: rgba(107,158,122,0.04); border-bottom-color: rgba(107,158,122,0.12); color: var(--sage); }
-    .status-bar.disconnected { background: rgba(184,92,92,0.04); border-bottom-color: rgba(184,92,92,0.12); color: var(--rose); }
-    .status-pip { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; animation: pip 2.8s ease-in-out infinite; }
-    @keyframes pip { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(0.6); } }
-    .status-bar a { color: var(--gold); text-decoration: none; opacity: 0.9; transition: opacity 0.2s; }
-    .status-bar a:hover { opacity: 1; text-decoration: underline; }
-    .topbar {
-      height: var(--top-h); padding: 0 18px; display: flex; align-items: center; justify-content: space-between;
-      background: var(--base); border-bottom: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10;
-      backdrop-filter: blur(20px);
+
+    .contact-item.unread .contact-preview {
+      font-weight: 500;
+      color: var(--text-1);
     }
-    .topbar::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.35), rgba(201,168,76,0.6), rgba(201,168,76,0.35), transparent);
+
+    .contact-item.unread {
+      background: rgba(255,59,48,0.03);
+      border-left: 3px solid #ff3b30;
     }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-mark {
-      width: 28px; height: 28px; border-radius: 7px;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      box-shadow: 0 0 0 1px rgba(201,168,76,0.3), 0 4px 12px rgba(201,168,76,0.2); position: relative; overflow: hidden;
-    }
-    .brand-mark::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%); }
-    .brand-mark svg { position: relative; z-index: 1; }
-    .brand-text { display: flex; flex-direction: column; gap: 1px; }
-    .brand-name { font-family: var(--display); font-size: 18px; font-weight: 500; color: var(--t1); letter-spacing: 0.04em; line-height: 1; }
-    .brand-name em { font-style: italic; color: var(--gold); font-weight: 400; }
-    .brand-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--t3); font-weight: 400; }
-    .plan-chip { font-family: var(--mono); font-size: 7.5px; font-weight: 500; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.12em; }
-    .plan-chip.free { background: rgba(255,255,255,0.02); color: var(--t3); border: 1px solid rgba(255,255,255,0.05); }
-    .plan-chip.go { background: rgba(94,154,184,0.10); color: var(--sky); border: 1px solid rgba(94,154,184,0.22); }
-    .plan-chip.pro { background: rgba(201,168,76,0.10); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); box-shadow: 0 0 8px rgba(201,168,76,0.08); }
-    .topbar-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; pointer-events: none; }
-    .pulse-ring { width: 8px; height: 8px; border-radius: 50%; position: relative; flex-shrink: 0; }
-    .pulse-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--gold); animation: pulseCore 2.4s ease-in-out infinite; }
-    .pulse-ring::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--gold); animation: pulseRing 2.4s ease-in-out infinite; }
-    @keyframes pulseCore { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.5); } }
-    @keyframes pulseRing { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 0; transform: scale(2.5); } }
-    .topbar-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase; color: var(--t2); font-weight: 400; }
-    .topbar-right { display: flex; align-items: center; gap: 6px; }
-    .icon-btn {
-      width: 34px; height: 34px; border-radius: var(--r-sm); border: 1px solid var(--br-dim); background: transparent;
-      color: var(--t3); cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s; position: relative;
-    }
-    .icon-btn:hover { background: var(--hover); border-color: var(--br-md); color: var(--gold); transform: translateY(-1px); }
-    .icon-btn:active { transform: translateY(0); }
-    .icon-btn::after {
-      content: attr(data-tip); position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
-      background: var(--raised); border: 1px solid var(--br-md); color: var(--t2); font-family: var(--mono);
-      font-size: 8px; letter-spacing: 0.06em; padding: 3px 7px; border-radius: 4px; white-space: nowrap;
-      opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 99;
-    }
-    .icon-btn:hover::after { opacity: 1; }
-    .reply-notif {
-      display: none; padding: 8px 20px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
-      text-align: center; cursor: pointer;
-      background: linear-gradient(90deg, rgba(201,168,76,0.04), rgba(201,168,76,0.08), rgba(201,168,76,0.04));
-      border-bottom: 1px solid rgba(201,168,76,0.14); color: var(--gold); animation: slideDown 0.3s ease;
-      flex-shrink: 0; position: relative; z-index: 8; transition: background 0.2s;
-    }
-    .reply-notif:hover { background: linear-gradient(90deg, rgba(201,168,76,0.06), rgba(201,168,76,0.12), rgba(201,168,76,0.06)); }
-    .reply-notif.active { display: block; }
-    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    #setupWizard {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 24px 16px; overflow-y: auto; position: relative; z-index: 1;
-    }
-    .wizard-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-    .eyebrow-line { width: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
-    .eyebrow-line.right { background: linear-gradient(90deg, var(--gold), transparent); }
-    .eyebrow-text { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); font-weight: 400; opacity: 0.7; }
-    .wizard-card {
-      width: 100%; max-width: 430px; background: var(--card); border: 1px solid var(--br-md); border-radius: var(--r-xl);
-      overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 24px 80px rgba(0,0,0,0.7), 0 0 60px rgba(201,168,76,0.04);
-      animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; position: relative;
-    }
-    @keyframes cardIn { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .wizard-card::before {
-      content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
-      background: radial-gradient(circle at top right, rgba(201,168,76,0.08), transparent 70%); pointer-events: none;
-    }
-    .wizard-card-bar {
-      height: 2px; background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold-bright) 50%, var(--gold) 70%, transparent 100%);
-      background-size: 200% 100%; animation: shimmer 3.5s linear infinite;
-    }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .wizard-body { padding: 30px 26px 32px; position: relative; }
-    .wizard-heading { font-family: var(--display); font-size: 28px; font-weight: 400; color: var(--t1); margin-bottom: 6px; letter-spacing: 0.01em; line-height: 1.15; }
-    .wizard-heading em { font-style: italic; color: var(--gold); font-weight: 300; }
-    .wizard-sub { font-size: 12px; color: var(--t2); margin-bottom: 26px; line-height: 1.6; font-weight: 400; }
-    .wizard-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
-    .wizard-divider-line { flex: 1; height: 1px; background: var(--br-dim); }
-    .wizard-divider-text { font-family: var(--mono); font-size: 8px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--t3); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form-field { display: flex; flex-direction: column; gap: 6px; }
-    .form-field.full { grid-column: 1 / -1; }
-    .field-label {
-      font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--t3); font-weight: 400; display: flex; align-items: center; gap: 6px;
-    }
-    .field-label::before { content: ''; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--gold); opacity: 0.5; flex-shrink: 0; }
-    .field-input {
-      background: var(--raised); border: 1px solid var(--br-dim); border-radius: var(--r-sm); padding: 11px 13px;
-      color: var(--t1); font-family: var(--ui); font-size: 13px; font-weight: 400; outline: none;
-      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s; width: 100%; appearance: none; -webkit-appearance: none;
-    }
-    .field-input:focus { border-color: rgba(201,168,76,0.35); background: var(--hover); box-shadow: 0 0 0 3px rgba(201,168,76,0.06), inset 0 1px 0 rgba(255,255,255,0.02); }
-    .field-input::placeholder { color: var(--t3); }
-    select.field-input {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%233a3630' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; cursor: pointer;
-    }
-    select.field-input option { background: var(--raised); color: var(--t1); }
-    .form-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
-    .launch-btn {
-      width: 100%; padding: 14px; background: var(--gold); color: #0d0a04; border: none; border-radius: var(--r-md);
-      font-family: var(--ui); font-weight: 700; font-size: 13.5px; letter-spacing: 0.06em; text-transform: uppercase;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden;
-    }
-    .launch-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%); pointer-events: none; }
-    .launch-btn::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.2); }
-    .launch-btn:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,76,0.35), 0 0 0 1px rgba(201,168,76,0.4); }
-    .launch-btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(201,168,76,0.2); }
-    .launch-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
-    .chat-area {
-      flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 0 10px; display: none;
-      flex-direction: column; scroll-behavior: smooth; position: relative; z-index: 1;
-    }
-    .chat-area.active { display: flex; }
-    .chat-area::-webkit-scrollbar { width: 2px; }
-    .chat-area::-webkit-scrollbar-track { background: transparent; }
-    .chat-area::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.15); border-radius: 2px; }
-    .msg-row { display: flex; padding: 4px 16px; animation: msgIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-row.user { justify-content: flex-end; }
-    .msg-row.ai { justify-content: flex-start; gap: 10px; align-items: flex-start; }
-    .bubble { max-width: 78%; padding: 12px 16px; line-height: 1.7; font-size: 13.5px; word-break: break-word; }
-    .msg-row.user .bubble {
-      background: var(--raised); border: 1px solid var(--br-md); border-radius: var(--r-lg) var(--r-lg) var(--r-xs) var(--r-lg);
-      color: var(--t1); font-weight: 400; box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-    }
-    .msg-row.ai .bubble {
-      background: var(--surface); border: 1px solid var(--br-dim); border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-xs);
-      border-left: 2px solid rgba(201,168,76,0.25); font-family: var(--mono); font-size: 11.5px; line-height: 1.85;
-      color: #ccc7bb; box-shadow: 0 2px 16px rgba(0,0,0,0.25);
-    }
-    .msg-row.ai .bubble strong { color: var(--gold-pale); font-weight: 500; }
-    .msg-row.ai .bubble .ai-ul { list-style: none; padding: 5px 0; margin: 0; }
-    .msg-row.ai .bubble .ai-ul li { padding: 3px 0 3px 16px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.02); }
-    .msg-row.ai .bubble .ai-ul li:last-child { border-bottom: none; }
-    .msg-row.ai .bubble .ai-ul li::before { content: '▸'; position: absolute; left: 0; color: rgba(201,168,76,0.5); font-size: 9px; top: 5px; }
-    .av {
-      width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      font-family: var(--mono); font-size: 7px; font-weight: 600; margin-top: 2px; letter-spacing: 0.05em;
-    }
-    .msg-row.ai .av { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0d0a04; box-shadow: 0 0 12px rgba(201,168,76,0.25); }
-    .msg-row.user .av { background: var(--raised); border: 1px solid var(--br-md); color: var(--t2); }
-    .bubble-wrap { display: flex; flex-direction: column; }
-    .msg-time { font-family: var(--mono); font-size: 8px; color: var(--t3); margin-top: 5px; letter-spacing: 0.06em; }
-    .msg-row.user .msg-time { text-align: right; }
-    .typing-row { display: flex; padding: 4px 16px; gap: 10px; align-items: flex-start; animation: msgIn 0.22s ease both; }
-    .typing-bubble {
-      background: var(--surface); border: 1px solid var(--br-dim); border-left: 2px solid rgba(201,168,76,0.25);
-      border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-xs); padding: 12px 16px; display: flex;
-      align-items: center; gap: 12px; font-family: var(--mono); font-size: 10px; color: var(--t2); letter-spacing: 0.04em;
-    }
-    .t-dots { display: flex; gap: 5px; align-items: center; }
-    .t-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--t3); animation: tdot 1.2s ease-in-out infinite; }
-    .t-dot:nth-child(2) { animation-delay: 0.16s; }
-    .t-dot:nth-child(3) { animation-delay: 0.32s; }
-    @keyframes tdot { 0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); } 30% { transform: translateY(-6px) scale(1.2); background: var(--gold); } }
-    #reviewPanel {
-      display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px;
-      max-height: 48vh; overflow-y: auto; flex-shrink: 0; position: relative; z-index: 6;
-    }
-    #reviewPanel::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), rgba(201,168,76,0.5), rgba(201,168,76,0.3), transparent);
-    }
-    #reviewPanel::-webkit-scrollbar { width: 2px; }
-    #reviewPanel::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 2px; }
-    .rv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--br-dim); }
-    .rv-title { font-family: var(--display); font-size: 16px; font-weight: 400; color: var(--gold-pale); font-style: italic; }
-    .rv-close {
-      background: none; border: 1px solid var(--br-dim); color: var(--t3); cursor: pointer; font-size: 13px;
-      width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-      transition: color 0.2s, background 0.2s, border-color 0.2s;
-    }
-    .rv-close:hover { color: var(--t1); background: var(--hover); border-color: var(--br-md); }
-    .lead-card {
-      border: 1px solid var(--br-dim); padding: 14px; margin-bottom: 10px; border-radius: var(--r-md);
-      background: var(--surface); transition: border-color 0.2s, transform 0.15s; position: relative; overflow: hidden;
-    }
-    .lead-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--gold), transparent); opacity: 0.4; }
-    .lead-card:hover { border-color: var(--br-md); }
-    .lead-name { font-weight: 600; color: var(--gold-pale); margin-bottom: 2px; font-size: 12.5px; letter-spacing: 0.01em; }
-    .lead-email-guess { font-family: var(--mono); font-size: 9.5px; color: var(--t3); text-decoration: line-through; margin-bottom: 12px; opacity: 0.7; }
-    .rv-field { margin-bottom: 10px; }
-    .rv-label { display: block; font-family: var(--mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--t3); margin-bottom: 5px; }
-    .rv-input, .rv-textarea {
-      width: 100%; background: var(--raised); border: 1px solid var(--br-dim); border-radius: var(--r-sm);
-      color: var(--t1); padding: 9px 11px; font-family: var(--ui); font-size: 12.5px; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .rv-input:focus, .rv-textarea:focus { border-color: rgba(201,168,76,0.3); box-shadow: 0 0 0 3px rgba(201,168,76,0.05); }
-    .rv-input[type="email"] { border-color: rgba(201,168,76,0.18); background: rgba(201,168,76,0.03); }
-    .rv-textarea { resize: vertical; min-height: 72px; }
-    .send-all {
-      width: 100%; padding: 13px; background: var(--gold); color: #0d0a04; border: none; border-radius: var(--r-md);
-      font-family: var(--ui); font-weight: 700; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;
-      cursor: pointer; margin-top: 10px; position: relative; overflow: hidden; transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-    }
-    .send-all::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%); pointer-events: none; }
-    .send-all:hover { background: var(--gold-bright); box-shadow: 0 6px 22px rgba(201,168,76,0.3); transform: translateY(-1px); }
-    .send-all:disabled { background: var(--hover); color: var(--t3); cursor: not-allowed; transform: none; box-shadow: none; }
-    .input-bar {
-      padding: 12px 16px 14px; background: var(--base); border-top: 1px solid var(--br-dim);
-      flex-shrink: 0; display: none; position: relative; z-index: 5;
-    }
-    .input-bar.active { display: block; }
-    .input-shell {
-      display: flex; align-items: flex-end; gap: 9px; background: var(--surface); border: 1px solid var(--br-md);
-      border-radius: var(--r-xl); padding: 10px 10px 10px 18px; transition: border-color 0.25s, box-shadow 0.25s; position: relative;
-    }
-    .input-shell::before {
-      content: ''; position: absolute; inset: -1px; border-radius: calc(var(--r-xl) + 1px);
-      background: linear-gradient(135deg, rgba(201,168,76,0), rgba(201,168,76,0)); transition: background 0.3s; pointer-events: none; z-index: -1;
-    }
-    .input-shell:focus-within { border-color: rgba(201,168,76,0.28); box-shadow: 0 0 0 3px rgba(201,168,76,0.05), 0 8px 24px rgba(0,0,0,0.3); }
-    .msg-ta {
-      flex: 1; background: transparent; border: none; outline: none; resize: none; color: var(--t1);
-      font-family: var(--ui); font-size: 13.5px; font-weight: 400; min-height: 22px; max-height: 130px;
-      caret-color: var(--gold); line-height: 1.55;
-    }
-    .msg-ta::placeholder { color: var(--t3); }
-    .send-btn {
-      width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--gold); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-      flex-shrink: 0; box-shadow: 0 2px 10px rgba(201,168,76,0.25);
-    }
-    .send-btn:hover:not(:disabled) { background: var(--gold-bright); transform: scale(1.08); box-shadow: 0 4px 18px rgba(201,168,76,0.4); }
-    .send-btn:active:not(:disabled) { transform: scale(0.94); }
-    .send-btn:disabled { background: var(--raised); border: 1px solid var(--br-dim); box-shadow: none; opacity: 0.4; cursor: default; }
-    .input-foot { display: flex; justify-content: space-between; margin-top: 7px; padding: 0 4px; }
-    .input-tag { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--t3); }
-    .char-ct { font-family: var(--mono); font-size: 7.5px; color: var(--t3); }
-    .bottom-nav {
-      height: var(--nav-h); display: flex; align-items: center; justify-content: space-around;
-      background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; padding: 0 8px;
-    }
-    .bottom-nav::before {
-      content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent);
-    }
-    .nav-item {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex: 1;
-      cursor: pointer; padding: 7px 0; text-decoration: none; color: var(--t3); transition: color 0.25s;
-      position: relative; border: none; background: none;
-    }
-    .nav-item svg { transition: transform 0.2s; }
-    .nav-item:hover { color: var(--gold); }
-    .nav-item:hover svg { transform: scale(1.1) translateY(-1px); }
-    .nav-item.active { color: var(--gold); }
-    .nav-item.active::after {
-      content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
-      width: 20px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      border-radius: 2px 2px 0 0;
-    }
-    .nav-item.nav-home .home-wrap {
-      width: 44px; height: 44px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
-      border-radius: var(--r-md); display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
-      position: relative; overflow: hidden;
-    }
-    .nav-item.nav-home .home-wrap::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); }
-    .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); }
-    .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
-    .nav-item.nav-home::after { display: none; }
-    .nav-badge {
-      position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px;
-      background: var(--rose); border-radius: 10px; border: 1.5px solid var(--base); display: none;
-      color: white; font-family: var(--mono); font-size: 7px; font-weight: 600; align-items: center; justify-content: center;
-      padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(184,92,92,0.4);
-    }
-    .nav-item.has-notifs .nav-badge { display: flex; }
-    @media (min-width: 1024px) {
-      .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
-      .msg-row.ai .bubble { font-size: 12px; } .topbar { padding: 0 32px; } .input-bar { padding: 14px 12% 16px; }
-      .bottom-nav { padding: 0 24%; } #reviewPanel { padding: 20px 12%; } .status-bar { padding: 0 32px; }
-    }
-    @media (min-width: 600px) and (max-width: 1023px) {
-      .msg-row { padding: 4px 8%; } .bubble { max-width: 66%; } .topbar { padding: 0 22px; }
-      .input-bar { padding: 12px 8% 14px; } .bottom-nav { padding: 0 6%; }
-    }
-    @media (max-width: 375px) {
-      .brand-name { font-size: 16px; } .brand-sub { display: none; } .icon-btn { width: 30px; height: 30px; }
-      .bubble { max-width: 88%; } :root { --nav-h: 62px; } .wizard-body { padding: 22px 18px 24px; }
-      .form-row { grid-template-columns: 1fr; } .wizard-heading { font-size: 24px; }
-    }
-    @media (max-height: 500px) and (orientation: landscape) {
-      :root { --top-h: 46px; --nav-h: 52px; --bar-h: 26px; } .chat-area { padding: 8px 0 4px; }
-      .input-bar { padding: 8px 14px 10px; } .nav-item.nav-home .home-wrap { width: 38px; height: 38px; border-radius: 10px; }
-      .wizard-body { padding: 16px 18px 20px; }
-    }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
-    .wizard-card { animation: cardIn 0.55s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    /* ----- END ADDED ----- */
   </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    </div>
-    <div class="brand-text">
-      <span class="brand-name">Sky<em>line</em></span>
-      <span class="brand-sub">AA-1 · Agent</span>
-    </div>
-    <div id="planChip" class="plan-chip free">FREE</div>
-  </div>
-  <div class="topbar-center">
-    <div class="pulse-ring"></div>
-    <span class="topbar-label">Business Agent</span>
-  </div>
-  <div class="topbar-right">
-    <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
-    <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
-    </button>
-  </div>
-</header>
-<div id="statusBar" class="status-bar">
-  <span class="status-pip"></span>
-  <span id="statusText">Checking email connection…</span>
-</div>
-<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
-  ↑ New reply detected — tap to open Dashboard
-</div>
-<div id="setupWizard">
-  <div class="wizard-eyebrow">
-    <div class="eyebrow-line"></div>
-    <span class="eyebrow-text">Prospecting Engine · v2</span>
-    <div class="eyebrow-line right"></div>
-  </div>
-  <div class="wizard-card">
-    <div class="wizard-card-bar"></div>
-    <div class="wizard-body">
-      <h2 class="wizard-heading">Define your <em>target.</em></h2>
-      <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
-      <div class="wizard-divider">
-        <div class="wizard-divider-line"></div>
-        <span class="wizard-divider-text">Search Parameters</span>
-        <div class="wizard-divider-line"></div>
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="9" width="2" height="5" rx="0.5" fill="#000"/>
+          <rect x="4" y="6" width="2" height="8" rx="0.5" fill="#000"/>
+          <rect x="7" y="3" width="2" height="11" rx="0.5" fill="#000"/>
+          <rect x="10" y="6" width="2" height="8" rx="0.5" fill="#000"/>
+          <rect x="13" y="8" width="2" height="6" rx="0.5" fill="#000"/>
+        </svg>
       </div>
-      <form id="targetForm" autocomplete="off">
-        <div class="form-stack">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label" for="industry">Industry</label>
-              <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
-            </div>
-            <div class="form-field">
-              <label class="field-label" for="region">Region</label>
-              <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label class="field-label" for="companySize">Company size</label>
-              <select id="companySize" class="field-input">
-                <option value="Any">Any size</option>
-                <option value="1-10">1–10</option>
-                <option value="11-50">11–50</option>
-                <option value="51-200">51–200</option>
-                <option value="201-500">201–500</option>
-                <option value="500+">500+</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="field-label" for="jobTitle">Job title</label>
-              <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
-            </div>
-          </div>
-        </div>
-        <button type="submit" class="launch-btn" id="launchBtn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          Start Search
+      <span class="nav-logo-text">Skyline <span>AA-1</span></span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="tab-group">
+      <button class="tab-pill active" id="tabLeads" onclick="switchTab('leads', this)">
+        Leads
+        <span class="tab-badge" id="leadsTabBadge" style="display:none">0</span>
+      </button>
+      <button class="tab-pill" id="tabTeam" onclick="switchTab('team', this)">
+        Team
+      </button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      Live
+    </div>
+
+    <!-- SIMPLIFIED WORKING MENU (with Revenue Tracking) -->
+    <div style="position: relative; display: inline-block; margin-left: 8px;">
+      <button id="menuBtn" style="background: none; border: 1px solid #555; border-radius: 6px; color: white; padding: 6px 10px; cursor: pointer; font-size: 14px;">☰</button>
+      <div id="menuDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; min-width: 170px; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.6);">
+        <button id="aiHintBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          AI Hint
         </button>
-      </form>
+        <div style="border-top: 1px solid #333;"></div>
+        <button id="followUpMainBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          Follow‑up
+          <span style="margin-left: auto;">▼</span>
+        </button>
+        <div id="followUpSubmenu" style="display: none; border-top: 1px solid #333;">
+          <button id="suggestFollowUpBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px 8px 24px; background: none; border: none; color: #aaa; cursor: pointer; text-align: left;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Suggest Follow‑up
+          </button>
+          <button id="autoFollowUpBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px 8px 24px; background: none; border: none; color: #aaa; cursor: pointer; text-align: left;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Auto Follow‑up
+            <span id="autoStatusSpan" style="margin-left: auto; font-size: 9px; font-weight: bold;">OFF</span>
+          </button>
+        </div>
+        <!-- Revenue Tracking button (always visible) -->
+        <div style="border-top: 1px solid #333;"></div>
+        <button id="revenueTrackingBtn" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: #ccc; cursor: pointer; text-align: left;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Revenue Tracking
+        </button>
+      </div>
     </div>
   </div>
-</div>
-<div class="chat-area" id="chatArea">
-  <div id="msgContainer"></div>
-</div>
-<div id="reviewPanel">
-  <div class="rv-header">
-    <span class="rv-title">Review Generated Emails</span>
-    <button class="rv-close" onclick="closeReview()" aria-label="Close">✕</button>
+
+  <div class="main-container">
+    <!-- VIEW: LIST -->
+    <div id="viewList" class="view-list">
+      <div class="search-section">
+        <div class="search-wrap">
+          <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7.5" stroke-width="1.8"/>
+              <path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <input class="search-input" type="text" placeholder="Search leads, companies…" oninput="filterContacts(this.value)" />
+        </div>
+      </div>
+      <div class="stats-row" id="statsRow">
+        <div class="stat-chip">
+          <div class="stat-chip-label">Total</div>
+          <div class="stat-chip-val accent" id="statTotal">—</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-label">Unread</div>
+          <div class="stat-chip-val red" id="statUnread">—</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-label">Active</div>
+          <div class="stat-chip-val green" id="statHigh">—</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-label">Moderate</div>
+          <div class="stat-chip-val amber" id="statMed">—</div>
+        </div>
+      </div>
+      <div class="contact-list" id="contactList">
+        <div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em;">LOADING CONTACTS…</div>
+      </div>
+    </div>
+
+    <!-- VIEW: CHAT -->
+    <div id="viewChat" class="view-chat">
+      <div class="chat-header">
+        <button class="back-btn" onclick="closeChat()">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="chat-avatar-wrap">
+          <div class="chat-avatar" id="chatAvatar">?</div>
+          <div class="chat-online-dot"></div>
+        </div>
+
+        <div class="chat-info">
+          <h3 id="chatName">Customer Name</h3>
+          <p id="chatEmail">email@example.com</p>
+        </div>
+        <button class="ai-toggle" id="aiToggle" onclick="toggleAutoReply()" title="Toggle AI Auto-Reply">
+          <div class="ai-icon">
+            <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="5" width="12" height="9" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 5V2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="10" cy="2" r="1" fill="currentColor"/>
+              <rect x="6.5" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
+              <rect x="11.3" y="8" width="2.2" height="2" rx="0.6" fill="currentColor"/>
+              <path d="M7 12h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M7 14v1.5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M4 8.5H2.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5H4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M16 8.5h1.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="ai-toggle-text">AI Reply</span>
+          <div class="ai-toggle-indicator"></div>
+        </button>
+
+        <div class="chat-actions">
+          <button class="edit-details-btn" id="editDetailsBtn" onclick="openInstructionsModal()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Edit
+          </button>
+          <button class="icon-btn" onclick="renameCustomer(prompt('Enter new name:', window.currentLeadName))" title="Rename">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="messagesContainer" class="messages-container">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>No chat open</h3>
+          <p>Select a lead to view the conversation.</p>
+        </div>
+      </div>
+
+      <div class="reply-input-area" id="replyInputArea">
+        <div class="reply-toolbar">
+          <span class="reply-toolbar-label">Reply as Agent</span>
+        </div>
+        <div class="reply-wrap">
+          <textarea id="replyText" placeholder="Type a reply…"
+            oninput="autoResize(this)"
+            onkeydown="handleKey(event)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendReply(document.getElementById('replyText').value.trim())">
+            <svg viewBox="0 0 24 24">
+              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ADMIN -->
+    <div id="viewAdmin" class="view-admin">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="7" r="4" stroke-width="1.8"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Team Notifications</h3>
+        <p>Admin notifications and team<br>messages will appear here.</p>
+      </div>
+    </div>
   </div>
-  <div id="emailList"></div>
-  <button class="send-all" id="sendAllBtn" onclick="submitBatch()">✅ Connect & Send All</button>
-</div>
-<div class="input-bar" id="inputBar">
-  <div class="input-shell">
-    <textarea class="msg-ta" id="msgInput" rows="1" placeholder="Ask anything about your outreach…" aria-label="Message"></textarea>
-    <button class="send-btn" id="sendBtn" disabled aria-label="Send">
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-    </button>
-  </div>
-  <div class="input-foot">
-    <span class="input-tag">Skyline AA-1</span>
-    <span class="char-ct" id="charCount"></span>
-  </div>
-</div>
-<nav class="bottom-nav" aria-label="Main navigation">
-  <a href="page.html" class="nav-item nav-home active" aria-label="Home">
-    <div class="home-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-        <polyline points="9 21 9 12 15 12 15 21"/>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <a href="page.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
+    </a>
+    <a href="history.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </a>
+    <a href="notifications.html" class="nav-item active">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </a>
+    <a href="dashboard.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    </a>
+  </nav>
+
+  <!-- MODAL: AUTO-REPLY INSTRUCTIONS -->
+  <div class="modal-overlay" id="instructionsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h3>AI Auto-Reply Setup</h3>
+          <p>AI · AUTO-REPLY INSTRUCTIONS</p>
+        </div>
+        <button class="modal-close" onclick="closeInstructionsModal()">×</button>
+      </div>
+      <div class="modal-field">
+        <label>Instructions for AI</label>
+        <textarea id="instructionsText" placeholder="E.g., Be concise and professional. Offer a 10% discount if they hesitate. Always sign off with 'Best, Team Skyline'."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeInstructionsModal()">Cancel</button>
+        <button class="btn-primary" onclick="handleSaveInstructions()">Activate AI Reply</button>
+      </div>
     </div>
-  </a>
-  <a href="history.html" class="nav-item" aria-label="History">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="9"/>
-      <polyline points="12 7 12 12 15 15"/>
-      <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-      <polyline points="3 4 3 11 10 11"/>
-    </svg>
-  </a>
-  <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
-    <div class="nav-badge"></div>
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-    </svg>
-  </a>
-  <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
-  </a>
-</nav>
-<script>
-  const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-  const token = localStorage.getItem('token');
-  if (!token) window.location.href = 'login.html';
-  let currentSessionId = new URLSearchParams(window.location.search).get('session');
-  let conversationHistory = [];
-  let isTyping = false;
-  let currentGeneratedLeads = [];
-  let notifInterval = null;
-  let statusInterval = null;
-  let chatArea, msgInput, sendBtn, charCount, planChip, setupWizard, inputBar;
-  document.addEventListener('DOMContentLoaded', async () => {
-    chatArea = document.getElementById('chatArea');
-    msgInput = document.getElementById('msgInput');
-    sendBtn = document.getElementById('sendBtn');
-    charCount = document.getElementById('charCount');
-    planChip = document.getElementById('planChip');
-    setupWizard = document.getElementById('setupWizard');
-    inputBar = document.getElementById('inputBar');
-    document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
-    document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
-    const navNotifBtn = document.getElementById('navNotifBtn');
-    if (navNotifBtn) {
-      navNotifBtn.addEventListener('click', () => {
-        localStorage.setItem('lastNotifViewTime', new Date().toISOString());
-        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || 0);
-        updateBadge(0);
+  </div>
+
+  <!-- MODAL: AUTO-FOLLOW-UP DELAY SELECTION -->
+  <div class="modal-overlay" id="autoFollowUpModal">
+    <div class="modal-content" style="max-width: 380px;">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h3>Auto Follow‑up Delay</h3>
+          <p>Choose when to send the first follow‑up</p>
+        </div>
+        <button class="modal-close" id="closeAutoFollowUpModalBtn">×</button>
+      </div>
+      <div class="modal-field">
+        <label>Preset days</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+          <button class="delay-day-btn" data-days="1">1 day</button>
+          <button class="delay-day-btn" data-days="2">2 days</button>
+          <button class="delay-day-btn" data-days="3">3 days</button>
+          <button class="delay-day-btn" data-days="4">4 days</button>
+          <button class="delay-day-btn" data-days="5">5 days</button>
+          <button class="delay-day-btn" data-days="6">6 days</button>
+          <button class="delay-day-btn" data-days="7">7 days</button>
+        </div>
+        <label>Custom days</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="number" id="customDelayDays" min="1" max="365" step="1" style="flex:1; background: var(--bg-raised); border:1px solid var(--border); color:white; padding:8px; border-radius:6px;">
+          <button id="applyCustomDelay" class="btn-primary" style="padding:8px 12px;">Apply</button>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button id="offFollowUpBtn" class="btn-ghost" style="color:#ff5555; display: none;">Off Follow‑up</button>
+        <div>
+          <button id="cancelAutoFollowUpBtn" class="btn-ghost">Cancel</button>
+          <button id="confirmAutoFollowUpBtn" class="btn-primary" disabled>Enable (3 days)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVENUE TRACKING MODAL -->
+  <div class="modal-overlay" id="revenueModal">
+    <div class="modal-content revenue-modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <h3>Revenue Tracking</h3>
+          <p>AI‑powered analysis of your leads</p>
+        </div>
+        <button class="modal-close" id="closeRevenueModalBtn">×</button>
+      </div>
+      <div id="revenueContent" style="padding: 4px 0 16px;">
+        <div style="text-align: center; padding: 30px;">Loading revenue data...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External scripts -->
+  <script src="notif-utils.js"></script>
+  <script src="notif-api.js?v=3"></script>
+  <script src="notif-ui.js?v=3"></script>
+
+  <!-- INLINE SCRIPT – all revenue tracking logic defined here to guarantee availability -->
+  <script>
+    // ========== REVENUE TRACKING FUNCTIONS (defined inline, no dependency on external scripts) ==========
+    let revenueModal = null;
+    let revenueContent = null;
+
+    // Helper to escape HTML
+    function revenueEscapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
       });
     }
-    loadNotifCount();
-    notifInterval = setInterval(loadNotifCount, 15000);
-    msgInput.addEventListener('input', onInput);
-    msgInput.addEventListener('keydown', onKeydown);
-    sendBtn.addEventListener('click', sendMessage);
-    await checkPlan();
-    updateStatus();
-    document.getElementById('targetForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const industry = document.getElementById('industry').value.trim();
-      const region = document.getElementById('region').value.trim();
-      const companySize = document.getElementById('companySize').value;
-      const jobTitle = document.getElementById('jobTitle').value.trim();
-      const msg = `Find me ${jobTitle}s in the ${industry} industry, located in ${region}. Company size: ${companySize}.`;
-      setupWizard.style.display = 'none';
-      chatArea.classList.add('active');
-      inputBar.classList.add('active');
-      appendMsg('user', msg);
-      await fetchResponse(msg);
-    });
-    if (currentSessionId) {
-      setupWizard.style.display = 'none';
-      chatArea.classList.add('active');
-      inputBar.classList.add('active');
-      await loadSession();
-    }
-  });
-  async function loadNotifCount() {
-    try {
-      const res = await fetch(`${BACKEND}/api/notifications/count`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        const count = data.count || 0;
-        localStorage.setItem('lastKnownNotifCount', count);
-        const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-        updateBadge(count > seen ? count : 0);
-      }
-    } catch {}
-  }
-  function updateBadge(count) {
-    const item = document.getElementById('navNotifBtn');
-    const badge = item?.querySelector('.nav-badge');
-    if (!item || !badge) return;
-    if (count > 0) { item.classList.add('has-notifs'); badge.textContent = count > 9 ? '9+' : count; }
-    else { item.classList.remove('has-notifs'); badge.textContent = ''; }
-  }
-  async function updateStatus() {
-    const bar = document.getElementById('statusBar');
-    const txt = document.getElementById('statusText');
-    try {
-      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const user = await res.json();
-        if (user.nylasIntegration?.isConnected) {
-          bar.className = 'status-bar connected';
-          txt.innerHTML = `Email connected · <a href="dashboard.html">Manage →</a>`;
-        } else {
-          bar.className = 'status-bar disconnected';
-          txt.innerHTML = `No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
-        }
-      }
-    } catch {}
-  }
-  async function sendMessage() {
-    const text = msgInput.value.trim();
-    if (!text || isTyping) return;
-    appendMsg('user', text);
-    msgInput.value = '';
-    msgInput.style.height = 'auto';
-    updateSend();
-    await fetchResponse(text);
-  }
-  async function fetchResponse(message) {
-    isTyping = true;
-    updateSend();
-    const steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
-    let si = 0;
-    showTyping(steps[0]);
-    statusInterval = setInterval(() => { si++; if (si < steps.length) showTyping(steps[si]); }, 2500);
-    try {
-      const res = await fetch(`${BACKEND}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ message, history: conversationHistory, sessionId: currentSessionId })
+
+    async function revenueFetchData() {
+      const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
-      clearInterval(statusInterval);
-      hideTyping();
-      if (res.ok) {
-        if (data.sessionId && !currentSessionId) {
-          currentSessionId = data.sessionId;
-          const url = new URL(window.location);
-          url.searchParams.set('session', data.sessionId);
-          window.history.pushState({}, '', url);
-        }
-        if (data.history) conversationHistory = data.history;
-        appendMsg('ai', data.reply || "Request received. How can I help further?");
-      } else {
-        appendMsg('ai', `⚠️ ${data.message || 'Unable to process. Please try again.'}`);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to load revenue data');
       }
-    } catch {
-      clearInterval(statusInterval);
-      hideTyping();
-      appendMsg('ai', '🔌 Connection error — check your network and try again.');
-    } finally {
-      isTyping = false;
-      updateSend();
+      return await res.json();
     }
-  }
-  async function loadSession() {
-    try {
-      const res = await fetch(`${BACKEND}/api/history/${currentSessionId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const msgs = await res.json();
-        if (msgs?.length) {
-          document.getElementById('msgContainer').innerHTML = '';
-          for (const m of msgs) {
-            const role = m.role === 'ai' ? 'ai' : 'user';
-            appendMsg(role, m.content);
-            conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: m.content });
-          }
-          scrollDown();
-        }
-      }
-    } catch {}
-  }
-  async function checkPlan() {
-    try {
-      const res = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-cache' });
-      if (res.ok) {
-        const user = await res.json();
-        const p = user.subscriptionTier || 'free';
-        planChip.className = `plan-chip ${p}`;
-        planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-      }
-    } catch {}
-  }
-  function appendMsg(role, content) {
-    const container = document.getElementById('msgContainer');
-    if (!container) return;
-    if (role === 'ai' && content.trimStart().startsWith('[')) {
-      try {
-        const leads = JSON.parse(content);
-        currentGeneratedLeads = leads;
-        renderReview(leads);
-        const row = document.createElement('div');
-        row.className = 'msg-row ai';
-        row.innerHTML = `<div class="av">AI</div><div class="bubble-wrap"><div class="bubble">📊 Found <strong>${leads.length}</strong> lead${leads.length !== 1 ? 's' : ''}. Review the emails below.</div><div class="msg-time">${now()}</div></div>`;
-        container.appendChild(row);
-        scrollDown();
-        return;
-      } catch {}
-    }
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-    const html = role === 'ai' ? formatAI(content) : esc(content);
-    row.innerHTML = `<div class="av">${role === 'ai' ? 'AI' : 'ME'}</div><div class="bubble-wrap"><div class="bubble">${html}</div><div class="msg-time">${now()}</div></div>`;
-    container.appendChild(row);
-    scrollDown();
-  }
-  function formatAI(text) {
-    let s = esc(text);
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
-    s = s.replace(/\n/g, '<br>');
-    return s;
-  }
-  function renderReview(leads) {
-    const list = document.getElementById('emailList');
-    list.innerHTML = '';
-    leads.forEach((lead, i) => {
-      const d = document.createElement('div');
-      d.className = 'lead-card';
-      d.innerHTML = `<div class="lead-name">${esc(lead.name)} · ${esc(lead.company)}</div><div class="lead-email-guess">${esc(lead.email)}</div><div class="rv-field"><label class="rv-label">To (edit email)</label><input type="email" class="rv-input" id="email-${i}" value="${esc(lead.email)}"></div><div class="rv-field"><label class="rv-label">Subject</label><input type="text" class="rv-input" id="subject-${i}" value="${esc(lead.messages[0].subject)}"></div><div class="rv-field"><label class="rv-label">Body</label><textarea class="rv-textarea" id="body-${i}">${esc(lead.messages[0].body)}</textarea></div>`;
-      list.appendChild(d);
-    });
-    document.getElementById('reviewPanel').style.display = 'block';
-    scrollDown();
-  }
-  function closeReview() { document.getElementById('reviewPanel').style.display = 'none'; }
-  async function submitBatch() {
-    const btn = document.getElementById('sendAllBtn');
-    const orig = btn.textContent;
-    btn.textContent = 'Verifying…';
-    btn.disabled = true;
-    try {
-      const userRes = await fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!userRes.ok) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
-      const user = await userRes.json();
-      const payload = {
-        leads: currentGeneratedLeads.map((lead, i) => ({
-          name: lead.name,
-          email: document.getElementById(`email-${i}`).value,
-          company: lead.company,
-          messages: [{ subject: document.getElementById(`subject-${i}`).value, body: document.getElementById(`body-${i}`).value }]
-        }))
+
+    function renderRevenueData(data) {
+      if (!revenueContent) return;
+      const tier = data.tier || (window.userTier || 'free');
+      const categories = data.categories || {};
+      const advice = data.advice || {};
+      const actions = data.actions || [];
+      
+      let html = '';
+      
+      const order = ['contacted', 'replied', 'interested', 'ongoing', 'win'];
+      const labels = {
+        contacted: 'Customers Contacted',
+        replied: 'Customers Replied',
+        interested: 'Interested Customers',
+        ongoing: 'Ongoing Conversation',
+        win: 'Win Conversation'
       };
-      if (!user.nylasIntegration?.isConnected) {
-        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert('⚠️ Email connection expired. Please reconnect.');
-        window.location.href = 'dashboard.html?connect=true';
-        return;
+      
+      for (const key of order) {
+        const leads = categories[key] || [];
+        const count = leads.length;
+        html += `
+          <div class="revenue-category">
+            <div class="revenue-category-header">
+              <span class="revenue-category-title">${labels[key]}</span>
+              <span class="revenue-category-count">${count}</span>
+            </div>
+            <div class="revenue-lead-list">
+              ${leads.map(lead => `<span class="revenue-lead-name" data-lead-id="${lead.id}" data-lead-name="${revenueEscapeHtml(lead.name)}">${revenueEscapeHtml(lead.name)}</span>`).join('')}
+              ${count === 0 ? '<span style="color: var(--text-3); font-size: 11px;">—</span>' : ''}
+            </div>
+          </div>
+        `;
       }
-      btn.textContent = 'Sending…';
-      const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(payload)
+      
+      if (tier === 'go' || tier === 'pro') {
+        let adviceHtml = '';
+        for (const key of order) {
+          const adviceKey = key + 'Advice';
+          const adviceText = advice[adviceKey];
+          if (adviceText && categories[key] && categories[key].length > 0) {
+            adviceHtml += `<div class="revenue-advice"><strong>${labels[key]}:</strong><br>${revenueEscapeHtml(adviceText)}</div>`;
+          }
+        }
+        if (adviceHtml) {
+          html += `<div style="margin: 16px 0 8px;"><strong>🤖 AI Advice</strong></div>${adviceHtml}`;
+        } else {
+          html += `<div class="revenue-advice">No specific advice available for your current leads.</div>`;
+        }
+      }
+      
+      if (tier === 'pro' && actions && actions.length > 0) {
+        html += `<div style="margin: 20px 0 8px;"><strong>⚡ AI Actions (Top ${actions.length})</strong></div>`;
+        html += `<div class="revenue-actions">`;
+        actions.forEach(action => {
+          html += `
+            <div class="revenue-action-item">
+              <div class="revenue-action-lead">${revenueEscapeHtml(action.leadName || 'Lead')}</div>
+              <div class="revenue-action-text">▶ ${revenueEscapeHtml(action.action)}</div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+      
+      if (tier === 'free') {
+        html += `
+          <div class="upgrade-message">
+            <span>✨ Unlock AI Advice – Upgrade to Go or Pro</span>
+            <div><button class="upgrade-button" id="upgradeAdviceBtn">View Plans</button></div>
+          </div>
+        `;
+      } else if (tier === 'go') {
+        html += `
+          <div class="upgrade-message">
+            <span>🚀 Unlock AI Actions – Upgrade to Pro</span>
+            <div><button class="upgrade-button" id="upgradeActionsBtn">View Plans</button></div>
+          </div>
+        `;
+      }
+      
+      revenueContent.innerHTML = html;
+      
+      // Attach click handlers for lead names
+      document.querySelectorAll('.revenue-lead-name').forEach(el => {
+        el.addEventListener('click', () => {
+          const leadId = el.getAttribute('data-lead-id');
+          const leadName = el.getAttribute('data-lead-name');
+          // Use global allContacts if available, otherwise try to open chat with basic info
+          if (window.allContacts && Array.isArray(window.allContacts)) {
+            const contact = window.allContacts.find(c => c.id === leadId);
+            if (contact && typeof window.openChat === 'function') {
+              closeRevenueModal();
+              window.openChat(leadId, contact.name, contact.email);
+              return;
+            }
+          }
+          alert(`Open chat for ${leadName} not available`);
+        });
       });
-      const data = await res.json();
-      if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-        localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert('⚠️ Session expired. Please reconnect.');
-        window.location.href = 'dashboard.html?connect=true';
-        return;
+      
+      const upgradeAdvice = document.getElementById('upgradeAdviceBtn');
+      if (upgradeAdvice) {
+        upgradeAdvice.onclick = () => {
+          alert('Upgrade to Go or Pro plan to unlock AI Advice.\n\nGo: 30 suggest-follow-up/day, 15 auto-follow-up/day\nPro: 200 suggest-follow-up/day, 100 auto-follow-up/day');
+        };
       }
-      if (data.success) {
-        alert(data.message + (data.errors?.length ? `\n\nErrors: ${JSON.stringify(data.errors)}` : ''));
-        appendMsg('ai', '✅ Emails sent! Track replies in Dashboard.');
-        closeReview();
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
-      } else {
-        alert('Error: ' + JSON.stringify(data.errors));
+      const upgradeActions = document.getElementById('upgradeActionsBtn');
+      if (upgradeActions) {
+        upgradeActions.onclick = () => {
+          alert('Upgrade to Pro plan to unlock AI Actions.\n\nPro gives you specific actions for your top 20 most promising leads.');
+        };
       }
-    } catch {
-      alert('Connection error. Reconnect in Dashboard if session expired.');
-    } finally {
-      btn.textContent = orig;
-      btn.disabled = false;
     }
-  }
-  function showTyping(label = 'Thinking…') {
-    let row = document.getElementById('typingRow');
-    if (row) { const lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollDown(); return; }
-    const c = document.getElementById('msgContainer');
-    if (!c) return;
-    row = document.createElement('div');
-    row.className = 'typing-row';
-    row.id = 'typingRow';
-    row.innerHTML = `<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">${label}</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
-    c.appendChild(row);
-    scrollDown();
-  }
-  function hideTyping() { document.getElementById('typingRow')?.remove(); }
-  function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function now() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-  function scrollDown() { chatArea?.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
-  function updateSend() { sendBtn.disabled = !msgInput.value.trim() || isTyping; }
-  function onInput() {
-    msgInput.style.height = 'auto';
-    msgInput.style.height = Math.min(msgInput.scrollHeight, 130) + 'px';
-    updateSend();
-    charCount.textContent = msgInput.value.length || '';
-  }
-  function onKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); } }
-  function clearChat() { window.location.href = window.location.pathname; }
-</script>
+
+    function openRevenueTracking() {
+      if (!revenueModal) {
+        revenueModal = document.getElementById('revenueModal');
+        revenueContent = document.getElementById('revenueContent');
+        const closeBtn = document.getElementById('closeRevenueModalBtn');
+        if (closeBtn) {
+          closeBtn.onclick = () => {
+            revenueModal.classList.remove('active');
+          };
+        }
+        if (revenueModal) {
+          revenueModal.addEventListener('click', (e) => {
+            if (e.target === revenueModal) revenueModal.classList.remove('active');
+          });
+        }
+      }
+      if (!revenueModal) return;
+      revenueModal.classList.add('active');
+      revenueContent.innerHTML = '<div style="text-align: center; padding: 30px;"><div class="spin-icon" style="display: inline-block;">↻</div> Loading revenue data...</div>';
+      
+      revenueFetchData()
+        .then(data => {
+          renderRevenueData(data);
+        })
+        .catch(err => {
+          revenueContent.innerHTML = `<div style="color: var(--red); text-align: center; padding: 20px;">❌ ${err.message}</div>`;
+        });
+    }
+
+    function closeRevenueModal() {
+      if (revenueModal) revenueModal.classList.remove('active');
+    }
+
+    // Expose the functions globally for the button click
+    window.openRevenueTracking = openRevenueTracking;
+    window.closeRevenueModal = closeRevenueModal;
+  </script>
+
+  <!-- INLINE SCRIPT (for dropdown toggles, etc.) -->
+  <script>
+    (function() {
+      const menuBtn = document.getElementById('menuBtn');
+      const dropdown = document.getElementById('menuDropdown');
+      const followUpMain = document.getElementById('followUpMainBtn');
+      const submenu = document.getElementById('followUpSubmenu');
+      const suggestBtn = document.getElementById('suggestFollowUpBtn');
+      const autoBtn = document.getElementById('autoFollowUpBtn');
+      const autoStatusSpan = document.getElementById('autoStatusSpan');
+      const aiHintBtn = document.getElementById('aiHintBtn');
+      const revenueBtn = document.getElementById('revenueTrackingBtn');
+
+      // Toggle main dropdown
+      if (menuBtn && dropdown) {
+        menuBtn.onclick = function(e) {
+          e.stopPropagation();
+          dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        };
+      }
+
+      // Toggle submenu
+      if (followUpMain && submenu) {
+        followUpMain.onclick = function(e) {
+          e.stopPropagation();
+          submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        };
+      }
+
+      // Revenue Tracking button click – now uses the globally exposed function
+      if (revenueBtn) {
+        revenueBtn.onclick = function(e) {
+          e.stopPropagation();
+          if (typeof window.openRevenueTracking === 'function') {
+            window.openRevenueTracking();
+          } else {
+            alert('Revenue tracking not available yet.');
+          }
+          if (dropdown) dropdown.style.display = 'none';
+        };
+      }
+
+      // Helper to check if auto-reply is enabled
+      function isAutoReplyActive() {
+        return typeof isAutoReplyEnabled !== 'undefined' && isAutoReplyEnabled === true;
+      }
+
+      // ----- AI HINT (unchanged) -----
+      if (aiHintBtn) {
+        aiHintBtn.onclick = async function() {
+          if (isAutoReplyActive()) {
+            alert("Please turn off Auto‑Reply to use AI Hint.");
+            return;
+          }
+          if (!window.currentLeadId) {
+            alert("Open a chat first to get a hint.");
+            return;
+          }
+          const leadId = window.currentLeadId;
+          const token = localStorage.getItem('token');
+          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+          
+          const originalHTML = aiHintBtn.innerHTML;
+          aiHintBtn.innerHTML = `<svg class="spin-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Loading...`;
+          aiHintBtn.disabled = true;
+          
+          try {
+            const convRes = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!convRes.ok) throw new Error('Failed to fetch conversation');
+            const convData = await convRes.json();
+            const messages = convData.messages || [];
+            if (messages.length === 0) {
+              alert("No messages to base a hint on.");
+              return;
+            }
+            
+            const hintRes = await fetch(`${BACKEND}/api/ai/suggest`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ messages: messages.slice(-3) })
+            });
+            const hintData = await hintRes.json();
+            
+            if (!hintRes.ok) {
+              if (hintRes.status === 403) {
+                alert(hintData.message || "Hint limit reached.");
+              } else {
+                alert(hintData.error || "Failed to get hint.");
+              }
+              return;
+            }
+            
+            if (hintData.suggestion) {
+              const textArea = document.getElementById('replyText');
+              if (textArea) {
+                textArea.value = hintData.suggestion;
+                if (typeof autoResize === 'function') autoResize(textArea);
+                textArea.focus();
+              }
+            } else {
+              alert("No suggestion returned.");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Connection error.");
+          } finally {
+            aiHintBtn.innerHTML = originalHTML;
+            aiHintBtn.disabled = false;
+          }
+        };
+      }
+
+      // ----- Suggest Follow-up (unchanged) -----
+      if (suggestBtn) {
+        suggestBtn.onclick = async function() {
+          if (isAutoReplyActive()) {
+            alert("Please turn off Auto‑Reply to use Suggest Follow‑up.");
+            return;
+          }
+          if (!window.currentLeadId) {
+            alert('Open a chat first.');
+            return;
+          }
+          const leadId = window.currentLeadId;
+          const btn = suggestBtn;
+          const originalHTML = btn.innerHTML;
+          btn.innerHTML = `<svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Generating...`;
+          btn.disabled = true;
+          const token = localStorage.getItem('token');
+          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+          try {
+            const res = await fetch(`${BACKEND}/api/leads/${leadId}/suggest-follow-up`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success && data.suggestion) {
+              const textArea = document.getElementById('replyText');
+              if (textArea) {
+                textArea.value = data.suggestion;
+                if (typeof autoResize === 'function') autoResize(textArea);
+                textArea.focus();
+              }
+            } else {
+              alert(data.message || 'Failed to generate follow-up suggestion.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Connection error.');
+          } finally {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+          }
+        };
+      }
+
+      // ----- Auto Follow-up (unchanged) -----
+      let autoFollowUpEnabled = false;
+      async function loadAutoStatus() {
+        if (!window.currentLeadId) return;
+        const token = localStorage.getItem('token');
+        const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+        try {
+          const res = await fetch(`${BACKEND}/api/leads/${window.currentLeadId}/follow-up-status`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            autoFollowUpEnabled = data.autoFollowUpEnabled;
+            autoStatusSpan.textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
+            autoStatusSpan.style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
+          }
+        } catch(e) { console.error(e); }
+      }
+
+      let selectedDelayDays = 3;
+      const modal = document.getElementById('autoFollowUpModal');
+      const confirmBtn = document.getElementById('confirmAutoFollowUpBtn');
+      const customInput = document.getElementById('customDelayDays');
+      const applyCustomBtn = document.getElementById('applyCustomDelay');
+      const offBtn = document.getElementById('offFollowUpBtn');
+      const closeModalBtn = document.getElementById('closeAutoFollowUpModalBtn');
+      const cancelBtn = document.getElementById('cancelAutoFollowUpBtn');
+
+      function updateModalUI() {
+        document.querySelectorAll('.delay-day-btn').forEach(btn => {
+          let days = parseInt(btn.getAttribute('data-days'));
+          if (days === selectedDelayDays) {
+            btn.classList.add('selected');
+          } else {
+            btn.classList.remove('selected');
+          }
+        });
+        confirmBtn.textContent = `Enable (${selectedDelayDays} day${selectedDelayDays !== 1 ? 's' : ''})`;
+        confirmBtn.disabled = false;
+        if (offBtn) offBtn.style.display = autoFollowUpEnabled ? 'block' : 'none';
+      }
+
+      function openAutoFollowUpModal() {
+        loadAutoStatus().then(() => {
+          selectedDelayDays = 3;
+          updateModalUI();
+          modal.classList.add('active');
+        });
+      }
+
+      function closeAutoFollowUpModal() {
+        modal.classList.remove('active');
+      }
+
+      document.querySelectorAll('.delay-day-btn').forEach(btn => {
+        btn.onclick = () => {
+          selectedDelayDays = parseInt(btn.getAttribute('data-days'));
+          updateModalUI();
+        };
+      });
+
+      if (applyCustomBtn) {
+        applyCustomBtn.onclick = () => {
+          let customVal = parseInt(customInput.value);
+          if (isNaN(customVal) || customVal < 1) {
+            alert('Please enter a valid number of days (at least 1).');
+            return;
+          }
+          selectedDelayDays = customVal;
+          updateModalUI();
+        };
+      }
+
+      if (confirmBtn) {
+        confirmBtn.onclick = async () => {
+          closeAutoFollowUpModal();
+          if (!window.currentLeadId) {
+            alert('Open a chat first.');
+            return;
+          }
+          const leadId = window.currentLeadId;
+          const token = localStorage.getItem('token');
+          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+          try {
+            const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: true, delayDays: selectedDelayDays })
+            });
+            const data = await res.json();
+            if (data.success) {
+              autoFollowUpEnabled = data.autoFollowUpEnabled;
+              autoStatusSpan.textContent = autoFollowUpEnabled ? 'ON' : 'OFF';
+              autoStatusSpan.style.color = autoFollowUpEnabled ? '#66dd99' : '#ff5555';
+              alert(data.message || `Auto follow-up enabled. First follow-up in ${selectedDelayDays} day(s).`);
+            } else {
+              alert(data.message || 'Failed to enable auto follow-up.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Connection error.');
+          }
+        };
+      }
+
+      if (offBtn) {
+        offBtn.onclick = async () => {
+          closeAutoFollowUpModal();
+          if (!window.currentLeadId) {
+            alert('Open a chat first.');
+            return;
+          }
+          const leadId = window.currentLeadId;
+          const token = localStorage.getItem('token');
+          const BACKEND = window.BACKEND || 'https://skylineapp-backend-file.onrender.com';
+          try {
+            const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: false })
+            });
+            const data = await res.json();
+            if (data.success) {
+              autoFollowUpEnabled = false;
+              autoStatusSpan.textContent = 'OFF';
+              autoStatusSpan.style.color = '#ff5555';
+              alert('Auto follow-up disabled.');
+            } else {
+              alert(data.message || 'Failed to disable auto follow-up.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Connection error.');
+          }
+        };
+      }
+
+      if (closeModalBtn) closeModalBtn.onclick = closeAutoFollowUpModal;
+      if (cancelBtn) cancelBtn.onclick = closeAutoFollowUpModal;
+
+      if (autoBtn) {
+        autoBtn.onclick = function(e) {
+          e.stopPropagation();
+          if (isAutoReplyActive()) {
+            alert("Please turn off Auto‑Reply to use Auto Follow‑up.");
+            return;
+          }
+          if (!window.currentLeadId) {
+            alert('Open a chat first.');
+            return;
+          }
+          openAutoFollowUpModal();
+        };
+      }
+
+      const originalOpenChat = window.openChat;
+      if (originalOpenChat) {
+        window.openChat = async function(leadId, name, email) {
+          await originalOpenChat(leadId, name, email);
+          loadAutoStatus();
+        };
+      } else {
+        const interval = setInterval(function() {
+          if (typeof window.openChat === 'function') {
+            clearInterval(interval);
+            const orig = window.openChat;
+            window.openChat = async function(leadId, name, email) {
+              await orig(leadId, name, email);
+              loadAutoStatus();
+            };
+          }
+        }, 100);
+      }
+
+      document.addEventListener('click', function(e) {
+        if (menuBtn && dropdown && !menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+        if (submenu && followUpMain && !followUpMain.contains(e.target) && !submenu.contains(e.target)) {
+          submenu.style.display = 'none';
+        }
+      });
+    })();
+  </script>
+
+  <!-- MAIN INITIALIZATION + ADDED: POLLING FOR LIVE UPDATES -->
+  <script>
+    // Original initialization
+    if (!localStorage.getItem('token')) window.location.href = "login.html";
+    
+    // ---- ADDED: refresh interval for live updates ----
+    let refreshInterval = null;
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+          const res = await fetch(`${BACKEND}/api/users/me`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+              const user = await res.json();
+              userTier = user.subscriptionTier || 'Free';
+          }
+      } catch (e) { console.error(e); }
+
+      try {
+        const res = await fetch(`${BACKEND}/api/notifications/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem('lastSeenNotifCount', data.count || 0);
+        }
+      } catch (err) {
+        localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastSeenNotifCount') || 0);
+      }
+      localStorage.setItem('lastNotifViewTime', new Date().toISOString());
+      loadContacts();
+      
+      // ---- ADDED: refresh every 15 seconds (like WhatsApp) ----
+      refreshInterval = setInterval(() => {
+        loadContacts();
+      }, 15000);
+    });
+  </script>
 </body>
   </html>
