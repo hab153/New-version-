@@ -1300,6 +1300,12 @@
         const data = await res.json();
         console.log('📥 [sendReply] Response:', data);
 
+        if (res.status === 400) {
+          const errorMsg = data.message || data.error || JSON.stringify(data.errors) || 'Validation failed';
+          alert(`Validation Error: ${errorMsg}`);
+          return;
+        }
+
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
           localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
           alert("⚠️ Email session expired. Please reconnect.");
@@ -1310,7 +1316,6 @@
         if (data.success) {
           document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '38px';
-          // ✅ Refresh contacts and chat
           await loadContacts();
           await openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
         } else {
@@ -1320,8 +1325,7 @@
       } catch (err) {
         console.error('❌ [sendReply] Error:', err);
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert("Connection error. Message saved.");
-        window.location.href = 'dashboard.html?connect=true';
+        alert("Connection error. Please try again.");
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
