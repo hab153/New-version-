@@ -1012,7 +1012,8 @@
     function handleKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendReply(document.getElementById('replyText').value.trim());
+        const text = document.getElementById('replyText').value.trim();
+        if (text) sendReply();
       }
     }
 
@@ -1272,12 +1273,26 @@
       btn.disabled = true;
       btn.innerHTML = `<svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
 
-      // ✅ Ensure all required fields have values
+      // ✅ Get lead data from the current contact
+      const leadData = allContacts.find(c => String(c.id) === String(currentLeadId));
+      const leadName = window.currentLeadName || leadData?.name || 'Lead';
+      const leadEmail = window.currentLeadEmail || leadData?.email || '';
+      const leadCompany = leadData?.company || '';
+
+      // ✅ Validate email before sending
+      if (!leadEmail || !leadEmail.includes('@')) {
+        alert('⚠️ This lead does not have a valid email address. Cannot send reply.');
+        btn.disabled = false;
+        btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        return;
+      }
+
+      // ✅ Build payload that matches the schema EXACTLY
       const payload = {
         leads: [{
-          name: window.currentLeadName || 'Lead',
-          email: window.currentLeadEmail || '',
-          company: window.currentLeadCompany || '',
+          name: leadName || 'Lead',
+          email: leadEmail,
+          company: leadCompany || '',
           messages: [{
             subject: "Re: Conversation",
             body: text
@@ -1300,9 +1315,19 @@
         const data = await res.json();
         console.log('📥 [sendReply] Response:', data);
 
+        // ✅ Handle validation errors properly
         if (res.status === 400) {
-          const errorMsg = data.message || data.error || JSON.stringify(data.errors) || 'Validation failed';
-          alert(`Validation Error: ${errorMsg}`);
+          let errorMsg = 'Validation failed';
+          if (data.errors && Array.isArray(data.errors)) {
+            errorMsg = data.errors.map(e => e.message).join(', ');
+          } else if (data.message) {
+            errorMsg = data.message;
+          } else if (data.error) {
+            errorMsg = data.error;
+          }
+          alert(`❌ ${errorMsg}`);
+          btn.disabled = false;
+          btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
           return;
         }
 
@@ -1320,12 +1345,12 @@
           await openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
         } else {
           const errorMsg = data.message || data.error || JSON.stringify(data.errors) || 'Unknown error';
-          alert(`Failed to send: ${errorMsg}`);
+          alert(`❌ Failed to send: ${errorMsg}`);
         }
       } catch (err) {
         console.error('❌ [sendReply] Error:', err);
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert("Connection error. Please try again.");
+        alert("⚠️ Connection error. Please try again.");
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
