@@ -1221,7 +1221,7 @@
         data.messages.forEach(msg => {
           // Determine who the message is from
           const isLead = msg.from === 'lead';
-          const isYou = msg.from === 'ai' || msg.from === 'you';
+          const isYou = msg.from === 'ai' || msg.from === 'you' || msg.from === 'agent';
           const fromClass = isLead ? 'lead' : 'ai';
           
           // Get the content
@@ -1234,7 +1234,7 @@
             <div class="msg-group ${isLead ? 'from-lead' : 'from-ai'}">
               <div class="message-bubble ${isLead ? 'lead' : 'ai'}">
                 ${safeContent}
-                ${safeSubject ? `<div style="font-size:10px;color:var(--text-3);margin-top:4px;">${safeSubject}</div>` : ''}
+                ${safeSubject ? `<div style="font-size:10px;color:var(--text-3);margin-top:4px;">📎 ${safeSubject}</div>` : ''}
                 <div class="message-time">${safeTime}</div>
               </div>
             </div>
@@ -1284,7 +1284,7 @@
       } catch (err) { console.error('❌ [markAsRead] Error:', err); }
     }
 
-    // ─── SEND REPLY ───
+    // ─── SEND REPLY (FIXED - Shows messages immediately) ───
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
       if (!text || !currentLeadId) {
@@ -1296,11 +1296,13 @@
       btn.disabled = true;
       btn.innerHTML = `<svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
 
+      // ✅ Get lead data from the current contact
       const leadData = allContacts.find(c => String(c.id) === String(currentLeadId));
       const leadName = window.currentLeadName || leadData?.name || 'Lead';
       const leadEmail = window.currentLeadEmail || leadData?.email || '';
       const leadCompany = leadData?.company || '';
 
+      // ✅ Validate email before sending
       if (!leadEmail || !leadEmail.includes('@')) {
         alert('⚠️ This lead does not have a valid email address. Cannot send reply.');
         btn.disabled = false;
@@ -1308,6 +1310,7 @@
         return;
       }
 
+      // ✅ Build payload that matches the schema EXACTLY
       const payload = {
         leads: [{
           name: leadName || 'Lead',
@@ -1335,6 +1338,7 @@
         const data = await res.json();
         console.log('📥 [sendReply] Response:', data);
 
+        // ✅ Handle validation errors properly
         if (res.status === 400) {
           let errorMsg = 'Validation failed';
           if (data.errors && Array.isArray(data.errors)) {
@@ -1358,9 +1362,11 @@
         }
 
         if (data.success) {
+          // ✅ Clear input
           document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '38px';
 
+          // ✅ Add the sent message to the chat immediately (optimistic update)
           const container = document.getElementById('messagesContainer');
           const msgDiv = document.createElement('div');
           msgDiv.className = 'msg-group from-ai';
@@ -1374,8 +1380,13 @@
           container.appendChild(msgDiv);
           container.scrollTop = container.scrollHeight;
 
+          // ✅ Wait for database to save (1.5 seconds) then refresh
           await new Promise(resolve => setTimeout(resolve, 1500));
+
+          // ✅ Refresh contacts and chat to sync
           await loadContacts();
+          
+          // ✅ Re-open chat to show the message
           await openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
           
           console.log('✅ [sendReply] Message sent and chat refreshed');
