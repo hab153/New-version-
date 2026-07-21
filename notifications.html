@@ -1155,7 +1155,7 @@
       ));
     }
 
-    // ─── OPEN CHAT (FIXED - Proper from value handling) ───
+    // ─── OPEN CHAT ───
     async function openChat(leadId, name, email) {
       if (!leadId || leadId === 'undefined' || leadId === 'null' || leadId === '[object Object]') {
         console.error('❌ [openChat] Invalid leadId:', leadId);
@@ -1215,14 +1215,10 @@
           return;
         }
 
-        // ✅ FIX: Properly display all messages with correct from values
+        // ✅ Properly display all messages with correct from values
         let messagesHtml = '';
         data.messages.forEach(msg => {
-          // Determine who the message is from
-          // 'lead' = lead replies (left side)
-          // 'ai' = your messages (right side)
           const isLead = msg.from === 'lead';
-          const isYou = msg.from === 'ai' || msg.from === 'you' || msg.from === 'agent';
           const fromClass = isLead ? 'lead' : 'ai';
           
           const safeContent = escapeHtml(msg.content || '');
@@ -1283,7 +1279,7 @@
       } catch (err) { console.error('❌ [markAsRead] Error:', err); }
     }
 
-    // ─── SEND REPLY ───
+    // ─── SEND REPLY (FIXED - WITH leadId) ───
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
       if (!text || !currentLeadId) {
@@ -1307,7 +1303,9 @@
         return;
       }
 
+      // ✅ FIX: Send leadId to ensure the correct conversation is used
       const payload = {
+        leadId: currentLeadId,  // ← This prevents duplicate conversations!
         leads: [{
           name: leadName || 'Lead',
           email: leadEmail,
@@ -1319,7 +1317,7 @@
         }]
       };
 
-      console.log('📤 [sendReply] Sending payload:', JSON.stringify(payload));
+      console.log('📤 [sendReply] Sending payload with leadId:', payload);
 
       try {
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
