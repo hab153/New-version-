@@ -1261,7 +1261,7 @@
       } catch (err) { console.error('❌ [markAsRead] Error:', err); }
     }
 
-    // ─── SEND REPLY (FIXED) ───
+    // ─── SEND REPLY (FIXED - Shows messages immediately) ───
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
       if (!text || !currentLeadId) {
@@ -1339,10 +1339,34 @@
         }
 
         if (data.success) {
+          // ✅ Clear input
           document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '38px';
+
+          // ✅ Add the sent message to the chat immediately (optimistic update)
+          const container = document.getElementById('messagesContainer');
+          const msgDiv = document.createElement('div');
+          msgDiv.className = 'msg-group from-ai';
+          const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          msgDiv.innerHTML = `
+            <div class="message-bubble ai">
+              ${escapeHtml(text)}
+              <div class="message-time">${time} (Sent)</div>
+            </div>
+          `;
+          container.appendChild(msgDiv);
+          container.scrollTop = container.scrollHeight;
+
+          // ✅ Wait for database to save (1.5 seconds) then refresh
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          // ✅ Refresh contacts and chat to sync
           await loadContacts();
+          
+          // ✅ Re-open chat to show the message
           await openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
+          
+          console.log('✅ [sendReply] Message sent and chat refreshed');
         } else {
           const errorMsg = data.message || data.error || JSON.stringify(data.errors) || 'Unknown error';
           alert(`❌ Failed to send: ${errorMsg}`);
