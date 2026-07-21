@@ -1155,7 +1155,7 @@
       ));
     }
 
-    // ─── OPEN CHAT ───
+    // ─── OPEN CHAT (FIXED) ───
     async function openChat(leadId, name, email) {
       if (!leadId || leadId === 'undefined' || leadId === 'null' || leadId === '[object Object]') {
         console.error('❌ [openChat] Invalid leadId:', leadId);
@@ -1200,6 +1200,12 @@
 
       try {
         const data = await fetchConversationDetails(cleanId);
+        
+        // ✅ DEBUG: Log what we received
+        console.log('📊 [openChat] Data received:', data);
+        console.log('📊 [openChat] Messages count:', data.messages?.length || 0);
+        console.log('📊 [openChat] First message:', data.messages?.[0]);
+        
         isAutoReplyEnabled = data.lead?.autoReplyEnabled || false;
         autoReplyInstructions = data.lead?.autoReplyInstructions || "";
         updateAutoReplyUI();
@@ -1209,19 +1215,36 @@
           container.innerHTML = `<div class="empty-state"><span class="icon">💬</span><h3>No messages yet</h3><p>Send the first message to start the conversation.</p></div>`;
           return;
         }
-        container.innerHTML = data.messages.map(msg => {
+
+        // ✅ FIX: Properly display all messages
+        let messagesHtml = '';
+        data.messages.forEach(msg => {
+          // Determine who the message is from
+          const isLead = msg.from === 'lead';
+          const isYou = msg.from === 'ai' || msg.from === 'you';
+          const fromClass = isLead ? 'lead' : 'ai';
+          
+          // Get the content
           const safeContent = escapeHtml(msg.content || '');
           const safeTime = msg.date ? new Date(msg.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-          return `
-            <div class="msg-group ${msg.from === 'lead' ? 'from-lead' : 'from-ai'}">
-              <div class="message-bubble ${msg.from === 'lead' ? 'lead' : 'ai'}">
+          const safeSubject = msg.subject ? escapeHtml(msg.subject) : '';
+          
+          // Build message HTML
+          messagesHtml += `
+            <div class="msg-group ${isLead ? 'from-lead' : 'from-ai'}">
+              <div class="message-bubble ${isLead ? 'lead' : 'ai'}">
                 ${safeContent}
+                ${safeSubject ? `<div style="font-size:10px;color:var(--text-3);margin-top:4px;">${safeSubject}</div>` : ''}
                 <div class="message-time">${safeTime}</div>
               </div>
             </div>
           `;
-        }).join('');
+        });
+        container.innerHTML = messagesHtml;
         container.scrollTop = container.scrollHeight;
+        
+        console.log('✅ [openChat] Displayed', data.messages.length, 'messages');
+
       } catch (err) {
         console.error('❌ [openChat] Error loading messages:', err);
         container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);font-size:12px;">⚠️ Failed to load messages.</div>';
@@ -1261,7 +1284,7 @@
       } catch (err) { console.error('❌ [markAsRead] Error:', err); }
     }
 
-    // ─── SEND REPLY (FIXED - Shows messages immediately) ───
+    // ─── SEND REPLY ───
     async function sendReply() {
       const text = document.getElementById('replyText').value.trim();
       if (!text || !currentLeadId) {
@@ -1273,13 +1296,11 @@
       btn.disabled = true;
       btn.innerHTML = `<svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
 
-      // ✅ Get lead data from the current contact
       const leadData = allContacts.find(c => String(c.id) === String(currentLeadId));
       const leadName = window.currentLeadName || leadData?.name || 'Lead';
       const leadEmail = window.currentLeadEmail || leadData?.email || '';
       const leadCompany = leadData?.company || '';
 
-      // ✅ Validate email before sending
       if (!leadEmail || !leadEmail.includes('@')) {
         alert('⚠️ This lead does not have a valid email address. Cannot send reply.');
         btn.disabled = false;
@@ -1287,7 +1308,6 @@
         return;
       }
 
-      // ✅ Build payload that matches the schema EXACTLY
       const payload = {
         leads: [{
           name: leadName || 'Lead',
@@ -1315,7 +1335,6 @@
         const data = await res.json();
         console.log('📥 [sendReply] Response:', data);
 
-        // ✅ Handle validation errors properly
         if (res.status === 400) {
           let errorMsg = 'Validation failed';
           if (data.errors && Array.isArray(data.errors)) {
@@ -1339,11 +1358,9 @@
         }
 
         if (data.success) {
-          // ✅ Clear input
           document.getElementById('replyText').value = '';
           document.getElementById('replyText').style.height = '38px';
 
-          // ✅ Add the sent message to the chat immediately (optimistic update)
           const container = document.getElementById('messagesContainer');
           const msgDiv = document.createElement('div');
           msgDiv.className = 'msg-group from-ai';
@@ -1357,13 +1374,8 @@
           container.appendChild(msgDiv);
           container.scrollTop = container.scrollHeight;
 
-          // ✅ Wait for database to save (1.5 seconds) then refresh
           await new Promise(resolve => setTimeout(resolve, 1500));
-
-          // ✅ Refresh contacts and chat to sync
           await loadContacts();
-          
-          // ✅ Re-open chat to show the message
           await openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
           
           console.log('✅ [sendReply] Message sent and chat refreshed');
