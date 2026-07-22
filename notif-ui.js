@@ -1,5 +1,5 @@
 // ========== GLOBAL UI STATE ==========
-let allContacts = [];
+// ✅ REMOVED duplicate declaration - allContacts is already in notif-api.js
 let userTier = 'free';
 let autoFollowUpEnabled = false;
 
@@ -68,17 +68,14 @@ function renderContacts(contacts) {
         let confClass = 'low';
         if (rating.score >= 75) confClass = 'high';
         else if (rating.score >= 40) confClass = 'med';
-        // ---- ADDED: blue dot and bold name for unread ----
         const unreadDot = unread > 0 ? `<span class="unread-dot" style="display:inline-block; width:8px; height:8px; background:#4a9eff; border-radius:50%; margin-left:6px; flex-shrink:0;"></span>` : '';
         const nameStyle = unread > 0 ? 'font-weight:700;' : 'font-weight:400;';
-        // ---- END ADDED ----
         return `
             <div class="contact-item ${unread > 0 ? 'unread' : ''}"
                  onclick="openChat('${c.id}', '${escapeHtml(c.name)}', '${escapeHtml(c.email)}')">
                 <div class="contact-avatar">${getInitials(c.name)}</div>
                 <div class="contact-body">
                     <div class="contact-row1">
-                        <!-- MODIFIED: added inline style and unreadDot -->
                         <span class="contact-name" style="${nameStyle}">${escapeHtml(c.name)}${unreadDot}</span>
                         <span class="contact-time">${c.lastDate ? new Date(c.lastDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : ''}</span>
                     </div>
