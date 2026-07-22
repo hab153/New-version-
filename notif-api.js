@@ -151,7 +151,7 @@ async function sendReply(text) {
                 replyText.style.height = '38px';
             }
 
-            // Add message to UI immediately
+            // ✅ Add message to UI immediately
             const container = document.getElementById('messagesContainer');
             if (container) {
                 const msgDiv = document.createElement('div');
@@ -167,16 +167,24 @@ async function sendReply(text) {
                 container.scrollTop = container.scrollHeight;
             }
 
-            // Reload contacts and refresh the chat view
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await loadContacts();
-            
-            // Reopen the chat to show updated conversation
-            if (typeof openChat === 'function') {
-                await openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
+            // ✅ Update the contact list in the background without refreshing the chat
+            const currentContact = allContacts.find(c => String(c.id) === String(currentLeadId));
+            if (currentContact) {
+                currentContact.lastMessage = text;
+                currentContact.lastDate = new Date().toISOString();
+                currentContact.unreadCount = 0;
+                currentContact.unread = false;
+                if (typeof updateStats === 'function') {
+                    updateStats(allContacts);
+                }
+                if (typeof renderContacts === 'function') {
+                    renderContacts(allContacts);
+                }
             }
-            
-            console.log('✅ [sendReply] Message sent and chat refreshed');
+
+            // ✅ DO NOT reload contacts or reopen the chat - prevents disappearing
+            console.log('✅ [sendReply] Message sent and UI updated');
+
         } else {
             const errorMsg = data.message || data.error || JSON.stringify(data.errors) || 'Unknown error';
             alert(`❌ Failed to send: ${errorMsg}`);
