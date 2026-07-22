@@ -125,8 +125,9 @@
             flex: 1;
             display: flex;
             overflow: hidden;
-            justify-content: center;
             padding: 20px;
+            justify-content: center;
+            align-items: flex-start;
         }
 
         /* ────────────────────────────────────────────────
@@ -679,7 +680,10 @@
                 }
 
                 const data = await res.json();
-                console.log(`✅ [loadConversations] Received ${data.length} conversations`);
+                console.log('📊 Full data:', data);
+                console.log('📊 First item:', data[0]);
+                console.log('📊 Field names:', data[0] ? Object.keys(data[0]) : 'No data');
+                
                 allConversations = data;
                 renderConversations(data);
                 updateStats(data);
@@ -698,8 +702,10 @@
             }
         }
 
-        // ─── RENDER CONVERSATIONS ───
+        // ─── RENDER CONVERSATIONS (FIXED) ───
         function renderConversations(conversations) {
+            console.log('📊 [renderConversations] Rendering', conversations.length, 'conversations');
+
             if (!conversations || conversations.length === 0) {
                 contactList.innerHTML = `
                     <div class="empty-state">
@@ -713,20 +719,28 @@
 
             // Sort: unread first, then by date
             const sorted = [...conversations].sort((a, b) => {
-                if (a.unread && !b.unread) return -1;
-                if (!a.unread && b.unread) return 1;
-                return new Date(b.lastDate || 0) - new Date(a.lastDate || 0);
+                const aUnread = a.unreadCount || a.unread || 0;
+                const bUnread = b.unreadCount || b.unread || 0;
+                if (aUnread > 0 && bUnread === 0) return -1;
+                if (aUnread === 0 && bUnread > 0) return 1;
+                return new Date(b.lastDate || b.lastContactDate || 0) - new Date(a.lastDate || a.lastContactDate || 0);
             });
 
             contactList.innerHTML = sorted.map(c => {
-                const unread = c.unreadCount || 0;
-                const isUnread = unread > 0;
-                const initials = (c.name || '?').charAt(0).toUpperCase();
-                const safeName = escapeHtml(c.name || 'Unknown');
-                const safeEmail = escapeHtml(c.email || '');
-                const safeCompany = escapeHtml(c.company || '');
-                const safePreview = escapeHtml(c.lastMessage || 'No messages yet');
-                const time = c.lastDate ? formatTime(c.lastDate) : '';
+                // ✅ Use the actual field names from the backend
+                const id = c.id || c._id || '';
+                const name = c.name || c.fullName || 'Unknown';
+                const email = c.email || c.leadEmail || '';
+                const company = c.company || c.leadCompany || '';
+                const lastMessage = c.lastMessage || c.message || 'No messages yet';
+                const lastDate = c.lastDate || c.lastContactDate || null;
+                const unreadCount = c.unreadCount || c.unread || 0;
+                const isUnread = unreadCount > 0;
+                
+                const initials = (name || '?').charAt(0).toUpperCase();
+                const safeName = escapeHtml(name);
+                const safePreview = escapeHtml(lastMessage);
+                const time = lastDate ? formatTime(lastDate) : '';
 
                 return `
                     <div class="contact-item ${isUnread ? 'unread' : ''}">
@@ -739,20 +753,22 @@
                             <div class="contact-row2">
                                 <span class="contact-preview">${safePreview}</span>
                                 <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                                    ${safeCompany ? `<span class="company-tag">${safeCompany}</span>` : ''}
-                                    ${isUnread ? `<span class="unread-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
+                                    ${company ? `<span class="company-tag">${escapeHtml(company)}</span>` : ''}
+                                    ${isUnread ? `<span class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            console.log('✅ [renderConversations] Rendered', sorted.length, 'items');
         }
 
         // ─── UPDATE STATS ───
         function updateStats(conversations) {
             const total = conversations.length;
-            const unread = conversations.filter(c => c.unreadCount > 0).length;
+            const unread = conversations.filter(c => (c.unreadCount || c.unread || 0) > 0).length;
             const active = conversations.filter(c => c.status === 'Replied' || c.status === 'Contacted').length;
 
             statTotal.textContent = total;
@@ -817,4 +833,4 @@
         });
     </script>
 </body>
-  </html>
+    </html>
