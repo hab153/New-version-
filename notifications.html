@@ -126,10 +126,11 @@
             display: flex;
             overflow: hidden;
             padding: 16px;
+            gap: 0;
         }
 
         /* ────────────────────────────────────────────────
-           CONVERSATION LIST
+           CONVERSATION LIST (WhatsApp style)
            ──────────────────────────────────────────────── */
         .conversation-list {
             flex: 1;
@@ -138,11 +139,17 @@
             background: var(--bg-base);
             border: 1px solid var(--border);
             border-radius: 16px;
-            max-width: 760px;
+            max-width: 480px;
             width: 100%;
-            margin: 0 auto;
             overflow: hidden;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .conversation-list.chat-open {
+            max-width: 480px;
+            border-right: none;
+            border-radius: 16px 0 0 16px;
         }
 
         /* Search */
@@ -226,7 +233,7 @@
         .stat-chip-val.red { color: var(--red); }
         .stat-chip-val.amber { color: var(--amber); }
 
-        /* Contact List - WhatsApp style smooth scrolling */
+        /* Contact List */
         .contact-list {
             flex: 1;
             overflow-y: auto;
@@ -248,7 +255,7 @@
             border-radius: 4px;
         }
 
-        /* Contact Items - GPU accelerated */
+        /* Contact Items - Clickable */
         .contact-item {
             display: flex;
             align-items: center;
@@ -256,16 +263,22 @@
             padding: 12px 14px;
             border-radius: 12px;
             cursor: pointer;
-            transition: background 0.15s;
+            transition: background 0.15s, border-color 0.15s;
             border: 1px solid transparent;
             margin-bottom: 2px;
             transform: translateZ(0);
             will-change: transform;
+            user-select: none;
         }
 
         .contact-item:hover {
             background: var(--bg-surface);
             border-color: var(--border);
+        }
+
+        .contact-item:active {
+            background: var(--bg-hover);
+            transform: scale(0.98);
         }
 
         .contact-item.unread {
@@ -391,7 +404,7 @@
             text-overflow: ellipsis;
         }
 
-        /* Empty & Loading States - WhatsApp style */
+        /* Empty & Loading States */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -414,20 +427,7 @@
             font-size: 13px;
         }
 
-        .empty-state .retry-btn {
-            margin-top: 16px;
-            padding: 8px 20px;
-            background: var(--accent);
-            color: #000;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: var(--font-sans);
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        /* WhatsApp-style skeleton loading */
+        /* Skeleton */
         .skeleton-item {
             display: flex;
             align-items: center;
@@ -471,16 +471,331 @@
         }
 
         /* ────────────────────────────────────────────────
-           RESPONSIVE
+           CHAT VIEW (WhatsApp Style)
+           ──────────────────────────────────────────────── */
+        .chat-view {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            background: var(--bg-void);
+            min-width: 0;
+            border-left: 1px solid var(--border);
+            margin-left: -1px;
+            border-radius: 0 16px 16px 0;
+        }
+
+        .chat-view.active {
+            display: flex;
+        }
+
+        .chat-empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-3);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .chat-empty .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .chat-empty h3 {
+            color: var(--text-2);
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .chat-empty p {
+            font-size: 13px;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: var(--bg-base);
+            border-radius: 0 16px 0 0;
+        }
+
+        .chat-header.active {
+            display: flex;
+        }
+
+        .chat-back {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-2);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .chat-back svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .chat-avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-raised);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+            font-family: var(--font-mono);
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-1);
+        }
+
+        .chat-info p {
+            font-size: 11px;
+            color: var(--text-3);
+            font-family: var(--font-mono);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Messages Container */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-group.from-lead {
+            align-items: flex-start;
+        }
+
+        .msg-group.from-ai {
+            align-items: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .message-bubble.lead {
+            background: var(--bg-raised);
+            color: var(--text-1);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .message-bubble.ai {
+            background: var(--accent);
+            color: #0a0a0a;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: var(--text-3);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .message-bubble.ai .message-time {
+            color: rgba(10, 10, 10, 0.6);
+        }
+
+        .msg-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-3);
+        }
+
+        .msg-empty .icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* Reply Area */
+        .reply-area {
+            display: none;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-base);
+            flex-shrink: 0;
+            border-radius: 0 0 16px 0;
+        }
+
+        .reply-area.active {
+            display: block;
+        }
+
+        .reply-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 8px 8px 14px;
+        }
+
+        .reply-wrap:focus-within {
+            border-color: var(--border-mid);
+        }
+
+        .reply-wrap textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-1);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            min-height: 36px;
+            max-height: 100px;
+            line-height: 1.5;
+        }
+
+        .reply-wrap textarea::placeholder {
+            color: var(--text-3);
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #0a0a0a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .spin-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ────────────────────────────────────────────────
+           RESPONSIVE - WhatsApp style mobile
            ──────────────────────────────────────────────── */
         @media (max-width: 640px) {
             .main-container {
-                padding: 10px;
+                padding: 0;
+                background: var(--bg-void);
             }
 
             .conversation-list {
                 max-width: 100%;
-                border-radius: 12px;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .conversation-list.chat-open {
+                display: none;
+            }
+
+            .chat-view {
+                border-radius: 0;
+                border-left: none;
+                margin-left: 0;
+            }
+
+            .chat-view.active {
+                display: flex;
+                position: fixed;
+                inset: 0;
+                z-index: 60;
+                background: var(--bg-void);
+                border-radius: 0;
+            }
+
+            .chat-back {
+                display: block;
+            }
+
+            .chat-header {
+                border-radius: 0;
+            }
+
+            .reply-area {
+                border-radius: 0;
             }
 
             .search-section {
@@ -522,11 +837,19 @@
             .bottom-nav {
                 display: flex;
             }
+
+            .chat-view .bottom-nav {
+                display: none !important;
+            }
         }
 
         @media (min-width: 641px) {
             .bottom-nav {
                 display: none;
+            }
+
+            .chat-back {
+                display: none !important;
             }
         }
 
@@ -607,7 +930,7 @@
     <div class="main-container">
 
         <!-- CONVERSATION LIST -->
-        <div class="conversation-list">
+        <div class="conversation-list" id="conversationList">
             <!-- Search -->
             <div class="search-section">
                 <div class="search-wrap">
@@ -637,13 +960,58 @@
 
             <!-- Contact List -->
             <div class="contact-list" id="contactList">
-                <!-- Skeleton loading (WhatsApp style) -->
                 <div id="skeletonLoader">
                     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
                     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
                     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
                     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
                     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT VIEW -->
+        <div class="chat-view" id="chatView">
+            <!-- Empty State -->
+            <div class="chat-empty" id="chatEmpty">
+                <div>
+                    <span class="icon">💬</span>
+                    <h3>Select a conversation</h3>
+                    <p>Choose a lead from the list to start chatting.</p>
+                </div>
+            </div>
+
+            <!-- Chat Header -->
+            <div class="chat-header" id="chatHeader">
+                <button class="chat-back" id="chatBackBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
+                    </svg>
+                </button>
+                <div class="chat-avatar-small" id="chatAvatar">?</div>
+                <div class="chat-info">
+                    <h3 id="chatName">Customer Name</h3>
+                    <p id="chatEmail">email@example.com</p>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages-container" id="messagesContainer">
+                <div class="msg-empty">
+                    <span class="icon">📭</span>
+                    <p>No messages yet</p>
+                </div>
+            </div>
+
+            <!-- Reply Area -->
+            <div class="reply-area" id="replyArea">
+                <div class="reply-wrap">
+                    <textarea id="replyInput" rows="1" placeholder="Type a reply…" onkeydown="handleKey(event)"></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendReply()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -675,7 +1043,7 @@
         </a>
     </nav>
 
-    <!-- ─── JAVASCRIPT (WhatsApp-style fast loading) ─── -->
+    <!-- ─── JAVASCRIPT ─── -->
     <script>
         (function() {
             'use strict';
@@ -695,44 +1063,53 @@
             const statTotal = document.getElementById('statTotal');
             const statUnread = document.getElementById('statUnread');
             const statActive = document.getElementById('statActive');
+            const chatView = document.getElementById('chatView');
+            const chatEmpty = document.getElementById('chatEmpty');
+            const chatHeader = document.getElementById('chatHeader');
+            const chatAvatar = document.getElementById('chatAvatar');
+            const chatName = document.getElementById('chatName');
+            const chatEmail = document.getElementById('chatEmail');
+            const messagesContainer = document.getElementById('messagesContainer');
+            const replyArea = document.getElementById('replyArea');
+            const replyInput = document.getElementById('replyInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const conversationList = document.getElementById('conversationList');
 
             // ─── STATE ───
             let allConversations = [];
+            let currentLeadId = null;
+            let currentLeadName = '';
+            let currentLeadEmail = '';
             let isLoading = false;
 
-            // ─── CACHE KEY ───
+            // ─── CACHE ───
             const CACHE_KEY = 'skyline_conversations_cache';
 
-            // ─── LOAD FROM CACHE FIRST (INSTANT DISPLAY) ───
+            // ─── LOAD FROM CACHE ───
             function loadFromCache() {
                 try {
                     const cached = localStorage.getItem(CACHE_KEY);
                     if (cached) {
                         const data = JSON.parse(cached);
                         if (data && data.length > 0) {
-                            console.log('📦 [Cache] Loaded', data.length, 'conversations from cache');
+                            console.log('📦 [Cache] Loaded', data.length, 'conversations');
                             allConversations = data;
                             renderConversations(data);
                             updateStats(data);
                             return true;
                         }
                     }
-                } catch (e) {
-                    console.warn('Cache read failed:', e);
-                }
+                } catch (e) {}
                 return false;
             }
 
-            // ─── SAVE TO CACHE ───
             function saveToCache(conversations) {
                 try {
                     localStorage.setItem(CACHE_KEY, JSON.stringify(conversations));
-                } catch (e) {
-                    console.warn('Cache save failed:', e);
-                }
+                } catch (e) {}
             }
 
-            // ─── UTILITY FUNCTIONS ───
+            // ─── UTILITY ───
             function escapeHtml(str) {
                 if (!str) return '';
                 return String(str)
@@ -760,9 +1137,8 @@
                 }
             }
 
-            // ─── RENDER CONVERSATIONS ───
+            // ─── RENDER CONVERSATIONS (Clickable) ───
             function renderConversations(conversations) {
-                // Hide skeleton
                 if (skeletonLoader) skeletonLoader.style.display = 'none';
 
                 if (!conversations || conversations.length === 0) {
@@ -785,6 +1161,7 @@
                 });
 
                 const items = sorted.map(c => {
+                    const id = c.id || c._id || '';
                     const name = c.name || c.fullName || 'Unknown';
                     const lastMessage = c.lastMessage || c.message || 'No messages yet';
                     const lastDate = c.lastDate || c.lastContactDate || null;
@@ -799,7 +1176,11 @@
                     const safeCompany = escapeHtml(company);
 
                     return `
-                        <div class="contact-item ${isUnread ? 'unread' : ''}">
+                        <div class="contact-item ${isUnread ? 'unread' : ''}" 
+                             data-lead-id="${id}"
+                             data-lead-name="${safeName}"
+                             data-lead-email="${escapeHtml(c.email || '')}"
+                             onclick="window.openChat('${id}')">
                             <div class="contact-avatar">${initials}</div>
                             <div class="contact-body">
                                 <div class="contact-row1">
@@ -826,52 +1207,209 @@
                 const total = conversations.length;
                 const unread = conversations.filter(c => (c.unreadCount || c.unread || 0) > 0).length;
                 const active = conversations.filter(c => c.status === 'Replied' || c.status === 'Contacted').length;
-
                 statTotal.textContent = total;
                 statUnread.textContent = unread;
                 statActive.textContent = active;
             }
 
-            // ─── FETCH FROM BACKEND (Background) ───
-            async function fetchInBackground() {
-                if (isLoading) return;
-                isLoading = true;
+            // ─── OPEN CHAT (WhatsApp Style) ───
+            window.openChat = async function(leadId) {
+                console.log('💬 [openChat] Opening:', leadId);
 
+                const conv = allConversations.find(c => (c.id || c._id) === leadId);
+                if (!conv) {
+                    console.error('❌ Conversation not found');
+                    return;
+                }
+
+                currentLeadId = leadId;
+                currentLeadName = conv.name || 'Unknown';
+                currentLeadEmail = conv.email || '';
+
+                // Show chat view
+                chatEmpty.style.display = 'none';
+                chatHeader.classList.add('active');
+                replyArea.classList.add('active');
+                chatView.classList.add('active');
+
+                // Update header
+                chatName.textContent = currentLeadName;
+                chatEmail.textContent = currentLeadEmail || 'No email';
+                chatAvatar.textContent = (currentLeadName || '?').charAt(0).toUpperCase();
+
+                // Mobile: hide list, show chat
+                if (window.innerWidth <= 640) {
+                    conversationList.classList.add('chat-open');
+                }
+
+                // Show loading
+                messagesContainer.innerHTML = `
+                    <div class="msg-empty">
+                        <span class="icon">⏳</span>
+                        <p>Loading messages...</p>
+                    </div>
+                `;
+
+                // Fetch messages
                 try {
-                    const res = await fetch(`${BACKEND}/api/conversations`, {
-                        headers: { 'Authorization': `Bearer ${token}` },
-                        cache: 'no-cache'
+                    const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
 
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                     const data = await res.json();
-                    console.log('✅ [Background] Loaded', data.length, 'conversations');
+                    const messages = data.messages || [];
 
-                    // Only update if data changed
-                    if (JSON.stringify(data) !== JSON.stringify(allConversations)) {
-                        allConversations = data;
-                        saveToCache(data);
-                        renderConversations(data);
-                        updateStats(data);
-                    } else {
-                        console.log('📦 [Background] No changes detected');
+                    if (messages.length === 0) {
+                        messagesContainer.innerHTML = `
+                            <div class="msg-empty">
+                                <span class="icon">📭</span>
+                                <p>No messages yet. Send the first message!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    messagesContainer.innerHTML = messages.map(msg => {
+                        const isLead = msg.from === 'lead';
+                        const groupClass = isLead ? 'from-lead' : 'from-ai';
+                        const bubbleClass = isLead ? 'lead' : 'ai';
+                        const safeContent = escapeHtml(msg.content || '');
+                        const time = msg.date ? formatTime(msg.date) : '';
+
+                        return `
+                            <div class="msg-group ${groupClass}">
+                                <div class="message-bubble ${bubbleClass}">
+                                    ${safeContent}
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                    // Mark as read
+                    if (conv.unreadCount > 0) {
+                        try {
+                            await fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            conv.unreadCount = 0;
+                            conv.unread = false;
+                            renderConversations(allConversations);
+                            updateStats(allConversations);
+                        } catch (readErr) {
+                            console.warn('⚠️ Mark as read failed:', readErr);
+                        }
                     }
 
                 } catch (err) {
-                    console.warn('⚠️ [Background] Failed to refresh:', err.message);
-                } finally {
-                    isLoading = false;
+                    console.error('❌ [openChat] Error:', err);
+                    messagesContainer.innerHTML = `
+                        <div class="msg-empty">
+                            <span class="icon">⚠️</span>
+                            <p>Failed to load messages: ${err.message}</p>
+                        </div>
+                    `;
                 }
-            }
+            };
 
-            // ─── SEARCH (Instant) ───
+            // ─── SEND REPLY ───
+            window.sendReply = async function() {
+                const text = replyInput.value.trim();
+                if (!text || !currentLeadId) return;
+
+                const conv = allConversations.find(c => (c.id || c._id) === currentLeadId);
+                if (!conv) {
+                    alert('Conversation not found');
+                    return;
+                }
+
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = `<svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
+
+                const payload = {
+                    leadId: currentLeadId,
+                    leads: [{
+                        name: currentLeadName || 'Lead',
+                        email: currentLeadEmail,
+                        company: conv.company || '',
+                        messages: [{
+                            subject: "Re: Conversation",
+                            body: text
+                        }]
+                    }]
+                };
+
+                try {
+                    const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        replyInput.value = '';
+                        replyInput.style.height = 'auto';
+
+                        // Add message to UI
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = 'msg-group from-ai';
+                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        msgDiv.innerHTML = `
+                            <div class="message-bubble ai">
+                                ${escapeHtml(text)}
+                                <div class="message-time">${time}</div>
+                            </div>
+                        `;
+                        messagesContainer.appendChild(msgDiv);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                        // Update conversation list
+                        conv.lastMessage = text;
+                        conv.lastDate = new Date().toISOString();
+                        renderConversations(allConversations);
+
+                    } else {
+                        alert('❌ Failed to send: ' + (data.message || data.error || 'Unknown error'));
+                    }
+                } catch (err) {
+                    console.error('❌ [sendReply] Error:', err);
+                    alert('⚠️ Connection error. Please try again.');
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>`;
+                }
+            };
+
+            // ─── HANDLE KEY ───
+            window.handleKey = function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    window.sendReply();
+                }
+            };
+
+            // ─── AUTO-RESIZE ───
+            replyInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+
+            // ─── SEARCH ───
             let searchTimeout = null;
-
-            function handleSearch(e) {
+            searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
-                    const q = e.target.value.toLowerCase().trim();
+                    const q = this.value.toLowerCase().trim();
                     if (!q) {
                         renderConversations(allConversations);
                         return;
@@ -883,34 +1421,60 @@
                     );
                     renderConversations(filtered);
                 }, 150);
-            }
+            });
 
-            searchInput.addEventListener('input', handleSearch);
+            // ─── BACK BUTTON (Mobile) ───
+            document.getElementById('chatBackBtn').addEventListener('click', function() {
+                chatView.classList.remove('active');
+                chatHeader.classList.remove('active');
+                replyArea.classList.remove('active');
+                chatEmpty.style.display = 'flex';
+                conversationList.classList.remove('chat-open');
+                currentLeadId = null;
+            });
+
+            // ─── FETCH IN BACKGROUND ───
+            async function fetchInBackground() {
+                if (isLoading) return;
+                isLoading = true;
+                try {
+                    const res = await fetch(`${BACKEND}/api/conversations`, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        cache: 'no-cache'
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    if (JSON.stringify(data) !== JSON.stringify(allConversations)) {
+                        allConversations = data;
+                        saveToCache(data);
+                        renderConversations(data);
+                        updateStats(data);
+                    }
+                } catch (err) {
+                    console.warn('⚠️ Background refresh failed:', err.message);
+                } finally {
+                    isLoading = false;
+                }
+            }
 
             // ─── EXPOSE FOR RETRY ───
             window.loadConversations = fetchInBackground;
 
             // ─── INIT ───
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('🚀 [Init] Loading conversations...');
+                console.log('🚀 Initializing...');
 
-                // STEP 1: Show cached data instantly (WhatsApp style)
                 const hasCache = loadFromCache();
-
-                // STEP 2: If no cache, show skeleton briefly
                 if (!hasCache) {
                     skeletonLoader.style.display = 'block';
                 } else {
                     skeletonLoader.style.display = 'none';
                 }
 
-                // STEP 3: Fetch fresh data in background
-                // Small delay to let the UI render first
                 setTimeout(() => {
                     fetchInBackground();
                 }, 100);
 
-                // STEP 4: Refresh every 30 seconds (silently)
                 setInterval(() => {
                     if (document.visibilityState === 'visible') {
                         fetchInBackground();
