@@ -33,12 +33,20 @@ async function loadContacts() {
     }
 }
 
+// ✅ FIXED: sendReply now includes leadId in the payload
 async function sendReply(text) {
-    if (!text || !currentLeadId) return;
+    if (!text || !currentLeadId) {
+        console.log('⚠️ [sendReply] No text or leadId');
+        return;
+    }
+
     console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
+    
+    // ✅ FIX: Include leadId in the payload
     const payload = {
+        leadId: currentLeadId,  // ← THIS WAS MISSING!
         leads: [{ 
             name: window.currentLeadName, 
             email: window.currentLeadEmail, 
@@ -46,6 +54,9 @@ async function sendReply(text) {
             messages: [{ subject: "Re: Conversation", body: text }] 
         }]
     };
+
+    console.log('📤 [sendReply] Payload:', JSON.stringify(payload));
+
     try {
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
@@ -54,19 +65,49 @@ async function sendReply(text) {
         });
         const data = await res.json();
         console.log(`📤 [sendReply] Response status: ${res.status}`);
+        console.log('📤 [sendReply] Response data:', data);
+        
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
             localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
             alert("⚠️ Email session expired. Please reconnect.");
             window.location.href = 'dashboard.html?connect=true';
             return;
         }
+        
         if (data.success) {
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
-            openChat(currentLeadId, window.currentLeadName, window.currentLeadEmail);
-            // ---- ADDED: refresh contact list to update last message and order ----
+            
+            // Add message to UI immediately
+            const container = document.getElementById('messagesContainer');
+            if (container) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg-group from-ai';
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                msgDiv.innerHTML = `
+                    <div class="message-bubble ai">
+                        ${escapeHtml(text)}
+                        <div class="message-time">${time} (Sent)</div>
+                    </div>
+                `;
+                container.appendChild(msgDiv);
+                container.scrollTop = container.scrollHeight;
+            }
+            
+            // Update contact list locally
+            const currentContact = allContacts.find(c => String(c.id) === String(currentLeadId));
+            if (currentContact) {
+                currentContact.lastMessage = text;
+                currentContact.lastDate = new Date().toISOString();
+                currentContact.unreadCount = 0;
+                updateStats(allContacts);
+                renderContacts(allContacts);
+            }
+            
+            // Refresh contacts in background
             loadContacts();
-            // ---- END ADDED ----
+            
+            console.log('✅ [sendReply] Message sent successfully');
         } else {
             const errorMsg = data.message || data.error || JSON.stringify(data.errors);
             alert(`Failed to send: ${errorMsg}`);
@@ -194,4 +235,4 @@ async function fetchRevenueTracking() {
         throw new Error(err.message || 'Failed to load revenue data');
     }
     return await res.json();
-        }
+            }
