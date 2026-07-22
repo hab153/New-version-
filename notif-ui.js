@@ -1,7 +1,7 @@
 // notif-ui.js
 
 // ========== GLOBAL UI STATE ==========
-let allContacts = [];
+// ✅ REMOVED duplicate declaration - allContacts is already in notif-api.js
 let userTier = 'free';
 let autoFollowUpEnabled = false;
 let refreshInterval = null;
@@ -184,10 +184,13 @@ async function openChat(leadId, name, email) {
     
     const cleanId = String(leadId).trim();
     console.log(`💬 [openChat] Opening chat with ${name} (${cleanId})`);
+    
+    // ✅ FIX: Set the bare variable that sendReply() reads
+    currentLeadId = cleanId;
+    
     window.currentLeadId = cleanId;
     window.currentLeadName = name;
     window.currentLeadEmail = email;
-    if (typeof currentLeadId !== 'undefined') window.currentLeadId = cleanId;
     
     // Update header
     const leadData = allContacts.find(l => String(l.id) === cleanId);
