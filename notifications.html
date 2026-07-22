@@ -52,7 +52,7 @@
         }
 
         /* ────────────────────────────────────────────────
-           TOP NAV
+           TOP NAV (Optimized - no animations)
            ──────────────────────────────────────────────── */
         .top-nav {
             display: flex;
@@ -79,11 +79,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .nav-logo-mark svg {
             width: 14px;
             height: 14px;
+            display: block;
         }
 
         .nav-logo-text {
@@ -103,6 +105,7 @@
             font-family: var(--font-mono);
             font-size: 10px;
             color: var(--text-3);
+            flex-shrink: 0;
         }
 
         .status-dot {
@@ -125,13 +128,12 @@
             flex: 1;
             display: flex;
             overflow: hidden;
-            padding: 20px;
-            justify-content: center;
-            align-items: flex-start;
+            padding: 16px;
+            gap: 0;
         }
 
         /* ────────────────────────────────────────────────
-           CONVERSATION LIST
+           CONVERSATION LIST (Optimized)
            ──────────────────────────────────────────────── */
         .conversation-list {
             flex: 1;
@@ -140,15 +142,16 @@
             background: var(--bg-base);
             border: 1px solid var(--border);
             border-radius: 16px;
-            max-width: 720px;
+            max-width: 760px;
             width: 100%;
+            margin: 0 auto;
             overflow: hidden;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
         }
 
-        /* Search */
+        /* Search - Optimized */
         .search-section {
-            padding: 16px 20px 12px;
+            padding: 14px 18px 10px;
             flex-shrink: 0;
             border-bottom: 1px solid var(--border);
         }
@@ -161,7 +164,7 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 0 14px;
-            transition: border-color 0.2s;
+            transition: border-color 0.15s;
         }
 
         .search-wrap:focus-within {
@@ -184,17 +187,18 @@
             font-size: 13px;
             outline: none;
             font-family: var(--font-sans);
+            min-width: 0;
         }
 
         .search-input::placeholder {
             color: var(--text-3);
         }
 
-        /* Stats */
+        /* Stats - Optimized */
         .stats-row {
             display: flex;
-            gap: 8px;
-            padding: 10px 20px 14px;
+            gap: 6px;
+            padding: 8px 18px 12px;
             flex-shrink: 0;
             border-bottom: 1px solid var(--border);
             flex-wrap: wrap;
@@ -203,11 +207,11 @@
         .stat-chip {
             background: var(--bg-surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 6px 14px;
+            border-radius: 6px;
+            padding: 4px 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .stat-chip-label {
@@ -228,15 +232,18 @@
         .stat-chip-val.red { color: var(--red); }
         .stat-chip-val.amber { color: var(--amber); }
 
-        /* Contact List */
+        /* Contact List - Optimized for scrolling */
         .contact-list {
             flex: 1;
             overflow-y: auto;
-            padding: 4px 16px 16px;
+            padding: 4px 16px 12px;
+            /* Smooth scrolling */
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
         .contact-list::-webkit-scrollbar {
-            width: 3px;
+            width: 4px;
         }
 
         .contact-list::-webkit-scrollbar-track {
@@ -245,9 +252,14 @@
 
         .contact-list::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
+        .contact-list::-webkit-scrollbar-thumb:hover {
+            background: var(--border-mid);
+        }
+
+        /* Contact Items - Optimized with GPU acceleration */
         .contact-item {
             display: flex;
             align-items: center;
@@ -255,9 +267,12 @@
             padding: 12px 14px;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s, border-color 0.15s;
             border: 1px solid transparent;
             margin-bottom: 2px;
+            /* GPU acceleration for smoother scrolling */
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         .contact-item:hover {
@@ -284,6 +299,8 @@
             flex-shrink: 0;
             border: 1px solid var(--border);
             font-family: var(--font-mono);
+            /* GPU acceleration */
+            transform: translateZ(0);
         }
 
         .contact-item.unread .contact-avatar {
@@ -314,11 +331,13 @@
             font-size: 14px;
             font-weight: 500;
             color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .contact-item.unread .contact-name {
             font-weight: 700;
-            color: var(--text-1);
         }
 
         .contact-preview {
@@ -385,11 +404,7 @@
             text-overflow: ellipsis;
         }
 
-        .contact-item.unread .company-tag {
-            color: var(--text-2);
-        }
-
-        /* Empty & Loading States */
+        /* Empty & Loading States - Optimized */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -423,12 +438,11 @@
             font-family: var(--font-sans);
             font-weight: 600;
             font-size: 12px;
-            transition: all 0.2s;
+            transition: all 0.15s;
         }
 
         .empty-state .retry-btn:hover {
             transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(200, 255, 87, 0.2);
         }
 
         .loading-text {
@@ -445,7 +459,7 @@
            ──────────────────────────────────────────────── */
         @media (max-width: 640px) {
             .main-container {
-                padding: 12px;
+                padding: 10px;
             }
 
             .conversation-list {
@@ -454,16 +468,16 @@
             }
 
             .search-section {
-                padding: 12px 16px 10px;
+                padding: 10px 14px 8px;
             }
 
             .stats-row {
-                padding: 8px 16px 10px;
-                gap: 6px;
+                padding: 6px 14px 10px;
+                gap: 4px;
             }
 
             .stat-chip {
-                padding: 4px 10px;
+                padding: 3px 8px;
             }
 
             .stat-chip-val {
@@ -471,11 +485,11 @@
             }
 
             .contact-list {
-                padding: 4px 12px 12px;
+                padding: 4px 10px 10px;
             }
 
             .contact-item {
-                padding: 10px 12px;
+                padding: 10px 10px;
                 gap: 10px;
             }
 
@@ -525,7 +539,7 @@
             font-size: 7px;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            transition: color 0.2s;
+            transition: color 0.15s;
             padding: 4px 12px;
             border-radius: 8px;
         }
@@ -586,7 +600,7 @@
                         <circle cx="11" cy="11" r="7.5"/>
                         <path d="M21 21l-4-4"/>
                     </svg>
-                    <input class="search-input" type="text" placeholder="Search conversations…" id="searchInput" />
+                    <input class="search-input" type="text" placeholder="Search conversations…" id="searchInput" autocomplete="off" />
                 </div>
             </div>
 
@@ -639,198 +653,233 @@
         </a>
     </nav>
 
-    <!-- ─── JAVASCRIPT ─── -->
+    <!-- ─── JAVASCRIPT (Optimized) ─── -->
     <script>
-        // ─── CONFIG ───
-        const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-        const token = localStorage.getItem('token');
+        (function() {
+            'use strict';
 
-        if (!token) {
-            window.location.href = 'login.html';
-        }
+            // ─── CONFIG ───
+            const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+            const token = localStorage.getItem('token');
 
-        console.log('🔑 Token:', token ? '✅ Present' : '❌ Missing');
-
-        // ─── STATE ───
-        let allConversations = [];
-
-        // ─── DOM REFS ───
-        const contactList = document.getElementById('contactList');
-        const searchInput = document.getElementById('searchInput');
-        const statTotal = document.getElementById('statTotal');
-        const statUnread = document.getElementById('statUnread');
-        const statActive = document.getElementById('statActive');
-
-        // ─── LOAD CONVERSATIONS ───
-        async function loadConversations() {
-            console.log('📡 [loadConversations] Fetching /api/conversations...');
-            contactList.innerHTML = `<div class="loading-text">Loading conversations…</div>`;
-
-            try {
-                const res = await fetch(`${BACKEND}/api/conversations`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                console.log(`📡 [loadConversations] Status: ${res.status}`);
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error('❌ Error response:', text);
-                    throw new Error(`HTTP ${res.status} — ${text}`);
-                }
-
-                const data = await res.json();
-                console.log('📊 Full data:', data);
-                console.log('📊 First item:', data[0]);
-                console.log('📊 Field names:', data[0] ? Object.keys(data[0]) : 'No data');
-                
-                allConversations = data;
-                renderConversations(data);
-                updateStats(data);
-                return data;
-            } catch (err) {
-                console.error('❌ [loadConversations] Error:', err);
-                contactList.innerHTML = `
-                    <div class="empty-state">
-                        <span class="icon">⚠️</span>
-                        <h3>Failed to load</h3>
-                        <p>${err.message}</p>
-                        <button class="retry-btn" onclick="loadConversations()">Retry</button>
-                    </div>
-                `;
-                return [];
-            }
-        }
-
-        // ─── RENDER CONVERSATIONS (FIXED) ───
-        function renderConversations(conversations) {
-            console.log('📊 [renderConversations] Rendering', conversations.length, 'conversations');
-
-            if (!conversations || conversations.length === 0) {
-                contactList.innerHTML = `
-                    <div class="empty-state">
-                        <span class="icon">📭</span>
-                        <h3>No conversations yet</h3>
-                        <p>Send your first email to start a conversation.</p>
-                    </div>
-                `;
+            if (!token) {
+                window.location.href = 'login.html';
                 return;
             }
 
-            // Sort: unread first, then by date
-            const sorted = [...conversations].sort((a, b) => {
-                const aUnread = a.unreadCount || a.unread || 0;
-                const bUnread = b.unreadCount || b.unread || 0;
-                if (aUnread > 0 && bUnread === 0) return -1;
-                if (aUnread === 0 && bUnread > 0) return 1;
-                return new Date(b.lastDate || b.lastContactDate || 0) - new Date(a.lastDate || a.lastContactDate || 0);
-            });
+            console.log('🔑 Token present');
 
-            contactList.innerHTML = sorted.map(c => {
-                // ✅ Use the actual field names from the backend
-                const id = c.id || c._id || '';
-                const name = c.name || c.fullName || 'Unknown';
-                const email = c.email || c.leadEmail || '';
-                const company = c.company || c.leadCompany || '';
-                const lastMessage = c.lastMessage || c.message || 'No messages yet';
-                const lastDate = c.lastDate || c.lastContactDate || null;
-                const unreadCount = c.unreadCount || c.unread || 0;
-                const isUnread = unreadCount > 0;
-                
-                const initials = (name || '?').charAt(0).toUpperCase();
-                const safeName = escapeHtml(name);
-                const safePreview = escapeHtml(lastMessage);
-                const time = lastDate ? formatTime(lastDate) : '';
+            // ─── DOM REFS ───
+            const contactList = document.getElementById('contactList');
+            const searchInput = document.getElementById('searchInput');
+            const statTotal = document.getElementById('statTotal');
+            const statUnread = document.getElementById('statUnread');
+            const statActive = document.getElementById('statActive');
 
-                return `
-                    <div class="contact-item ${isUnread ? 'unread' : ''}">
-                        <div class="contact-avatar">${initials}</div>
-                        <div class="contact-body">
-                            <div class="contact-row1">
-                                <span class="contact-name">${safeName} ${isUnread ? '<span class="unread-dot"></span>' : ''}</span>
-                                <span class="contact-time">${time}</span>
-                            </div>
-                            <div class="contact-row2">
-                                <span class="contact-preview">${safePreview}</span>
-                                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                                    ${company ? `<span class="company-tag">${escapeHtml(company)}</span>` : ''}
-                                    ${isUnread ? `<span class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+            // ─── STATE ───
+            let allConversations = [];
+            let isLoading = false;
+            let loadTimeout = null;
+
+            // ─── UTILITY FUNCTIONS (Optimized) ───
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function formatTime(dateStr) {
+                if (!dateStr) return '';
+                try {
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime())) return '';
+                    const now = Date.now();
+                    const diff = now - d.getTime();
+                    if (diff < 60000) return 'Just now';
+                    if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+                    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
+                    if (diff < 604800000) return Math.floor(diff / 86400000) + 'd';
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                } catch {
+                    return '';
+                }
+            }
+
+            // ─── RENDER CONVERSATIONS (Optimized) ───
+            function renderConversations(conversations) {
+                if (!conversations || conversations.length === 0) {
+                    contactList.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <h3>No conversations yet</h3>
+                            <p>Send your first email to start a conversation.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort: unread first, then by date
+                const sorted = conversations.slice().sort((a, b) => {
+                    const aUnread = a.unreadCount || a.unread || 0;
+                    const bUnread = b.unreadCount || b.unread || 0;
+                    if (aUnread > 0 && bUnread === 0) return -1;
+                    if (aUnread === 0 && bUnread > 0) return 1;
+                    return new Date(b.lastDate || b.lastContactDate || 0) - new Date(a.lastDate || a.lastContactDate || 0);
+                });
+
+                // Build HTML using array join for better performance
+                const items = sorted.map(c => {
+                    const name = c.name || c.fullName || 'Unknown';
+                    const lastMessage = c.lastMessage || c.message || 'No messages yet';
+                    const lastDate = c.lastDate || c.lastContactDate || null;
+                    const unreadCount = c.unreadCount || c.unread || 0;
+                    const isUnread = unreadCount > 0;
+                    const company = c.company || c.leadCompany || '';
+
+                    const initials = (name || '?').charAt(0).toUpperCase();
+                    const safeName = escapeHtml(name);
+                    const safePreview = escapeHtml(lastMessage);
+                    const time = lastDate ? formatTime(lastDate) : '';
+                    const safeCompany = escapeHtml(company);
+
+                    return `
+                        <div class="contact-item ${isUnread ? 'unread' : ''}">
+                            <div class="contact-avatar">${initials}</div>
+                            <div class="contact-body">
+                                <div class="contact-row1">
+                                    <span class="contact-name">${safeName} ${isUnread ? '<span class="unread-dot"></span>' : ''}</span>
+                                    <span class="contact-time">${time}</span>
+                                </div>
+                                <div class="contact-row2">
+                                    <span class="contact-preview">${safePreview}</span>
+                                    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                                        ${safeCompany ? `<span class="company-tag">${safeCompany}</span>` : ''}
+                                        ${isUnread ? `<span class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
 
-            console.log('✅ [renderConversations] Rendered', sorted.length, 'items');
-        }
-
-        // ─── UPDATE STATS ───
-        function updateStats(conversations) {
-            const total = conversations.length;
-            const unread = conversations.filter(c => (c.unreadCount || c.unread || 0) > 0).length;
-            const active = conversations.filter(c => c.status === 'Replied' || c.status === 'Contacted').length;
-
-            statTotal.textContent = total;
-            statUnread.textContent = unread;
-            statActive.textContent = active;
-        }
-
-        // ─── SEARCH ───
-        searchInput.addEventListener('input', function() {
-            const q = this.value.toLowerCase().trim();
-            if (!q) {
-                renderConversations(allConversations);
-                return;
+                contactList.innerHTML = items;
             }
-            const filtered = allConversations.filter(c =>
-                (c.name || '').toLowerCase().includes(q) ||
-                (c.email || '').toLowerCase().includes(q) ||
-                (c.company || '').toLowerCase().includes(q)
-            );
-            renderConversations(filtered);
-        });
 
-        // ─── UTILITY FUNCTIONS ───
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
+            // ─── UPDATE STATS ───
+            function updateStats(conversations) {
+                const total = conversations.length;
+                const unread = conversations.filter(c => (c.unreadCount || c.unread || 0) > 0).length;
+                const active = conversations.filter(c => c.status === 'Replied' || c.status === 'Contacted').length;
 
-        function formatTime(dateStr) {
-            if (!dateStr) return '';
-            try {
-                const d = new Date(dateStr);
-                if (isNaN(d.getTime())) return '';
-                const now = new Date();
-                const diff = now - d;
-                if (diff < 60000) return 'Just now';
-                if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
-                if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
-                if (diff < 604800000) return Math.floor(diff / 86400000) + 'd';
-                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            } catch {
-                return '';
+                statTotal.textContent = total;
+                statUnread.textContent = unread;
+                statActive.textContent = active;
             }
-        }
 
-        // ─── INIT ───
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 [DOMContentLoaded] Initializing...');
-            loadConversations();
+            // ─── LOAD CONVERSATIONS (Optimized with timeout) ───
+            async function loadConversations() {
+                // Prevent concurrent loads
+                if (isLoading) return;
+                isLoading = true;
 
-            // Refresh every 30 seconds
-            setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    loadConversations();
+                // Show loading state (but only if we have no data yet)
+                if (allConversations.length === 0) {
+                    contactList.innerHTML = `<div class="loading-text">Loading conversations…</div>`;
                 }
-            }, 30000);
-        });
+
+                // Set a timeout to prevent hanging
+                const timeoutPromise = new Promise((_, reject) => {
+                    loadTimeout = setTimeout(() => {
+                        reject(new Error('Request timeout after 5 seconds'));
+                    }, 5000);
+                });
+
+                try {
+                    const fetchPromise = fetch(`${BACKEND}/api/conversations`, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        // Cache control for faster subsequent loads
+                        cache: 'no-cache'
+                    });
+
+                    // Race between fetch and timeout
+                    const res = await Promise.race([fetchPromise, timeoutPromise]);
+
+                    clearTimeout(loadTimeout);
+
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+
+                    const data = await res.json();
+                    console.log(`✅ Loaded ${data.length} conversations`);
+
+                    allConversations = data;
+                    renderConversations(data);
+                    updateStats(data);
+
+                } catch (err) {
+                    clearTimeout(loadTimeout);
+                    console.error('❌ Load error:', err);
+
+                    // Only show error if we don't have cached data
+                    if (allConversations.length === 0) {
+                        contactList.innerHTML = `
+                            <div class="empty-state">
+                                <span class="icon">⚠️</span>
+                                <h3>Failed to load</h3>
+                                <p>${err.message}</p>
+                                <button class="retry-btn" onclick="loadConversations()">Retry</button>
+                            </div>
+                        `;
+                    }
+                } finally {
+                    isLoading = false;
+                }
+            }
+
+            // ─── SEARCH (Debounced for performance) ───
+            let searchTimeout = null;
+
+            function handleSearch(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const q = e.target.value.toLowerCase().trim();
+                    if (!q) {
+                        renderConversations(allConversations);
+                        return;
+                    }
+                    const filtered = allConversations.filter(c =>
+                        (c.name || '').toLowerCase().includes(q) ||
+                        (c.email || '').toLowerCase().includes(q) ||
+                        (c.company || '').toLowerCase().includes(q)
+                    );
+                    renderConversations(filtered);
+                }, 200); // 200ms debounce
+            }
+
+            searchInput.addEventListener('input', handleSearch);
+
+            // ─── EXPOSE LOAD FUNCTION GLOBALLY (for retry button) ───
+            window.loadConversations = loadConversations;
+
+            // ─── INIT ───
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('🚀 Initializing...');
+                loadConversations();
+
+                // Refresh every 30 seconds (only if visible)
+                setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        loadConversations();
+                    }
+                }, 30000);
+            });
+
+        })();
     </script>
 </body>
     </html>
