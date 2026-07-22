@@ -33,7 +33,7 @@ async function loadContacts() {
     }
 }
 
-// ✅ FIXED: sendReply now includes leadId in the payload
+// ✅ FIXED: sendReply now includes leadId in the payload and NO duplicate messages
 async function sendReply(text) {
     if (!text || !currentLeadId) {
         console.log('⚠️ [sendReply] No text or leadId');
@@ -44,9 +44,9 @@ async function sendReply(text) {
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
     
-    // ✅ FIX: Include leadId in the payload
+    // ✅ Include leadId in the payload
     const payload = {
-        leadId: currentLeadId,  // ← THIS WAS MISSING!
+        leadId: currentLeadId,
         leads: [{ 
             name: window.currentLeadName, 
             email: window.currentLeadEmail, 
@@ -75,10 +75,11 @@ async function sendReply(text) {
         }
         
         if (data.success) {
+            // Clear input
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
             
-            // Add message to UI immediately
+            // ✅ Add message to UI immediately (ONCE)
             const container = document.getElementById('messagesContainer');
             if (container) {
                 const msgDiv = document.createElement('div');
@@ -94,18 +95,19 @@ async function sendReply(text) {
                 container.scrollTop = container.scrollHeight;
             }
             
-            // Update contact list locally
+            // ✅ Update contact list locally
             const currentContact = allContacts.find(c => String(c.id) === String(currentLeadId));
             if (currentContact) {
                 currentContact.lastMessage = text;
                 currentContact.lastDate = new Date().toISOString();
                 currentContact.unreadCount = 0;
-                updateStats(allContacts);
-                renderContacts(allContacts);
+                if (typeof updateStats === 'function') updateStats(allContacts);
+                if (typeof renderContacts === 'function') renderContacts(allContacts);
             }
             
-            // Refresh contacts in background
-            loadContacts();
+            // ✅ FIX: DO NOT call loadContacts() - it causes duplicates
+            // The auto-refresh (every 10 seconds) will update the list in the background
+            // loadContacts(); // ← REMOVED TO PREVENT DUPLICATES
             
             console.log('✅ [sendReply] Message sent successfully');
         } else {
@@ -235,4 +237,23 @@ async function fetchRevenueTracking() {
         throw new Error(err.message || 'Failed to load revenue data');
     }
     return await res.json();
-            }
+}
+
+// ========== EXPOSE FUNCTIONS GLOBALLY ==========
+window.loadContacts = loadContacts;
+window.sendReply = sendReply;
+window.saveAutoReplyInstructions = saveAutoReplyInstructions;
+window.saveAutoReplyStatus = saveAutoReplyStatus;
+window.renameCustomer = renameCustomer;
+window.fetchConversationDetails = fetchConversationDetails;
+window.markAsRead = markAsRead;
+window.suggestFollowUp = suggestFollowUp;
+window.toggleAutoFollowUp = toggleAutoFollowUp;
+window.getFollowUpStatus = getFollowUpStatus;
+window.fetchRevenueTracking = fetchRevenueTracking;
+window.currentLeadId = currentLeadId;
+window.isAutoReplyEnabled = isAutoReplyEnabled;
+window.autoReplyInstructions = autoReplyInstructions;
+window.allContacts = allContacts;
+window.BACKEND = BACKEND;
+window.token = token;
