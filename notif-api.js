@@ -33,7 +33,7 @@ async function loadContacts() {
     }
 }
 
-// ✅ FIXED: sendReply now includes leadId in the payload and NO duplicate messages
+// ✅ FIXED: sendReply now includes leadId and allowNewLead flag
 async function sendReply(text) {
     if (!text || !currentLeadId) {
         console.log('⚠️ [sendReply] No text or leadId');
@@ -44,9 +44,10 @@ async function sendReply(text) {
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
     
-    // ✅ Include leadId in the payload
+    // ✅ FIX: Include leadId and allowNewLead: false in the payload
     const payload = {
         leadId: currentLeadId,
+        allowNewLead: false,  // ← Prevents creating new leads from notifications page
         leads: [{ 
             name: window.currentLeadName, 
             email: window.currentLeadEmail, 
@@ -75,11 +76,10 @@ async function sendReply(text) {
         }
         
         if (data.success) {
-            // Clear input
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
             
-            // ✅ Add message to UI immediately (ONCE)
+            // Add message to UI immediately
             const container = document.getElementById('messagesContainer');
             if (container) {
                 const msgDiv = document.createElement('div');
@@ -95,19 +95,15 @@ async function sendReply(text) {
                 container.scrollTop = container.scrollHeight;
             }
             
-            // ✅ Update contact list locally
+            // Update contact list locally
             const currentContact = allContacts.find(c => String(c.id) === String(currentLeadId));
             if (currentContact) {
                 currentContact.lastMessage = text;
                 currentContact.lastDate = new Date().toISOString();
                 currentContact.unreadCount = 0;
-                if (typeof updateStats === 'function') updateStats(allContacts);
-                if (typeof renderContacts === 'function') renderContacts(allContacts);
+                updateStats(allContacts);
+                renderContacts(allContacts);
             }
-            
-            // ✅ FIX: DO NOT call loadContacts() - it causes duplicates
-            // The auto-refresh (every 10 seconds) will update the list in the background
-            // loadContacts(); // ← REMOVED TO PREVENT DUPLICATES
             
             console.log('✅ [sendReply] Message sent successfully');
         } else {
