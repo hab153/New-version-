@@ -130,7 +130,7 @@
         }
 
         /* ────────────────────────────────────────────────
-           CONVERSATION LIST (WhatsApp style)
+           CONVERSATION LIST
            ──────────────────────────────────────────────── */
         .conversation-list {
             flex: 1;
@@ -152,7 +152,6 @@
             border-radius: 16px 0 0 16px;
         }
 
-        /* Search */
         .search-section {
             padding: 14px 18px 10px;
             flex-shrink: 0;
@@ -195,7 +194,6 @@
             color: var(--text-3);
         }
 
-        /* Stats */
         .stats-row {
             display: flex;
             gap: 6px;
@@ -233,7 +231,6 @@
         .stat-chip-val.red { color: var(--red); }
         .stat-chip-val.amber { color: var(--amber); }
 
-        /* Contact List */
         .contact-list {
             flex: 1;
             overflow-y: auto;
@@ -255,7 +252,6 @@
             border-radius: 4px;
         }
 
-        /* Contact Items - Clickable */
         .contact-item {
             display: flex;
             align-items: center;
@@ -404,7 +400,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Empty & Loading States */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -427,7 +422,6 @@
             font-size: 13px;
         }
 
-        /* Skeleton */
         .skeleton-item {
             display: flex;
             align-items: center;
@@ -471,7 +465,7 @@
         }
 
         /* ────────────────────────────────────────────────
-           CHAT VIEW (WhatsApp Style)
+           CHAT VIEW
            ──────────────────────────────────────────────── */
         .chat-view {
             flex: 1;
@@ -514,7 +508,6 @@
             font-size: 13px;
         }
 
-        /* Chat Header */
         .chat-header {
             display: none;
             align-items: center;
@@ -582,7 +575,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Messages Container */
         .messages-container {
             flex: 1;
             overflow-y: auto;
@@ -664,7 +656,6 @@
             margin-bottom: 8px;
         }
 
-        /* Reply Area */
         .reply-area {
             display: none;
             padding: 12px 16px;
@@ -752,7 +743,7 @@
         }
 
         /* ────────────────────────────────────────────────
-           RESPONSIVE - WhatsApp style mobile
+           RESPONSIVE
            ──────────────────────────────────────────────── */
         @media (max-width: 640px) {
             .main-container {
@@ -798,48 +789,8 @@
                 border-radius: 0;
             }
 
-            .search-section {
-                padding: 10px 14px 8px;
-            }
-
-            .stats-row {
-                padding: 6px 14px 10px;
-                gap: 4px;
-            }
-
-            .stat-chip {
-                padding: 3px 8px;
-            }
-
-            .stat-chip-val {
-                font-size: 12px;
-            }
-
-            .contact-list {
-                padding: 4px 10px 10px;
-            }
-
-            .contact-item {
-                padding: 10px 10px;
-                gap: 10px;
-            }
-
-            .contact-avatar {
-                width: 38px;
-                height: 38px;
-                font-size: 13px;
-            }
-
-            .contact-name {
-                font-size: 13px;
-            }
-
             .bottom-nav {
                 display: flex;
-            }
-
-            .chat-view .bottom-nav {
-                display: none !important;
             }
         }
 
@@ -853,9 +804,6 @@
             }
         }
 
-        /* ────────────────────────────────────────────────
-           BOTTOM NAV (Mobile)
-           ──────────────────────────────────────────────── */
         .bottom-nav {
             display: none;
             height: 56px;
@@ -931,7 +879,6 @@
 
         <!-- CONVERSATION LIST -->
         <div class="conversation-list" id="conversationList">
-            <!-- Search -->
             <div class="search-section">
                 <div class="search-wrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -942,7 +889,6 @@
                 </div>
             </div>
 
-            <!-- Stats -->
             <div class="stats-row" id="statsRow">
                 <div class="stat-chip">
                     <span class="stat-chip-label">Total</span>
@@ -958,7 +904,6 @@
                 </div>
             </div>
 
-            <!-- Contact List -->
             <div class="contact-list" id="contactList">
                 <div id="skeletonLoader">
                     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
@@ -972,7 +917,6 @@
 
         <!-- CHAT VIEW -->
         <div class="chat-view" id="chatView">
-            <!-- Empty State -->
             <div class="chat-empty" id="chatEmpty">
                 <div>
                     <span class="icon">💬</span>
@@ -981,7 +925,6 @@
                 </div>
             </div>
 
-            <!-- Chat Header -->
             <div class="chat-header" id="chatHeader">
                 <button class="chat-back" id="chatBackBtn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -995,7 +938,6 @@
                 </div>
             </div>
 
-            <!-- Messages -->
             <div class="messages-container" id="messagesContainer">
                 <div class="msg-empty">
                     <span class="icon">📭</span>
@@ -1003,7 +945,6 @@
                 </div>
             </div>
 
-            <!-- Reply Area -->
             <div class="reply-area" id="replyArea">
                 <div class="reply-wrap">
                     <textarea id="replyInput" rows="1" placeholder="Type a reply…" onkeydown="handleKey(event)"></textarea>
@@ -1017,7 +958,7 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAV (Mobile) -->
+    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
         <a href="page.html" class="nav-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1081,6 +1022,7 @@
             let currentLeadName = '';
             let currentLeadEmail = '';
             let isLoading = false;
+            let chatOpen = false;
 
             // ─── CACHE ───
             const CACHE_KEY = 'skyline_conversations_cache';
@@ -1092,7 +1034,6 @@
                     if (cached) {
                         const data = JSON.parse(cached);
                         if (data && data.length > 0) {
-                            console.log('📦 [Cache] Loaded', data.length, 'conversations');
                             allConversations = data;
                             renderConversations(data);
                             updateStats(data);
@@ -1137,7 +1078,7 @@
                 }
             }
 
-            // ─── RENDER CONVERSATIONS (Clickable) ───
+            // ─── RENDER CONVERSATIONS ───
             function renderConversations(conversations) {
                 if (skeletonLoader) skeletonLoader.style.display = 'none';
 
@@ -1173,316 +1114,4 @@
                     const safeName = escapeHtml(name);
                     const safePreview = escapeHtml(lastMessage);
                     const time = lastDate ? formatTime(lastDate) : '';
-                    const safeCompany = escapeHtml(company);
-
-                    return `
-                        <div class="contact-item ${isUnread ? 'unread' : ''}" 
-                             data-lead-id="${id}"
-                             data-lead-name="${safeName}"
-                             data-lead-email="${escapeHtml(c.email || '')}"
-                             onclick="window.openChat('${id}')">
-                            <div class="contact-avatar">${initials}</div>
-                            <div class="contact-body">
-                                <div class="contact-row1">
-                                    <span class="contact-name">${safeName} ${isUnread ? '<span class="unread-dot"></span>' : ''}</span>
-                                    <span class="contact-time">${time}</span>
-                                </div>
-                                <div class="contact-row2">
-                                    <span class="contact-preview">${safePreview}</span>
-                                    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                                        ${safeCompany ? `<span class="company-tag">${safeCompany}</span>` : ''}
-                                        ${isUnread ? `<span class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                contactList.innerHTML = items;
-            }
-
-            // ─── UPDATE STATS ───
-            function updateStats(conversations) {
-                const total = conversations.length;
-                const unread = conversations.filter(c => (c.unreadCount || c.unread || 0) > 0).length;
-                const active = conversations.filter(c => c.status === 'Replied' || c.status === 'Contacted').length;
-                statTotal.textContent = total;
-                statUnread.textContent = unread;
-                statActive.textContent = active;
-            }
-
-            // ─── OPEN CHAT (WhatsApp Style) ───
-            window.openChat = async function(leadId) {
-                console.log('💬 [openChat] Opening:', leadId);
-
-                const conv = allConversations.find(c => (c.id || c._id) === leadId);
-                if (!conv) {
-                    console.error('❌ Conversation not found');
-                    return;
-                }
-
-                currentLeadId = leadId;
-                currentLeadName = conv.name || 'Unknown';
-                currentLeadEmail = conv.email || '';
-
-                // Show chat view
-                chatEmpty.style.display = 'none';
-                chatHeader.classList.add('active');
-                replyArea.classList.add('active');
-                chatView.classList.add('active');
-
-                // Update header
-                chatName.textContent = currentLeadName;
-                chatEmail.textContent = currentLeadEmail || 'No email';
-                chatAvatar.textContent = (currentLeadName || '?').charAt(0).toUpperCase();
-
-                // Mobile: hide list, show chat
-                if (window.innerWidth <= 640) {
-                    conversationList.classList.add('chat-open');
-                }
-
-                // Show loading
-                messagesContainer.innerHTML = `
-                    <div class="msg-empty">
-                        <span class="icon">⏳</span>
-                        <p>Loading messages...</p>
-                    </div>
-                `;
-
-                // Fetch messages
-                try {
-                    const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-                    const data = await res.json();
-                    const messages = data.messages || [];
-
-                    if (messages.length === 0) {
-                        messagesContainer.innerHTML = `
-                            <div class="msg-empty">
-                                <span class="icon">📭</span>
-                                <p>No messages yet. Send the first message!</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    messagesContainer.innerHTML = messages.map(msg => {
-                        const isLead = msg.from === 'lead';
-                        const groupClass = isLead ? 'from-lead' : 'from-ai';
-                        const bubbleClass = isLead ? 'lead' : 'ai';
-                        const safeContent = escapeHtml(msg.content || '');
-                        const time = msg.date ? formatTime(msg.date) : '';
-
-                        return `
-                            <div class="msg-group ${groupClass}">
-                                <div class="message-bubble ${bubbleClass}">
-                                    ${safeContent}
-                                    <div class="message-time">${time}</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                    // Mark as read
-                    if (conv.unreadCount > 0) {
-                        try {
-                            await fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}` }
-                            });
-                            conv.unreadCount = 0;
-                            conv.unread = false;
-                            renderConversations(allConversations);
-                            updateStats(allConversations);
-                        } catch (readErr) {
-                            console.warn('⚠️ Mark as read failed:', readErr);
-                        }
-                    }
-
-                } catch (err) {
-                    console.error('❌ [openChat] Error:', err);
-                    messagesContainer.innerHTML = `
-                        <div class="msg-empty">
-                            <span class="icon">⚠️</span>
-                            <p>Failed to load messages: ${err.message}</p>
-                        </div>
-                    `;
-                }
-            };
-
-            // ─── SEND REPLY ───
-            window.sendReply = async function() {
-                const text = replyInput.value.trim();
-                if (!text || !currentLeadId) return;
-
-                const conv = allConversations.find(c => (c.id || c._id) === currentLeadId);
-                if (!conv) {
-                    alert('Conversation not found');
-                    return;
-                }
-
-                sendBtn.disabled = true;
-                sendBtn.innerHTML = `<svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
-
-                const payload = {
-                    leadId: currentLeadId,
-                    leads: [{
-                        name: currentLeadName || 'Lead',
-                        email: currentLeadEmail,
-                        company: conv.company || '',
-                        messages: [{
-                            subject: "Re: Conversation",
-                            body: text
-                        }]
-                    }]
-                };
-
-                try {
-                    const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const data = await res.json();
-
-                    if (data.success) {
-                        replyInput.value = '';
-                        replyInput.style.height = 'auto';
-
-                        // Add message to UI
-                        const msgDiv = document.createElement('div');
-                        msgDiv.className = 'msg-group from-ai';
-                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        msgDiv.innerHTML = `
-                            <div class="message-bubble ai">
-                                ${escapeHtml(text)}
-                                <div class="message-time">${time}</div>
-                            </div>
-                        `;
-                        messagesContainer.appendChild(msgDiv);
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                        // Update conversation list
-                        conv.lastMessage = text;
-                        conv.lastDate = new Date().toISOString();
-                        renderConversations(allConversations);
-
-                    } else {
-                        alert('❌ Failed to send: ' + (data.message || data.error || 'Unknown error'));
-                    }
-                } catch (err) {
-                    console.error('❌ [sendReply] Error:', err);
-                    alert('⚠️ Connection error. Please try again.');
-                } finally {
-                    sendBtn.disabled = false;
-                    sendBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>`;
-                }
-            };
-
-            // ─── HANDLE KEY ───
-            window.handleKey = function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    window.sendReply();
-                }
-            };
-
-            // ─── AUTO-RESIZE ───
-            replyInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-            });
-
-            // ─── SEARCH ───
-            let searchTimeout = null;
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    const q = this.value.toLowerCase().trim();
-                    if (!q) {
-                        renderConversations(allConversations);
-                        return;
-                    }
-                    const filtered = allConversations.filter(c =>
-                        (c.name || '').toLowerCase().includes(q) ||
-                        (c.email || '').toLowerCase().includes(q) ||
-                        (c.company || '').toLowerCase().includes(q)
-                    );
-                    renderConversations(filtered);
-                }, 150);
-            });
-
-            // ─── BACK BUTTON (Mobile) ───
-            document.getElementById('chatBackBtn').addEventListener('click', function() {
-                chatView.classList.remove('active');
-                chatHeader.classList.remove('active');
-                replyArea.classList.remove('active');
-                chatEmpty.style.display = 'flex';
-                conversationList.classList.remove('chat-open');
-                currentLeadId = null;
-            });
-
-            // ─── FETCH IN BACKGROUND ───
-            async function fetchInBackground() {
-                if (isLoading) return;
-                isLoading = true;
-                try {
-                    const res = await fetch(`${BACKEND}/api/conversations`, {
-                        headers: { 'Authorization': `Bearer ${token}` },
-                        cache: 'no-cache'
-                    });
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    const data = await res.json();
-                    if (JSON.stringify(data) !== JSON.stringify(allConversations)) {
-                        allConversations = data;
-                        saveToCache(data);
-                        renderConversations(data);
-                        updateStats(data);
-                    }
-                } catch (err) {
-                    console.warn('⚠️ Background refresh failed:', err.message);
-                } finally {
-                    isLoading = false;
-                }
-            }
-
-            // ─── EXPOSE FOR RETRY ───
-            window.loadConversations = fetchInBackground;
-
-            // ─── INIT ───
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('🚀 Initializing...');
-
-                const hasCache = loadFromCache();
-                if (!hasCache) {
-                    skeletonLoader.style.display = 'block';
-                } else {
-                    skeletonLoader.style.display = 'none';
-                }
-
-                setTimeout(() => {
-                    fetchInBackground();
-                }, 100);
-
-                setInterval(() => {
-                    if (document.visibilityState === 'visible') {
-                        fetchInBackground();
-                    }
-                }, 30000);
-            });
-
-        })();
-    </script>
-</body>
-    </html>
+                    const safe
