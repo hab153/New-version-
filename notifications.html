@@ -52,7 +52,7 @@
         }
 
         /* ────────────────────────────────────────────────
-           TOP NAV (Optimized - no animations)
+           TOP NAV
            ──────────────────────────────────────────────── */
         .top-nav {
             display: flex;
@@ -79,13 +79,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
         }
 
         .nav-logo-mark svg {
             width: 14px;
             height: 14px;
-            display: block;
         }
 
         .nav-logo-text {
@@ -105,7 +103,6 @@
             font-family: var(--font-mono);
             font-size: 10px;
             color: var(--text-3);
-            flex-shrink: 0;
         }
 
         .status-dot {
@@ -129,11 +126,10 @@
             display: flex;
             overflow: hidden;
             padding: 16px;
-            gap: 0;
         }
 
         /* ────────────────────────────────────────────────
-           CONVERSATION LIST (Optimized)
+           CONVERSATION LIST
            ──────────────────────────────────────────────── */
         .conversation-list {
             flex: 1;
@@ -149,7 +145,7 @@
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
         }
 
-        /* Search - Optimized */
+        /* Search */
         .search-section {
             padding: 14px 18px 10px;
             flex-shrink: 0;
@@ -164,7 +160,6 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 0 14px;
-            transition: border-color 0.15s;
         }
 
         .search-wrap:focus-within {
@@ -187,14 +182,13 @@
             font-size: 13px;
             outline: none;
             font-family: var(--font-sans);
-            min-width: 0;
         }
 
         .search-input::placeholder {
             color: var(--text-3);
         }
 
-        /* Stats - Optimized */
+        /* Stats */
         .stats-row {
             display: flex;
             gap: 6px;
@@ -232,12 +226,11 @@
         .stat-chip-val.red { color: var(--red); }
         .stat-chip-val.amber { color: var(--amber); }
 
-        /* Contact List - Optimized for scrolling */
+        /* Contact List - WhatsApp style smooth scrolling */
         .contact-list {
             flex: 1;
             overflow-y: auto;
             padding: 4px 16px 12px;
-            /* Smooth scrolling */
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
@@ -255,11 +248,7 @@
             border-radius: 4px;
         }
 
-        .contact-list::-webkit-scrollbar-thumb:hover {
-            background: var(--border-mid);
-        }
-
-        /* Contact Items - Optimized with GPU acceleration */
+        /* Contact Items - GPU accelerated */
         .contact-item {
             display: flex;
             align-items: center;
@@ -267,10 +256,9 @@
             padding: 12px 14px;
             border-radius: 12px;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
+            transition: background 0.15s;
             border: 1px solid transparent;
             margin-bottom: 2px;
-            /* GPU acceleration for smoother scrolling */
             transform: translateZ(0);
             will-change: transform;
         }
@@ -299,7 +287,6 @@
             flex-shrink: 0;
             border: 1px solid var(--border);
             font-family: var(--font-mono);
-            /* GPU acceleration */
             transform: translateZ(0);
         }
 
@@ -404,7 +391,7 @@
             text-overflow: ellipsis;
         }
 
-        /* Empty & Loading States - Optimized */
+        /* Empty & Loading States - WhatsApp style */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -438,20 +425,49 @@
             font-family: var(--font-sans);
             font-weight: 600;
             font-size: 12px;
-            transition: all 0.15s;
         }
 
-        .empty-state .retry-btn:hover {
-            transform: scale(1.02);
+        /* WhatsApp-style skeleton loading */
+        .skeleton-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 2px;
+            animation: pulse-skeleton 1.5s ease-in-out infinite;
         }
 
-        .loading-text {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-3);
-            font-family: var(--font-mono);
-            font-size: 11px;
-            letter-spacing: 0.06em;
+        .skeleton-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-raised);
+            flex-shrink: 0;
+        }
+
+        .skeleton-body {
+            flex: 1;
+        }
+
+        .skeleton-line {
+            height: 10px;
+            background: var(--bg-raised);
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+
+        .skeleton-line.short {
+            width: 60%;
+        }
+
+        .skeleton-line.long {
+            width: 80%;
+        }
+
+        @keyframes pulse-skeleton {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* ────────────────────────────────────────────────
@@ -539,7 +555,6 @@
             font-size: 7px;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            transition: color 0.15s;
             padding: 4px 12px;
             border-radius: 8px;
         }
@@ -622,7 +637,14 @@
 
             <!-- Contact List -->
             <div class="contact-list" id="contactList">
-                <div class="loading-text">Loading conversations…</div>
+                <!-- Skeleton loading (WhatsApp style) -->
+                <div id="skeletonLoader">
+                    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div></div></div>
+                </div>
             </div>
         </div>
     </div>
@@ -653,12 +675,11 @@
         </a>
     </nav>
 
-    <!-- ─── JAVASCRIPT (Optimized) ─── -->
+    <!-- ─── JAVASCRIPT (WhatsApp-style fast loading) ─── -->
     <script>
         (function() {
             'use strict';
 
-            // ─── CONFIG ───
             const BACKEND = 'https://skylineapp-backend-file.onrender.com';
             const token = localStorage.getItem('token');
 
@@ -667,10 +688,9 @@
                 return;
             }
 
-            console.log('🔑 Token present');
-
             // ─── DOM REFS ───
             const contactList = document.getElementById('contactList');
+            const skeletonLoader = document.getElementById('skeletonLoader');
             const searchInput = document.getElementById('searchInput');
             const statTotal = document.getElementById('statTotal');
             const statUnread = document.getElementById('statUnread');
@@ -679,9 +699,40 @@
             // ─── STATE ───
             let allConversations = [];
             let isLoading = false;
-            let loadTimeout = null;
 
-            // ─── UTILITY FUNCTIONS (Optimized) ───
+            // ─── CACHE KEY ───
+            const CACHE_KEY = 'skyline_conversations_cache';
+
+            // ─── LOAD FROM CACHE FIRST (INSTANT DISPLAY) ───
+            function loadFromCache() {
+                try {
+                    const cached = localStorage.getItem(CACHE_KEY);
+                    if (cached) {
+                        const data = JSON.parse(cached);
+                        if (data && data.length > 0) {
+                            console.log('📦 [Cache] Loaded', data.length, 'conversations from cache');
+                            allConversations = data;
+                            renderConversations(data);
+                            updateStats(data);
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Cache read failed:', e);
+                }
+                return false;
+            }
+
+            // ─── SAVE TO CACHE ───
+            function saveToCache(conversations) {
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(conversations));
+                } catch (e) {
+                    console.warn('Cache save failed:', e);
+                }
+            }
+
+            // ─── UTILITY FUNCTIONS ───
             function escapeHtml(str) {
                 if (!str) return '';
                 return String(str)
@@ -709,8 +760,11 @@
                 }
             }
 
-            // ─── RENDER CONVERSATIONS (Optimized) ───
+            // ─── RENDER CONVERSATIONS ───
             function renderConversations(conversations) {
+                // Hide skeleton
+                if (skeletonLoader) skeletonLoader.style.display = 'none';
+
                 if (!conversations || conversations.length === 0) {
                     contactList.innerHTML = `
                         <div class="empty-state">
@@ -722,7 +776,6 @@
                     return;
                 }
 
-                // Sort: unread first, then by date
                 const sorted = conversations.slice().sort((a, b) => {
                     const aUnread = a.unreadCount || a.unread || 0;
                     const bUnread = b.unreadCount || b.unread || 0;
@@ -731,7 +784,6 @@
                     return new Date(b.lastDate || b.lastContactDate || 0) - new Date(a.lastDate || a.lastContactDate || 0);
                 });
 
-                // Build HTML using array join for better performance
                 const items = sorted.map(c => {
                     const name = c.name || c.fullName || 'Unknown';
                     const lastMessage = c.lastMessage || c.message || 'No messages yet';
@@ -780,68 +832,40 @@
                 statActive.textContent = active;
             }
 
-            // ─── LOAD CONVERSATIONS (Optimized with timeout) ───
-            async function loadConversations() {
-                // Prevent concurrent loads
+            // ─── FETCH FROM BACKEND (Background) ───
+            async function fetchInBackground() {
                 if (isLoading) return;
                 isLoading = true;
 
-                // Show loading state (but only if we have no data yet)
-                if (allConversations.length === 0) {
-                    contactList.innerHTML = `<div class="loading-text">Loading conversations…</div>`;
-                }
-
-                // Set a timeout to prevent hanging
-                const timeoutPromise = new Promise((_, reject) => {
-                    loadTimeout = setTimeout(() => {
-                        reject(new Error('Request timeout after 5 seconds'));
-                    }, 5000);
-                });
-
                 try {
-                    const fetchPromise = fetch(`${BACKEND}/api/conversations`, {
+                    const res = await fetch(`${BACKEND}/api/conversations`, {
                         headers: { 'Authorization': `Bearer ${token}` },
-                        // Cache control for faster subsequent loads
                         cache: 'no-cache'
                     });
 
-                    // Race between fetch and timeout
-                    const res = await Promise.race([fetchPromise, timeoutPromise]);
-
-                    clearTimeout(loadTimeout);
-
-                    if (!res.ok) {
-                        throw new Error(`HTTP ${res.status}`);
-                    }
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                     const data = await res.json();
-                    console.log(`✅ Loaded ${data.length} conversations`);
+                    console.log('✅ [Background] Loaded', data.length, 'conversations');
 
-                    allConversations = data;
-                    renderConversations(data);
-                    updateStats(data);
+                    // Only update if data changed
+                    if (JSON.stringify(data) !== JSON.stringify(allConversations)) {
+                        allConversations = data;
+                        saveToCache(data);
+                        renderConversations(data);
+                        updateStats(data);
+                    } else {
+                        console.log('📦 [Background] No changes detected');
+                    }
 
                 } catch (err) {
-                    clearTimeout(loadTimeout);
-                    console.error('❌ Load error:', err);
-
-                    // Only show error if we don't have cached data
-                    if (allConversations.length === 0) {
-                        contactList.innerHTML = `
-                            <div class="empty-state">
-                                <span class="icon">⚠️</span>
-                                <h3>Failed to load</h3>
-                                <p>${err.message}</p>
-                                <button class="retry-btn" onclick="loadConversations()">Retry</button>
-                            </div>
-                        `;
-                    }
+                    console.warn('⚠️ [Background] Failed to refresh:', err.message);
                 } finally {
                     isLoading = false;
                 }
             }
 
-            // ─── SEARCH (Debounced for performance) ───
+            // ─── SEARCH (Instant) ───
             let searchTimeout = null;
 
             function handleSearch(e) {
@@ -858,23 +882,38 @@
                         (c.company || '').toLowerCase().includes(q)
                     );
                     renderConversations(filtered);
-                }, 200); // 200ms debounce
+                }, 150);
             }
 
             searchInput.addEventListener('input', handleSearch);
 
-            // ─── EXPOSE LOAD FUNCTION GLOBALLY (for retry button) ───
-            window.loadConversations = loadConversations;
+            // ─── EXPOSE FOR RETRY ───
+            window.loadConversations = fetchInBackground;
 
             // ─── INIT ───
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('🚀 Initializing...');
-                loadConversations();
+                console.log('🚀 [Init] Loading conversations...');
 
-                // Refresh every 30 seconds (only if visible)
+                // STEP 1: Show cached data instantly (WhatsApp style)
+                const hasCache = loadFromCache();
+
+                // STEP 2: If no cache, show skeleton briefly
+                if (!hasCache) {
+                    skeletonLoader.style.display = 'block';
+                } else {
+                    skeletonLoader.style.display = 'none';
+                }
+
+                // STEP 3: Fetch fresh data in background
+                // Small delay to let the UI render first
+                setTimeout(() => {
+                    fetchInBackground();
+                }, 100);
+
+                // STEP 4: Refresh every 30 seconds (silently)
                 setInterval(() => {
                     if (document.visibilityState === 'visible') {
-                        loadConversations();
+                        fetchInBackground();
                     }
                 }, 30000);
             });
