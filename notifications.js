@@ -224,12 +224,21 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE ───
+// ─── APPEND MESSAGE (UPDATED: You / Customer labels) ───
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     div.className = `msg-group from-${from}`;
 
-    const sender = from === 'lead' ? 'You' : 'AI';
+    // Fix: Correct labels - "You" for your messages, "Customer" for lead messages
+    let sender = '';
+    if (from === 'lead') {
+        sender = 'Customer';
+    } else if (from === 'ai') {
+        sender = 'You';
+    } else {
+        sender = from;
+    }
+
     const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
     div.innerHTML = `
@@ -242,8 +251,16 @@ function appendMessage(from, content, date) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── LOAD CHAT HISTORY ───
+// ─── LOAD CHAT HISTORY (UPDATED: with loading state) ───
 async function loadChatHistory(leadId) {
+    // Show loading state
+    messagesContainer.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;">
+            <div class="spinner" style="width:28px; height:28px; border-width:2px;"></div>
+            <div style="color:#505050; font-size:11px; letter-spacing:0.05em;">Loading messages...</div>
+        </div>
+    `;
+
     try {
         const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -278,6 +295,8 @@ async function loadChatHistory(leadId) {
         }
 
         messages.forEach(msg => {
+            // Use the correct 'from' value from backend
+            // Backend stores user messages as 'ai' and lead replies as 'lead'
             const from = msg.from === 'ai' ? 'ai' : 'lead';
             appendMessage(from, msg.content, msg.date);
         });
