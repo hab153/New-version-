@@ -392,7 +392,133 @@
             color: #505050;
         }
 
-        /* ─── TOAST NOTIFICATION ─── */
+        /* ─── REVENUE MODAL ─── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .modal-title {
+            color: #f5f5f5;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-title svg {
+            width: 18px;
+            height: 18px;
+            stroke: #f5f5f5;
+        }
+
+        .modal-close {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            color: #707070;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .modal-close:hover {
+            border-color: rgba(255,255,255,0.15);
+            color: #f5f5f5;
+        }
+
+        .modal-body {
+            color: #b0b0b0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .modal-body .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .modal-body .data-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-body .data-label {
+            color: #707070;
+        }
+
+        .modal-body .data-value {
+            color: #f5f5f5;
+            font-weight: 500;
+        }
+
+        .modal-body .data-value.green {
+            color: #66dd99;
+        }
+
+        .modal-body .data-value.amber {
+            color: #ffbb44;
+        }
+
+        .modal-body .data-value.blue {
+            color: #66ddff;
+        }
+
+        .modal-loading {
+            text-align: center;
+            padding: 20px 0;
+            color: #505050;
+        }
+
+        .modal-error {
+            text-align: center;
+            padding: 20px 0;
+            color: #ff5555;
+        }
+
+        /* ─── TOAST ─── */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -405,7 +531,7 @@
             border-radius: 10px;
             font-size: 12px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            z-index: 200;
+            z-index: 300;
             opacity: 0;
             transition: opacity 0.3s ease, transform 0.3s ease;
             pointer-events: none;
@@ -513,6 +639,25 @@
         <p>No contacts found</p>
     </div>
 
+    <!-- ─── REVENUE MODAL ─── -->
+    <div class="modal-overlay" id="revenueModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Revenue Tracker
+                </div>
+                <button class="modal-close" id="closeRevenueModal">✕</button>
+            </div>
+            <div class="modal-body" id="revenueBody">
+                <div class="modal-loading">Loading revenue data...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── TOAST ─── -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
 
@@ -530,6 +675,9 @@
         const menuBtn = document.getElementById('menuBtn');
         const menuDropdown = document.getElementById('menuDropdown');
         const toast = document.getElementById('toast');
+        const revenueModal = document.getElementById('revenueModal');
+        const revenueBody = document.getElementById('revenueBody');
+        const closeRevenueModal = document.getElementById('closeRevenueModal');
 
         // ─── STATE ───
         let allContacts = [];
@@ -556,22 +704,35 @@
             item.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const action = this.dataset.action;
-                
-                // REVENUE TRACKER - call the endpoint
+                menuDropdown.classList.remove('show');
+
                 if (action === 'revenue') {
-                    menuDropdown.classList.remove('show');
                     fetchRevenueData();
                     return;
                 }
-                
-                // All other items - show toast
-                menuDropdown.classList.remove('show');
+
                 showToast('Please open a chat to access this feature.');
             });
         });
 
+        // ─── CLOSE MODAL ───
+        closeRevenueModal.addEventListener('click', function() {
+            revenueModal.classList.remove('active');
+        });
+
+        // ─── CLOSE MODAL ON OUTSIDE CLICK ───
+        revenueModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                revenueModal.classList.remove('active');
+            }
+        });
+
         // ─── FETCH REVENUE DATA ───
         async function fetchRevenueData() {
+            // Show modal with loading state
+            revenueModal.classList.add('active');
+            revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
+
             try {
                 const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
                     headers: {
@@ -589,21 +750,98 @@
                 }
 
                 const data = await res.json();
-                // Show the revenue data in the toast
-                const message = typeof data === 'object' 
-                    ? JSON.stringify(data, null, 2) 
-                    : data.message || 'Revenue data loaded successfully';
-                
-                // Truncate if too long
-                const truncated = message.length > 100 ? message.substring(0, 100) + '...' : message;
-                showToast(`💰 Revenue: ${truncated}`);
-                
-                console.log('💰 Revenue Data:', data);
+                renderRevenueData(data);
 
             } catch (err) {
                 console.error('❌ Failed to fetch revenue:', err);
-                showToast('Failed to load revenue data. Please try again.');
+                revenueBody.innerHTML = `
+                    <div class="modal-error">
+                        <p>Failed to load revenue data.</p>
+                        <p style="font-size:12px; color:#707070; margin-top:8px;">${err.message}</p>
+                    </div>
+                `;
             }
+        }
+
+        // ─── RENDER REVENUE DATA ───
+        function renderRevenueData(data) {
+            if (!data || Object.keys(data).length === 0) {
+                revenueBody.innerHTML = `
+                    <div style="text-align:center; padding:20px; color:#505050;">
+                        <p>No revenue data available.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            
+            // If data is an array
+            if (Array.isArray(data)) {
+                html = data.map(item => {
+                    return Object.entries(item).map(([key, value]) => `
+                        <div class="data-item">
+                            <span class="data-label">${formatKey(key)}</span>
+                            <span class="data-value">${formatValue(key, value)}</span>
+                        </div>
+                    `).join('');
+                }).join('');
+            } else {
+                // If data is an object
+                html = Object.entries(data).map(([key, value]) => `
+                    <div class="data-item">
+                        <span class="data-label">${formatKey(key)}</span>
+                        <span class="data-value ${getColorClass(key, value)}">${formatValue(key, value)}</span>
+                    </div>
+                `).join('');
+            }
+
+            revenueBody.innerHTML = html;
+        }
+
+        // ─── HELPERS ───
+        function formatKey(key) {
+            return key
+                .replace(/([A-Z])/g, ' $1')
+                .replace(/_/g, ' ')
+                .replace(/^./, str => str.toUpperCase());
+        }
+
+        function formatValue(key, value) {
+            if (typeof value === 'number') {
+                if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('revenue') || key.toLowerCase().includes('price') || key.toLowerCase().includes('total')) {
+                    return `$${value.toLocaleString()}`;
+                }
+                if (key.toLowerCase().includes('count') || key.toLowerCase().includes('total') || key.toLowerCase().includes('users')) {
+                    return value.toLocaleString();
+                }
+                return value.toLocaleString();
+            }
+            if (typeof value === 'boolean') {
+                return value ? '✅ Yes' : '❌ No';
+            }
+            if (value === null || value === undefined) {
+                return '—';
+            }
+            if (typeof value === 'object') {
+                return JSON.stringify(value);
+            }
+            return String(value);
+        }
+
+        function getColorClass(key, value) {
+            if (typeof value === 'number') {
+                if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('revenue') || key.toLowerCase().includes('price') || key.toLowerCase().includes('total')) {
+                    return 'green';
+                }
+                if (key.toLowerCase().includes('count') || key.toLowerCase().includes('total')) {
+                    return 'blue';
+                }
+            }
+            if (typeof value === 'boolean') {
+                return value ? 'green' : '';
+            }
+            return '';
         }
 
         // ─── TOAST ───
@@ -613,7 +851,7 @@
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3500);
+            }, 2500);
         }
 
         // ─── LOAD CONTACTS ───
@@ -684,13 +922,11 @@
                 `;
             }).join('');
 
-            // Click handler
             document.querySelectorAll('.contact-item').forEach(el => {
                 el.addEventListener('click', () => {
                     const id = el.dataset.id;
                     const name = el.querySelector('.contact-name')?.textContent || 'Unknown';
                     console.log(`📬 Opening chat with ${name} (${id})`);
-                    // We'll add chat view later
                 });
             });
         }
@@ -698,18 +934,15 @@
         // ─── SEARCH / FILTER ───
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
-
             if (!query) {
                 renderContacts(allContacts);
                 return;
             }
-
             const filtered = allContacts.filter(c =>
                 (c.name || '').toLowerCase().includes(query) ||
                 (c.company || '').toLowerCase().includes(query) ||
                 (c.email || '').toLowerCase().includes(query)
             );
-
             renderContacts(filtered);
         });
 
@@ -733,4 +966,4 @@
     </script>
 
 </body>
-                </html>
+    </html>
