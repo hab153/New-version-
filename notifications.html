@@ -323,7 +323,7 @@
             flex-shrink: 0;
         }
 
-        /* ─── CHAT VIEW (SMALLER) ─── */
+        /* ─── CHAT VIEW ─── */
         .chat-view {
             display: none;
             position: fixed;
@@ -413,7 +413,6 @@
             color: #707070;
         }
 
-        /* ─── RENAME BUTTON ─── */
         .chat-rename-btn {
             width: 26px;
             height: 26px;
@@ -441,7 +440,84 @@
             fill: none;
         }
 
-        .chat-empty {
+        /* ─── MESSAGES CONTAINER ─── */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 2px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px;
+        }
+
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 80%;
+        }
+
+        .msg-group.from-ai {
+            align-self: flex-start;
+        }
+
+        .msg-group.from-lead {
+            align-self: flex-end;
+        }
+
+        .msg-sender {
+            font-size: 8px;
+            color: #505050;
+            font-family: 'Monaco', 'Menlo', monospace;
+            letter-spacing: 0.05em;
+            padding: 0 4px;
+        }
+
+        .message-bubble {
+            padding: 8px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .msg-group.from-ai .message-bubble {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-bottom-left-radius: 2px;
+            color: #d0d0d0;
+        }
+
+        .msg-group.from-lead .message-bubble {
+            background: #2a2a2a;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-bottom-right-radius: 2px;
+            color: #f5f5f5;
+        }
+
+        .message-time {
+            font-size: 8px;
+            color: #505050;
+            margin-top: 2px;
+            text-align: right;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .msg-group.from-ai .message-time {
+            text-align: left;
+        }
+
+        .empty-chat {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -452,7 +528,7 @@
             text-align: center;
         }
 
-        .chat-empty svg {
+        .empty-chat svg {
             width: 36px;
             height: 36px;
             stroke: #505050;
@@ -460,16 +536,96 @@
             opacity: 0.3;
         }
 
-        .chat-empty h3 {
+        .empty-chat h3 {
             font-size: 12px;
             font-weight: 500;
             color: #707070;
             margin-bottom: 4px;
         }
 
-        .chat-empty p {
+        .empty-chat p {
             font-size: 10px;
             color: #505050;
+        }
+
+        /* ─── INPUT AREA ─── */
+        .chat-input-area {
+            padding: 10px 12px 12px;
+            background: #121212;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .chat-input-wrap {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 6px 10px;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-wrap:focus-within {
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f5f5f5;
+            font-size: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            resize: none;
+            padding: 4px 0;
+            max-height: 80px;
+            line-height: 1.4;
+        }
+
+        .chat-input::placeholder {
+            color: #505050;
+        }
+
+        .chat-send-btn {
+            width: 30px;
+            height: 30px;
+            background: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .chat-send-btn:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+
+        .chat-send-btn:disabled {
+            background: #2a2a2a;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-send-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: #0a0a0a;
+            fill: none;
+        }
+
+        .chat-send-btn:disabled svg {
+            stroke: #505050;
         }
 
         .empty-state {
@@ -1012,7 +1168,6 @@
             <div class="chat-info">
                 <span class="chat-name" id="chatName">Contact</span>
                 <span class="chat-email" id="chatEmail">email@example.com</span>
-                <!-- ─── RENAME BUTTON ─── -->
                 <button class="chat-rename-btn" id="chatRenameBtn" title="Rename">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
@@ -1020,12 +1175,28 @@
                 </button>
             </div>
         </div>
-        <div class="chat-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <h3>No messages yet</h3>
-            <p>Send a message to start the conversation.</p>
+
+        <!-- Messages Container -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="empty-chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <h3>No messages yet</h3>
+                <p>Send a message to start the conversation.</p>
+            </div>
+        </div>
+
+        <!-- Chat Input Area -->
+        <div class="chat-input-area">
+            <div class="chat-input-wrap">
+                <textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message..." aria-label="Message"></textarea>
+            </div>
+            <button class="chat-send-btn" id="chatSendBtn" aria-label="Send" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -1082,18 +1253,23 @@
         const closeRevenueModal = document.getElementById('closeRevenueModal');
         const tierBadge = document.getElementById('tierBadge');
 
+        // Chat elements
         const chatView = document.getElementById('chatView');
         const chatBack = document.getElementById('chatBack');
         const chatAvatar = document.getElementById('chatAvatar');
         const chatName = document.getElementById('chatName');
         const chatEmail = document.getElementById('chatEmail');
         const chatRenameBtn = document.getElementById('chatRenameBtn');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
 
         let allContacts = [];
         let toastTimeout = null;
         let currentLeadId = null;
         let currentLeadName = null;
         let currentLeadEmail = null;
+        let isSending = false;
 
         if (!token) {
             window.location.href = 'login.html';
@@ -1136,7 +1312,26 @@
         chatBack.addEventListener('click', function() {
             chatView.classList.remove('active');
             document.body.style.overflow = '';
+            currentLeadId = null;
         });
+
+        // ─── CHAT INPUT ───
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+            chatSendBtn.disabled = !this.value.trim();
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!chatSendBtn.disabled) {
+                    sendMessage();
+                }
+            }
+        });
+
+        chatSendBtn.addEventListener('click', sendMessage);
 
         // ─── RENAME ───
         chatRenameBtn.addEventListener('click', function() {
@@ -1149,11 +1344,9 @@
             renameLead(currentLeadId, newName.trim());
         });
 
-        // ─── FIXED: RENAME FUNCTION WITH PROPER ERROR HANDLING ───
+        // ─── RENAME FUNCTION ───
         async function renameLead(leadId, newName) {
             try {
-                console.log(`✏️ Renaming lead ${leadId} to "${newName}"`);
-
                 const res = await fetch(`${BACKEND}/api/leads/${leadId}/rename`, {
                     method: 'PUT',
                     headers: {
@@ -1163,16 +1356,12 @@
                     body: JSON.stringify({ newName })
                 });
 
-                // Always get the raw text first
                 const text = await res.text();
-                console.log(`📡 Response (${res.status}):`, text.substring(0, 200));
-
                 let data = {};
                 if (text) {
                     try {
                         data = JSON.parse(text);
                     } catch (e) {
-                        // Not JSON – use raw text as fallback
                         data = { message: text || 'Empty response' };
                     }
                 }
@@ -1183,8 +1372,7 @@
                         window.location.href = 'login.html';
                         return;
                     }
-                    const errorMsg = data.message || data.error || `Server error (${res.status})`;
-                    showToast('Failed to rename: ' + errorMsg);
+                    showToast('Failed to rename: ' + (data.message || data.error || 'Unknown error'));
                     return;
                 }
 
@@ -1193,7 +1381,7 @@
                     chatName.textContent = data.newName;
                     chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
                     showToast('Renamed successfully!');
-                    loadContacts(); // Refresh the list
+                    loadContacts();
                 } else {
                     showToast('Failed to rename: ' + (data.message || 'Unknown error'));
                 }
@@ -1201,6 +1389,164 @@
                 console.error('❌ Rename error:', err);
                 showToast('Connection error while renaming.');
             }
+        }
+
+        // ─── SEND MESSAGE ───
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text || isSending || !currentLeadId) return;
+
+            isSending = true;
+            chatSendBtn.disabled = true;
+
+            // Add user message to UI immediately
+            appendMessage('lead', text, new Date());
+
+            // Clear input
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            chatSendBtn.disabled = true;
+
+            try {
+                const payload = {
+                    leads: [{
+                        name: currentLeadName,
+                        email: currentLeadEmail,
+                        company: '',
+                        messages: [{
+                            subject: 'Re: Conversation',
+                            body: text
+                        }]
+                    }],
+                    leadId: currentLeadId,
+                    allowNewLead: false
+                };
+
+                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+                    showToast('⚠️ Email session expired. Please reconnect.');
+                    window.location.href = 'dashboard.html?connect=true';
+                    return;
+                }
+
+                if (data.success) {
+                    // Fetch updated conversation to get AI reply
+                    await loadChatHistory(currentLeadId);
+                } else {
+                    showToast('Failed to send: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Send message error:', err);
+                showToast('Connection error. Please try again.');
+            } finally {
+                isSending = false;
+                chatSendBtn.disabled = !chatInput.value.trim();
+            }
+        }
+
+        // ─── APPEND MESSAGE ───
+        function appendMessage(from, content, date) {
+            const div = document.createElement('div');
+            div.className = `msg-group from-${from}`;
+
+            const sender = from === 'lead' ? 'You' : 'AI';
+            const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+            div.innerHTML = `
+                <div class="msg-sender">${sender}</div>
+                <div class="message-bubble">${escapeHtml(content)}</div>
+                <div class="message-time">${time}</div>
+            `;
+
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ─── LOAD CHAT HISTORY ───
+        async function loadChatHistory(leadId) {
+            try {
+                const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
+                const data = await res.json();
+                const messages = data.messages || [];
+
+                // Clear container
+                messagesContainer.innerHTML = '';
+
+                if (messages.length === 0) {
+                    messagesContainer.innerHTML = `
+                        <div class="empty-chat">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <h3>No messages yet</h3>
+                            <p>Send a message to start the conversation.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                messages.forEach(msg => {
+                    const from = msg.from === 'ai' ? 'ai' : 'lead';
+                    appendMessage(from, msg.content, msg.date);
+                });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            } catch (err) {
+                console.error('Load chat history error:', err);
+                messagesContainer.innerHTML = `
+                    <div style="text-align:center; padding:20px; color:#505050; font-size:12px;">
+                        Failed to load messages. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        // ─── OPEN CHAT ───
+        function openChat(leadId, name, email) {
+            currentLeadId = leadId;
+            currentLeadName = name || 'Unknown';
+            currentLeadEmail = email || '';
+
+            chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
+            chatName.textContent = currentLeadName;
+            chatEmail.textContent = currentLeadEmail || 'No email provided';
+            chatView.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            menuDropdown.classList.remove('show');
+
+            // Reset input
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            chatSendBtn.disabled = true;
+
+            // Load chat history
+            loadChatHistory(leadId);
+
+            console.log(`📬 Opening chat with ${name} (${leadId})`);
         }
 
         // ─── CATEGORY CONFIG ───
@@ -1372,23 +1718,6 @@
         function openChatFromRevenue(leadId, name, email) {
             revenueModal.classList.remove('active');
             openChat(leadId, name, email);
-        }
-
-        // ─── OPEN CHAT ───
-        function openChat(leadId, name, email) {
-            currentLeadId = leadId;
-            currentLeadName = name || 'Unknown';
-            currentLeadEmail = email || '';
-
-            chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
-            chatName.textContent = currentLeadName;
-            chatEmail.textContent = currentLeadEmail || 'No email provided';
-            chatView.classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            menuDropdown.classList.remove('show');
-
-            console.log(`📬 Opening chat with ${name} (${leadId})`);
         }
 
         // ─── TOAST ───
