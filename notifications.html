@@ -232,7 +232,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.06);
+            border: 4px solid rgba(255, 255, 255, 0.06);
             border-top-color: #ffffff;
             animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
             margin-bottom: 24px;
@@ -1149,8 +1149,11 @@
             renameLead(currentLeadId, newName.trim());
         });
 
+        // ─── FIXED: RENAME FUNCTION WITH PROPER ERROR HANDLING ───
         async function renameLead(leadId, newName) {
             try {
+                console.log(`✏️ Renaming lead ${leadId} to "${newName}"`);
+
                 const res = await fetch(`${BACKEND}/api/leads/${leadId}/rename`, {
                     method: 'PUT',
                     headers: {
@@ -1160,30 +1163,42 @@
                     body: JSON.stringify({ newName })
                 });
 
+                // Always get the raw text first
+                const text = await res.text();
+                console.log(`📡 Response (${res.status}):`, text.substring(0, 200));
+
+                let data = {};
+                if (text) {
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        // Not JSON – use raw text as fallback
+                        data = { message: text || 'Empty response' };
+                    }
+                }
+
                 if (!res.ok) {
                     if (res.status === 401 || res.status === 403) {
                         localStorage.removeItem('token');
                         window.location.href = 'login.html';
                         return;
                     }
-                    const err = await res.json();
-                    showToast('Failed to rename: ' + (err.message || 'Unknown error'));
+                    const errorMsg = data.message || data.error || `Server error (${res.status})`;
+                    showToast('Failed to rename: ' + errorMsg);
                     return;
                 }
 
-                const data = await res.json();
                 if (data.success) {
                     currentLeadName = data.newName;
                     chatName.textContent = data.newName;
                     chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
                     showToast('Renamed successfully!');
-                    // Refresh contact list
-                    loadContacts();
+                    loadContacts(); // Refresh the list
                 } else {
-                    showToast('Failed to rename.');
+                    showToast('Failed to rename: ' + (data.message || 'Unknown error'));
                 }
             } catch (err) {
-                console.error('Rename error:', err);
+                console.error('❌ Rename error:', err);
                 showToast('Connection error while renaming.');
             }
         }
