@@ -73,7 +73,58 @@
             font-family: 'Monaco', 'Menlo', monospace;
         }
 
-        /* ─── LOADING SCREEN (WhatsApp-style) ─── */
+        /* ─── SEARCH BAR ─── */
+        .search-container {
+            padding: 68px 16px 12px 16px;
+            background: #0a0a0a;
+            flex-shrink: 0;
+        }
+
+        .search-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+
+        .search-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: #505050;
+            fill: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: #141414;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            color: #f5f5f5;
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .search-input::placeholder {
+            color: #505050;
+        }
+
+        .search-input:focus {
+            border-color: rgba(255,255,255,0.15);
+            background: #1a1a1a;
+        }
+
+        /* ─── LOADING SCREEN ─── */
         .loading-container {
             position: fixed;
             top: 0;
@@ -95,7 +146,6 @@
             pointer-events: none;
         }
 
-        /* WhatsApp-style spinner */
         .spinner {
             width: 48px;
             height: 48px;
@@ -124,11 +174,10 @@
             50% { opacity: 1; }
         }
 
-        /* ─── CONTACT LIST (hidden initially) ─── */
+        /* ─── CONTACT LIST ─── */
         .contact-list {
             flex: 1;
             overflow-y: auto;
-            padding-top: 68px; /* space for logo */
             display: none;
         }
 
@@ -248,6 +297,19 @@
         <div class="loading-text">Loading conversations...</div>
     </div>
 
+    <!-- ─── SEARCH BAR ─── -->
+    <div class="search-container">
+        <div class="search-wrap">
+            <div class="search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+            </div>
+            <input class="search-input" type="text" placeholder="Search conversations..." id="searchInput" />
+        </div>
+    </div>
+
     <!-- ─── CONTACT LIST ─── -->
     <div class="contact-list" id="contactList">
         <!-- Contacts will be rendered here -->
@@ -271,6 +333,10 @@
         const loadingScreen = document.getElementById('loadingScreen');
         const contactList = document.getElementById('contactList');
         const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+
+        // ─── STATE ───
+        let allContacts = [];
 
         // ─── CHECK AUTH ───
         if (!token) {
@@ -295,15 +361,13 @@
                     throw new Error(`HTTP ${res.status}`);
                 }
 
-                const contacts = await res.json();
-                renderContacts(contacts);
+                allContacts = await res.json();
+                renderContacts(allContacts);
 
             } catch (err) {
                 console.error('❌ Failed to load contacts:', err);
-                // Still show empty state on error
                 showEmptyState();
             } finally {
-                // Hide loading screen (minimum 1.5s for UX)
                 setTimeout(() => {
                     loadingScreen.classList.add('hidden');
                 }, 1500);
@@ -318,6 +382,8 @@
             }
 
             contactList.classList.add('active');
+            emptyState.classList.remove('active');
+
             contactList.innerHTML = contacts.map(c => {
                 const initials = (c.name || '?').charAt(0).toUpperCase();
                 const preview = c.lastMessage || 'No messages yet';
@@ -349,6 +415,21 @@
             });
         }
 
+        // ─── SEARCH / FILTER ───
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            if (!query) {
+                renderContacts(allContacts);
+                return;
+            }
+            const filtered = allContacts.filter(c =>
+                (c.name || '').toLowerCase().includes(query) ||
+                (c.company || '').toLowerCase().includes(query) ||
+                (c.email || '').toLowerCase().includes(query)
+            );
+            renderContacts(filtered);
+        });
+
         // ─── EMPTY STATE ───
         function showEmptyState() {
             contactList.classList.remove('active');
@@ -368,4 +449,4 @@
     </script>
 
 </body>
-        </html>
+    </html>
