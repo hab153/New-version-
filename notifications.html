@@ -30,55 +30,6 @@
       color: black;
       border-color: var(--accent);
     }
-
-    /* ============================================================ */
-    /* WHATSAPP-STYLE UNREAD BADGE – PER CONTACT                    */
-    /* ============================================================ */
-    .contact-item .unread-badge {
-      background: #ff3b30;        /* WhatsApp red */
-      color: #ffffff;
-      font-family: var(--font-mono, 'Monaco', 'Menlo', monospace);
-      font-size: 10px;
-      font-weight: 700;
-      min-width: 20px;
-      height: 20px;
-      padding: 0 6px;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 6px;
-      line-height: 1;
-      border: 1px solid var(--bg-base, #121212);
-      box-shadow: 0 1px 4px rgba(255,59,48,0.3);
-      flex-shrink: 0;
-    }
-
-    /* Highlight the entire row when unread */
-    .contact-item.unread {
-      background: rgba(255,59,48,0.04);
-      border-left: 3px solid #ff3b30;
-    }
-
-    .contact-item.unread .contact-name {
-      font-weight: 600;
-      color: var(--text-1);
-    }
-
-    .contact-item.unread .contact-preview {
-      font-weight: 500;
-      color: var(--text-1);
-    }
-
-    .contact-item.unread .contact-time {
-      color: var(--accent);
-    }
-
-    /* Stats row unread count (top bar) – keep as is */
-    .stat-chip-val.red {
-      color: var(--red);
-    }
-    /* ============================================================ */
   </style>
 </head>
 <body>
@@ -149,7 +100,7 @@
   </div>
 
   <div class="main-container">
-    <!-- VIEW: LIST -->
+    <!-- VIEW: LIST (unchanged) -->
     <div id="viewList" class="view-list">
       <div class="search-section">
         <div class="search-wrap">
@@ -185,7 +136,7 @@
       </div>
     </div>
 
-    <!-- VIEW: CHAT -->
+    <!-- VIEW: CHAT (unchanged) -->
     <div id="viewChat" class="view-chat">
       <div class="chat-header">
         <button class="back-btn" onclick="closeChat()">
@@ -266,7 +217,7 @@
       </div>
     </div>
 
-    <!-- VIEW: ADMIN -->
+    <!-- VIEW: ADMIN (unchanged) -->
     <div id="viewAdmin" class="view-admin">
       <div class="empty-state">
         <div class="empty-icon">
@@ -282,7 +233,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION -->
+  <!-- BOTTOM NAVIGATION (unchanged) -->
   <nav class="bottom-nav">
     <a href="page.html" class="nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -369,7 +320,7 @@
     </div>
   </div>
 
-  <!-- REVENUE TRACKING MODAL -->
+  <!-- NEW: REVENUE TRACKING MODAL -->
   <div class="modal-overlay" id="revenueModal">
     <div class="modal-content revenue-modal" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
       <div class="modal-header">
@@ -387,193 +338,10 @@
 
   <!-- External scripts -->
   <script src="notif-utils.js"></script>
-  <script src="notif-api.js?v=3"></script>
-  <script src="notif-ui.js?v=3"></script>
+  <script src="notif-api.js"></script>
+  <script src="notif-ui.js"></script>
 
-  <!-- INLINE SCRIPT – all revenue tracking logic defined here to guarantee availability -->
-  <script>
-    // ========== REVENUE TRACKING FUNCTIONS (defined inline, no dependency on external scripts) ==========
-    let revenueModal = null;
-    let revenueContent = null;
-
-    // Helper to escape HTML
-    function revenueEscapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
-    }
-
-    async function revenueFetchData() {
-      const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Failed to load revenue data');
-      }
-      return await res.json();
-    }
-
-    function renderRevenueData(data) {
-      if (!revenueContent) return;
-      const tier = data.tier || (window.userTier || 'free');
-      const categories = data.categories || {};
-      const advice = data.advice || {};
-      const actions = data.actions || [];
-      
-      let html = '';
-      
-      const order = ['contacted', 'replied', 'interested', 'ongoing', 'win'];
-      const labels = {
-        contacted: 'Customers Contacted',
-        replied: 'Customers Replied',
-        interested: 'Interested Customers',
-        ongoing: 'Ongoing Conversation',
-        win: 'Win Conversation'
-      };
-      
-      for (const key of order) {
-        const leads = categories[key] || [];
-        const count = leads.length;
-        html += `
-          <div class="revenue-category">
-            <div class="revenue-category-header">
-              <span class="revenue-category-title">${labels[key]}</span>
-              <span class="revenue-category-count">${count}</span>
-            </div>
-            <div class="revenue-lead-list">
-              ${leads.map(lead => `<span class="revenue-lead-name" data-lead-id="${lead.id}" data-lead-name="${revenueEscapeHtml(lead.name)}">${revenueEscapeHtml(lead.name)}</span>`).join('')}
-              ${count === 0 ? '<span style="color: var(--text-3); font-size: 11px;">—</span>' : ''}
-            </div>
-          </div>
-        `;
-      }
-      
-      if (tier === 'go' || tier === 'pro') {
-        let adviceHtml = '';
-        for (const key of order) {
-          const adviceKey = key + 'Advice';
-          const adviceText = advice[adviceKey];
-          if (adviceText && categories[key] && categories[key].length > 0) {
-            adviceHtml += `<div class="revenue-advice"><strong>${labels[key]}:</strong><br>${revenueEscapeHtml(adviceText)}</div>`;
-          }
-        }
-        if (adviceHtml) {
-          html += `<div style="margin: 16px 0 8px;"><strong>🤖 AI Advice</strong></div>${adviceHtml}`;
-        } else {
-          html += `<div class="revenue-advice">No specific advice available for your current leads.</div>`;
-        }
-      }
-      
-      if (tier === 'pro' && actions && actions.length > 0) {
-        html += `<div style="margin: 20px 0 8px;"><strong>⚡ AI Actions (Top ${actions.length})</strong></div>`;
-        html += `<div class="revenue-actions">`;
-        actions.forEach(action => {
-          html += `
-            <div class="revenue-action-item">
-              <div class="revenue-action-lead">${revenueEscapeHtml(action.leadName || 'Lead')}</div>
-              <div class="revenue-action-text">▶ ${revenueEscapeHtml(action.action)}</div>
-            </div>
-          `;
-        });
-        html += `</div>`;
-      }
-      
-      if (tier === 'free') {
-        html += `
-          <div class="upgrade-message">
-            <span>✨ Unlock AI Advice – Upgrade to Go or Pro</span>
-            <div><button class="upgrade-button" id="upgradeAdviceBtn">View Plans</button></div>
-          </div>
-        `;
-      } else if (tier === 'go') {
-        html += `
-          <div class="upgrade-message">
-            <span>🚀 Unlock AI Actions – Upgrade to Pro</span>
-            <div><button class="upgrade-button" id="upgradeActionsBtn">View Plans</button></div>
-          </div>
-        `;
-      }
-      
-      revenueContent.innerHTML = html;
-      
-      // Attach click handlers for lead names
-      document.querySelectorAll('.revenue-lead-name').forEach(el => {
-        el.addEventListener('click', () => {
-          const leadId = el.getAttribute('data-lead-id');
-          const leadName = el.getAttribute('data-lead-name');
-          // Use global allContacts if available, otherwise try to open chat with basic info
-          if (window.allContacts && Array.isArray(window.allContacts)) {
-            const contact = window.allContacts.find(c => c.id === leadId);
-            if (contact && typeof window.openChat === 'function') {
-              closeRevenueModal();
-              window.openChat(leadId, contact.name, contact.email);
-              return;
-            }
-          }
-          alert(`Open chat for ${leadName} not available`);
-        });
-      });
-      
-      const upgradeAdvice = document.getElementById('upgradeAdviceBtn');
-      if (upgradeAdvice) {
-        upgradeAdvice.onclick = () => {
-          alert('Upgrade to Go or Pro plan to unlock AI Advice.\n\nGo: 30 suggest-follow-up/day, 15 auto-follow-up/day\nPro: 200 suggest-follow-up/day, 100 auto-follow-up/day');
-        };
-      }
-      const upgradeActions = document.getElementById('upgradeActionsBtn');
-      if (upgradeActions) {
-        upgradeActions.onclick = () => {
-          alert('Upgrade to Pro plan to unlock AI Actions.\n\nPro gives you specific actions for your top 20 most promising leads.');
-        };
-      }
-    }
-
-    function openRevenueTracking() {
-      if (!revenueModal) {
-        revenueModal = document.getElementById('revenueModal');
-        revenueContent = document.getElementById('revenueContent');
-        const closeBtn = document.getElementById('closeRevenueModalBtn');
-        if (closeBtn) {
-          closeBtn.onclick = () => {
-            revenueModal.classList.remove('active');
-          };
-        }
-        if (revenueModal) {
-          revenueModal.addEventListener('click', (e) => {
-            if (e.target === revenueModal) revenueModal.classList.remove('active');
-          });
-        }
-      }
-      if (!revenueModal) return;
-      revenueModal.classList.add('active');
-      revenueContent.innerHTML = '<div style="text-align: center; padding: 30px;"><div class="spin-icon" style="display: inline-block;">↻</div> Loading revenue data...</div>';
-      
-      revenueFetchData()
-        .then(data => {
-          renderRevenueData(data);
-        })
-        .catch(err => {
-          revenueContent.innerHTML = `<div style="color: var(--red); text-align: center; padding: 20px;">❌ ${err.message}</div>`;
-        });
-    }
-
-    function closeRevenueModal() {
-      if (revenueModal) revenueModal.classList.remove('active');
-    }
-
-    // Expose the functions globally for the button click
-    window.openRevenueTracking = openRevenueTracking;
-    window.closeRevenueModal = closeRevenueModal;
-  </script>
-
-  <!-- INLINE SCRIPT (for dropdown toggles, etc.) -->
+  <!-- INLINE SCRIPT (with revenue tracking button handler) -->
   <script>
     (function() {
       const menuBtn = document.getElementById('menuBtn');
@@ -602,13 +370,14 @@
         };
       }
 
-      // Revenue Tracking button click – now uses the globally exposed function
+      // Revenue Tracking button click
       if (revenueBtn) {
         revenueBtn.onclick = function(e) {
           e.stopPropagation();
-          if (typeof window.openRevenueTracking === 'function') {
-            window.openRevenueTracking();
+          if (typeof openRevenueTracking === 'function') {
+            openRevenueTracking();
           } else {
+            console.error('openRevenueTracking not defined');
             alert('Revenue tracking not available yet.');
           }
           if (dropdown) dropdown.style.display = 'none';
@@ -916,14 +685,9 @@
     })();
   </script>
 
-  <!-- MAIN INITIALIZATION + POLLING FOR LIVE UPDATES -->
   <script>
     // Original initialization
     if (!localStorage.getItem('token')) window.location.href = "login.html";
-    
-    // ---- ADDED: refresh interval for live updates ----
-    let refreshInterval = null;
-    
     document.addEventListener('DOMContentLoaded', async () => {
       try {
           const res = await fetch(`${BACKEND}/api/users/me`, {
@@ -948,12 +712,7 @@
       }
       localStorage.setItem('lastNotifViewTime', new Date().toISOString());
       loadContacts();
-      
-      // ---- REFRESH EVERY 10 SECONDS (WhatsApp-like speed) ----
-      refreshInterval = setInterval(() => {
-        loadContacts();
-      }, 10000);
     });
   </script>
 </body>
-  </html>
+          </html>
