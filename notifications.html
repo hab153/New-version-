@@ -195,6 +195,10 @@
             gap: 12px;
         }
 
+        .contact-item.hidden {
+            display: none;
+        }
+
         .contact-item:hover {
             background: rgba(255,255,255,0.03);
         }
@@ -276,6 +280,34 @@
             font-size: 12px;
             color: #505050;
         }
+
+        /* ─── NO RESULTS (within search) ─── */
+        .no-results {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: #505050;
+            text-align: center;
+        }
+
+        .no-results.active {
+            display: flex;
+        }
+
+        .no-results svg {
+            width: 36px;
+            height: 36px;
+            stroke: #505050;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .no-results p {
+            font-size: 12px;
+            color: #505050;
+        }
     </style>
 </head>
 <body>
@@ -324,6 +356,15 @@
         <p>Send your first message to get started.</p>
     </div>
 
+    <!-- ─── NO RESULTS (search) ─── -->
+    <div class="no-results" id="noResults">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <p>No contacts found</p>
+    </div>
+
     <script>
         // ─── CONFIG ───
         const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -333,6 +374,7 @@
         const loadingScreen = document.getElementById('loadingScreen');
         const contactList = document.getElementById('contactList');
         const emptyState = document.getElementById('emptyState');
+        const noResults = document.getElementById('noResults');
         const searchInput = document.getElementById('searchInput');
 
         // ─── STATE ───
@@ -377,12 +419,20 @@
         // ─── RENDER CONTACTS ───
         function renderContacts(contacts) {
             if (!contacts || contacts.length === 0) {
-                showEmptyState();
+                if (searchInput.value.trim() !== '') {
+                    // No search results
+                    contactList.classList.remove('active');
+                    emptyState.classList.remove('active');
+                    noResults.classList.add('active');
+                } else {
+                    showEmptyState();
+                }
                 return;
             }
 
             contactList.classList.add('active');
             emptyState.classList.remove('active');
+            noResults.classList.remove('active');
 
             contactList.innerHTML = contacts.map(c => {
                 const initials = (c.name || '?').charAt(0).toUpperCase();
@@ -418,15 +468,19 @@
         // ─── SEARCH / FILTER ───
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
+
             if (!query) {
+                // Show all contacts
                 renderContacts(allContacts);
                 return;
             }
+
             const filtered = allContacts.filter(c =>
                 (c.name || '').toLowerCase().includes(query) ||
                 (c.company || '').toLowerCase().includes(query) ||
                 (c.email || '').toLowerCase().includes(query)
             );
+
             renderContacts(filtered);
         });
 
@@ -434,6 +488,7 @@
         function showEmptyState() {
             contactList.classList.remove('active');
             emptyState.classList.add('active');
+            noResults.classList.remove('active');
         }
 
         // ─── UTILITY ───
@@ -449,4 +504,4 @@
     </script>
 
 </body>
-    </html>
+            </html>
