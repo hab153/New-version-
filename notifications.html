@@ -400,7 +400,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
             z-index: 200;
             align-items: center;
@@ -417,11 +417,20 @@
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 16px;
             padding: 24px;
-            max-width: 500px;
+            max-width: 560px;
             width: 100%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             position: relative;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
         }
 
         .modal-header {
@@ -474,41 +483,67 @@
             line-height: 1.6;
         }
 
-        .modal-body .data-item {
+        /* Revenue Category Cards */
+        .category-section {
+            margin-bottom: 16px;
+        }
+
+        .category-header {
             display: flex;
+            align-items: center;
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.04);
+            margin-bottom: 6px;
         }
 
-        .modal-body .data-item:last-child {
-            border-bottom: none;
-        }
-
-        .modal-body .data-label {
-            color: #707070;
-        }
-
-        .modal-body .data-value {
+        .category-name {
+            font-weight: 600;
+            font-size: 13px;
             color: #f5f5f5;
-            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .modal-body .data-value.green {
-            color: #66dd99;
+        .category-count {
+            font-size: 11px;
+            color: #707070;
+            background: rgba(255,255,255,0.06);
+            padding: 2px 8px;
+            border-radius: 12px;
         }
 
-        .modal-body .data-value.amber {
-            color: #ffbb44;
+        .lead-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0 4px 8px;
+            font-size: 12px;
+            color: #b0b0b0;
+            border-left: 2px solid transparent;
         }
 
-        .modal-body .data-value.blue {
-            color: #66ddff;
+        .lead-item .lead-name {
+            color: #f5f5f5;
+        }
+
+        .lead-item .lead-company {
+            color: #707070;
+            font-size: 11px;
+        }
+
+        .category-icon {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
         }
 
         .modal-loading {
             text-align: center;
-            padding: 20px 0;
+            padding: 30px 0;
             color: #505050;
         }
 
@@ -516,6 +551,26 @@
             text-align: center;
             padding: 20px 0;
             color: #ff5555;
+        }
+
+        /* Category Colors */
+        .cat-contacted .category-icon { background: #66ddff; }
+        .cat-replied .category-icon { background: #66dd99; }
+        .cat-interested .category-icon { background: #ffbb44; }
+        .cat-ongoing .category-icon { background: #bb88ff; }
+        .cat-win .category-icon { background: #ff6b6b; }
+
+        .cat-contacted .lead-item { border-left-color: rgba(102,221,255,0.3); }
+        .cat-replied .lead-item { border-left-color: rgba(102,221,153,0.3); }
+        .cat-interested .lead-item { border-left-color: rgba(255,187,68,0.3); }
+        .cat-ongoing .lead-item { border-left-color: rgba(187,136,255,0.3); }
+        .cat-win .lead-item { border-left-color: rgba(255,107,107,0.3); }
+
+        .empty-category {
+            color: #505050;
+            font-size: 12px;
+            padding: 4px 0 4px 8px;
+            font-style: italic;
         }
 
         /* ─── TOAST ─── */
@@ -727,9 +782,17 @@
             }
         });
 
+        // ─── CATEGORY CONFIG ───
+        const CATEGORY_CONFIG = {
+            contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
+            replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
+            interested: { label: 'Interested', icon: '🟡', color: '#ffbb44' },
+            ongoing: { label: 'Ongoing', icon: '🟣', color: '#bb88ff' },
+            win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
+        };
+
         // ─── FETCH REVENUE DATA ───
         async function fetchRevenueData() {
-            // Show modal with loading state
             revenueModal.classList.add('active');
             revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
 
@@ -775,73 +838,54 @@
             }
 
             let html = '';
-            
-            // If data is an array
-            if (Array.isArray(data)) {
-                html = data.map(item => {
-                    return Object.entries(item).map(([key, value]) => `
-                        <div class="data-item">
-                            <span class="data-label">${formatKey(key)}</span>
-                            <span class="data-value">${formatValue(key, value)}</span>
+
+            // Loop through each category
+            for (const [key, leads] of Object.entries(data)) {
+                const config = CATEGORY_CONFIG[key] || { label: key, icon: '•', color: '#707070' };
+                const count = Array.isArray(leads) ? leads.length : 0;
+
+                html += `
+                    <div class="category-section cat-${key}">
+                        <div class="category-header">
+                            <span class="category-name">
+                                <span class="category-icon"></span>
+                                ${config.icon} ${config.label}
+                            </span>
+                            <span class="category-count">${count}</span>
                         </div>
-                    `).join('');
-                }).join('');
-            } else {
-                // If data is an object
-                html = Object.entries(data).map(([key, value]) => `
-                    <div class="data-item">
-                        <span class="data-label">${formatKey(key)}</span>
-                        <span class="data-value ${getColorClass(key, value)}">${formatValue(key, value)}</span>
-                    </div>
-                `).join('');
+                `;
+
+                if (count === 0) {
+                    html += `<div class="empty-category">No leads in this category</div>`;
+                } else {
+                    // Show only first 10 leads, with a "show more" indicator if more
+                    const displayLeads = leads.slice(0, 10);
+                    const remaining = leads.length - 10;
+
+                    displayLeads.forEach(lead => {
+                        const name = lead.name || 'Unknown';
+                        const company = lead.company || '';
+                        html += `
+                            <div class="lead-item">
+                                <span class="lead-name">${escapeHtml(name)}</span>
+                                ${company ? `<span class="lead-company">· ${escapeHtml(company)}</span>` : ''}
+                            </div>
+                        `;
+                    });
+
+                    if (remaining > 0) {
+                        html += `
+                            <div class="lead-item" style="color:#505050; font-style:italic; border-left-color:transparent;">
+                                + ${remaining} more
+                            </div>
+                        `;
+                    }
+                }
+
+                html += `</div>`;
             }
 
             revenueBody.innerHTML = html;
-        }
-
-        // ─── HELPERS ───
-        function formatKey(key) {
-            return key
-                .replace(/([A-Z])/g, ' $1')
-                .replace(/_/g, ' ')
-                .replace(/^./, str => str.toUpperCase());
-        }
-
-        function formatValue(key, value) {
-            if (typeof value === 'number') {
-                if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('revenue') || key.toLowerCase().includes('price') || key.toLowerCase().includes('total')) {
-                    return `$${value.toLocaleString()}`;
-                }
-                if (key.toLowerCase().includes('count') || key.toLowerCase().includes('total') || key.toLowerCase().includes('users')) {
-                    return value.toLocaleString();
-                }
-                return value.toLocaleString();
-            }
-            if (typeof value === 'boolean') {
-                return value ? '✅ Yes' : '❌ No';
-            }
-            if (value === null || value === undefined) {
-                return '—';
-            }
-            if (typeof value === 'object') {
-                return JSON.stringify(value);
-            }
-            return String(value);
-        }
-
-        function getColorClass(key, value) {
-            if (typeof value === 'number') {
-                if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('revenue') || key.toLowerCase().includes('price') || key.toLowerCase().includes('total')) {
-                    return 'green';
-                }
-                if (key.toLowerCase().includes('count') || key.toLowerCase().includes('total')) {
-                    return 'blue';
-                }
-            }
-            if (typeof value === 'boolean') {
-                return value ? 'green' : '';
-            }
-            return '';
         }
 
         // ─── TOAST ───
@@ -966,4 +1010,4 @@
     </script>
 
 </body>
-    </html>
+                    </html>
