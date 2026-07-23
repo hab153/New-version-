@@ -22,6 +22,9 @@ async function loadContacts() {
         }
         const contacts = await res.json();
         console.log(`✅ [loadContacts] Received ${contacts.length} contacts`);
+        
+        // ✅ FIX: Only update allContacts, don't force reopen chat
+        allContacts = contacts;
         updateStats(contacts);
         renderContacts(contacts);
         return contacts;
@@ -33,7 +36,7 @@ async function loadContacts() {
     }
 }
 
-// ✅ FIXED: sendReply now includes leadId and allowNewLead flag
+// ✅ FINAL FIX: sendReply with NO loadContacts() call
 async function sendReply(text) {
     if (!text || !currentLeadId) {
         console.log('⚠️ [sendReply] No text or leadId');
@@ -44,10 +47,9 @@ async function sendReply(text) {
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
     
-    // ✅ FIX: Include leadId and allowNewLead: false in the payload
     const payload = {
         leadId: currentLeadId,
-        allowNewLead: false,  // ← Prevents creating new leads from notifications page
+        allowNewLead: false,
         leads: [{ 
             name: window.currentLeadName, 
             email: window.currentLeadEmail, 
@@ -79,7 +81,7 @@ async function sendReply(text) {
             document.getElementById('replyText').value = '';
             document.getElementById('replyText').style.height = '38px';
             
-            // Add message to UI immediately
+            // ✅ FIX: Add message to UI ONLY ONCE
             const container = document.getElementById('messagesContainer');
             if (container) {
                 const msgDiv = document.createElement('div');
@@ -95,14 +97,14 @@ async function sendReply(text) {
                 container.scrollTop = container.scrollHeight;
             }
             
-            // Update contact list locally
+            // ✅ FIX: Update local contact WITHOUT reloading from server
             const currentContact = allContacts.find(c => String(c.id) === String(currentLeadId));
             if (currentContact) {
                 currentContact.lastMessage = text;
                 currentContact.lastDate = new Date().toISOString();
                 currentContact.unreadCount = 0;
-                updateStats(allContacts);
-                renderContacts(allContacts);
+                if (typeof updateStats === 'function') updateStats(allContacts);
+                if (typeof renderContacts === 'function') renderContacts(allContacts);
             }
             
             console.log('✅ [sendReply] Message sent successfully');
