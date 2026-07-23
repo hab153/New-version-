@@ -161,7 +161,7 @@ async function renameLead(leadId, newName) {
     }
 }
 
-// ─── SEND MESSAGE ───
+// ─── SEND MESSAGE (FIXED: sends leads array + leadId + allowNewLead: false) ───
 async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
@@ -178,10 +178,11 @@ async function sendMessage() {
     chatSendBtn.disabled = true;
 
     try {
+        // ✅ FIXED: Send with leads array AND leadId AND allowNewLead: false
         const payload = {
             leads: [{
-                name: currentLeadName,
-                email: currentLeadEmail,
+                name: currentLeadName || 'Unknown',
+                email: currentLeadEmail || '',
                 company: '',
                 messages: [{
                     subject: 'Re: Conversation',
@@ -189,7 +190,7 @@ async function sendMessage() {
                 }]
             }],
             leadId: currentLeadId,
-            allowNewLead: false
+            allowNewLead: false // 🔒 Tell backend NOT to create a new lead
         };
 
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
