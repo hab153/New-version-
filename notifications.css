@@ -231,6 +231,7 @@ body {
     pointer-events: none;
 }
 
+/* ─── SPINNER (reused in chat loading) ─── */
 .spinner {
     width: 48px;
     height: 48px;
@@ -238,7 +239,12 @@ body {
     border: 4px solid rgba(255, 255, 255, 0.06);
     border-top-color: #ffffff;
     animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
-    margin-bottom: 24px;
+}
+
+.spinner.small {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
 }
 
 @keyframes spin {
@@ -1047,4 +1053,4 @@ body {
     height: 20px;
     stroke: currentColor;
     fill: none;
-  }
+   }
