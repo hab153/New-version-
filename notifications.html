@@ -107,7 +107,6 @@
             fill: none;
         }
 
-        /* ─── DROPDOWN ─── */
         .menu-dropdown {
             display: none;
             position: absolute;
@@ -328,7 +327,6 @@
             flex-shrink: 0;
         }
 
-        /* ─── EMPTY STATE ─── */
         .empty-state {
             display: none;
             flex-direction: column;
@@ -364,7 +362,6 @@
             color: #505050;
         }
 
-        /* ─── NO RESULTS ─── */
         .no-results {
             display: none;
             flex-direction: column;
@@ -483,7 +480,6 @@
             line-height: 1.6;
         }
 
-        /* Revenue Category Cards */
         .category-section {
             margin-bottom: 16px;
         }
@@ -553,7 +549,6 @@
             color: #ff5555;
         }
 
-        /* Category Colors */
         .cat-contacted .category-icon { background: #66ddff; }
         .cat-replied .category-icon { background: #66dd99; }
         .cat-interested .category-icon { background: #ffbb44; }
@@ -573,7 +568,6 @@
             font-style: italic;
         }
 
-        /* ─── TOAST ─── */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -601,7 +595,6 @@
 </head>
 <body>
 
-    <!-- ─── TOP LEFT LOGO ─── -->
     <div class="brand">
         <div class="brand-mark">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -612,7 +605,6 @@
         <span class="brand-sub">AA-1</span>
     </div>
 
-    <!-- ─── TOP RIGHT 3-DOT MENU ─── -->
     <div class="menu-container">
         <button class="menu-btn" id="menuBtn" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -652,13 +644,11 @@
         </div>
     </div>
 
-    <!-- ─── LOADING SCREEN ─── -->
     <div class="loading-container" id="loadingScreen">
         <div class="spinner"></div>
         <div class="loading-text">Loading conversations...</div>
     </div>
 
-    <!-- ─── SEARCH BAR ─── -->
     <div class="search-container">
         <div class="search-wrap">
             <div class="search-icon">
@@ -671,12 +661,8 @@
         </div>
     </div>
 
-    <!-- ─── CONTACT LIST ─── -->
-    <div class="contact-list" id="contactList">
-        <!-- Contacts will be rendered here -->
-    </div>
+    <div class="contact-list" id="contactList"></div>
 
-    <!-- ─── EMPTY STATE ─── -->
     <div class="empty-state" id="emptyState">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -685,7 +671,6 @@
         <p>Send your first message to get started.</p>
     </div>
 
-    <!-- ─── NO RESULTS ─── -->
     <div class="no-results" id="noResults">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
@@ -694,7 +679,6 @@
         <p>No contacts found</p>
     </div>
 
-    <!-- ─── REVENUE MODAL ─── -->
     <div class="modal-overlay" id="revenueModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -713,15 +697,12 @@
         </div>
     </div>
 
-    <!-- ─── TOAST ─── -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
 
     <script>
-        // ─── CONFIG ───
         const BACKEND = 'https://skylineapp-backend-file.onrender.com';
         const token = localStorage.getItem('token');
 
-        // ─── DOM ELEMENTS ───
         const loadingScreen = document.getElementById('loadingScreen');
         const contactList = document.getElementById('contactList');
         const emptyState = document.getElementById('emptyState');
@@ -734,55 +715,45 @@
         const revenueBody = document.getElementById('revenueBody');
         const closeRevenueModal = document.getElementById('closeRevenueModal');
 
-        // ─── STATE ───
         let allContacts = [];
         let toastTimeout = null;
 
-        // ─── CHECK AUTH ───
         if (!token) {
             window.location.href = 'login.html';
         }
 
-        // ─── MENU TOGGLE ───
         menuBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             menuDropdown.classList.toggle('show');
         });
 
-        // ─── CLOSE MENU ON OUTSIDE CLICK ───
         document.addEventListener('click', function() {
             menuDropdown.classList.remove('show');
         });
 
-        // ─── MENU ITEM CLICK ───
         document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const action = this.dataset.action;
                 menuDropdown.classList.remove('show');
-
                 if (action === 'revenue') {
                     fetchRevenueData();
                     return;
                 }
-
                 showToast('Please open a chat to access this feature.');
             });
         });
 
-        // ─── CLOSE MODAL ───
         closeRevenueModal.addEventListener('click', function() {
             revenueModal.classList.remove('active');
         });
 
-        // ─── CLOSE MODAL ON OUTSIDE CLICK ───
         revenueModal.addEventListener('click', function(e) {
             if (e.target === this) {
                 revenueModal.classList.remove('active');
             }
         });
 
-        // ─── CATEGORY CONFIG ───
         const CATEGORY_CONFIG = {
             contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
             replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
@@ -791,7 +762,6 @@
             win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
         };
 
-        // ─── FETCH REVENUE DATA ───
         async function fetchRevenueData() {
             revenueModal.classList.add('active');
             revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
@@ -826,7 +796,6 @@
             }
         }
 
-        // ─── RENDER REVENUE DATA ───
         function renderRevenueData(data) {
             if (!data || Object.keys(data).length === 0) {
                 revenueBody.innerHTML = `
@@ -839,9 +808,8 @@
 
             let html = '';
 
-            // Loop through each category
             for (const [key, leads] of Object.entries(data)) {
-                const config = CATEGORY_CONFIG[key] || { label: key, icon: '•', color: '#707070' };
+                const config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '•', color: '#707070' };
                 const count = Array.isArray(leads) ? leads.length : 0;
 
                 html += `
@@ -858,7 +826,6 @@
                 if (count === 0) {
                     html += `<div class="empty-category">No leads in this category</div>`;
                 } else {
-                    // Show only first 10 leads, with a "show more" indicator if more
                     const displayLeads = leads.slice(0, 10);
                     const remaining = leads.length - 10;
 
@@ -888,7 +855,6 @@
             revenueBody.innerHTML = html;
         }
 
-        // ─── TOAST ───
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
@@ -898,7 +864,6 @@
             }, 2500);
         }
 
-        // ─── LOAD CONTACTS ───
         async function loadContacts() {
             try {
                 const res = await fetch(`${BACKEND}/api/conversations`, {
@@ -929,7 +894,6 @@
             }
         }
 
-        // ─── RENDER CONTACTS ───
         function renderContacts(contacts) {
             if (!contacts || contacts.length === 0) {
                 if (searchInput.value.trim() !== '') {
@@ -975,7 +939,6 @@
             });
         }
 
-        // ─── SEARCH / FILTER ───
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
             if (!query) {
@@ -990,14 +953,12 @@
             renderContacts(filtered);
         });
 
-        // ─── EMPTY STATE ───
         function showEmptyState() {
             contactList.classList.remove('active');
             emptyState.classList.add('active');
             noResults.classList.remove('active');
         }
 
-        // ─── UTILITY ───
         function escapeHtml(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -1005,9 +966,8 @@
             return div.innerHTML;
         }
 
-        // ─── START ───
         loadContacts();
     </script>
 
 </body>
-                    </html>
+    </html>
