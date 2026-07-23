@@ -256,10 +256,12 @@
             50% { opacity: 1; }
         }
 
+        /* ─── CONTACT LIST ─── */
         .contact-list {
             flex: 1;
             overflow-y: auto;
             display: none;
+            padding-bottom: 70px;
         }
 
         .contact-list.active {
@@ -320,6 +322,123 @@
             font-size: 10px;
             color: #505050;
             flex-shrink: 0;
+        }
+
+        /* ─── CHAT VIEW ─── */
+        .chat-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0a;
+            z-index: 50;
+            flex-direction: column;
+        }
+
+        .chat-view.active {
+            display: flex;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #121212;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+            padding-top: 16px;
+        }
+
+        .chat-back {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            color: #b0b0b0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-back:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.12);
+        }
+
+        .chat-back svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-info .chat-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f5f5f5;
+        }
+
+        .chat-info .chat-email {
+            font-size: 11px;
+            color: #707070;
+        }
+
+        .chat-empty {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #505050;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .chat-empty svg {
+            width: 48px;
+            height: 48px;
+            stroke: #505050;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .chat-empty h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #707070;
+            margin-bottom: 6px;
+        }
+
+        .chat-empty p {
+            font-size: 12px;
+            color: #505050;
         }
 
         .empty-state {
@@ -523,6 +642,13 @@
             font-size: 12px;
             color: #b0b0b0;
             border-left: 2px solid transparent;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-radius: 4px;
+        }
+
+        .lead-item:hover {
+            background: rgba(255,255,255,0.04);
         }
 
         .lead-item .lead-name {
@@ -686,6 +812,52 @@
             text-align: center;
             padding: 8px 0;
         }
+
+        /* ─── BOTTOM NAV ─── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: #121212;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 40;
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            color: #505050;
+            text-decoration: none;
+            font-size: 9px;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+            padding: 4px 16px;
+        }
+
+        .nav-item:hover {
+            color: #b0b0b0;
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+        }
     </style>
 </head>
 <body>
@@ -801,8 +973,64 @@
         </div>
     </div>
 
+    <!-- ─── CHAT VIEW ─── -->
+    <div class="chat-view" id="chatView">
+        <div class="chat-header">
+            <button class="chat-back" id="chatBack">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
+                </svg>
+            </button>
+            <div class="chat-avatar" id="chatAvatar">?</div>
+            <div class="chat-info">
+                <div class="chat-name" id="chatName">Contact</div>
+                <div class="chat-email" id="chatEmail">email@example.com</div>
+            </div>
+        </div>
+        <div class="chat-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <h3>No messages yet</h3>
+            <p>Send a message to start the conversation.</p>
+        </div>
+    </div>
+
     <!-- ─── TOAST ─── -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
+
+    <!-- ─── BOTTOM NAV ─── -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" onclick="return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item" onclick="return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>History</span>
+        </a>
+        <a href="#" class="nav-item" onclick="return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Inbox</span>
+        </a>
+        <a href="#" class="nav-item" onclick="return false;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>Dashboard</span>
+        </a>
+    </nav>
 
     <script>
         const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -821,6 +1049,13 @@
         const closeRevenueModal = document.getElementById('closeRevenueModal');
         const tierBadge = document.getElementById('tierBadge');
 
+        // Chat elements
+        const chatView = document.getElementById('chatView');
+        const chatBack = document.getElementById('chatBack');
+        const chatAvatar = document.getElementById('chatAvatar');
+        const chatName = document.getElementById('chatName');
+        const chatEmail = document.getElementById('chatEmail');
+
         let allContacts = [];
         let toastTimeout = null;
 
@@ -828,6 +1063,7 @@
             window.location.href = 'login.html';
         }
 
+        // ─── MENU TOGGLE ───
         menuBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             menuDropdown.classList.toggle('show');
@@ -858,6 +1094,12 @@
             if (e.target === this) {
                 revenueModal.classList.remove('active');
             }
+        });
+
+        // ─── CHAT BACK ───
+        chatBack.addEventListener('click', function() {
+            chatView.classList.remove('active');
+            document.body.style.overflow = '';
         });
 
         // ─── CATEGORY CONFIG ───
@@ -906,15 +1148,12 @@
 
         // ─── RENDER REVENUE DATA ───
         function renderRevenueData(data) {
-            // Update tier badge
             const tier = data.tier || 'free';
             tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
 
-            // --- 1. CATEGORIES ---
             const categories = data.categories || {};
             let html = '';
 
-            // Categories section
             html += `<div style="margin-bottom:12px;"><strong style="color:#f5f5f5; font-size:13px;">📊 Categories</strong></div>`;
 
             let hasCategories = false;
@@ -944,8 +1183,9 @@
                     displayLeads.forEach(lead => {
                         const name = lead.name || 'Unknown';
                         const company = lead.company || '';
+                        const leadId = lead.id || '';
                         html += `
-                            <div class="lead-item">
+                            <div class="lead-item" data-id="${leadId}" data-name="${escapeHtml(name)}" data-email="${escapeHtml(lead.email || '')}" onclick="openChatFromRevenue('${leadId}', '${escapeHtml(name)}', '${escapeHtml(lead.email || '')}')">
                                 <span class="lead-name">${escapeHtml(name)}</span>
                                 ${company ? `<span class="lead-company">· ${escapeHtml(company)}</span>` : ''}
                             </div>
@@ -954,7 +1194,7 @@
 
                     if (remaining > 0) {
                         html += `
-                            <div class="lead-item" style="color:#505050; font-style:italic; border-left-color:transparent;">
+                            <div class="lead-item" style="color:#505050; font-style:italic; border-left-color:transparent; cursor:default;">
                                 + ${remaining} more
                             </div>
                         `;
@@ -968,7 +1208,6 @@
                 html += `<div class="no-data">No leads found.</div>`;
             }
 
-            // --- 2. ADVICE ---
             const advice = data.advice || {};
             const adviceKeys = Object.keys(advice);
             if (adviceKeys.length > 0) {
@@ -991,7 +1230,6 @@
                 html += `</div>`;
             }
 
-            // --- 3. ACTIONS (Pro only) ---
             const actions = data.actions || [];
             if (actions.length > 0) {
                 html += `<div class="section-divider"></div>`;
@@ -1015,7 +1253,6 @@
                 html += `</div>`;
             }
 
-            // --- 4. Pro upgrade prompt for Free tier ---
             if (tierBadge.textContent === 'Free') {
                 html += `<div class="section-divider"></div>`;
                 html += `
@@ -1028,6 +1265,26 @@
             }
 
             revenueBody.innerHTML = html;
+        }
+
+        // ─── OPEN CHAT FROM REVENUE MODAL ───
+        function openChatFromRevenue(leadId, name, email) {
+            revenueModal.classList.remove('active');
+            openChat(leadId, name, email);
+        }
+
+        // ─── OPEN CHAT ───
+        function openChat(leadId, name, email) {
+            chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
+            chatName.textContent = name || 'Unknown';
+            chatEmail.textContent = email || 'No email provided';
+            chatView.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Close any open dropdowns
+            menuDropdown.classList.remove('show');
+
+            console.log(`📬 Opening chat with ${name} (${leadId})`);
         }
 
         // ─── TOAST ───
@@ -1094,7 +1351,7 @@
                 }) : '';
 
                 return `
-                    <div class="contact-item" data-id="${c.id}">
+                    <div class="contact-item" data-id="${c.id}" onclick="openChat('${c.id}', '${escapeHtml(c.name || 'Unknown')}', '${escapeHtml(c.email || '')}')">
                         <div class="contact-avatar">${initials}</div>
                         <div class="contact-info">
                             <div class="contact-name">${escapeHtml(c.name || 'Unknown')}</div>
@@ -1104,14 +1361,6 @@
                     </div>
                 `;
             }).join('');
-
-            document.querySelectorAll('.contact-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.id;
-                    const name = el.querySelector('.contact-name')?.textContent || 'Unknown';
-                    console.log(`📬 Opening chat with ${name} (${id})`);
-                });
-            });
         }
 
         searchInput.addEventListener('input', function() {
