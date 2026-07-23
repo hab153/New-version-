@@ -19,7 +19,6 @@
             flex-direction: column;
         }
 
-        /* ─── TOP LEFT LOGO ─── */
         .brand {
             position: absolute;
             top: 20px;
@@ -73,7 +72,6 @@
             font-family: 'Monaco', 'Menlo', monospace;
         }
 
-        /* ─── TOP RIGHT 3-DOT MENU ─── */
         .menu-container {
             position: absolute;
             top: 20px;
@@ -159,7 +157,6 @@
             margin: 4px 12px;
         }
 
-        /* ─── SEARCH BAR ─── */
         .search-container {
             padding: 68px 16px 12px 16px;
             background: #0a0a0a;
@@ -210,7 +207,6 @@
             background: #1a1a1a;
         }
 
-        /* ─── LOADING SCREEN ─── */
         .loading-container {
             position: fixed;
             top: 0;
@@ -236,7 +232,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.06);
+            border: 4px solid rgba(255,255,255,0.06);
             border-top-color: #ffffff;
             animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
             margin-bottom: 24px;
@@ -260,7 +256,6 @@
             50% { opacity: 1; }
         }
 
-        /* ─── CONTACT LIST ─── */
         .contact-list {
             flex: 1;
             overflow-y: auto;
@@ -414,9 +409,9 @@
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 16px;
             padding: 24px;
-            max-width: 560px;
+            max-width: 600px;
             width: 100%;
-            max-height: 85vh;
+            max-height: 90vh;
             overflow-y: auto;
             position: relative;
         }
@@ -454,6 +449,15 @@
             stroke: #f5f5f5;
         }
 
+        .modal-title .tier-badge {
+            font-size: 9px;
+            background: rgba(255,255,255,0.08);
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: #b0b0b0;
+            font-weight: 400;
+        }
+
         .modal-close {
             width: 28px;
             height: 28px;
@@ -480,6 +484,7 @@
             line-height: 1.6;
         }
 
+        /* Categories */
         .category-section {
             margin-bottom: 16px;
         }
@@ -488,9 +493,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px solid rgba(255,255,255,0.04);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .category-name {
@@ -514,7 +519,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 4px 0 4px 8px;
+            padding: 3px 0 3px 8px;
             font-size: 12px;
             color: #b0b0b0;
             border-left: 2px solid transparent;
@@ -537,16 +542,11 @@
             flex-shrink: 0;
         }
 
-        .modal-loading {
-            text-align: center;
-            padding: 30px 0;
+        .empty-category {
             color: #505050;
-        }
-
-        .modal-error {
-            text-align: center;
-            padding: 20px 0;
-            color: #ff5555;
+            font-size: 12px;
+            padding: 4px 0 4px 8px;
+            font-style: italic;
         }
 
         .cat-contacted .category-icon { background: #66ddff; }
@@ -561,11 +561,93 @@
         .cat-ongoing .lead-item { border-left-color: rgba(187,136,255,0.3); }
         .cat-win .lead-item { border-left-color: rgba(255,107,107,0.3); }
 
-        .empty-category {
-            color: #505050;
+        /* Advice Section */
+        .advice-section {
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .advice-title {
             font-size: 12px;
-            padding: 4px 0 4px 8px;
-            font-style: italic;
+            font-weight: 600;
+            color: #f5f5f5;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .advice-item {
+            font-size: 12px;
+            color: #b0b0b0;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .advice-item:last-child {
+            border-bottom: none;
+        }
+
+        .advice-item strong {
+            color: #f5f5f5;
+        }
+
+        /* Actions Section */
+        .actions-section {
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: rgba(102,221,255,0.04);
+            border-radius: 10px;
+            border: 1px solid rgba(102,221,255,0.08);
+        }
+
+        .actions-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #66ddff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12px;
+            color: #b0b0b0;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .action-item:last-child {
+            border-bottom: none;
+        }
+
+        .action-item .action-lead {
+            color: #f5f5f5;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .action-item .action-text {
+            color: #b0b0b0;
+        }
+
+        .modal-loading {
+            text-align: center;
+            padding: 30px 0;
+            color: #505050;
+        }
+
+        .modal-error {
+            text-align: center;
+            padding: 20px 0;
+            color: #ff5555;
         }
 
         .toast {
@@ -591,10 +673,24 @@
             transform: translateX(-50%) translateY(0);
             pointer-events: auto;
         }
+
+        .section-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.04);
+            margin: 16px 0;
+        }
+
+        .no-data {
+            color: #505050;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px 0;
+        }
     </style>
 </head>
 <body>
 
+    <!-- ─── TOP LEFT LOGO ─── -->
     <div class="brand">
         <div class="brand-mark">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -605,6 +701,7 @@
         <span class="brand-sub">AA-1</span>
     </div>
 
+    <!-- ─── TOP RIGHT 3-DOT MENU ─── -->
     <div class="menu-container">
         <button class="menu-btn" id="menuBtn" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -644,11 +741,13 @@
         </div>
     </div>
 
+    <!-- ─── LOADING SCREEN ─── -->
     <div class="loading-container" id="loadingScreen">
         <div class="spinner"></div>
         <div class="loading-text">Loading conversations...</div>
     </div>
 
+    <!-- ─── SEARCH BAR ─── -->
     <div class="search-container">
         <div class="search-wrap">
             <div class="search-icon">
@@ -661,8 +760,10 @@
         </div>
     </div>
 
+    <!-- ─── CONTACT LIST ─── -->
     <div class="contact-list" id="contactList"></div>
 
+    <!-- ─── EMPTY STATE ─── -->
     <div class="empty-state" id="emptyState">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -671,6 +772,7 @@
         <p>Send your first message to get started.</p>
     </div>
 
+    <!-- ─── NO RESULTS ─── -->
     <div class="no-results" id="noResults">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
@@ -679,6 +781,7 @@
         <p>No contacts found</p>
     </div>
 
+    <!-- ─── REVENUE MODAL ─── -->
     <div class="modal-overlay" id="revenueModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -688,6 +791,7 @@
                         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                     Revenue Tracker
+                    <span class="tier-badge" id="tierBadge">Free</span>
                 </div>
                 <button class="modal-close" id="closeRevenueModal">✕</button>
             </div>
@@ -697,6 +801,7 @@
         </div>
     </div>
 
+    <!-- ─── TOAST ─── -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
 
     <script>
@@ -714,6 +819,7 @@
         const revenueModal = document.getElementById('revenueModal');
         const revenueBody = document.getElementById('revenueBody');
         const closeRevenueModal = document.getElementById('closeRevenueModal');
+        const tierBadge = document.getElementById('tierBadge');
 
         let allContacts = [];
         let toastTimeout = null;
@@ -754,6 +860,7 @@
             }
         });
 
+        // ─── CATEGORY CONFIG ───
         const CATEGORY_CONFIG = {
             contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
             replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
@@ -762,15 +869,15 @@
             win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
         };
 
+        // ─── FETCH REVENUE DATA ───
         async function fetchRevenueData() {
             revenueModal.classList.add('active');
             revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
+            tierBadge.textContent = 'Loading...';
 
             try {
                 const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (!res.ok) {
@@ -793,24 +900,29 @@
                         <p style="font-size:12px; color:#707070; margin-top:8px;">${err.message}</p>
                     </div>
                 `;
+                tierBadge.textContent = 'Error';
             }
         }
 
+        // ─── RENDER REVENUE DATA ───
         function renderRevenueData(data) {
-            if (!data || Object.keys(data).length === 0) {
-                revenueBody.innerHTML = `
-                    <div style="text-align:center; padding:20px; color:#505050;">
-                        <p>No revenue data available.</p>
-                    </div>
-                `;
-                return;
-            }
+            // Update tier badge
+            const tier = data.tier || 'free';
+            tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
 
+            // --- 1. CATEGORIES ---
+            const categories = data.categories || {};
             let html = '';
 
-            for (const [key, leads] of Object.entries(data)) {
+            // Categories section
+            html += `<div style="margin-bottom:12px;"><strong style="color:#f5f5f5; font-size:13px;">📊 Categories</strong></div>`;
+
+            let hasCategories = false;
+            for (const [key, leads] of Object.entries(categories)) {
                 const config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '•', color: '#707070' };
                 const count = Array.isArray(leads) ? leads.length : 0;
+
+                if (count > 0) hasCategories = true;
 
                 html += `
                     <div class="category-section cat-${key}">
@@ -852,9 +964,73 @@
                 html += `</div>`;
             }
 
+            if (!hasCategories) {
+                html += `<div class="no-data">No leads found.</div>`;
+            }
+
+            // --- 2. ADVICE ---
+            const advice = data.advice || {};
+            const adviceKeys = Object.keys(advice);
+            if (adviceKeys.length > 0) {
+                html += `<div class="section-divider"></div>`;
+                html += `<div class="advice-section">`;
+                html += `<div class="advice-title">💡 Strategic Advice</div>`;
+
+                adviceKeys.forEach(key => {
+                    const label = key.replace('Advice', '').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    const value = advice[key];
+                    if (value && value.trim()) {
+                        html += `
+                            <div class="advice-item">
+                                <strong>${label}:</strong> ${escapeHtml(value)}
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `</div>`;
+            }
+
+            // --- 3. ACTIONS (Pro only) ---
+            const actions = data.actions || [];
+            if (actions.length > 0) {
+                html += `<div class="section-divider"></div>`;
+                html += `<div class="actions-section">`;
+                html += `<div class="actions-title">🎯 Recommended Actions</div>`;
+
+                actions.slice(0, 10).forEach((action, index) => {
+                    html += `
+                        <div class="action-item">
+                            <span style="color:#505050; font-size:10px;">${index + 1}.</span>
+                            <span class="action-lead">${escapeHtml(action.leadName || 'Lead')}</span>
+                            <span class="action-text">— ${escapeHtml(action.action || 'Follow up')}</span>
+                        </div>
+                    `;
+                });
+
+                if (actions.length > 10) {
+                    html += `<div class="no-data" style="padding-top:4px;">+ ${actions.length - 10} more actions</div>`;
+                }
+
+                html += `</div>`;
+            }
+
+            // --- 4. Pro upgrade prompt for Free tier ---
+            if (tierBadge.textContent === 'Free') {
+                html += `<div class="section-divider"></div>`;
+                html += `
+                    <div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
+                        <p style="color:#ffbb44; font-size:12px; margin:0;">
+                            🚀 Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
+                        </p>
+                    </div>
+                `;
+            }
+
             revenueBody.innerHTML = html;
         }
 
+        // ─── TOAST ───
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
@@ -864,12 +1040,11 @@
             }, 2500);
         }
 
+        // ─── LOAD CONTACTS ───
         async function loadContacts() {
             try {
                 const res = await fetch(`${BACKEND}/api/conversations`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (!res.ok) {
