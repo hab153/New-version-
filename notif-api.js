@@ -1,13 +1,23 @@
+// notif-api.js
+
+// ========== CONFIG ==========
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 
 console.log('🔑 [FRONTEND] Token from localStorage:', token ? 'exists' : 'MISSING');
 
-// Global State for API interactions
+// ========== GLOBAL STATE ==========
 let currentLeadId = null;
 let isAutoReplyEnabled = false;
 let autoReplyInstructions = "";
+let allContacts = [];
 
+// ========== API FUNCTIONS ==========
+
+/**
+ * Load all contacts/conversations for the authenticated user
+ * @returns {Promise<Array>} - Array of contact objects
+ */
 async function loadContacts() {
     console.log('📡 [loadContacts] Fetching /api/conversations...');
     try {
@@ -22,66 +32,126 @@ async function loadContacts() {
         }
         const contacts = await res.json();
         console.log(`✅ [loadContacts] Received ${contacts.length} contacts`);
-        
-        // ✅ FIX: Only update allContacts, don't force reopen chat
         allContacts = contacts;
-        updateStats(contacts);
-        renderContacts(contacts);
+        if (typeof updateStats === 'function') {
+            updateStats(contacts);
+        }
+        if (typeof renderContacts === 'function') {
+            renderContacts(contacts);
+        }
+
+        // If current chat is open, refresh it to show new replies
+        if (currentLeadId && document.getElementById('viewChat')?.classList.contains('active')) {
+            const currentLead = allContacts.find(c => String(c.id) === String(currentLeadId));
+            if (currentLead && typeof openChat === 'function') {
+                console.log('🔄 [loadContacts] Refreshing current chat:', currentLead.name);
+                await openChat(currentLeadId, currentLead.name, currentLead.email);
+            }
+        }
+
         return contacts;
     } catch (err) {
         console.error('❌ [loadContacts] Error:', err);
-        document.getElementById('contactList').innerHTML =
-            '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">FAILED TO LOAD · REFRESH TO RETRY</div>';
+        const list = document.getElementById('contactList');
+        if (list) {
+            list.innerHTML = '<div style="padding:28px; text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:11px;">⚠️ FAILED TO LOAD · REFRESH TO RETRY</div>';
+        }
         return [];
     }
 }
 
-// ✅ FINAL FIX: sendReply with NO loadContacts() call
+/**
+ * Send a reply email to a lead
+ * @param {string} text - The reply message text
+ * @returns {Promise<Object>} - Response data
+ */
 async function sendReply(text) {
     if (!text || !currentLeadId) {
         console.log('⚠️ [sendReply] No text or leadId');
         return;
     }
 
-    console.log(`📤 [sendReply] Sending reply to lead ${currentLeadId}`);
     const btn = document.getElementById('sendBtn');
-    btn.disabled = true;
-    
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
+    }
+
+    const leadData = allContacts.find(c => String(c.id) === String(currentLeadId));
+    const leadName = window.currentLeadName || leadData?.name || 'Lead';
+    const leadEmail = window.currentLeadEmail || leadData?.email || '';
+    const leadCompany = leadData?.company || '';
+
+    if (!leadEmail || !leadEmail.includes('@')) {
+        alert('⚠️ This lead does not have a valid email address. Cannot send reply.');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        }
+        return;
+    }
+
     const payload = {
         leadId: currentLeadId,
-        allowNewLead: false,
-        leads: [{ 
-            name: window.currentLeadName, 
-            email: window.currentLeadEmail, 
-            company: '',
-            messages: [{ subject: "Re: Conversation", body: text }] 
+        leads: [{
+            name: leadName || 'Lead',
+            email: leadEmail,
+            company: leadCompany || '',
+            messages: [{
+                subject: "Re: Conversation",
+                body: text
+            }]
         }]
     };
 
-    console.log('📤 [sendReply] Payload:', JSON.stringify(payload));
+    console.log('📤 [sendReply] Sending payload with leadId:', payload);
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(payload)
         });
+
         const data = await res.json();
-        console.log(`📤 [sendReply] Response status: ${res.status}`);
-        console.log('📤 [sendReply] Response data:', data);
-        
+        console.log('📥 [sendReply] Response:', data);
+
+        if (res.status === 400) {
+            let errorMsg = 'Validation failed';
+            if (data.errors && Array.isArray(data.errors)) {
+                errorMsg = data.errors.map(e => e.message).join(', ');
+            } else if (data.message) {
+                errorMsg = data.message;
+            } else if (data.error) {
+                errorMsg = data.error;
+            }
+            alert(`❌ ${errorMsg}`);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            }
+            return;
+        }
+
         if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
             localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
             alert("⚠️ Email session expired. Please reconnect.");
             window.location.href = 'dashboard.html?connect=true';
             return;
         }
-        
+
         if (data.success) {
-            document.getElementById('replyText').value = '';
-            document.getElementById('replyText').style.height = '38px';
-            
-            // ✅ FIX: Add message to UI ONLY ONCE
+            // Clear input
+            const replyText = document.getElementById('replyText');
+            if (replyText) {
+                replyText.value = '';
+                replyText.style.height = '38px';
+            }
+
+            // ✅ Add message to UI immediately
             const container = document.getElementById('messagesContainer');
             if (container) {
                 const msgDiv = document.createElement('div');
@@ -96,32 +166,46 @@ async function sendReply(text) {
                 container.appendChild(msgDiv);
                 container.scrollTop = container.scrollHeight;
             }
-            
-            // ✅ FIX: Update local contact WITHOUT reloading from server
+
+            // ✅ Update the contact list in the background without refreshing the chat
             const currentContact = allContacts.find(c => String(c.id) === String(currentLeadId));
             if (currentContact) {
                 currentContact.lastMessage = text;
                 currentContact.lastDate = new Date().toISOString();
                 currentContact.unreadCount = 0;
-                if (typeof updateStats === 'function') updateStats(allContacts);
-                if (typeof renderContacts === 'function') renderContacts(allContacts);
+                currentContact.unread = false;
+                if (typeof updateStats === 'function') {
+                    updateStats(allContacts);
+                }
+                if (typeof renderContacts === 'function') {
+                    renderContacts(allContacts);
+                }
             }
-            
-            console.log('✅ [sendReply] Message sent successfully');
+
+            // ✅ DO NOT reload contacts or reopen the chat - prevents disappearing
+            console.log('✅ [sendReply] Message sent and UI updated');
+
         } else {
-            const errorMsg = data.message || data.error || JSON.stringify(data.errors);
-            alert(`Failed to send: ${errorMsg}`);
+            const errorMsg = data.message || data.error || JSON.stringify(data.errors) || 'Unknown error';
+            alert(`❌ Failed to send: ${errorMsg}`);
         }
     } catch (err) {
-        console.error('❌ [sendReply] Network error:', err);
+        console.error('❌ [sendReply] Error:', err);
         localStorage.setItem('pendingEmailPayload', JSON.stringify(payload));
-        alert("Connection error. Message saved.");
-        window.location.href = 'dashboard.html?connect=true';
+        alert("⚠️ Connection error. Please try again.");
     } finally {
-        btn.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        }
     }
 }
 
+/**
+ * Save auto-reply instructions for a lead
+ * @param {string} instructions - The AI instructions
+ * @returns {Promise<boolean>} - Success status
+ */
 async function saveAutoReplyInstructions(instructions) {
     if (!instructions) { alert("Please enter AI instructions."); return false; }
     console.log(`💾 [saveAutoReplyInstructions] Saving instructions for lead ${currentLeadId}`);
@@ -134,7 +218,9 @@ async function saveAutoReplyInstructions(instructions) {
         if (res.ok) {
             isAutoReplyEnabled = true;
             autoReplyInstructions = instructions;
-            updateAutoReplyUI();
+            if (typeof updateAutoReplyUI === 'function') {
+                updateAutoReplyUI();
+            }
             console.log('✅ [saveAutoReplyInstructions] Success');
             return true;
         } else {
@@ -148,6 +234,10 @@ async function saveAutoReplyInstructions(instructions) {
     }
 }
 
+/**
+ * Save auto-reply toggle status
+ * @returns {Promise<void>}
+ */
 async function saveAutoReplyStatus() {
     console.log(`💾 [saveAutoReplyStatus] Updating auto-reply status for lead ${currentLeadId} to ${isAutoReplyEnabled}`);
     try {
@@ -156,12 +246,19 @@ async function saveAutoReplyStatus() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ enabled: isAutoReplyEnabled })
         });
-        updateAutoReplyUI();
+        if (typeof updateAutoReplyUI === 'function') {
+            updateAutoReplyUI();
+        }
     } catch (err) {
         console.error('❌ [saveAutoReplyStatus] Error:', err);
     }
 }
 
+/**
+ * Rename a lead/customer
+ * @param {string} newName - The new name
+ * @returns {Promise<void>}
+ */
 async function renameCustomer(newName) {
     if (newName && newName !== window.currentLeadName) {
         console.log(`✏️ [renameCustomer] Renaming lead ${currentLeadId} to ${newName}`);
@@ -172,8 +269,10 @@ async function renameCustomer(newName) {
                 body: JSON.stringify({ newName })
             });
             window.currentLeadName = newName;
-            document.getElementById('chatName').innerText = newName;
-            document.getElementById('chatAvatar').innerText = getInitials(newName);
+            const chatName = document.getElementById('chatName');
+            if (chatName) chatName.innerText = newName;
+            const chatAvatar = document.getElementById('chatAvatar');
+            if (chatAvatar) chatAvatar.innerText = getInitials(newName);
             loadContacts();
         } catch (err) {
             console.error('❌ [renameCustomer] Error:', err);
@@ -182,25 +281,51 @@ async function renameCustomer(newName) {
     }
 }
 
+/**
+ * Fetch conversation details for a lead
+ * @param {string} leadId - The lead ID
+ * @returns {Promise<Object>} - Conversation data
+ */
 async function fetchConversationDetails(leadId) {
-    console.log(`📡 [fetchConversationDetails] Fetching details for lead ${leadId}`);
-    const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+    if (!leadId || typeof leadId !== 'string') {
+        console.error('❌ [fetchConversationDetails] Invalid leadId:', leadId);
+        throw new Error('Invalid conversation ID');
+    }
+    const cleanId = leadId.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+    console.log(`📡 [fetchConversationDetails] Fetching for leadId: ${cleanId}`);
+    const res = await fetch(`${BACKEND}/api/conversations/${encodeURIComponent(cleanId)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    const data = await res.json();
-    console.log(`✅ [fetchConversationDetails] Received ${data.messages?.length || 0} messages`);
-    return data;
+    if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+    }
+    return await res.json();
 }
 
+/**
+ * Mark a conversation as read
+ * @param {string} leadId - The lead ID
+ * @returns {Promise<void>}
+ */
 async function markAsRead(leadId) {
     console.log(`👁️ [markAsRead] Marking lead ${leadId} as read`);
-    fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    }).catch(err => console.error('❌ [markAsRead] Error:', err));
+    try {
+        await fetch(`${BACKEND}/api/conversations/${leadId}/read`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (err) {
+        console.error('❌ [markAsRead] Error:', err);
+    }
 }
 
 // ========== FOLLOW-UP API FUNCTIONS ==========
+
+/**
+ * Suggest a follow-up message for a lead
+ * @param {string} leadId - The lead ID
+ * @returns {Promise<Object>} - Suggestion data
+ */
 async function suggestFollowUp(leadId) {
     const res = await fetch(`${BACKEND}/api/leads/${leadId}/suggest-follow-up`, {
         method: 'POST',
@@ -209,6 +334,12 @@ async function suggestFollowUp(leadId) {
     return await res.json();
 }
 
+/**
+ * Toggle auto follow-up for a lead
+ * @param {string} leadId - The lead ID
+ * @param {boolean} enabled - Enable or disable
+ * @returns {Promise<Object>} - Response data
+ */
 async function toggleAutoFollowUp(leadId, enabled) {
     const res = await fetch(`${BACKEND}/api/leads/${leadId}/auto-follow-up`, {
         method: 'POST',
@@ -218,6 +349,11 @@ async function toggleAutoFollowUp(leadId, enabled) {
     return await res.json();
 }
 
+/**
+ * Get follow-up status for a lead
+ * @param {string} leadId - The lead ID
+ * @returns {Promise<Object>} - Status data
+ */
 async function getFollowUpStatus(leadId) {
     const res = await fetch(`${BACKEND}/api/leads/${leadId}/follow-up-status`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -226,6 +362,11 @@ async function getFollowUpStatus(leadId) {
 }
 
 // ========== REVENUE TRACKING API ==========
+
+/**
+ * Fetch revenue tracking data
+ * @returns {Promise<Object>} - Revenue data
+ */
 async function fetchRevenueTracking() {
     const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -238,6 +379,7 @@ async function fetchRevenueTracking() {
 }
 
 // ========== EXPOSE FUNCTIONS GLOBALLY ==========
+
 window.loadContacts = loadContacts;
 window.sendReply = sendReply;
 window.saveAutoReplyInstructions = saveAutoReplyInstructions;
