@@ -161,10 +161,14 @@ async function renameLead(leadId, newName) {
     }
 }
 
-// ─── SEND MESSAGE (ANCHOR STRATEGY) ───
+// ─── SEND MESSAGE (WITH TRACE LOGS) ───
 async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
+
+    console.log('🚀 [FE-SEND] Starting send process...');
+    console.log('🆔 [FE-SEND] Current Lead ID:', currentLeadId);
+    console.log('📝 [FE-SEND] Message Content:', text.substring(0, 50) + '...');
 
     isSending = true;
     chatSendBtn.disabled = true;
@@ -185,6 +189,7 @@ async function sendMessage() {
             allowNewLead: false
         };
 
+        console.log('📡 [FE-SEND] Sending payload to backend...');
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -192,21 +197,23 @@ async function sendMessage() {
         });
 
         const data = await res.json();
+        console.log('📥 [FE-SEND] Backend Response:', data);
 
         if (data.success) {
-            // ✅ STEP 1: Reload history for the CURRENT chat only
+            console.log('✅ [FE-SEND] Success! Reloading history for ID:', currentLeadId);
             await loadChatHistory(currentLeadId);
             
-            // ✅ STEP 2: Update sidebar AFTER delay to prevent UI jumping
             setTimeout(() => {
+                console.log('🔄 [FE-SEND] Refreshing contact list in background...');
                 loadContacts(); 
             }, 800);
         } else {
+            console.error('❌ [FE-SEND] Backend reported failure:', data);
             chatInput.value = originalText;
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
     } catch (err) {
-        console.error('Send message error:', err);
+        console.error('💥 [FE-SEND] Network Error:', err);
         chatInput.value = originalText;
         showToast('Connection error. Please try again.');
     } finally {
@@ -302,14 +309,21 @@ async function loadChatHistory(leadId) {
     }
 }
 
-// ─── OPEN CHAT (SMART GUARD) ───
+// ─── OPEN CHAT (WITH TRACE LOGS) ───
 function openChat(leadId, name, email) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📂 [FE-OPEN] Attempting to open chat...');
+    console.log('🆔 [FE-OPEN] Target Lead ID:', leadId);
+    console.log('🆔 [FE-OPEN] Current Active ID:', currentLeadId);
+    
     // ✅ GUARD: If already in this chat, just refresh messages and STOP
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
+        console.log('⚡ [FE-OPEN] Chat is already active. Only reloading history.');
         loadChatHistory(leadId);
         return;
     }
 
+    console.log('🆕 [FE-OPEN] Opening NEW chat view.');
     currentLeadId = leadId;
     currentLeadName = name || 'Unknown';
     currentLeadEmail = email || '';
@@ -327,7 +341,7 @@ function openChat(leadId, name, email) {
     chatSendBtn.disabled = true;
 
     loadChatHistory(leadId);
-    console.log(`📬 Opening chat with ${name} (${leadId})`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 }
 
 // ─── CATEGORY CONFIG ───
