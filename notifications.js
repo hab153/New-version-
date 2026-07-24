@@ -169,8 +169,7 @@ async function sendMessage() {
     isSending = true;
     chatSendBtn.disabled = true;
 
-    // 1. Show a temporary "Sending..." state or just clear input
-    // We do NOT appendMessage here to avoid doubling when loadChatHistory runs
+    // 1. Clear input immediately but do NOT append to UI yet
     const originalText = text;
     chatInput.value = '';
     chatInput.style.height = 'auto';
@@ -228,8 +227,6 @@ async function sendMessage() {
 // ─── APPEND MESSAGE (FIXED: Correct Labels) ───
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
-    // Note: Backend sends 'ai' for user messages and 'lead' for customer messages
-    // We map them to CSS classes 'from-ai' (right side) and 'from-lead' (left side)
     
     // Determine CSS class and Label
     let cssClass = '';
@@ -304,7 +301,6 @@ async function loadChatHistory(leadId) {
 
         messages.forEach(msg => {
             // Use the correct 'from' value from backend
-            // Backend stores user messages as 'ai' and lead replies as 'lead'
             const from = msg.from === 'ai' ? 'ai' : 'lead';
             appendMessage(from, msg.content, msg.date);
         });
