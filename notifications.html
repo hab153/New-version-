@@ -119,6 +119,44 @@
         </div>
     </div>
 
+    <!-- ─── FOLLOW-UP MODAL ─── -->
+    <div class="followup-modal" id="followupModal">
+        <div class="followup-content">
+            <div class="followup-header">
+                <div class="followup-title">Follow-up Settings</div>
+                <button class="followup-close" id="closeFollowupModal">✕</button>
+            </div>
+            
+            <div class="followup-tabs">
+                <button class="followup-tab active" id="tabAuto">Auto Follow-up</button>
+                <button class="followup-tab" id="tabSuggest">Suggest</button>
+            </div>
+
+            <!-- Auto Panel -->
+            <div class="followup-panel active" id="panelAuto">
+                <div style="color:#b0b0b0; font-size:12px; margin-bottom:12px;">Schedule follow-up every:</div>
+                <div class="day-selector">
+                    <button class="day-btn" data-days="1">1 Day</button>
+                    <button class="day-btn selected" data-days="3">3 Days</button>
+                    <button class="day-btn" data-days="5">5 Days</button>
+                    <button class="day-btn" data-days="7">7 Days</button>
+                </div>
+                
+                <div class="toggle-row">
+                    <span class="toggle-label">Enable Auto Follow-up</span>
+                    <input type="checkbox" id="toggleAutoFollowup" style="width:18px; height:18px; accent-color:#66ddff;">
+                </div>
+            </div>
+
+            <!-- Suggest Panel -->
+            <div class="followup-panel" id="panelSuggest">
+                <div class="suggestion-box" id="suggestionBox">Click generate to get an AI suggestion...</div>
+                <button class="btn-primary" id="btnGenerateSuggestion" style="margin-bottom:10px;">Generate Suggestion</button>
+                <button class="btn-primary" id="btnUseSuggestion" disabled>Use in Chat</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── CHAT VIEW ─── -->
     <div class="chat-view" id="chatView">
         <div class="chat-header">
@@ -166,7 +204,7 @@
     <!-- ─── TOAST ─── -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
 
-    <!-- ─── BOTTOM NAV ─── -->
+    <!-- ── BOTTOM NAV ─── -->
     <nav class="bottom-nav">
         <a href="#" class="nav-item active" onclick="return false;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
