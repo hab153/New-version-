@@ -21,6 +21,19 @@ const revenueBody = document.getElementById('revenueBody');
 const closeRevenueModal = document.getElementById('closeRevenueModal');
 const tierBadge = document.getElementById('tierBadge');
 
+// Follow-up Elements
+const followupModal = document.getElementById('followupModal');
+const closeFollowupModal = document.getElementById('closeFollowupModal');
+const tabAuto = document.getElementById('tabAuto');
+const tabSuggest = document.getElementById('tabSuggest');
+const panelAuto = document.getElementById('panelAuto');
+const panelSuggest = document.getElementById('panelSuggest');
+const dayButtons = document.querySelectorAll('.day-btn');
+const toggleAutoFollowup = document.getElementById('toggleAutoFollowup');
+const suggestionBox = document.getElementById('suggestionBox');
+const btnUseSuggestion = document.getElementById('btnUseSuggestion');
+const btnGenerateSuggestion = document.getElementById('btnGenerateSuggestion');
+
 // Chat elements
 const chatView = document.getElementById('chatView');
 const chatBack = document.getElementById('chatBack');
@@ -39,13 +52,14 @@ let currentLeadId = null;
 let currentLeadName = null;
 let currentLeadEmail = null;
 let isSending = false;
+let selectedDays = 3;
 
 // ─── AUTH CHECK ───
 if (!token) {
     window.location.href = 'login.html';
 }
 
-// ─── MENU TOGGLE ───
+// ── MENU TOGGLE ───
 menuBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     menuDropdown.classList.toggle('show');
@@ -60,11 +74,23 @@ document.querySelectorAll('.menu-item').forEach(item => {
         e.stopPropagation();
         const action = this.dataset.action;
         menuDropdown.classList.remove('show');
-        if (action === 'revenue') {
-            fetchRevenueData();
+        
+        if (!currentLeadId && action !== 'revenue') {
+            showToast('Please open a chat first.');
             return;
         }
-        showToast('Please open a chat to access this feature.');
+
+        if (action === 'revenue') {
+            fetchRevenueData();
+        } else if (action === 'followup') {
+            openFollowupModal();
+        } else if (action === 'hint') {
+            // Existing hint logic would go here
+            showToast('AI Hint feature coming soon');
+        } else if (action === 'autoreply') {
+            // Existing autoreply logic would go here
+            showToast('Auto Reply settings coming soon');
+        }
     });
 });
 
@@ -77,6 +103,118 @@ revenueModal.addEventListener('click', function(e) {
         revenueModal.classList.remove('active');
     }
 });
+
+// ─── FOLLOW-UP MODAL LOGIC ───
+function openFollowupModal() {
+    followupModal.classList.add('active');
+    switchTab('auto');
+    loadFollowupStatus();
+}
+
+closeFollowupModal.addEventListener('click', () => {
+    followupModal.classList.remove('active');
+});
+
+followupModal.addEventListener('click', (e) => {
+    if (e.target === followupModal) followupModal.classList.remove('active');
+});
+
+// Tabs
+function switchTab(tab) {
+    if (tab === 'auto') {
+        tabAuto.classList.add('active');
+        tabSuggest.classList.remove('active');
+        panelAuto.classList.add('active');
+        panelSuggest.classList.remove('active');
+    } else {
+        tabSuggest.classList.add('active');
+        tabAuto.classList.remove('active');
+        panelSuggest.classList.add('active');
+        panelAuto.classList.remove('active');
+    }
+}
+
+tabAuto.addEventListener('click', () => switchTab('auto'));
+tabSuggest.addEventListener('click', () => switchTab('suggest'));
+
+// Day Selection
+dayButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        dayButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedDays = parseInt(btn.dataset.days);
+    });
+});
+
+// Toggle Auto Follow-up
+toggleAutoFollowup.addEventListener('change', async () => {
+    if (!currentLeadId) return;
+    try {
+        await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: toggleAutoFollowup.checked, delayDays: selectedDays })
+        });
+        showToast(toggleAutoFollowup.checked ? 'Auto follow-up enabled' : 'Auto follow-up disabled');
+    } catch (err) {
+        console.error(err);
+        showToast('Failed to update auto follow-up');
+    }
+});
+
+// Suggest Follow-up
+btnGenerateSuggestion.addEventListener('click', async () => {
+    if (!currentLeadId) return;
+    btnGenerateSuggestion.disabled = true;
+    btnGenerateSuggestion.textContent = 'Generating...';
+    suggestionBox.textContent = '';
+
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/suggest-follow-up`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        suggestionBox.textContent = data.suggestion || 'No suggestion available.';
+        btnUseSuggestion.disabled = false;
+    } catch (err) {
+        suggestionBox.textContent = 'Error generating suggestion.';
+    } finally {
+        btnGenerateSuggestion.disabled = false;
+        btnGenerateSuggestion.textContent = 'Generate Suggestion';
+    }
+});
+
+btnUseSuggestion.addEventListener('click', () => {
+    if (suggestionBox.textContent && suggestionBox.textContent !== 'No suggestion available.') {
+        chatInput.value = suggestionBox.textContent;
+        chatInput.dispatchEvent(new Event('input')); // Trigger auto-resize
+        followupModal.classList.remove('active');
+        chatInput.focus();
+    }
+});
+
+// Load Status
+async function loadFollowupStatus() {
+    if (!currentLeadId) return;
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        // Update UI based on status
+        toggleAutoFollowup.checked = data.autoFollowUpEnabled || false;
+        selectedDays = data.delayDays || 3;
+        
+        // Highlight correct day button
+        dayButtons.forEach(b => {
+            b.classList.toggle('selected', parseInt(b.dataset.days) === selectedDays);
+        });
+    } catch (err) {
+        console.error('Failed to load follow-up status', err);
+    }
+}
 
 // ─── CHAT BACK ───
 chatBack.addEventListener('click', function() {
@@ -167,7 +305,7 @@ async function sendMessage() {
     if (!text || isSending || !currentLeadId) return;
 
     console.log('🚀 [FE-SEND] Starting send process...');
-    console.log('🆔 [FE-SEND] Current Lead ID:', currentLeadId);
+    console.log(' [FE-SEND] Current Lead ID:', currentLeadId);
 
     isSending = true;
     chatSendBtn.disabled = true;
@@ -357,7 +495,7 @@ const CATEGORY_CONFIG = {
     win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
 };
 
-// ─── FETCH REVENUE DATA ───
+// ── FETCH REVENUE DATA ───
 async function fetchRevenueData() {
     revenueModal.classList.add('active');
     revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
@@ -504,7 +642,7 @@ function renderRevenueData(data) {
         html += `
             <div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
                 <p style="color:#ffbb44; font-size:12px; margin:0;">
-                    🚀 Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
+                     Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
                 </p>
             </div>
         `;
