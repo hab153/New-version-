@@ -161,7 +161,7 @@ async function renameLead(leadId, newName) {
     }
 }
 
-// ─── SEND MESSAGE (FIXED: Prevents doubling and ensures sync) ───
+// ─── SEND MESSAGE (FIXED: Preserves Chat State) ───
 async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
@@ -169,8 +169,10 @@ async function sendMessage() {
     isSending = true;
     chatSendBtn.disabled = true;
 
-    // 1. Clear input immediately but do NOT append to UI yet
+    // Store original text in case of failure
     const originalText = text;
+    
+    // Clear input immediately for better UX
     chatInput.value = '';
     chatInput.style.height = 'auto';
 
@@ -186,7 +188,7 @@ async function sendMessage() {
                 }]
             }],
             leadId: currentLeadId,
-            allowNewLead: false
+            allowNewLead: false // Crucial: Prevents backend from creating a duplicate lead
         };
 
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
@@ -207,10 +209,14 @@ async function sendMessage() {
         }
 
         if (data.success) {
-            // 2. ONLY load history after success. This prevents doubling.
+            // ✅ FIX: Reload history for the SAME leadId. Do not close or reopen the chat.
             await loadChatHistory(currentLeadId);
+            
+            // ✅ FIX: Update the contact list in the background so the preview updates
+            // but do not change the current view.
+            loadContacts(); 
         } else {
-            // If failed, put text back
+            // If failed, restore text
             chatInput.value = originalText;
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
@@ -317,26 +323,29 @@ async function loadChatHistory(leadId) {
     }
 }
 
-// ─── OPEN CHAT ───
+// ─── OPEN CHAT (FIXED: Ensures Stable State) ───
 function openChat(leadId, name, email) {
+    // ✅ FIX: Ensure we are setting the correct ID before doing anything else
     currentLeadId = leadId;
     currentLeadName = name || 'Unknown';
     currentLeadEmail = email || '';
 
+    // Update UI Header
     chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
     chatName.textContent = currentLeadName;
     chatEmail.textContent = currentLeadEmail || 'No email provided';
+    
+    // Show Chat View
     chatView.classList.add('active');
     document.body.style.overflow = 'hidden';
-
     menuDropdown.classList.remove('show');
 
-    // Reset input
+    // Reset Input
     chatInput.value = '';
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
-    // Load chat history
+    // Load History
     loadChatHistory(leadId);
 
     console.log(`📬 Opening chat with ${name} (${leadId})`);
