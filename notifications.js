@@ -161,7 +161,7 @@ async function renameLead(leadId, newName) {
     }
 }
 
-// ─── SEND MESSAGE (FIXED: sends leads array + leadId + allowNewLead: false) ───
+// ─── SEND MESSAGE (FIXED: Prevents doubling and ensures sync) ───
 async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
@@ -169,16 +169,13 @@ async function sendMessage() {
     isSending = true;
     chatSendBtn.disabled = true;
 
-    // Add user message to UI immediately
-    appendMessage('lead', text, new Date());
-
-    // Clear input
+    // 1. Show a temporary "Sending..." state or just clear input
+    // We do NOT appendMessage here to avoid doubling when loadChatHistory runs
+    const originalText = text;
     chatInput.value = '';
     chatInput.style.height = 'auto';
-    chatSendBtn.disabled = true;
 
     try {
-        // ✅ FIXED: Send with leads array AND leadId AND allowNewLead: false
         const payload = {
             leads: [{
                 name: currentLeadName || 'Unknown',
@@ -186,11 +183,11 @@ async function sendMessage() {
                 company: '',
                 messages: [{
                     subject: 'Re: Conversation',
-                    body: text
+                    body: originalText
                 }]
             }],
             leadId: currentLeadId,
-            allowNewLead: false // 🔒 Tell backend NOT to create a new lead
+            allowNewLead: false
         };
 
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
@@ -211,13 +208,16 @@ async function sendMessage() {
         }
 
         if (data.success) {
-            // Fetch updated conversation to get AI reply
+            // 2. ONLY load history after success. This prevents doubling.
             await loadChatHistory(currentLeadId);
         } else {
+            // If failed, put text back
+            chatInput.value = originalText;
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
     } catch (err) {
         console.error('Send message error:', err);
+        chatInput.value = originalText;
         showToast('Connection error. Please try again.');
     } finally {
         isSending = false;
@@ -225,25 +225,32 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE (UPDATED: You / Customer labels) ───
+// ─── APPEND MESSAGE (FIXED: Correct Labels) ───
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
-    div.className = `msg-group from-${from}`;
+    // Note: Backend sends 'ai' for user messages and 'lead' for customer messages
+    // We map them to CSS classes 'from-ai' (right side) and 'from-lead' (left side)
+    
+    // Determine CSS class and Label
+    let cssClass = '';
+    let senderLabel = '';
 
-    // Fix: Correct labels - "You" for your messages, "Customer" for lead messages
-    let sender = '';
-    if (from === 'lead') {
-        sender = 'Customer';
-    } else if (from === 'ai') {
-        sender = 'You';
+    if (from === 'ai') {
+        // This is a message FROM the user (saved as 'ai' in DB)
+        cssClass = 'from-ai'; 
+        senderLabel = 'You';
     } else {
-        sender = from;
+        // This is a message FROM the lead/customer
+        cssClass = 'from-lead';
+        senderLabel = 'Customer';
     }
+
+    div.className = `msg-group ${cssClass}`;
 
     const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
     div.innerHTML = `
-        <div class="msg-sender">${sender}</div>
+        <div class="msg-sender">${senderLabel}</div>
         <div class="message-bubble">${escapeHtml(content)}</div>
         <div class="message-time">${time}</div>
     `;
