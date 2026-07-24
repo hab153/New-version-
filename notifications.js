@@ -161,7 +161,7 @@ async function renameLead(leadId, newName) {
     }
 }
 
-// ─── SEND MESSAGE (FIXED: Preserves Chat State) ───
+// ─── SEND MESSAGE (ANCHOR STRATEGY) ───
 async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
@@ -169,10 +169,7 @@ async function sendMessage() {
     isSending = true;
     chatSendBtn.disabled = true;
 
-    // Store original text in case of failure
     const originalText = text;
-    
-    // Clear input immediately for better UX
     chatInput.value = '';
     chatInput.style.height = 'auto';
 
@@ -182,41 +179,29 @@ async function sendMessage() {
                 name: currentLeadName || 'Unknown',
                 email: currentLeadEmail || '',
                 company: '',
-                messages: [{
-                    subject: 'Re: Conversation',
-                    body: originalText
-                }]
+                messages: [{ subject: 'Re: Conversation', body: originalText }]
             }],
             leadId: currentLeadId,
-            allowNewLead: false // Crucial: Prevents backend from creating a duplicate lead
+            allowNewLead: false
         };
 
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
         const data = await res.json();
 
-        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-            showToast('⚠️ Email session expired. Please reconnect.');
-            window.location.href = 'dashboard.html?connect=true';
-            return;
-        }
-
         if (data.success) {
-            // ✅ FIX: Reload history for the SAME leadId. Do not close or reopen the chat.
+            // ✅ STEP 1: Reload history for the CURRENT chat only
             await loadChatHistory(currentLeadId);
             
-            // ✅ FIX: Update the contact list in the background so the preview updates
-            // but do not change the current view.
-            loadContacts(); 
+            // ✅ STEP 2: Update sidebar AFTER delay to prevent UI jumping
+            setTimeout(() => {
+                loadContacts(); 
+            }, 800);
         } else {
-            // If failed, restore text
             chatInput.value = originalText;
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
@@ -234,16 +219,13 @@ async function sendMessage() {
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
-    // Determine CSS class and Label
     let cssClass = '';
     let senderLabel = '';
 
     if (from === 'ai') {
-        // This is a message FROM the user (saved as 'ai' in DB)
         cssClass = 'from-ai'; 
         senderLabel = 'You';
     } else {
-        // This is a message FROM the lead/customer
         cssClass = 'from-lead';
         senderLabel = 'Customer';
     }
@@ -262,9 +244,8 @@ function appendMessage(from, content, date) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── LOAD CHAT HISTORY (UPDATED: with loading state) ───
+// ─── LOAD CHAT HISTORY ───
 async function loadChatHistory(leadId) {
-    // Show loading state
     messagesContainer.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;">
             <div class="spinner" style="width:28px; height:28px; border-width:2px;"></div>
@@ -289,7 +270,6 @@ async function loadChatHistory(leadId) {
         const data = await res.json();
         const messages = data.messages || [];
 
-        // Clear container
         messagesContainer.innerHTML = '';
 
         if (messages.length === 0) {
@@ -306,7 +286,6 @@ async function loadChatHistory(leadId) {
         }
 
         messages.forEach(msg => {
-            // Use the correct 'from' value from backend
             const from = msg.from === 'ai' ? 'ai' : 'lead';
             appendMessage(from, msg.content, msg.date);
         });
@@ -323,31 +302,31 @@ async function loadChatHistory(leadId) {
     }
 }
 
-// ─── OPEN CHAT (FIXED: Ensures Stable State) ───
+// ─── OPEN CHAT (SMART GUARD) ───
 function openChat(leadId, name, email) {
-    // ✅ FIX: Ensure we are setting the correct ID before doing anything else
+    // ✅ GUARD: If already in this chat, just refresh messages and STOP
+    if (currentLeadId === leadId && chatView.classList.contains('active')) {
+        loadChatHistory(leadId);
+        return;
+    }
+
     currentLeadId = leadId;
     currentLeadName = name || 'Unknown';
     currentLeadEmail = email || '';
 
-    // Update UI Header
     chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
     chatName.textContent = currentLeadName;
     chatEmail.textContent = currentLeadEmail || 'No email provided';
     
-    // Show Chat View
     chatView.classList.add('active');
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
-
-    // Reset Input
+    
     chatInput.value = '';
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
-    // Load History
     loadChatHistory(leadId);
-
     console.log(`📬 Opening chat with ${name} (${leadId})`);
 }
 
