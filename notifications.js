@@ -37,6 +37,13 @@ const followupBtn = document.getElementById('chatFollowupBtn');
 const followupDropdown = document.getElementById('chatFollowupDropdown');
 const followupStatus = document.getElementById('followupStatus');
 
+// ─── AUTO FOLLOW-UP DAYS SELECTOR ───
+const autoFollowupDays = document.getElementById('autoFollowupDays');
+const dayButtons = document.querySelectorAll('.day-btn');
+const dayCustomInput = document.getElementById('dayCustomInput');
+const dayApplyBtn = document.getElementById('dayApplyBtn');
+let selectedDays = 3;
+
 // ─── STATE ───
 let allContacts = [];
 let toastTimeout = null;
@@ -103,10 +110,45 @@ document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEvent
     suggestFollowUp();
 });
 
-// ─── AUTO FOLLOW-UP TOGGLE ───
-document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function() {
-    followupDropdown.classList.remove('show');
-    toggleAutoFollowUp();
+// ─── AUTO FOLLOW-UP TOGGLE (SHOW/HIDE DAYS SELECTOR) ───
+document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    // Toggle days selector visibility
+    if (autoFollowupDays) {
+        autoFollowupDays.style.display = autoFollowupDays.style.display === 'none' ? 'block' : 'none';
+    }
+});
+
+// ─── DAY BUTTON CLICK ───
+dayButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        dayButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedDays = parseInt(this.dataset.days);
+        dayCustomInput.value = selectedDays;
+        autoFollowupDays.style.display = 'none';
+        // Toggle auto follow-up with selected days
+        toggleAutoFollowUp(selectedDays);
+    });
+});
+
+// ─── CUSTOM DAYS APPLY ───
+dayApplyBtn?.addEventListener('click', function() {
+    let days = parseInt(dayCustomInput.value);
+    if (isNaN(days) || days < 1) days = 1;
+    if (days > 7) days = 7;
+    dayCustomInput.value = days;
+    selectedDays = days;
+    dayButtons.forEach(b => b.classList.remove('active'));
+    autoFollowupDays.style.display = 'none';
+    toggleAutoFollowUp(selectedDays);
+});
+
+// Also trigger on Enter key in input
+dayCustomInput?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        dayApplyBtn.click();
+    }
 });
 
 // ─── CHAT BACK ───
@@ -368,6 +410,9 @@ function openChat(leadId, name, email) {
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
     followupDropdown?.classList.remove('show');
+    if (autoFollowupDays) {
+        autoFollowupDays.style.display = 'none';
+    }
     
     chatInput.value = '';
     chatInput.style.height = 'auto';
@@ -459,11 +504,13 @@ async function suggestFollowUp() {
 }
 
 // ─── TOGGLE AUTO FOLLOW-UP ───
-async function toggleAutoFollowUp() {
+async function toggleAutoFollowUp(days) {
     if (!currentLeadId) {
         showToast('Open a chat first to manage auto follow-up.');
         return;
     }
+
+    const delayDays = days || selectedDays || 3;
 
     // Get current status
     let currentStatus = false;
@@ -488,7 +535,7 @@ async function toggleAutoFollowUp() {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ enabled: newStatus })
+            body: JSON.stringify({ enabled: newStatus, delayDays: delayDays })
         });
 
         if (!res.ok) {
@@ -508,11 +555,15 @@ async function toggleAutoFollowUp() {
             if (data.autoFollowUpEnabled) {
                 followupStatus.textContent = 'ON';
                 followupStatus.className = 'followup-status on';
-                showToast('✅ Auto follow-up enabled. First follow-up scheduled in 3 days.');
+                showToast(`✅ Auto follow-up enabled. First follow-up in ${delayDays} day(s).`);
             } else {
                 followupStatus.textContent = 'OFF';
                 followupStatus.className = 'followup-status';
                 showToast('❌ Auto follow-up disabled.');
+            }
+            // Close the days selector
+            if (autoFollowupDays) {
+                autoFollowupDays.style.display = 'none';
             }
         } else {
             showToast(data.message || 'Failed to toggle auto follow-up.');
