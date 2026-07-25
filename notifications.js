@@ -32,6 +32,11 @@ const messagesContainer = document.getElementById('messagesContainer');
 const chatInput = document.getElementById('chatInput');
 const chatSendBtn = document.getElementById('chatSendBtn');
 
+// ─── FOLLOW-UP ELEMENTS ───
+const followupBtn = document.getElementById('chatFollowupBtn');
+const followupDropdown = document.getElementById('chatFollowupDropdown');
+const followupStatus = document.getElementById('followupStatus');
+
 // ─── STATE ───
 let allContacts = [];
 let toastTimeout = null;
@@ -76,6 +81,32 @@ revenueModal.addEventListener('click', function(e) {
     if (e.target === this) {
         revenueModal.classList.remove('active');
     }
+});
+
+// ─── FOLLOW-UP DROPDOWN TOGGLE ───
+if (followupBtn && followupDropdown) {
+    followupBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        followupDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!followupBtn.contains(e.target) && !followupDropdown.contains(e.target)) {
+            followupDropdown.classList.remove('show');
+        }
+    });
+}
+
+// ─── SUGGEST FOLLOW-UP ───
+document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEventListener('click', function() {
+    followupDropdown.classList.remove('show');
+    suggestFollowUp();
+});
+
+// ─── AUTO FOLLOW-UP TOGGLE ───
+document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function() {
+    followupDropdown.classList.remove('show');
+    toggleAutoFollowUp();
 });
 
 // ─── CHAT BACK ───
@@ -227,7 +258,7 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE (FIXED: Correct Labels) ───
+// ─── APPEND MESSAGE ───
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
@@ -314,20 +345,17 @@ async function loadChatHistory(leadId) {
     }
 }
 
-// ─── OPEN CHAT (WITH TRACE LOGS) ───
+// ─── OPEN CHAT ───
 function openChat(leadId, name, email) {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📂 [FE-OPEN] Attempting to open chat...');
+    console.log('📂 [FE-OPEN] Opening chat...');
     console.log('🆔 [FE-OPEN] Target Lead ID:', leadId);
-    console.log('🆔 [FE-OPEN] Current Active ID:', currentLeadId);
     
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
-        console.log('⚡ [FE-OPEN] Chat is already active. Only reloading history.');
+        console.log('⚡ [FE-OPEN] Chat already active. Reloading history.');
         loadChatHistory(leadId);
         return;
     }
 
-    console.log('🆕 [FE-OPEN] Opening NEW chat view.');
     currentLeadId = leadId;
     currentLeadName = name || 'Unknown';
     currentLeadEmail = email || '';
@@ -339,13 +367,161 @@ function openChat(leadId, name, email) {
     chatView.classList.add('active');
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
+    followupDropdown?.classList.remove('show');
     
     chatInput.value = '';
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
+    // Load follow-up status
+    loadFollowUpStatus();
+
     loadChatHistory(leadId);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+}
+
+// ============================================================
+// FOLLOW-UP FUNCTIONS
+// ============================================================
+
+// ─── LOAD FOLLOW-UP STATUS ───
+async function loadFollowUpStatus() {
+    if (!currentLeadId) return;
+
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        
+        if (followupStatus) {
+            if (data.autoFollowUpEnabled) {
+                followupStatus.textContent = 'ON';
+                followupStatus.className = 'followup-status on';
+            } else {
+                followupStatus.textContent = 'OFF';
+                followupStatus.className = 'followup-status';
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load follow-up status:', err);
+    }
+}
+
+// ─── SUGGEST FOLLOW-UP ───
+async function suggestFollowUp() {
+    if (!currentLeadId) {
+        showToast('Open a chat first to get a follow-up suggestion.');
+        return;
+    }
+
+    showToast('Generating follow-up suggestion...');
+
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/suggest-follow-up`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            const err = await res.json();
+            showToast('Failed: ' + (err.message || 'Unknown error'));
+            return;
+        }
+
+        const data = await res.json();
+
+        if (data.success && data.suggestion) {
+            chatInput.value = data.suggestion;
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
+            chatSendBtn.disabled = false;
+            chatInput.focus();
+            showToast('💡 Follow-up suggestion ready!');
+        } else {
+            showToast(data.message || 'No suggestion generated.');
+        }
+
+    } catch (err) {
+        console.error('Suggest follow-up error:', err);
+        showToast('Connection error. Please try again.');
+    }
+}
+
+// ─── TOGGLE AUTO FOLLOW-UP ───
+async function toggleAutoFollowUp() {
+    if (!currentLeadId) {
+        showToast('Open a chat first to manage auto follow-up.');
+        return;
+    }
+
+    // Get current status
+    let currentStatus = false;
+    try {
+        const statusRes = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (statusRes.ok) {
+            const statusData = await statusRes.json();
+            currentStatus = statusData.autoFollowUpEnabled || false;
+        }
+    } catch (err) {
+        console.error('Failed to get follow-up status:', err);
+    }
+
+    const newStatus = !currentStatus;
+
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ enabled: newStatus })
+        });
+
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            const err = await res.json();
+            showToast('Failed: ' + (err.message || 'Unknown error'));
+            return;
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+            if (data.autoFollowUpEnabled) {
+                followupStatus.textContent = 'ON';
+                followupStatus.className = 'followup-status on';
+                showToast('✅ Auto follow-up enabled. First follow-up scheduled in 3 days.');
+            } else {
+                followupStatus.textContent = 'OFF';
+                followupStatus.className = 'followup-status';
+                showToast('❌ Auto follow-up disabled.');
+            }
+        } else {
+            showToast(data.message || 'Failed to toggle auto follow-up.');
+        }
+
+    } catch (err) {
+        console.error('Toggle auto follow-up error:', err);
+        showToast('Connection error. Please try again.');
+    }
 }
 
 // ─── CATEGORY CONFIG ───
