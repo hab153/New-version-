@@ -44,7 +44,10 @@ const cancelAutoFollowup = document.getElementById('cancelAutoFollowup');
 const confirmAutoFollowup = document.getElementById('confirmAutoFollowup');
 const afDayButtons = document.querySelectorAll('.af-day-btn');
 const afCustomInput = document.getElementById('afCustomInput');
+const afStatusBadge = document.getElementById('afStatusBadge');
+const afCurrentStatus = document.getElementById('afCurrentStatus');
 let afSelectedDays = 3;
+let afCurrentEnabledState = false;
 
 // ─── STATE ───
 let allContacts = [];
@@ -115,16 +118,13 @@ document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEvent
 // ─── OPEN AUTO FOLLOW-UP MODAL ───
 document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function(e) {
     e.stopPropagation();
-    // Close the dropdown
     if (followupDropdown) {
         followupDropdown.classList.remove('show');
     }
-    // Open the modal
+    loadFollowUpStatusForModal();
     if (autoFollowupModal) {
         autoFollowupModal.classList.add('active');
     }
-    // Load current status and set default days
-    loadFollowUpStatusForModal();
 });
 
 // ─── CLOSE MODAL ───
@@ -155,13 +155,28 @@ async function loadFollowUpStatusForModal() {
         if (!res.ok) return;
 
         const data = await res.json();
-        if (data.autoFollowUpEnabled) {
-            // If already enabled, show current status in the modal
-            // We'll keep the default days but show a note
-            console.log('Auto follow-up already enabled');
-        }
+        afCurrentEnabledState = data.autoFollowUpEnabled || false;
+        updateModalStatus(afCurrentEnabledState);
     } catch (err) {
         console.error('Failed to load follow-up status:', err);
+    }
+}
+
+// ─── UPDATE MODAL STATUS ───
+function updateModalStatus(enabled) {
+    if (afStatusBadge) {
+        afStatusBadge.textContent = enabled ? 'ON' : 'OFF';
+        afStatusBadge.style.background = enabled ? 'rgba(102,221,153,0.12)' : 'rgba(255,85,85,0.12)';
+        afStatusBadge.style.color = enabled ? 'var(--green)' : '#ff5555';
+    }
+    if (afCurrentStatus) {
+        afCurrentStatus.textContent = enabled ? 'ON' : 'OFF';
+        afCurrentStatus.style.color = enabled ? 'var(--green)' : '#ff5555';
+    }
+    if (confirmAutoFollowup) {
+        confirmAutoFollowup.textContent = enabled ? '❌ Disable Auto Follow-up' : '✅ Enable Auto Follow-up';
+        confirmAutoFollowup.style.background = enabled ? '#ff5555' : 'var(--green)';
+        confirmAutoFollowup.style.color = enabled ? '#fff' : '#000';
     }
 }
 
@@ -190,10 +205,9 @@ afCustomInput?.addEventListener('input', function() {
 
 // ─── CONFIRM AUTO FOLLOW-UP ───
 confirmAutoFollowup?.addEventListener('click', function() {
-    // Close modal
+    const newState = !afCurrentEnabledState;
     closeAutoFollowupModalFn();
-    // Toggle auto follow-up with selected days
-    toggleAutoFollowUp(afSelectedDays);
+    toggleAutoFollowUp(afSelectedDays, newState);
 });
 
 // ─── CHAT BACK ───
@@ -544,8 +558,8 @@ async function suggestFollowUp() {
 }
 
 // ─── TOGGLE AUTO FOLLOW-UP ───
-async function toggleAutoFollowUp(days) {
-    console.log('🔄 [AUTO-FOLLOWUP] toggleAutoFollowUp called with days:', days);
+async function toggleAutoFollowUp(days, forceState) {
+    console.log('🔄 [AUTO-FOLLOWUP] toggleAutoFollowUp called with days:', days, 'forceState:', forceState);
     
     if (!currentLeadId) {
         showToast('Open a chat first to manage auto follow-up.');
@@ -553,33 +567,38 @@ async function toggleAutoFollowUp(days) {
     }
 
     const delayDays = days || afSelectedDays || 3;
-    console.log('📅 [AUTO-FOLLOWUP] Delay days:', delayDays);
-
-    let currentStatus = false;
-    try {
-        const statusRes = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (statusRes.ok) {
-            const statusData = await statusRes.json();
-            currentStatus = statusData.autoFollowUpEnabled || false;
-            console.log('📊 [AUTO-FOLLOWUP] Current status:', currentStatus);
+    
+    let currentStatus = afCurrentEnabledState;
+    if (typeof forceState === 'undefined') {
+        try {
+            const statusRes = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (statusRes.ok) {
+                const statusData = await statusRes.json();
+                currentStatus = statusData.autoFollowUpEnabled || false;
+            }
+        } catch (err) {
+            console.error('Failed to get follow-up status:', err);
         }
-    } catch (err) {
-        console.error('Failed to get follow-up status:', err);
+    } else {
+        currentStatus = forceState;
     }
 
-    const newStatus = !currentStatus;
+    const newStatus = typeof forceState !== 'undefined' ? forceState : !currentStatus;
     console.log('🔄 [AUTO-FOLLOWUP] New status:', newStatus);
 
     // Update UI instantly
     if (newStatus) {
         followupStatus.textContent = 'ON';
         followupStatus.className = 'followup-status on';
+        afCurrentEnabledState = true;
     } else {
         followupStatus.textContent = 'OFF';
         followupStatus.className = 'followup-status';
+        afCurrentEnabledState = false;
     }
+    updateModalStatus(afCurrentEnabledState);
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
@@ -601,8 +620,17 @@ async function toggleAutoFollowUp(days) {
             }
             const err = await res.json();
             // Revert UI on error
-            followupStatus.textContent = currentStatus ? 'ON' : 'OFF';
-            followupStatus.className = currentStatus ? 'followup-status on' : 'followup-status';
+            const revertStatus = !newStatus;
+            if (revertStatus) {
+                followupStatus.textContent = 'ON';
+                followupStatus.className = 'followup-status on';
+                afCurrentEnabledState = true;
+            } else {
+                followupStatus.textContent = 'OFF';
+                followupStatus.className = 'followup-status';
+                afCurrentEnabledState = false;
+            }
+            updateModalStatus(afCurrentEnabledState);
             showToast('Failed: ' + (err.message || 'Unknown error'));
             return;
         }
@@ -611,6 +639,8 @@ async function toggleAutoFollowUp(days) {
         console.log('📥 [AUTO-FOLLOWUP] Response data:', data);
 
         if (data.success) {
+            afCurrentEnabledState = data.autoFollowUpEnabled;
+            updateModalStatus(afCurrentEnabledState);
             if (data.autoFollowUpEnabled) {
                 followupStatus.textContent = 'ON';
                 followupStatus.className = 'followup-status on';
@@ -624,16 +654,34 @@ async function toggleAutoFollowUp(days) {
             }
         } else {
             // Revert UI on failure
-            followupStatus.textContent = currentStatus ? 'ON' : 'OFF';
-            followupStatus.className = currentStatus ? 'followup-status on' : 'followup-status';
+            const revertStatus = !newStatus;
+            if (revertStatus) {
+                followupStatus.textContent = 'ON';
+                followupStatus.className = 'followup-status on';
+                afCurrentEnabledState = true;
+            } else {
+                followupStatus.textContent = 'OFF';
+                followupStatus.className = 'followup-status';
+                afCurrentEnabledState = false;
+            }
+            updateModalStatus(afCurrentEnabledState);
             showToast(data.message || 'Failed to toggle auto follow-up.');
         }
 
     } catch (err) {
         console.error('💥 [AUTO-FOLLOWUP] Error:', err);
         // Revert UI on error
-        followupStatus.textContent = currentStatus ? 'ON' : 'OFF';
-        followupStatus.className = currentStatus ? 'followup-status on' : 'followup-status';
+        const revertStatus = !newStatus;
+        if (revertStatus) {
+            followupStatus.textContent = 'ON';
+            followupStatus.className = 'followup-status on';
+            afCurrentEnabledState = true;
+        } else {
+            followupStatus.textContent = 'OFF';
+            followupStatus.className = 'followup-status';
+            afCurrentEnabledState = false;
+        }
+        updateModalStatus(afCurrentEnabledState);
         showToast('Connection error. Please try again.');
     }
 }
