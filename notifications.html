@@ -191,22 +191,23 @@
 
     <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
     <div class="modal-overlay" id="autoFollowupModal">
-        <div class="modal-content" style="max-width:340px;">
-            <div class="modal-header">
-                <div class="modal-title" style="font-size:14px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;">
+        <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
+            <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
+                <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);">
                         <circle cx="12" cy="12" r="10"/>
                         <polyline points="12 6 12 12 16 14"/>
                     </svg>
                     Auto Follow-up
+                    <span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span>
                 </div>
-                <button class="modal-close" id="closeAutoFollowupModal">✕</button>
+                <button class="modal-close" id="closeAutoFollowupModal" style="width:32px; height:32px; font-size:18px; border-radius:8px;">✕</button>
             </div>
             <div class="modal-body">
-                <p style="font-size:11px; color:#707070; margin-bottom:12px;">Select how many days to wait before sending the first follow-up.</p>
+                <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
                 
-                <!-- Day buttons -->
-                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                <!-- Day buttons - Large -->
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
                     <button class="af-day-btn" data-days="1">1</button>
                     <button class="af-day-btn" data-days="2">2</button>
                     <button class="af-day-btn active" data-days="3">3</button>
@@ -216,16 +217,26 @@
                     <button class="af-day-btn" data-days="7">7</button>
                 </div>
                 
-                <!-- Custom input -->
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:9px; color:#707070;">Custom:</span>
-                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:50px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:4px; color:#f5f5f5; padding:4px 6px; font-size:11px; outline:none; text-align:center;">
-                    <span style="font-size:9px; color:#505050;">days</span>
+                <!-- Custom input - Larger -->
+                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
+                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
+                    <span style="font-size:11px; color:#505050;">days</span>
+                    <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
+                </div>
+
+                <!-- Current status display -->
+                <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:11px; color:#707070;">Current status:</span>
+                    <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
+                    <span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-ghost" id="cancelAutoFollowup">Cancel</button>
-                <button class="btn-primary" id="confirmAutoFollowup">Enable</button>
+            <div class="modal-footer" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); gap:10px;">
+                <button class="btn-ghost" id="cancelAutoFollowup" style="padding:10px 20px; font-size:12px;">Cancel</button>
+                <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">
+                    ✅ Enable Auto Follow-up
+                </button>
             </div>
         </div>
     </div>
