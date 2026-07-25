@@ -13,7 +13,7 @@ const contactList = document.getElementById('contactList');
 const emptyState = document.getElementById('emptyState');
 const noResults = document.getElementById('noResults');
 const searchInput = document.getElementById('searchInput');
-const menuBtn = document.getElementById('menuBtn')
+const menuBtn = document.getElementById('menuBtn');
 const menuDropdown = document.getElementById('menuDropdown');
 const toast = document.getElementById('toast');
 const revenueModal = document.getElementById('revenueModal');
@@ -152,13 +152,20 @@ async function loadFollowUpStatusForModal() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!res.ok) return;
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                showToast('Session expired. Please refresh the page.');
+                return;
+            }
+            return;
+        }
 
         const data = await res.json();
         afCurrentEnabledState = data.autoFollowUpEnabled || false;
         updateModalStatus(afCurrentEnabledState);
     } catch (err) {
         console.error('Failed to load follow-up status:', err);
+        showToast('Connection error. Please try again.');
     }
 }
 
@@ -270,8 +277,7 @@ async function renameLead(leadId, newName) {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                showToast('Session expired. Please refresh the page.');
                 return;
             }
             showToast('Failed to rename: ' + (data.message || data.error || 'Unknown error'));
@@ -404,8 +410,7 @@ async function loadChatHistory(leadId) {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                showToast('Session expired. Please refresh the page.');
                 return;
             }
             throw new Error(`HTTP ${res.status}`);
@@ -506,6 +511,7 @@ async function loadFollowUpStatus() {
         }
     } catch (err) {
         console.error('Failed to load follow-up status:', err);
+        showToast('Connection error. Please try again.');
     }
 }
 
@@ -529,8 +535,7 @@ async function suggestFollowUp() {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                showToast('Session expired. Please refresh the page.');
                 return;
             }
             const err = await res.json();
@@ -577,9 +582,14 @@ async function toggleAutoFollowUp(days, forceState) {
             if (statusRes.ok) {
                 const statusData = await statusRes.json();
                 currentStatus = statusData.autoFollowUpEnabled || false;
+            } else if (statusRes.status === 401 || statusRes.status === 403) {
+                showToast('Session expired. Please refresh the page.');
+                return;
             }
         } catch (err) {
             console.error('Failed to get follow-up status:', err);
+            showToast('Connection error. Please try again.');
+            return;
         }
     } else {
         currentStatus = forceState;
@@ -614,8 +624,19 @@ async function toggleAutoFollowUp(days, forceState) {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                showToast('Session expired. Please refresh the page.');
+                // Revert UI
+                const revertStatus = !newStatus;
+                if (revertStatus) {
+                    followupStatus.textContent = 'ON';
+                    followupStatus.className = 'followup-status on';
+                    afCurrentEnabledState = true;
+                } else {
+                    followupStatus.textContent = 'OFF';
+                    followupStatus.className = 'followup-status';
+                    afCurrentEnabledState = false;
+                }
+                updateModalStatus(afCurrentEnabledState);
                 return;
             }
             const err = await res.json();
@@ -708,8 +729,8 @@ async function fetchRevenueData() {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                showToast('Session expired. Please refresh the page.');
+                revenueModal.classList.remove('active');
                 return;
             }
             throw new Error(`HTTP ${res.status}`);
@@ -876,8 +897,7 @@ async function loadContacts() {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+                showToast('Session expired. Please refresh the page.');
                 return;
             }
             throw new Error(`HTTP ${res.status}`);
