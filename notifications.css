@@ -542,6 +542,86 @@ body {
     color: #66dd99;
 }
 
+/* ─── AUTO FOLLOW-UP DAYS SELECTOR ─── */
+.auto-followup-wrap {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 8px 12px !important;
+    cursor: default !important;
+}
+
+.auto-followup-wrap > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.auto-followup-days {
+    padding-top: 6px;
+    margin-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.day-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #707070;
+    font-size: 9px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-btn:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #f5f5f5;
+}
+
+.day-btn.active {
+    border-color: #66dd99;
+    color: #66dd99;
+    background: rgba(102, 221, 153, 0.08);
+}
+
+.day-custom-input {
+    width: 40px;
+    background: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    color: #f5f5f5;
+    padding: 3px 4px;
+    font-size: 10px;
+    outline: none;
+    text-align: center;
+}
+
+.day-custom-input:focus {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.day-apply-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #b0b0b0;
+    padding: 2px 8px;
+    font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.day-apply-btn:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f5f5f5;
+}
+
 /* ─── MESSAGES CONTAINER ─── */
 .messages-container {
     flex: 1;
