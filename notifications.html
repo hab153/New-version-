@@ -152,38 +152,14 @@
                             </svg>
                             Suggest Follow‑up
                         </button>
-                        <!-- ─── AUTO FOLLOW-UP WITH DAYS SELECTOR ─── -->
-                        <div class="chat-followup-option auto-followup-wrap" data-action="auto">
-                            <div style="display:flex; align-items:center; gap:8px; width:100%;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; flex-shrink:0;">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <polyline points="12 6 12 12 16 14"/>
-                                </svg>
-                                <span style="font-size:11px; color:#b0b0b0;">Auto Follow‑up</span>
-                                <span class="followup-status" id="followupStatus">OFF</span>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:10px; height:10px; margin-left:auto; flex-shrink:0;">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
-                            </div>
-                            <div class="auto-followup-days" id="autoFollowupDays" style="display:none; padding-top:6px; margin-top:4px; border-top:1px solid rgba(255,255,255,0.06);">
-                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                    <span style="font-size:9px; color:#707070;">Days:</span>
-                                    <button class="day-btn" data-days="1">1</button>
-                                    <button class="day-btn" data-days="2">2</button>
-                                    <button class="day-btn active" data-days="3">3</button>
-                                    <button class="day-btn" data-days="4">4</button>
-                                    <button class="day-btn" data-days="5">5</button>
-                                    <button class="day-btn" data-days="6">6</button>
-                                    <button class="day-btn" data-days="7">7</button>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:6px; margin-top:4px; flex-wrap:wrap;">
-                                    <span style="font-size:9px; color:#707070;">Custom:</span>
-                                    <input type="number" class="day-custom-input" id="dayCustomInput" min="1" max="7" value="3" style="width:40px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:4px; color:#f5f5f5; padding:3px 4px; font-size:10px; outline:none; text-align:center;">
-                                    <span style="font-size:9px; color:#505050;">days</span>
-                                    <button class="day-apply-btn" id="dayApplyBtn" style="background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:4px; color:#b0b0b0; padding:2px 8px; font-size:8px; cursor:pointer;">Apply</button>
-                                </div>
-                            </div>
-                        </div>
+                        <button class="chat-followup-option" data-action="auto">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Auto Follow‑up
+                            <span class="followup-status" id="followupStatus">OFF</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -210,6 +186,47 @@
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                 </svg>
             </button>
+        </div>
+    </div>
+
+    <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
+    <div class="modal-overlay" id="autoFollowupModal">
+        <div class="modal-content" style="max-width:340px;">
+            <div class="modal-header">
+                <div class="modal-title" style="font-size:14px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Auto Follow-up
+                </div>
+                <button class="modal-close" id="closeAutoFollowupModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:11px; color:#707070; margin-bottom:12px;">Select how many days to wait before sending the first follow-up.</p>
+                
+                <!-- Day buttons -->
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                    <button class="af-day-btn" data-days="1">1</button>
+                    <button class="af-day-btn" data-days="2">2</button>
+                    <button class="af-day-btn active" data-days="3">3</button>
+                    <button class="af-day-btn" data-days="4">4</button>
+                    <button class="af-day-btn" data-days="5">5</button>
+                    <button class="af-day-btn" data-days="6">6</button>
+                    <button class="af-day-btn" data-days="7">7</button>
+                </div>
+                
+                <!-- Custom input -->
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:9px; color:#707070;">Custom:</span>
+                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:50px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:4px; color:#f5f5f5; padding:4px 6px; font-size:11px; outline:none; text-align:center;">
+                    <span style="font-size:9px; color:#505050;">days</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" id="cancelAutoFollowup">Cancel</button>
+                <button class="btn-primary" id="confirmAutoFollowup">Enable</button>
+            </div>
         </div>
     </div>
 
@@ -251,4 +268,4 @@
 
     <script src="notifications.js"></script>
 </body>
-                        </html>
+    </html>
