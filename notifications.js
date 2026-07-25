@@ -37,12 +37,14 @@ const followupBtn = document.getElementById('chatFollowupBtn');
 const followupDropdown = document.getElementById('chatFollowupDropdown');
 const followupStatus = document.getElementById('followupStatus');
 
-// ─── AUTO FOLLOW-UP DAYS SELECTOR ───
-const autoFollowupDays = document.getElementById('autoFollowupDays');
-const dayButtons = document.querySelectorAll('.day-btn');
-const dayCustomInput = document.getElementById('dayCustomInput');
-const dayApplyBtn = document.getElementById('dayApplyBtn');
-let selectedDays = 3;
+// ─── AUTO FOLLOW-UP MODAL ELEMENTS ───
+const autoFollowupModal = document.getElementById('autoFollowupModal');
+const closeAutoFollowupModal = document.getElementById('closeAutoFollowupModal');
+const cancelAutoFollowup = document.getElementById('cancelAutoFollowup');
+const confirmAutoFollowup = document.getElementById('confirmAutoFollowup');
+const afDayButtons = document.querySelectorAll('.af-day-btn');
+const afCustomInput = document.getElementById('afCustomInput');
+let afSelectedDays = 3;
 
 // ─── STATE ───
 let allContacts = [];
@@ -110,60 +112,88 @@ document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEvent
     suggestFollowUp();
 });
 
-// ─── AUTO FOLLOW-UP TOGGLE (FIXED) ───
-// Get the auto follow-up option container
-const autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
+// ─── OPEN AUTO FOLLOW-UP MODAL ───
+document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    // Close the dropdown
+    if (followupDropdown) {
+        followupDropdown.classList.remove('show');
+    }
+    // Open the modal
+    if (autoFollowupModal) {
+        autoFollowupModal.classList.add('active');
+    }
+    // Load current status and set default days
+    loadFollowUpStatusForModal();
+});
 
-// Remove any inline onclick and use proper event listener
-if (autoFollowupOption) {
-    // Remove the inline onclick if present
-    autoFollowupOption.removeAttribute('onclick');
-    
-    autoFollowupOption.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (autoFollowupDays) {
-            const isVisible = autoFollowupDays.style.display === 'block';
-            autoFollowupDays.style.display = isVisible ? 'none' : 'block';
-        }
-    });
+// ─── CLOSE MODAL ───
+function closeAutoFollowupModalFn() {
+    if (autoFollowupModal) {
+        autoFollowupModal.classList.remove('active');
+    }
 }
 
-// ─── DAY BUTTON CLICK ───
-dayButtons.forEach(btn => {
+closeAutoFollowupModal?.addEventListener('click', closeAutoFollowupModalFn);
+cancelAutoFollowup?.addEventListener('click', closeAutoFollowupModalFn);
+
+autoFollowupModal?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAutoFollowupModalFn();
+    }
+});
+
+// ─── LOAD FOLLOW-UP STATUS FOR MODAL ───
+async function loadFollowUpStatusForModal() {
+    if (!currentLeadId) return;
+
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (data.autoFollowUpEnabled) {
+            // If already enabled, show current status in the modal
+            // We'll keep the default days but show a note
+            console.log('Auto follow-up already enabled');
+        }
+    } catch (err) {
+        console.error('Failed to load follow-up status:', err);
+    }
+}
+
+// ─── DAY BUTTON CLICK IN MODAL ───
+afDayButtons.forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        dayButtons.forEach(b => b.classList.remove('active'));
+        afDayButtons.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        selectedDays = parseInt(this.dataset.days);
-        dayCustomInput.value = selectedDays;
-        if (autoFollowupDays) {
-            autoFollowupDays.style.display = 'none';
+        afSelectedDays = parseInt(this.dataset.days);
+        if (afCustomInput) {
+            afCustomInput.value = afSelectedDays;
         }
-        toggleAutoFollowUp(selectedDays);
     });
 });
 
-// ─── CUSTOM DAYS APPLY ───
-dayApplyBtn?.addEventListener('click', function(e) {
-    e.stopPropagation();
-    let days = parseInt(dayCustomInput.value);
-    if (isNaN(days) || days < 1) days = 1;
-    if (days > 7) days = 7;
-    dayCustomInput.value = days;
-    selectedDays = days;
-    dayButtons.forEach(b => b.classList.remove('active'));
-    if (autoFollowupDays) {
-        autoFollowupDays.style.display = 'none';
-    }
-    toggleAutoFollowUp(selectedDays);
+// ─── CUSTOM INPUT IN MODAL ───
+afCustomInput?.addEventListener('input', function() {
+    let val = parseInt(this.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 7) val = 7;
+    this.value = val;
+    afSelectedDays = val;
+    afDayButtons.forEach(b => b.classList.remove('active'));
 });
 
-// Also trigger on Enter key in input
-dayCustomInput?.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        dayApplyBtn.click();
-    }
+// ─── CONFIRM AUTO FOLLOW-UP ───
+confirmAutoFollowup?.addEventListener('click', function() {
+    // Close modal
+    closeAutoFollowupModalFn();
+    // Toggle auto follow-up with selected days
+    toggleAutoFollowUp(afSelectedDays);
 });
 
 // ─── CHAT BACK ───
@@ -425,9 +455,6 @@ function openChat(leadId, name, email) {
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
     followupDropdown?.classList.remove('show');
-    if (autoFollowupDays) {
-        autoFollowupDays.style.display = 'none';
-    }
     
     chatInput.value = '';
     chatInput.style.height = 'auto';
@@ -525,7 +552,7 @@ async function toggleAutoFollowUp(days) {
         return;
     }
 
-    const delayDays = days || selectedDays || 3;
+    const delayDays = days || afSelectedDays || 3;
     console.log('📅 [AUTO-FOLLOWUP] Delay days:', delayDays);
 
     let currentStatus = false;
@@ -544,6 +571,15 @@ async function toggleAutoFollowUp(days) {
 
     const newStatus = !currentStatus;
     console.log('🔄 [AUTO-FOLLOWUP] New status:', newStatus);
+
+    // Update UI instantly
+    if (newStatus) {
+        followupStatus.textContent = 'ON';
+        followupStatus.className = 'followup-status on';
+    } else {
+        followupStatus.textContent = 'OFF';
+        followupStatus.className = 'followup-status';
+    }
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
@@ -564,6 +600,9 @@ async function toggleAutoFollowUp(days) {
                 return;
             }
             const err = await res.json();
+            // Revert UI on error
+            followupStatus.textContent = currentStatus ? 'ON' : 'OFF';
+            followupStatus.className = currentStatus ? 'followup-status on' : 'followup-status';
             showToast('Failed: ' + (err.message || 'Unknown error'));
             return;
         }
@@ -583,15 +622,18 @@ async function toggleAutoFollowUp(days) {
                 showToast('❌ Auto follow-up disabled.');
                 console.log('❌ [AUTO-FOLLOWUP] Disabled successfully');
             }
-            if (autoFollowupDays) {
-                autoFollowupDays.style.display = 'none';
-            }
         } else {
+            // Revert UI on failure
+            followupStatus.textContent = currentStatus ? 'ON' : 'OFF';
+            followupStatus.className = currentStatus ? 'followup-status on' : 'followup-status';
             showToast(data.message || 'Failed to toggle auto follow-up.');
         }
 
     } catch (err) {
         console.error('💥 [AUTO-FOLLOWUP] Error:', err);
+        // Revert UI on error
+        followupStatus.textContent = currentStatus ? 'ON' : 'OFF';
+        followupStatus.className = currentStatus ? 'followup-status on' : 'followup-status';
         showToast('Connection error. Please try again.');
     }
 }
