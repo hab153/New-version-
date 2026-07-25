@@ -62,7 +62,7 @@ if (!token) {
     window.location.href = 'login.html';
 }
 
-// ─── ✅ TOAST HELPER (FIXED) ───
+// ─── ✅ TOAST HELPER ───
 function showToast(message, duration = 3000) {
     toast.textContent = message;
     toast.classList.add('show');
@@ -89,6 +89,30 @@ document.querySelectorAll('.menu-item').forEach(item => {
         menuDropdown.classList.remove('show');
         if (action === 'revenue') {
             fetchRevenueData();
+            return;
+        }
+        if (action === 'followup') {
+            if (!currentLeadId) {
+                showToast('Open a chat first to access follow-up.');
+                return;
+            }
+            suggestFollowUp();
+            return;
+        }
+        if (action === 'hint') {
+            if (!currentLeadId) {
+                showToast('Open a chat first to get a hint.');
+                return;
+            }
+            generateHint();
+            return;
+        }
+        if (action === 'autoreply') {
+            if (!currentLeadId) {
+                showToast('Open a chat first to configure auto-reply.');
+                return;
+            }
+            openAutoReplyModal();
             return;
         }
         showToast('Please open a chat to access this feature.');
@@ -567,7 +591,7 @@ async function suggestFollowUp() {
     }
 }
 
-// ─── TOGGLE AUTO FOLLOW-UP ───
+// ─── TOGGLE AUTO FOLLOW-UP (FIXED) ───
 async function toggleAutoFollowUp(days, forceState) {
     console.log('🔄 [AUTO-FOLLOWUP] toggleAutoFollowUp called with days:', days, 'forceState:', forceState);
     
@@ -598,7 +622,7 @@ async function toggleAutoFollowUp(days, forceState) {
     const newStatus = typeof forceState !== 'undefined' ? forceState : !currentStatus;
     console.log('🔄 [AUTO-FOLLOWUP] New status:', newStatus);
 
-    // Update UI instantly
+    // Update UI instantly (optimistic update)
     if (newStatus) {
         followupStatus.textContent = 'ON';
         followupStatus.className = 'followup-status on';
@@ -622,14 +646,53 @@ async function toggleAutoFollowUp(days, forceState) {
 
         console.log('📡 [AUTO-FOLLOWUP] Response status:', res.status);
 
+        // ✅ FIX: Handle different error codes properly
         if (!res.ok) {
+            // ✅ 401/403 = Session expired - redirect to login
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
+            
+            // ✅ 429 = Rate limit - show friendly message, don't redirect
+            if (res.status === 429) {
+                const err = await res.json();
+                const revertStatus = !newStatus;
+                if (revertStatus) {
+                    followupStatus.textContent = 'ON';
+                    followupStatus.className = 'followup-status on';
+                    afCurrentEnabledState = true;
+                } else {
+                    followupStatus.textContent = 'OFF';
+                    followupStatus.className = 'followup-status';
+                    afCurrentEnabledState = false;
+                }
+                updateModalStatus(afCurrentEnabledState);
+                showToast(err.message || 'Daily limit reached. Upgrade your plan.');
+                return;
+            }
+            
+            // ✅ 403 = Free plan restriction - show upgrade message
+            if (res.status === 403) {
+                const err = await res.json();
+                const revertStatus = !newStatus;
+                if (revertStatus) {
+                    followupStatus.textContent = 'ON';
+                    followupStatus.className = 'followup-status on';
+                    afCurrentEnabledState = true;
+                } else {
+                    followupStatus.textContent = 'OFF';
+                    followupStatus.className = 'followup-status';
+                    afCurrentEnabledState = false;
+                }
+                updateModalStatus(afCurrentEnabledState);
+                showToast(err.message || 'Auto follow-up is only available on paid plans. Upgrade to Go or Pro.');
+                return;
+            }
+
+            // ✅ Other errors - show message, don't redirect
             const err = await res.json();
-            // Revert UI on error
             const revertStatus = !newStatus;
             if (revertStatus) {
                 followupStatus.textContent = 'ON';
