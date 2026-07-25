@@ -2,11 +2,1533 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skyline AA-1</title>
-    <link rel="stylesheet" href="notifications.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+    <title>Skyline AA-1 · Inbox</title>
+    <link rel="stylesheet" href="notif-styles.css" />
+    <style>
+        /* ─── BASE RESET ─── */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --void: #0a0a0a;
+            --base: #121212;
+            --surface: #1a1a1a;
+            --raised: #242424;
+            --hover: #2d2d2d;
+            --card: #1a1a1a;
+            --br-dim: rgba(255,255,255,0.06);
+            --br-md: rgba(255,255,255,0.12);
+            --br-hi: rgba(255,255,255,0.18);
+            --gold: #c9a84c;
+            --gold-bright: #e8c96a;
+            --gold-pale: #f5e4a8;
+            --sage: #6b9e7a;
+            --rose: #b85c5c;
+            --sky: #5e9ab8;
+            --t1: #f0ece0;
+            --t2: #7a7468;
+            --t3: #3a3630;
+            --display: 'Cormorant Garamond', Georgia, serif;
+            --ui: 'Syne', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --nav-h: 68px;
+            --top-h: 54px;
+            --bar-h: 30px;
+            --r-xs: 4px;
+            --r-sm: 8px;
+            --r-md: 14px;
+            --r-lg: 20px;
+            --r-xl: 28px;
+            --green: #66dd99;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: 14px;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 55% 35% at 5% 0%, rgba(201,168,76,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 55% at 95% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        /* ─── STATUS BAR ─── */
+        .status-bar {
+            height: var(--bar-h);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: var(--mono);
+            font-size: 9.5px;
+            letter-spacing: 0.08em;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            transition: background 0.5s, border-color 0.5s, color 0.5s;
+            background: rgba(201,168,76,0.03);
+            border-bottom: 1px solid rgba(201,168,76,0.08);
+            color: rgba(201,168,76,0.45);
+        }
+        .status-bar.connected {
+            background: rgba(107,158,122,0.04);
+            border-bottom-color: rgba(107,158,122,0.12);
+            color: var(--sage);
+        }
+        .status-bar.disconnected {
+            background: rgba(184,92,92,0.04);
+            border-bottom-color: rgba(184,92,92,0.12);
+            color: var(--rose);
+        }
+        .status-pip {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+            animation: pip 2.8s ease-in-out infinite;
+        }
+        @keyframes pip {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.2; transform: scale(0.6); }
+        }
+        .status-bar a {
+            color: var(--gold);
+            text-decoration: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        .status-bar a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* ─── BRAND / LOGO ─── */
+        .brand {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            z-index: 10;
+        }
+        .brand-mark {
+            width: 24px;
+            height: 24px;
+            border-radius: 5px;
+            background: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-mark svg {
+            width: 14px;
+            height: 14px;
+            stroke: #0a0a0a;
+            stroke-width: 2.5;
+            fill: none;
+        }
+        .brand-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--t1);
+            letter-spacing: 0.04em;
+            line-height: 1;
+            font-family: var(--ui);
+        }
+        .brand-name span {
+            color: var(--gold);
+            font-weight: 400;
+        }
+        .brand-sub {
+            font-size: 7px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--t3);
+            font-weight: 400;
+            font-family: var(--mono);
+        }
+
+        /* ─── MENU ─── */
+        .menu-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+        }
+        .menu-btn {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 8px;
+            color: var(--t2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .menu-btn:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: var(--br-md);
+        }
+        .menu-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-radius: 10px;
+            min-width: 170px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            overflow: hidden;
+            z-index: 30;
+        }
+        .menu-dropdown.show {
+            display: block;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--t2);
+            font-size: 12px;
+            font-family: var(--ui);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .menu-item:hover {
+            background: rgba(255,255,255,0.04);
+            color: var(--t1);
+        }
+        .menu-item svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .menu-divider {
+            height: 1px;
+            background: var(--br-dim);
+            margin: 4px 12px;
+        }
+
+        /* ─── SEARCH ─── */
+        .search-container {
+            padding: 68px 16px 12px 16px;
+            background: var(--void);
+            flex-shrink: 0;
+        }
+        .search-wrap {
+            position: relative;
+            width: 100%;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+        .search-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--t3);
+            fill: none;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: var(--raised);
+            border: 1px solid var(--br-dim);
+            border-radius: 10px;
+            color: var(--t1);
+            font-size: 13px;
+            font-family: var(--ui);
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .search-input::placeholder {
+            color: var(--t3);
+        }
+        .search-input:focus {
+            border-color: var(--br-md);
+            background: var(--surface);
+        }
+
+        /* ─── LOADING ─── */
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--void);
+            z-index: 100;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .loading-container.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid var(--br-dim);
+            border-top-color: var(--gold);
+            animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+        }
+        .spinner.small {
+            width: 28px;
+            height: 28px;
+            border-width: 2px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 11px;
+            color: var(--t3);
+            letter-spacing: 0.12em;
+            font-family: var(--ui);
+            animation: pulse-text 1.4s ease-in-out infinite;
+        }
+        @keyframes pulse-text {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* ─── CONTACT LIST ─── */
+        .contact-list {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            padding-bottom: 70px;
+        }
+        .contact-list.active {
+            display: block;
+        }
+        .contact-list::-webkit-scrollbar {
+            width: 2px;
+        }
+        .contact-list::-webkit-scrollbar-thumb {
+            background: var(--br-dim);
+            border-radius: 2px;
+        }
+        .contact-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--br-dim);
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .contact-item:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        .contact-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--t1);
+            text-transform: uppercase;
+            flex-shrink: 0;
+            border: 1px solid var(--br-dim);
+        }
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .contact-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--t1);
+            margin-bottom: 2px;
+        }
+        .contact-preview {
+            font-size: 11px;
+            color: var(--t3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .contact-time {
+            font-size: 10px;
+            color: var(--t3);
+            flex-shrink: 0;
+        }
+        .contact-unread {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--rose);
+            flex-shrink: 0;
+            display: none;
+        }
+        .contact-item.unread .contact-unread {
+            display: block;
+        }
+        .contact-item.unread .contact-name {
+            color: var(--gold);
+        }
+
+        /* ─── EMPTY STATES ─── */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px 20px;
+            color: var(--t3);
+            text-align: center;
+        }
+        .empty-state.active {
+            display: flex;
+        }
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            stroke: var(--t3);
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        .empty-state h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--t2);
+            margin-bottom: 6px;
+        }
+        .empty-state p {
+            font-size: 12px;
+            color: var(--t3);
+        }
+        .no-results {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: var(--t3);
+            text-align: center;
+        }
+        .no-results.active {
+            display: flex;
+        }
+        .no-results svg {
+            width: 36px;
+            height: 36px;
+            stroke: var(--t3);
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+        .no-results p {
+            font-size: 12px;
+            color: var(--t3);
+        }
+
+        /* ─── CHAT VIEW ─── */
+        .chat-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--void);
+            z-index: 50;
+            flex-direction: column;
+        }
+        .chat-view.active {
+            display: flex;
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--base);
+            border-bottom: 1px solid var(--br-dim);
+            flex-shrink: 0;
+            padding-top: 14px;
+        }
+        .chat-back {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 6px;
+            color: var(--t2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+            flex-shrink: 0;
+        }
+        .chat-back:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: var(--br-md);
+        }
+        .chat-back svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+        }
+        .chat-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--t1);
+            text-transform: uppercase;
+            flex-shrink: 0;
+            border: 1px solid var(--br-dim);
+        }
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .chat-info .chat-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--t1);
+        }
+        .chat-info .chat-email {
+            font-size: 9px;
+            color: var(--t3);
+        }
+        .chat-rename-btn {
+            width: 26px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 4px;
+            color: var(--t3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .chat-rename-btn:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+        }
+        .chat-rename-btn svg {
+            width: 12px;
+            height: 12px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        /* ─── AUTO-REPLY TOGGLE ─── */
+        .chat-autoreply-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 4px;
+        }
+        .chat-autoreply-btn {
+            width: 26px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 4px;
+            color: var(--t3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .chat-autoreply-btn:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+        }
+        .chat-autoreply-btn.active {
+            border-color: var(--sage);
+            color: var(--sage);
+        }
+        .chat-autoreply-btn svg {
+            width: 13px;
+            height: 13px;
+            stroke: currentColor;
+            fill: none;
+        }
+        .autoreply-status {
+            font-size: 7px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--rose);
+            font-family: var(--mono);
+        }
+        .autoreply-status.on {
+            color: var(--sage);
+        }
+
+        /* ─── FOLLOW-UP BUTTON ─── */
+        .chat-followup-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .chat-followup-btn {
+            width: 26px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 4px;
+            color: var(--t3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .chat-followup-btn:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+        }
+        .chat-followup-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+        }
+        .chat-followup-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-radius: 8px;
+            min-width: 160px;
+            z-index: 60;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+        .chat-followup-dropdown.show {
+            display: block;
+        }
+        .chat-followup-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: var(--t2);
+            font-size: 11px;
+            font-family: var(--ui);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .chat-followup-option:hover {
+            background: rgba(255,255,255,0.04);
+            color: var(--t1);
+        }
+        .chat-followup-option svg {
+            width: 13px;
+            height: 13px;
+            stroke: currentColor;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .followup-status {
+            margin-left: auto;
+            font-size: 8px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--rose);
+            font-family: var(--mono);
+        }
+        .followup-status.on {
+            color: var(--green);
+        }
+
+        /* ─── MESSAGES ─── */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .messages-container::-webkit-scrollbar {
+            width: 2px;
+        }
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--br-dim);
+            border-radius: 2px;
+        }
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 80%;
+        }
+        .msg-group.from-ai {
+            align-self: flex-start;
+        }
+        .msg-group.from-lead {
+            align-self: flex-end;
+        }
+        .msg-sender {
+            font-size: 8px;
+            color: var(--t3);
+            font-family: var(--mono);
+            letter-spacing: 0.05em;
+            padding: 0 4px;
+        }
+        .message-bubble {
+            padding: 8px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            border-radius: 10px;
+            position: relative;
+        }
+        .msg-group.from-ai .message-bubble {
+            background: var(--surface);
+            border: 1px solid var(--br-dim);
+            border-bottom-left-radius: 2px;
+            color: var(--t2);
+        }
+        .msg-group.from-lead .message-bubble {
+            background: var(--raised);
+            border: 1px solid var(--br-md);
+            border-bottom-right-radius: 2px;
+            color: var(--t1);
+        }
+        .message-time {
+            font-size: 8px;
+            color: var(--t3);
+            margin-top: 2px;
+            text-align: right;
+            font-family: var(--mono);
+        }
+        .msg-group.from-ai .message-time {
+            text-align: left;
+        }
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--t3);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .empty-chat svg {
+            width: 36px;
+            height: 36px;
+            stroke: var(--t3);
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+        .empty-chat h3 {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--t2);
+            margin-bottom: 4px;
+        }
+        .empty-chat p {
+            font-size: 10px;
+            color: var(--t3);
+        }
+
+        /* ─── REPLY SUGGESTION BANNER ─── */
+        .suggestion-banner {
+            display: none;
+            padding: 8px 16px;
+            background: rgba(201,168,76,0.06);
+            border-bottom: 1px solid rgba(201,168,76,0.12);
+            font-size: 11px;
+            color: var(--gold-pale);
+            font-family: var(--mono);
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+            gap: 10px;
+            align-items: center;
+        }
+        .suggestion-banner.active {
+            display: flex;
+        }
+        .suggestion-banner:hover {
+            background: rgba(201,168,76,0.1);
+        }
+        .suggestion-banner .suggestion-text {
+            flex: 1;
+            font-size: 11px;
+            color: var(--gold-pale);
+        }
+        .suggestion-banner .suggestion-close {
+            background: none;
+            border: none;
+            color: var(--t3);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+        }
+
+        /* ─── INPUT AREA ─── */
+        .chat-input-area {
+            padding: 10px 12px 12px;
+            background: var(--base);
+            border-top: 1px solid var(--br-dim);
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .chat-input-wrap {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            background: var(--surface);
+            border: 1px solid var(--br-dim);
+            border-radius: 10px;
+            padding: 6px 10px;
+            transition: border-color 0.2s;
+        }
+        .chat-input-wrap:focus-within {
+            border-color: var(--br-md);
+        }
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--t1);
+            font-size: 12px;
+            font-family: var(--ui);
+            resize: none;
+            padding: 4px 0;
+            max-height: 80px;
+            line-height: 1.4;
+        }
+        .chat-input::placeholder {
+            color: var(--t3);
+        }
+        .chat-send-btn {
+            width: 30px;
+            height: 30px;
+            background: var(--gold);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .chat-send-btn:hover {
+            background: var(--gold-bright);
+            transform: scale(1.05);
+        }
+        .chat-send-btn:disabled {
+            background: var(--raised);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .chat-send-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: #0a0a04;
+            fill: none;
+        }
+        .chat-send-btn:disabled svg {
+            stroke: var(--t3);
+        }
+
+        /* ─── MODALS ─── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-content::-webkit-scrollbar {
+            width: 3px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--br-md);
+            border-radius: 3px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .modal-title {
+            color: var(--t1);
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-title svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--t1);
+        }
+        .modal-title .tier-badge {
+            font-size: 9px;
+            background: rgba(255,255,255,0.08);
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: var(--t2);
+            font-weight: 400;
+        }
+        .modal-close {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 6px;
+            color: var(--t3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        .modal-close:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+        }
+        .modal-body {
+            color: var(--t2);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .modal-footer {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--br-dim);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-ghost {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: 6px;
+            color: var(--t2);
+            font-family: var(--ui);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+        }
+        .btn-primary {
+            padding: 8px 20px;
+            background: var(--gold);
+            border: none;
+            border-radius: 6px;
+            color: #0a0a04;
+            font-family: var(--ui);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: var(--gold-bright);
+            transform: scale(1.02);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ─── AUTO REPLY MODAL ─── */
+        #autoReplyModal .modal-content {
+            max-width: 420px;
+            padding: 28px 32px 32px;
+        }
+        #autoReplyModal .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            gap: 12px;
+        }
+        #autoReplyModal .modal-title svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--gold);
+        }
+        .ar-textarea {
+            width: 100%;
+            background: var(--raised);
+            border: 1px solid var(--br-dim);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: 13px;
+            resize: vertical;
+            min-height: 100px;
+            outline: none;
+            transition: border-color 0.2s;
+            line-height: 1.6;
+        }
+        .ar-textarea:focus {
+            border-color: var(--br-md);
+        }
+        .ar-textarea::placeholder {
+            color: var(--t3);
+        }
+        .ar-toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .ar-toggle-label {
+            font-size: 12px;
+            color: var(--t2);
+            font-weight: 500;
+        }
+        .ar-toggle-status {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--rose);
+            font-family: var(--mono);
+        }
+        .ar-toggle-status.on {
+            color: var(--sage);
+        }
+        .ar-toggle-btn {
+            padding: 4px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--br-dim);
+            background: transparent;
+            color: var(--t2);
+            font-size: 10px;
+            font-family: var(--mono);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ar-toggle-btn:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+        }
+        .ar-toggle-btn.active {
+            border-color: var(--sage);
+            color: var(--sage);
+            background: rgba(107,158,122,0.08);
+        }
+
+        /* ─── REVENUE MODAL ─── */
+        .category-section {
+            margin-bottom: 16px;
+        }
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--br-dim);
+            margin-bottom: 4px;
+        }
+        .category-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--t1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .category-count {
+            font-size: 11px;
+            color: var(--t3);
+            background: rgba(255,255,255,0.06);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .lead-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 0 3px 8px;
+            font-size: 12px;
+            color: var(--t2);
+            border-left: 2px solid transparent;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-radius: 4px;
+        }
+        .lead-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        .lead-item .lead-name {
+            color: var(--t1);
+        }
+        .lead-item .lead-company {
+            color: var(--t3);
+            font-size: 11px;
+        }
+        .category-icon {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .empty-category {
+            color: var(--t3);
+            font-size: 12px;
+            padding: 4px 0 4px 8px;
+            font-style: italic;
+        }
+        .cat-contacted .category-icon { background: var(--sky); }
+        .cat-replied .category-icon { background: var(--sage); }
+        .cat-interested .category-icon { background: #ffbb44; }
+        .cat-ongoing .category-icon { background: #bb88ff; }
+        .cat-win .category-icon { background: #ff6b6b; }
+        .cat-contacted .lead-item { border-left-color: rgba(94,154,184,0.3); }
+        .cat-replied .lead-item { border-left-color: rgba(107,158,122,0.3); }
+        .cat-interested .lead-item { border-left-color: rgba(255,187,68,0.3); }
+        .cat-ongoing .lead-item { border-left-color: rgba(187,136,255,0.3); }
+        .cat-win .lead-item { border-left-color: rgba(255,107,107,0.3); }
+
+        .advice-section {
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            border: 1px solid var(--br-dim);
+        }
+        .advice-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--t1);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .advice-item {
+            font-size: 12px;
+            color: var(--t2);
+            padding: 4px 0;
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .advice-item:last-child {
+            border-bottom: none;
+        }
+        .advice-item strong {
+            color: var(--t1);
+        }
+        .actions-section {
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: rgba(94,154,184,0.04);
+            border-radius: 10px;
+            border: 1px solid rgba(94,154,184,0.08);
+        }
+        .actions-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--sky);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--t2);
+            padding: 4px 0;
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .action-item:last-child {
+            border-bottom: none;
+        }
+        .action-item .action-lead {
+            color: var(--t1);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .action-item .action-text {
+            color: var(--t2);
+        }
+        .section-divider {
+            height: 1px;
+            background: var(--br-dim);
+            margin: 16px 0;
+        }
+        .no-data {
+            color: var(--t3);
+            font-size: 12px;
+            text-align: center;
+            padding: 8px 0;
+        }
+        .modal-loading {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--t3);
+        }
+        .modal-error {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--rose);
+        }
+
+        /* ─── AUTO FOLLOW-UP MODAL ─── */
+        #autoFollowupModal .modal-content {
+            max-width: 420px;
+            padding: 28px 32px 32px;
+        }
+        #autoFollowupModal .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            gap: 12px;
+        }
+        #autoFollowupModal .modal-title svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--green);
+        }
+        .af-day-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            color: var(--t2);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 38px;
+            max-width: 48px;
+        }
+        .af-day-btn:hover {
+            border-color: var(--br-md);
+            color: var(--t1);
+            transform: translateY(-2px);
+        }
+        .af-day-btn.active {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(102,221,153,0.1);
+            box-shadow: 0 0 20px rgba(102,221,153,0.08);
+        }
+        .af-custom-input {
+            width: 60px;
+            background: var(--raised);
+            border: 1px solid var(--br-dim);
+            border-radius: 6px;
+            color: var(--t1);
+            padding: 6px 8px;
+            font-size: 14px;
+            outline: none;
+            text-align: center;
+            font-weight: 500;
+        }
+        .af-custom-input:focus {
+            border-color: var(--br-md);
+            background: var(--surface);
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            color: var(--t2);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: var(--ui);
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .toast.success {
+            border-color: var(--sage);
+            color: var(--sage);
+        }
+        .toast.error {
+            border-color: var(--rose);
+            color: var(--rose);
+        }
+
+        /* ─── BOTTOM NAV ─── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-h);
+            background: var(--base);
+            border-top: 1px solid var(--br-dim);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 40;
+            backdrop-filter: blur(12px);
+        }
+        .bottom-nav::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            color: var(--t3);
+            text-decoration: none;
+            font-size: 9px;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+            padding: 4px 16px;
+            border: none;
+            background: none;
+        }
+        .nav-item:hover {
+            color: var(--t2);
+        }
+        .nav-item.active {
+            color: var(--gold);
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 2px 2px 0 0;
+        }
+        .nav-item.nav-home .home-wrap {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+            border-radius: var(--r-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(201,168,76,0.26), 0 0 0 1px rgba(201,168,76,0.38);
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item.nav-home .home-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+        }
+        .nav-item.nav-home:hover .home-wrap {
+            transform: scale(1.07) translateY(-2px);
+            box-shadow: 0 8px 24px rgba(201,168,76,0.38), 0 0 0 1px rgba(201,168,76,0.5);
+        }
+        .nav-item.nav-home svg {
+            color: #0d0a04;
+            position: relative;
+            z-index: 1;
+        }
+        .nav-item.nav-home::after {
+            display: none;
+        }
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+        }
+        .nav-badge {
+            position: absolute;
+            top: -2px;
+            right: calc(50% - 20px);
+            min-width: 14px;
+            height: 14px;
+            background: var(--rose);
+            border-radius: 10px;
+            border: 1.5px solid var(--base);
+            display: none;
+            color: white;
+            font-family: var(--mono);
+            font-size: 7px;
+            font-weight: 600;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+        }
+        .nav-item.has-notifs .nav-badge {
+            display: flex;
+        }
+
+        @media (min-width: 1024px) {
+            .bottom-nav { padding: 0 24%; }
+            .search-container { padding: 68px 12% 12px 12%; }
+            .contact-item { padding: 14px 24px; }
+        }
+
+        @media (max-width: 375px) {
+            .brand-name { font-size: 16px; }
+            .brand-sub { display: none; }
+            .chat-info .chat-email { display: none; }
+        }
+    </style>
 </head>
 <body>
+
+    <!-- ─── STATUS BAR ─── -->
+    <div id="statusBar" class="status-bar">
+        <span class="status-pip"></span>
+        <span id="statusText">Checking email connection…</span>
+    </div>
 
     <!-- ─── TOP LEFT LOGO ─── -->
     <div class="brand">
@@ -119,6 +1641,41 @@
         </div>
     </div>
 
+    <!-- ─── AUTO REPLY MODAL ─── -->
+    <div class="modal-overlay" id="autoReplyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="5" width="16" height="14" rx="2"/>
+                        <polyline points="8 10 12 14 16 10"/>
+                    </svg>
+                    Auto Reply
+                    <span class="autoreply-status" id="autoReplyStatus">OFF</span>
+                </div>
+                <button class="modal-close" id="closeAutoReplyModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:13px; color:var(--t2); margin-bottom:16px; line-height:1.5;">
+                    When enabled, Skyline will automatically reply to new messages from this lead using your instructions below.
+                </p>
+                <div class="ar-toggle-row">
+                    <span class="ar-toggle-label">Status:</span>
+                    <span class="ar-toggle-status" id="arToggleStatus">OFF</span>
+                    <button class="ar-toggle-btn" id="arToggleBtn">Enable</button>
+                </div>
+                <label style="font-size:11px; color:var(--t3); display:block; margin-bottom:6px; font-family:var(--mono); letter-spacing:0.04em;">
+                    INSTRUCTIONS FOR AI
+                </label>
+                <textarea class="ar-textarea" id="arInstructions" placeholder="Example: Keep replies friendly, mention our product's key features, and always ask if they have any questions.">Keep replies professional and friendly. Always ask how I can help.</textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" id="cancelAutoReply">Cancel</button>
+                <button class="btn-primary" id="saveAutoReply">💾 Save & Enable</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── CHAT VIEW ─── -->
     <div class="chat-view" id="chatView">
         <div class="chat-header">
@@ -136,7 +1693,17 @@
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                     </svg>
                 </button>
-                <!-- ─── FOLLOW-UP BUTTON (3 DOTS) ─── -->
+                <!-- Auto Reply Button -->
+                <div class="chat-autoreply-wrap">
+                    <button class="chat-autoreply-btn" id="chatAutoReplyBtn" title="Auto-reply">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="5" width="16" height="14" rx="2"/>
+                            <polyline points="8 10 12 14 16 10"/>
+                        </svg>
+                    </button>
+                    <span class="autoreply-status" id="chatAutoReplyStatus">OFF</span>
+                </div>
+                <!-- Follow-up Button -->
                 <div class="chat-followup-wrap">
                     <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -165,6 +1732,12 @@
             </div>
         </div>
 
+        <!-- Suggestion Banner -->
+        <div class="suggestion-banner" id="suggestionBanner">
+            <span class="suggestion-text" id="suggestionText">Try this reply suggestion</span>
+            <button class="suggestion-close" id="suggestionClose">✕</button>
+        </div>
+
         <!-- Messages Container -->
         <div class="messages-container" id="messagesContainer">
             <div class="empty-chat">
@@ -191,22 +1764,21 @@
 
     <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
     <div class="modal-overlay" id="autoFollowupModal">
-        <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
-            <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
-                <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"/>
                         <polyline points="12 6 12 12 16 14"/>
                     </svg>
                     Auto Follow-up
                     <span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span>
                 </div>
-                <button class="modal-close" id="closeAutoFollowupModal" style="width:32px; height:32px; font-size:18px; border-radius:8px;">✕</button>
+                <button class="modal-close" id="closeAutoFollowupModal">✕</button>
             </div>
             <div class="modal-body">
-                <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
+                <p style="font-size:13px; color:var(--t2); margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
                 
-                <!-- Day buttons - Large -->
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
                     <button class="af-day-btn" data-days="1">1</button>
                     <button class="af-day-btn" data-days="2">2</button>
@@ -217,26 +1789,21 @@
                     <button class="af-day-btn" data-days="7">7</button>
                 </div>
                 
-                <!-- Custom input - Larger -->
-                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-                    <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
-                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
-                    <span style="font-size:11px; color:#505050;">days</span>
-                    <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
+                <div style="display:flex; align-items:center; gap:10px; background:var(--raised); padding:10px 14px; border-radius:8px; border:1px solid var(--br-dim);">
+                    <span style="font-size:11px; color:var(--t3); font-weight:500;">Custom:</span>
+                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" />
+                    <span style="font-size:11px; color:var(--t3);">days</span>
+                    <span style="margin-left:auto; font-size:10px; color:var(--t3);">(1-7 days)</span>
                 </div>
 
-                <!-- Current status display -->
                 <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:11px; color:#707070;">Current status:</span>
+                    <span style="font-size:11px; color:var(--t3);">Current status:</span>
                     <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
-                    <span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span>
                 </div>
             </div>
-            <div class="modal-footer" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); gap:10px;">
-                <button class="btn-ghost" id="cancelAutoFollowup" style="padding:10px 20px; font-size:12px;">Cancel</button>
-                <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">
-                    ✅ Enable Auto Follow-up
-                </button>
+            <div class="modal-footer">
+                <button class="btn-ghost" id="cancelAutoFollowup">Cancel</button>
+                <button class="btn-primary" id="confirmAutoFollowup">✅ Enable Auto Follow-up</button>
             </div>
         </div>
     </div>
@@ -246,37 +1813,1243 @@
 
     <!-- ─── BOTTOM NAV ─── -->
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" onclick="return false;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            <span>Home</span>
+        <a href="page.html" class="nav-item nav-home" aria-label="Home">
+            <div class="home-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                    <polyline points="9 21 9 12 15 12 15 21"/>
+                </svg>
+            </div>
         </a>
-        <a href="#" class="nav-item" onclick="return false;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
+        <a href="history.html" class="nav-item" aria-label="History">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <polyline points="12 7 12 12 15 15"/>
+                <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+                <polyline points="3 4 3 11 10 11"/>
             </svg>
-            <span>History</span>
         </a>
-        <a href="#" class="nav-item" onclick="return false;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <a href="notifications.html" class="nav-item active" aria-label="Inbox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            <span>Inbox</span>
         </a>
-        <a href="#" class="nav-item" onclick="return false;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
+        <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
             </svg>
-            <span>Dashboard</span>
         </a>
     </nav>
 
-    <script src="notifications.js"></script>
+    <script>
+        // ============================================================
+        // notifications.js - COMPLETE FIXED VERSION
+        // ============================================================
+
+        // ─── CONFIG ───
+        const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+        const token = localStorage.getItem('token');
+
+        // ─── DOM ELEMENTS ───
+        const loadingScreen = document.getElementById('loadingScreen');
+        const contactList = document.getElementById('contactList');
+        const emptyState = document.getElementById('emptyState');
+        const noResults = document.getElementById('noResults');
+        const searchInput = document.getElementById('searchInput');
+        const menuBtn = document.getElementById('menuBtn');
+        const menuDropdown = document.getElementById('menuDropdown');
+        const toast = document.getElementById('toast');
+        const revenueModal = document.getElementById('revenueModal');
+        const revenueBody = document.getElementById('revenueBody');
+        const closeRevenueModal = document.getElementById('closeRevenueModal');
+        const tierBadge = document.getElementById('tierBadge');
+        const statusBar = document.getElementById('statusBar');
+        const statusText = document.getElementById('statusText');
+
+        // Chat elements
+        const chatView = document.getElementById('chatView');
+        const chatBack = document.getElementById('chatBack');
+        const chatAvatar = document.getElementById('chatAvatar');
+        const chatName = document.getElementById('chatName');
+        const chatEmail = document.getElementById('chatEmail');
+        const chatRenameBtn = document.getElementById('chatRenameBtn');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+
+        // Auto Reply
+        const chatAutoReplyBtn = document.getElementById('chatAutoReplyBtn');
+        const chatAutoReplyStatus = document.getElementById('chatAutoReplyStatus');
+        const autoReplyModal = document.getElementById('autoReplyModal');
+        const closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
+        const cancelAutoReply = document.getElementById('cancelAutoReply');
+        const saveAutoReply = document.getElementById('saveAutoReply');
+        const arInstructions = document.getElementById('arInstructions');
+        const arToggleBtn = document.getElementById('arToggleBtn');
+        const arToggleStatus = document.getElementById('arToggleStatus');
+        const autoReplyStatus = document.getElementById('autoReplyStatus');
+
+        // Follow-up elements
+        const followupBtn = document.getElementById('chatFollowupBtn');
+        const followupDropdown = document.getElementById('chatFollowupDropdown');
+        const followupStatus = document.getElementById('followupStatus');
+
+        // Suggestion Banner
+        const suggestionBanner = document.getElementById('suggestionBanner');
+        const suggestionText = document.getElementById('suggestionText');
+        const suggestionClose = document.getElementById('suggestionClose');
+
+        // Auto Follow-up Modal
+        const autoFollowupModal = document.getElementById('autoFollowupModal');
+        const closeAutoFollowupModal = document.getElementById('closeAutoFollowupModal');
+        const cancelAutoFollowup = document.getElementById('cancelAutoFollowup');
+        const confirmAutoFollowup = document.getElementById('confirmAutoFollowup');
+        const afDayButtons = document.querySelectorAll('.af-day-btn');
+        const afCustomInput = document.getElementById('afCustomInput');
+        const afStatusBadge = document.getElementById('afStatusBadge');
+        const afCurrentStatus = document.getElementById('afCurrentStatus');
+
+        // ─── STATE ───
+        let allContacts = [];
+        let toastTimeout = null;
+        let currentLeadId = null;
+        let currentLeadName = null;
+        let currentLeadEmail = null;
+        let isSending = false;
+        let isToggling = false;
+        let afSelectedDays = 3;
+        let afCurrentEnabledState = false;
+        let currentAutoReplyEnabled = false;
+
+        // ─── AUTH CHECK ───
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // ─── TOAST HELPER ───
+        function showToast(message, duration = 3000, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast' + (type ? ' ' + type : '');
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // ─── ESCAPE HTML ───
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ─── GET TIME ───
+        function getTime(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return '';
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch { return ''; }
+        }
+
+        // ─── CHECK EMAIL STATUS ───
+        async function checkEmailStatus() {
+            try {
+                const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Status check failed');
+                const data = await res.json();
+                
+                if (data.connected && !data.isExpired) {
+                    statusBar.className = 'status-bar connected';
+                    statusText.innerHTML = `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
+                    if (data.email && data.email !== 'Connected') {
+                        statusText.innerHTML = `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>`;
+                    }
+                } else if (data.connected && data.isExpired) {
+                    statusBar.className = 'status-bar disconnected';
+                    statusText.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
+                } else {
+                    statusBar.className = 'status-bar disconnected';
+                    statusText.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
+                }
+                return data;
+            } catch (err) {
+                console.error('Email status error:', err);
+                statusText.textContent = '⚠️ Status unknown';
+            }
+        }
+
+        // ─── MENU TOGGLE ───
+        menuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menuDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function() {
+            menuDropdown.classList.remove('show');
+        });
+
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const action = this.dataset.action;
+                menuDropdown.classList.remove('show');
+                
+                if (action === 'revenue') {
+                    fetchRevenueData();
+                    return;
+                }
+                if (action === 'followup') {
+                    if (!currentLeadId) {
+                        showToast('Open a chat first to access follow-up.');
+                        return;
+                    }
+                    suggestFollowUp();
+                    return;
+                }
+                if (action === 'hint') {
+                    if (!currentLeadId) {
+                        showToast('Open a chat first to get a hint.');
+                        return;
+                    }
+                    generateHint();
+                    return;
+                }
+                if (action === 'autoreply') {
+                    if (!currentLeadId) {
+                        showToast('Open a chat first to configure auto-reply.');
+                        return;
+                    }
+                    openAutoReplyModal();
+                    return;
+                }
+                showToast('Please open a chat to access this feature.');
+            });
+        });
+
+        // ─── REVENUE MODAL ───
+        closeRevenueModal.addEventListener('click', function() {
+            revenueModal.classList.remove('active');
+        });
+        revenueModal.addEventListener('click', function(e) {
+            if (e.target === this) revenueModal.classList.remove('active');
+        });
+
+        // ─── AUTO REPLY MODAL ───
+        function openAutoReplyModal() {
+            autoReplyModal.classList.add('active');
+            loadAutoReplySettings();
+        }
+
+        closeAutoReplyModal.addEventListener('click', function() {
+            autoReplyModal.classList.remove('active');
+        });
+        cancelAutoReply.addEventListener('click', function() {
+            autoReplyModal.classList.remove('active');
+        });
+        autoReplyModal.addEventListener('click', function(e) {
+            if (e.target === this) autoReplyModal.classList.remove('active');
+        });
+
+        arToggleBtn.addEventListener('click', function() {
+            currentAutoReplyEnabled = !currentAutoReplyEnabled;
+            updateAutoReplyUI();
+        });
+
+        // ─── LOAD AUTO REPLY SETTINGS ───
+        async function loadAutoReplySettings() {
+            if (!currentLeadId) return;
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        // No settings yet
+                        currentAutoReplyEnabled = false;
+                        arInstructions.value = 'Keep replies professional and friendly. Always ask how I can help.';
+                        updateAutoReplyUI();
+                        return;
+                    }
+                    throw new Error('Failed to load');
+                }
+                const data = await res.json();
+                currentAutoReplyEnabled = data.enabled || false;
+                arInstructions.value = data.instructions || 'Keep replies professional and friendly. Always ask how I can help.';
+                updateAutoReplyUI();
+            } catch (err) {
+                console.error('Load auto-reply error:', err);
+                currentAutoReplyEnabled = false;
+                arInstructions.value = 'Keep replies professional and friendly. Always ask how I can help.';
+                updateAutoReplyUI();
+            }
+        }
+
+        function updateAutoReplyUI() {
+            const statusText = currentAutoReplyEnabled ? 'ON' : 'OFF';
+            arToggleStatus.textContent = statusText;
+            arToggleStatus.className = 'ar-toggle-status' + (currentAutoReplyEnabled ? ' on' : '');
+            arToggleBtn.textContent = currentAutoReplyEnabled ? 'Disable' : 'Enable';
+            arToggleBtn.className = 'ar-toggle-btn' + (currentAutoReplyEnabled ? ' active' : '');
+            autoReplyStatus.textContent = statusText;
+            autoReplyStatus.className = 'autoreply-status' + (currentAutoReplyEnabled ? ' on' : '');
+            chatAutoReplyStatus.textContent = statusText;
+            chatAutoReplyStatus.className = 'autoreply-status' + (currentAutoReplyEnabled ? ' on' : '');
+            chatAutoReplyBtn.className = 'chat-autoreply-btn' + (currentAutoReplyEnabled ? ' active' : '');
+        }
+
+        // ─── SAVE AUTO REPLY ───
+        saveAutoReply.addEventListener('click', async function() {
+            if (!currentLeadId) {
+                showToast('No lead selected.');
+                return;
+            }
+            const instructions = arInstructions.value.trim();
+            if (!instructions) {
+                showToast('Please enter instructions for the AI.');
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Saving...';
+
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        enabled: currentAutoReplyEnabled,
+                        instructions: instructions
+                    })
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        this.disabled = false;
+                        this.textContent = '💾 Save & Enable';
+                        return;
+                    }
+                    const err = await res.json();
+                    showToast('Failed: ' + (err.message || 'Unknown error'));
+                    this.disabled = false;
+                    this.textContent = '💾 Save & Enable';
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    currentAutoReplyEnabled = data.enabled;
+                    updateAutoReplyUI();
+                    showToast('✅ Auto-reply settings saved!', 3000, 'success');
+                    autoReplyModal.classList.remove('active');
+                } else {
+                    showToast(data.message || 'Failed to save');
+                }
+            } catch (err) {
+                console.error('Save auto-reply error:', err);
+                showToast('Connection error. Please try again.');
+            } finally {
+                this.disabled = false;
+                this.textContent = '💾 Save & Enable';
+            }
+        });
+
+        // ─── GENERATE HINT ───
+        async function generateHint() {
+            if (!currentLeadId) {
+                showToast('Open a chat first.');
+                return;
+            }
+            showToast('💡 Generating suggestion...');
+
+            try {
+                // First get conversation
+                const convRes = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!convRes.ok) throw new Error('Failed to get conversation');
+                const convData = await convRes.json();
+                const messages = convData.messages || [];
+
+                if (messages.length === 0) {
+                    showToast('No messages to generate a hint from.');
+                    return;
+                }
+
+                // Get AI suggestion
+                const suggestRes = await fetch(`${BACKEND}/api/ai/suggest`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ messages: messages.slice(-3) })
+                });
+
+                if (!suggestRes.ok) {
+                    const err = await suggestRes.json();
+                    showToast('Failed: ' + (err.message || 'Unknown error'));
+                    return;
+                }
+
+                const data = await suggestRes.json();
+                if (data.suggestion) {
+                    // Show in suggestion banner
+                    suggestionText.textContent = data.suggestion;
+                    suggestionBanner.classList.add('active');
+                    showToast('💡 Suggestion ready! Click to use.', 2500, 'success');
+                } else {
+                    showToast('No suggestion generated.');
+                }
+            } catch (err) {
+                console.error('Generate hint error:', err);
+                showToast('Connection error. Please try again.');
+            }
+        }
+
+        // ─── SUGGESTION BANNER ───
+        suggestionBanner.addEventListener('click', function(e) {
+            if (e.target === suggestionClose) {
+                this.classList.remove('active');
+                return;
+            }
+            const text = suggestionText.textContent;
+            if (text && text !== 'Try this reply suggestion') {
+                chatInput.value = text;
+                chatInput.style.height = 'auto';
+                chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+                this.classList.remove('active');
+            }
+        });
+
+        suggestionClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            suggestionBanner.classList.remove('active');
+        });
+
+        // ─── FOLLOW-UP DROPDOWN ───
+        if (followupBtn && followupDropdown) {
+            followupBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                followupDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!followupBtn.contains(e.target) && !followupDropdown.contains(e.target)) {
+                    followupDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // ─── SUGGEST FOLLOW-UP ───
+        document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEventListener('click', function() {
+            followupDropdown.classList.remove('show');
+            suggestFollowUp();
+        });
+
+        // ─── OPEN AUTO FOLLOW-UP MODAL ───
+        document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            followupDropdown?.classList.remove('show');
+            loadFollowUpStatusForModal();
+            autoFollowupModal?.classList.add('active');
+        });
+
+        // ─── CLOSE AUTO FOLLOW-UP MODAL ───
+        function closeAutoFollowupModalFn() {
+            autoFollowupModal?.classList.remove('active');
+        }
+
+        closeAutoFollowupModal?.addEventListener('click', closeAutoFollowupModalFn);
+        cancelAutoFollowup?.addEventListener('click', closeAutoFollowupModalFn);
+        autoFollowupModal?.addEventListener('click', function(e) {
+            if (e.target === this) closeAutoFollowupModalFn();
+        });
+
+        // ─── LOAD FOLLOW-UP STATUS FOR MODAL ───
+        async function loadFollowUpStatusForModal() {
+            if (!currentLeadId) return;
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        return;
+                    }
+                    return;
+                }
+                const data = await res.json();
+                afCurrentEnabledState = data.autoFollowUpEnabled || false;
+                updateFollowupModalStatus(afCurrentEnabledState);
+            } catch (err) {
+                console.error('Failed to load follow-up status:', err);
+            }
+        }
+
+        // ─── UPDATE FOLLOW-UP MODAL STATUS ───
+        function updateFollowupModalStatus(enabled) {
+            if (afStatusBadge) {
+                afStatusBadge.textContent = enabled ? 'ON' : 'OFF';
+                afStatusBadge.style.background = enabled ? 'rgba(102,221,153,0.12)' : 'rgba(255,85,85,0.12)';
+                afStatusBadge.style.color = enabled ? 'var(--green)' : '#ff5555';
+            }
+            if (afCurrentStatus) {
+                afCurrentStatus.textContent = enabled ? 'ON' : 'OFF';
+                afCurrentStatus.style.color = enabled ? 'var(--green)' : '#ff5555';
+            }
+            if (confirmAutoFollowup) {
+                confirmAutoFollowup.textContent = enabled ? '❌ Disable Auto Follow-up' : '✅ Enable Auto Follow-up';
+                confirmAutoFollowup.style.background = enabled ? '#ff5555' : 'var(--green)';
+                confirmAutoFollowup.style.color = enabled ? '#fff' : '#000';
+            }
+            if (followupStatus) {
+                followupStatus.textContent = enabled ? 'ON' : 'OFF';
+                followupStatus.className = 'followup-status' + (enabled ? ' on' : '');
+            }
+        }
+
+        // ─── DAY BUTTON CLICK ───
+        afDayButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                afDayButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                afSelectedDays = parseInt(this.dataset.days);
+                if (afCustomInput) afCustomInput.value = afSelectedDays;
+            });
+        });
+
+        // ─── CUSTOM INPUT ───
+        afCustomInput?.addEventListener('input', function() {
+            let val = parseInt(this.value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 7) val = 7;
+            this.value = val;
+            afSelectedDays = val;
+            afDayButtons.forEach(b => b.classList.remove('active'));
+        });
+
+        // ─── CONFIRM AUTO FOLLOW-UP ───
+        confirmAutoFollowup?.addEventListener('click', function() {
+            if (isToggling) return;
+            const newState = !afCurrentEnabledState;
+            closeAutoFollowupModalFn();
+            toggleAutoFollowUp(afSelectedDays, newState);
+        });
+
+        // ─── SUGGEST FOLLOW-UP ───
+        async function suggestFollowUp() {
+            if (!currentLeadId) {
+                showToast('Open a chat first to get a follow-up suggestion.');
+                return;
+            }
+
+            showToast('Generating follow-up suggestion...');
+
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/suggest-follow-up`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        return;
+                    }
+                    const err = await res.json();
+                    showToast('Failed: ' + (err.message || 'Unknown error'));
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success && data.suggestion) {
+                    chatInput.value = data.suggestion;
+                    chatInput.style.height = 'auto';
+                    chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
+                    chatSendBtn.disabled = false;
+                    chatInput.focus();
+                    showToast('💡 Follow-up suggestion ready!', 3000, 'success');
+                } else {
+                    showToast(data.message || 'No suggestion generated.');
+                }
+            } catch (err) {
+                console.error('Suggest follow-up error:', err);
+                showToast('Connection error. Please try again.');
+            }
+        }
+
+        // ─── TOGGLE AUTO FOLLOW-UP ───
+        async function toggleAutoFollowUp(days, forceState) {
+            if (isToggling) {
+                console.log('⏳ Already toggling, please wait.');
+                return;
+            }
+
+            console.log('🔄 toggleAutoFollowUp called with days:', days, 'forceState:', forceState);
+            if (!currentLeadId) {
+                showToast('Open a chat first to manage auto follow-up.');
+                return;
+            }
+
+            isToggling = true;
+            if (confirmAutoFollowup) {
+                confirmAutoFollowup.disabled = true;
+                confirmAutoFollowup.textContent = '⏳ Processing...';
+            }
+
+            const delayDays = days || afSelectedDays || 3;
+            const newStatus = typeof forceState !== 'undefined' ? forceState : !afCurrentEnabledState;
+            console.log('🔄 New status:', newStatus);
+
+            // Optimistic update
+            afCurrentEnabledState = newStatus;
+            updateFollowupModalStatus(newStatus);
+
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ enabled: newStatus, delayDays: delayDays })
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        afCurrentEnabledState = !newStatus;
+                        updateFollowupModalStatus(afCurrentEnabledState);
+                        isToggling = false;
+                        if (confirmAutoFollowup) {
+                            confirmAutoFollowup.disabled = false;
+                        }
+                        return;
+                    }
+                    const err = await res.json();
+                    afCurrentEnabledState = !newStatus;
+                    updateFollowupModalStatus(afCurrentEnabledState);
+                    showToast('Failed: ' + (err.message || 'Unknown error'));
+                    isToggling = false;
+                    if (confirmAutoFollowup) {
+                        confirmAutoFollowup.disabled = false;
+                    }
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    afCurrentEnabledState = data.autoFollowUpEnabled;
+                    updateFollowupModalStatus(afCurrentEnabledState);
+                    if (data.autoFollowUpEnabled) {
+                        showToast(`✅ Auto follow-up enabled. First follow-up in ${delayDays} day(s).`, 4000, 'success');
+                        console.log('✅ Auto follow-up enabled successfully');
+                    } else {
+                        showToast('❌ Auto follow-up disabled.', 3000);
+                        console.log('❌ Auto follow-up disabled successfully');
+                    }
+                } else {
+                    afCurrentEnabledState = !newStatus;
+                    updateFollowupModalStatus(afCurrentEnabledState);
+                    showToast(data.message || 'Failed to toggle auto follow-up.');
+                }
+            } catch (err) {
+                console.error('💥 Toggle auto follow-up error:', err);
+                afCurrentEnabledState = !newStatus;
+                updateFollowupModalStatus(afCurrentEnabledState);
+                showToast('Connection error. Please try again.');
+            } finally {
+                isToggling = false;
+                if (confirmAutoFollowup) {
+                    confirmAutoFollowup.disabled = false;
+                    updateFollowupModalStatus(afCurrentEnabledState);
+                }
+            }
+        }
+
+        // ─── CHAT BACK ───
+        chatBack.addEventListener('click', function() {
+            chatView.classList.remove('active');
+            document.body.style.overflow = '';
+            currentLeadId = null;
+            suggestionBanner.classList.remove('active');
+        });
+
+        // ─── CHAT INPUT ───
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+            chatSendBtn.disabled = !this.value.trim();
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!chatSendBtn.disabled) {
+                    sendMessage();
+                }
+            }
+        });
+
+        chatSendBtn.addEventListener('click', sendMessage);
+
+        // ─── RENAME ───
+        chatRenameBtn.addEventListener('click', function() {
+            if (!currentLeadId) {
+                showToast('No lead selected.');
+                return;
+            }
+            const newName = prompt('Enter new name for this contact:', currentLeadName || '');
+            if (newName === null || newName.trim() === '') return;
+            renameLead(currentLeadId, newName.trim());
+        });
+
+        // ─── RENAME LEAD ───
+        async function renameLead(leadId, newName) {
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${leadId}/rename`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newName })
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        return;
+                    }
+                    const data = await res.json();
+                    showToast('Failed to rename: ' + (data.message || 'Unknown error'));
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    currentLeadName = data.newName;
+                    chatName.textContent = data.newName;
+                    chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
+                    showToast('Renamed successfully!', 2000, 'success');
+                    loadContacts();
+                } else {
+                    showToast('Failed to rename: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Rename error:', err);
+                showToast('Connection error while renaming.');
+            }
+        }
+
+        // ─── SEND MESSAGE ───
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text || isSending || !currentLeadId) return;
+
+            console.log('🚀 Sending message...');
+            isSending = true;
+            chatSendBtn.disabled = true;
+
+            const originalText = text;
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            try {
+                const payload = {
+                    leads: [{
+                        name: currentLeadName || 'Unknown',
+                        email: currentLeadEmail || '',
+                        company: '',
+                        messages: [{ 
+                            subject: 'Re: Conversation', 
+                            body: originalText 
+                        }]
+                    }],
+                    leadId: currentLeadId,
+                    allowNewLead: false
+                };
+
+                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    console.log('✅ Message sent successfully!');
+                    await loadChatHistory(currentLeadId);
+                    setTimeout(() => loadContacts(), 800);
+                    suggestionBanner.classList.remove('active');
+                } else {
+                    console.error('❌ Failed to send:', data);
+                    chatInput.value = originalText;
+                    showToast('Failed to send: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('💥 Send error:', err);
+                chatInput.value = originalText;
+                showToast('Connection error. Please try again.');
+            } finally {
+                isSending = false;
+                chatSendBtn.disabled = !chatInput.value.trim();
+            }
+        }
+
+        // ─── APPEND MESSAGE ───
+        function appendMessage(from, content, date) {
+            const div = document.createElement('div');
+            const cssClass = from === 'ai' ? 'from-ai' : 'from-lead';
+            const senderLabel = from === 'ai' ? 'You' : 'Customer';
+            const time = getTime(date);
+
+            div.className = `msg-group ${cssClass}`;
+            div.innerHTML = `
+                <div class="msg-sender">${senderLabel}</div>
+                <div class="message-bubble">${escapeHtml(content)}</div>
+                <div class="message-time">${time}</div>
+            `;
+
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ─── LOAD CHAT HISTORY ───
+        async function loadChatHistory(leadId) {
+            messagesContainer.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;">
+                    <div class="spinner small"></div>
+                    <div style="color:var(--t3); font-size:11px; letter-spacing:0.05em;">Loading messages...</div>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        return;
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
+                const data = await res.json();
+                const messages = data.messages || [];
+
+                messagesContainer.innerHTML = '';
+
+                if (messages.length === 0) {
+                    messagesContainer.innerHTML = `
+                        <div class="empty-chat">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <h3>No messages yet</h3>
+                            <p>Send a message to start the conversation.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                messages.forEach(msg => {
+                    const from = msg.from === 'ai' ? 'ai' : 'lead';
+                    appendMessage(from, msg.content, msg.date);
+                });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            } catch (err) {
+                console.error('Load chat history error:', err);
+                messagesContainer.innerHTML = `
+                    <div style="text-align:center; padding:20px; color:var(--t3); font-size:12px;">
+                        Failed to load messages. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        // ─── OPEN CHAT ───
+        function openChat(leadId, name, email) {
+            console.log('📂 Opening chat for:', leadId, name);
+            
+            if (currentLeadId === leadId && chatView.classList.contains('active')) {
+                loadChatHistory(leadId);
+                return;
+            }
+
+            currentLeadId = leadId;
+            currentLeadName = name || 'Unknown';
+            currentLeadEmail = email || '';
+
+            chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
+            chatName.textContent = currentLeadName;
+            chatEmail.textContent = currentLeadEmail || 'No email provided';
+            
+            chatView.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            menuDropdown.classList.remove('show');
+            followupDropdown?.classList.remove('show');
+            suggestionBanner.classList.remove('active');
+            
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            chatSendBtn.disabled = true;
+
+            loadFollowUpStatus();
+            loadAutoReplySettings();
+            loadChatHistory(leadId);
+        }
+
+        // ─── LOAD FOLLOW-UP STATUS ───
+        async function loadFollowUpStatus() {
+            if (!currentLeadId) return;
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (followupStatus) {
+                    const enabled = data.autoFollowUpEnabled || false;
+                    followupStatus.textContent = enabled ? 'ON' : 'OFF';
+                    followupStatus.className = 'followup-status' + (enabled ? ' on' : '');
+                }
+            } catch (err) {
+                console.error('Load follow-up status error:', err);
+            }
+        }
+
+        // ─── LOAD CONTACTS ───
+        async function loadContacts() {
+            try {
+                const res = await fetch(`${BACKEND}/api/conversations`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        return;
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
+                allContacts = await res.json();
+                renderContacts(allContacts);
+
+            } catch (err) {
+                console.error('Failed to load contacts:', err);
+                showEmptyState();
+            } finally {
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 1500);
+            }
+        }
+
+        function renderContacts(contacts) {
+            if (!contacts || contacts.length === 0) {
+                if (searchInput.value.trim() !== '') {
+                    contactList.classList.remove('active');
+                    emptyState.classList.remove('active');
+                    noResults.classList.add('active');
+                } else {
+                    showEmptyState();
+                }
+                return;
+            }
+
+            contactList.classList.add('active');
+            emptyState.classList.remove('active');
+            noResults.classList.remove('active');
+
+            contactList.innerHTML = contacts.map(c => {
+                const initials = (c.name || '?').charAt(0).toUpperCase();
+                const preview = c.lastMessage || 'No messages yet';
+                const time = getTime(c.lastDate);
+                const unreadClass = c.unread ? 'unread' : '';
+                const unreadBadge = c.unread ? `<div class="contact-unread"></div>` : '';
+
+                return `
+                    <div class="contact-item ${unreadClass}" data-id="${c.id}" onclick="openChat('${c.id}', '${escapeHtml(c.name || 'Unknown')}', '${escapeHtml(c.email || '')}')">
+                        <div class="contact-avatar">${initials}</div>
+                        <div class="contact-info">
+                            <div class="contact-name">${escapeHtml(c.name || 'Unknown')}</div>
+                            <div class="contact-preview">${escapeHtml(preview)}</div>
+                        </div>
+                        ${unreadBadge}
+                        ${time ? `<div class="contact-time">${time}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ─── SEARCH ───
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            if (!query) {
+                renderContacts(allContacts);
+                return;
+            }
+            const filtered = allContacts.filter(c =>
+                (c.name || '').toLowerCase().includes(query) ||
+                (c.company || '').toLowerCase().includes(query) ||
+                (c.email || '').toLowerCase().includes(query)
+            );
+            renderContacts(filtered);
+        });
+
+        function showEmptyState() {
+            contactList.classList.remove('active');
+            emptyState.classList.add('active');
+            noResults.classList.remove('active');
+        }
+
+        // ─── CATEGORY CONFIG ───
+        const CATEGORY_CONFIG = {
+            contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
+            replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
+            interested: { label: 'Interested', icon: '🟡', color: '#ffbb44' },
+            ongoing: { label: 'Ongoing', icon: '🟣', color: '#bb88ff' },
+            win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
+        };
+
+        // ─── FETCH REVENUE DATA ───
+        async function fetchRevenueData() {
+            revenueModal.classList.add('active');
+            revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
+            tierBadge.textContent = 'Loading...';
+
+            try {
+                const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please refresh.');
+                        revenueModal.classList.remove('active');
+                        return;
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
+                const data = await res.json();
+                renderRevenueData(data);
+
+            } catch (err) {
+                console.error('Failed to fetch revenue:', err);
+                revenueBody.innerHTML = `
+                    <div class="modal-error">
+                        <p>Failed to load revenue data.</p>
+                        <p style="font-size:12px; color:var(--t3); margin-top:8px;">${err.message}</p>
+                    </div>
+                `;
+                tierBadge.textContent = 'Error';
+            }
+        }
+
+        // ─── RENDER REVENUE DATA ───
+        function renderRevenueData(data) {
+            const tier = data.tier || 'free';
+            tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+
+            const categories = data.categories || {};
+            let html = '';
+
+            html += `<div style="margin-bottom:12px;"><strong style="color:var(--t1); font-size:13px;">📊 Categories</strong></div>`;
+
+            let hasCategories = false;
+            for (const [key, leads] of Object.entries(categories)) {
+                const config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '•', color: '#707070' };
+                const count = Array.isArray(leads) ? leads.length : 0;
+
+                if (count > 0) hasCategories = true;
+
+                html += `
+                    <div class="category-section cat-${key}">
+                        <div class="category-header">
+                            <span class="category-name">
+                                <span class="category-icon"></span>
+                                ${config.icon} ${config.label}
+                            </span>
+                            <span class="category-count">${count}</span>
+                        </div>
+                `;
+
+                if (count === 0) {
+                    html += `<div class="empty-category">No leads in this category</div>`;
+                } else {
+                    const displayLeads = leads.slice(0, 10);
+                    const remaining = leads.length - 10;
+
+                    displayLeads.forEach(lead => {
+                        const name = lead.name || 'Unknown';
+                        const company = lead.company || '';
+                        const leadId = lead.id || '';
+                        html += `
+                            <div class="lead-item" data-id="${leadId}" data-name="${escapeHtml(name)}" data-email="${escapeHtml(lead.email || '')}" onclick="openChatFromRevenue('${leadId}', '${escapeHtml(name)}', '${escapeHtml(lead.email || '')}')">
+                                <span class="lead-name">${escapeHtml(name)}</span>
+                                ${company ? `<span class="lead-company">· ${escapeHtml(company)}</span>` : ''}
+                            </div>
+                        `;
+                    });
+
+                    if (remaining > 0) {
+                        html += `
+                            <div class="lead-item" style="color:var(--t3); font-style:italic; border-left-color:transparent; cursor:default;">
+                                + ${remaining} more
+                            </div>
+                        `;
+                    }
+                }
+
+                html += `</div>`;
+            }
+
+            if (!hasCategories) {
+                html += `<div class="no-data">No leads found.</div>`;
+            }
+
+            const advice = data.advice || {};
+            const adviceKeys = Object.keys(advice);
+            if (adviceKeys.length > 0) {
+                html += `<div class="section-divider"></div>`;
+                html += `<div class="advice-section">`;
+                html += `<div class="advice-title">💡 Strategic Advice</div>`;
+
+                adviceKeys.forEach(key => {
+                    const label = key.replace('Advice', '').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    const value = advice[key];
+                    if (value && value.trim()) {
+                        html += `
+                            <div class="advice-item">
+                                <strong>${label}:</strong> ${escapeHtml(value)}
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `</div>`;
+            }
+
+            const actions = data.actions || [];
+            if (actions.length > 0) {
+                html += `<div class="section-divider"></div>`;
+                html += `<div class="actions-section">`;
+                html += `<div class="actions-title">🎯 Recommended Actions</div>`;
+
+                actions.slice(0, 10).forEach((action, index) => {
+                    html += `
+                        <div class="action-item">
+                            <span style="color:var(--t3); font-size:10px;">${index + 1}.</span>
+                            <span class="action-lead">${escapeHtml(action.leadName || 'Lead')}</span>
+                            <span class="action-text">— ${escapeHtml(action.action || 'Follow up')}</span>
+                        </div>
+                    `;
+                });
+
+                if (actions.length > 10) {
+                    html += `<div class="no-data" style="padding-top:4px;">+ ${actions.length - 10} more actions</div>`;
+                }
+
+                html += `</div>`;
+            }
+
+            if (tierBadge.textContent === 'Free') {
+                html += `<div class="section-divider"></div>`;
+                html += `
+                    <div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
+                        <p style="color:#ffbb44; font-size:12px; margin:0;">
+                            🚀 Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
+                        </p>
+                    </div>
+                `;
+            }
+
+            revenueBody.innerHTML = html;
+        }
+
+        // ─── OPEN CHAT FROM REVENUE MODAL ───
+        function openChatFromRevenue(leadId, name, email) {
+            revenueModal.classList.remove('active');
+            openChat(leadId, name, email);
+        }
+
+        // ─── NOTIFICATION BADGE ───
+        async function loadNotifCount() {
+            try {
+                const res = await fetch(`${BACKEND}/api/notifications/count`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const count = data.count || 0;
+                    localStorage.setItem('lastKnownNotifCount', count);
+                    const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
+                    updateBadge(count > seen ? count : 0);
+                }
+            } catch {}
+        }
+
+        function updateBadge(count) {
+            const item = document.querySelector('.nav-item[aria-label="Inbox"]');
+            const badge = item?.querySelector('.nav-badge');
+            if (!item || !badge) return;
+            if (count > 0) {
+                item.classList.add('has-notifs');
+                badge.textContent = count > 9 ? '9+' : count;
+            } else {
+                item.classList.remove('has-notifs');
+                badge.textContent = '';
+            }
+        }
+
+        // ─── INIT ───
+        document.addEventListener('DOMContentLoaded', function() {
+            checkEmailStatus();
+            loadContacts();
+            loadNotifCount();
+            setInterval(loadNotifCount, 15000);
+            setInterval(checkEmailStatus, 30000);
+
+            document.querySelector('.nav-item[aria-label="Inbox"]')?.addEventListener('click', function() {
+                localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
+                updateBadge(0);
+            });
+        });
+
+        // ─── MAKE OPEN CHAT GLOBAL ───
+        window.openChat = openChat;
+        window.openChatFromRevenue = openChatFromRevenue;
+    </script>
 </body>
     </html>
