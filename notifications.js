@@ -649,6 +649,82 @@ async function suggestFollowUp() {
     }
 }
 
+// ─── ✅ GENERATE AI HINT ───
+async function generateHint() {
+    if (!currentLeadId) {
+        showToast('Open a chat first to get a hint.');
+        return;
+    }
+
+    showToast('💡 Generating AI hint...');
+
+    try {
+        // First, get the conversation history
+        const convRes = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!convRes.ok) {
+            if (convRes.status === 401 || convRes.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            showToast('Failed to load conversation.');
+            return;
+        }
+
+        const convData = await convRes.json();
+        const messages = convData.messages || [];
+
+        if (messages.length === 0) {
+            showToast('No messages to generate a hint from.');
+            return;
+        }
+
+        // Get AI suggestion using the /api/ai/suggest endpoint
+        const suggestRes = await fetch(`${BACKEND}/api/ai/suggest`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                messages: messages.slice(-5) // Send last 5 messages for context
+            })
+        });
+
+        if (!suggestRes.ok) {
+            if (suggestRes.status === 401 || suggestRes.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            const err = await suggestRes.json();
+            showToast('Failed: ' + (err.message || 'Unknown error'));
+            return;
+        }
+
+        const data = await suggestRes.json();
+        console.log('📥 [HINT] Response:', data);
+
+        if (data.suggestion) {
+            chatInput.value = data.suggestion;
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
+            chatSendBtn.disabled = false;
+            chatInput.focus();
+            showToast('💡 AI hint ready!');
+        } else {
+            showToast(data.message || 'No hint generated.');
+        }
+
+    } catch (err) {
+        console.error('❌ Generate hint error:', err);
+        showToast('Connection error. Please try again.');
+    }
+}
+
 // ─── ✅ TOGGLE AUTO FOLLOW-UP (FIXED - NO REDIRECT) ───
 async function toggleAutoFollowUp(days, forceState) {
     console.log('🔄 [AUTO-FOLLOWUP] toggleAutoFollowUp called with days:', days, 'forceState:', forceState);
@@ -1014,6 +1090,12 @@ function escapeHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+
+// ─── AI HINT FROM DROPDOWN ───
+document.querySelector('.chat-followup-option[data-action="hint"]')?.addEventListener('click', function() {
+    followupDropdown.classList.remove('show');
+    generateHint();
+});
 
 // ─── START ───
 loadContacts();
