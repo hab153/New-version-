@@ -72,7 +72,7 @@ body {
     font-family: 'Monaco', 'Menlo', monospace;
 }
 
-/* ─── MENU ─── */
+/* ─── MENU (TOP RIGHT CORNER) ─── */
 .menu-container {
     position: absolute;
     top: 20px;
@@ -451,15 +451,16 @@ body {
     fill: none;
 }
 
-/* ─── FOLLOW-UP BUTTON & DROPDOWN ─── */
+/* ─── FOLLOW-UP BUTTON & DROPDOWN (TOP RIGHT CORNER) ─── */
 .chat-followup-wrap {
     position: relative;
     flex-shrink: 0;
+    margin-left: auto;
 }
 
 .chat-followup-btn {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 4px;
@@ -1258,4 +1259,4 @@ body {
     height: 20px;
     stroke: currentColor;
     fill: none;
-   }
+}
