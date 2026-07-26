@@ -177,36 +177,69 @@ autoFollowupModal?.addEventListener('click', function(e) {
     }
 });
 
-// ─── LOAD FOLLOW-UP STATUS FOR MODAL ───
+// ─── ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ───
 async function loadFollowUpStatusForModal() {
-    if (!currentLeadId) return;
+    if (!currentLeadId) {
+        console.log('📊 [FOLLOW-UP] No current lead ID for modal');
+        return;
+    }
+
+    console.log('📊 [FOLLOW-UP] Loading status for modal, lead:', currentLeadId);
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!res.ok) return;
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            console.log('⚠️ [FOLLOW-UP] Modal status check failed:', res.status);
+            return;
+        }
 
         const data = await res.json();
+        console.log('📊 [FOLLOW-UP] Modal status data:', data);
+        
         afCurrentEnabledState = data.autoFollowUpEnabled || false;
         updateModalStatus(afCurrentEnabledState);
     } catch (err) {
-        console.error('Failed to load follow-up status:', err);
+        console.error('❌ Failed to load follow-up status for modal:', err);
     }
 }
 
-// ─── UPDATE MODAL STATUS ───
+// ─── ✅ UPDATE MODAL STATUS (FIXED) ───
 function updateModalStatus(enabled) {
+    console.log('🔄 [FOLLOW-UP] Updating UI status to:', enabled ? 'ON' : 'OFF');
+    
+    // Update chat header status
+    if (followupStatus) {
+        if (enabled) {
+            followupStatus.textContent = 'ON';
+            followupStatus.className = 'followup-status on';
+        } else {
+            followupStatus.textContent = 'OFF';
+            followupStatus.className = 'followup-status';
+        }
+    }
+    
+    // Update modal badge
     if (afStatusBadge) {
         afStatusBadge.textContent = enabled ? 'ON' : 'OFF';
         afStatusBadge.style.background = enabled ? 'rgba(102,221,153,0.12)' : 'rgba(255,85,85,0.12)';
         afStatusBadge.style.color = enabled ? 'var(--green)' : '#ff5555';
     }
+    
+    // Update modal status text
     if (afCurrentStatus) {
         afCurrentStatus.textContent = enabled ? 'ON' : 'OFF';
         afCurrentStatus.style.color = enabled ? 'var(--green)' : '#ff5555';
     }
+    
+    // Update confirm button
     if (confirmAutoFollowup) {
         confirmAutoFollowup.textContent = enabled ? '❌ Disable Auto Follow-up' : '✅ Enable Auto Follow-up';
         confirmAutoFollowup.style.background = enabled ? '#ff5555' : 'var(--green)';
@@ -480,14 +513,15 @@ async function loadChatHistory(leadId) {
     }
 }
 
-// ─── OPEN CHAT ───
+// ─── ✅ OPEN CHAT (FIXED - loads status properly) ───
 function openChat(leadId, name, email) {
     console.log('📂 [FE-OPEN] Opening chat...');
     console.log('🆔 [FE-OPEN] Target Lead ID:', leadId);
     
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
-        console.log('⚡ [FE-OPEN] Chat already active. Reloading history.');
+        console.log('⚡ [FE-OPEN] Chat already active. Reloading history and status.');
         loadChatHistory(leadId);
+        loadFollowUpStatus();
         return;
     }
 
@@ -508,6 +542,7 @@ function openChat(leadId, name, email) {
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
+    // ✅ Load both chat history AND follow-up status
     loadFollowUpStatus();
     loadChatHistory(leadId);
 }
@@ -516,19 +551,35 @@ function openChat(leadId, name, email) {
 // FOLLOW-UP FUNCTIONS
 // ============================================================
 
-// ─── LOAD FOLLOW-UP STATUS ───
+// ─── ✅ LOAD FOLLOW-UP STATUS (FIXED - persists after refresh) ───
 async function loadFollowUpStatus() {
-    if (!currentLeadId) return;
+    if (!currentLeadId) {
+        console.log('📊 [FOLLOW-UP] No current lead ID, skipping status load');
+        return;
+    }
+
+    console.log('📊 [FOLLOW-UP] Loading status for lead:', currentLeadId);
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!res.ok) return;
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                console.log('⚠️ [FOLLOW-UP] Session expired, redirecting...');
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            console.log('⚠️ [FOLLOW-UP] Status check failed:', res.status);
+            return;
+        }
 
         const data = await res.json();
-        
+        console.log('📊 [FOLLOW-UP] Status data:', data);
+
+        // ✅ Update the followupStatus in the chat header
         if (followupStatus) {
             if (data.autoFollowUpEnabled) {
                 followupStatus.textContent = 'ON';
@@ -538,8 +589,15 @@ async function loadFollowUpStatus() {
                 followupStatus.className = 'followup-status';
             }
         }
+
+        // ✅ Also update the modal status
+        afCurrentEnabledState = data.autoFollowUpEnabled || false;
+        updateModalStatus(afCurrentEnabledState);
+
+        console.log('✅ [FOLLOW-UP] Status loaded successfully:', afCurrentEnabledState ? 'ON' : 'OFF');
+
     } catch (err) {
-        console.error('Failed to load follow-up status:', err);
+        console.error('❌ Failed to load follow-up status:', err);
     }
 }
 
@@ -591,7 +649,7 @@ async function suggestFollowUp() {
     }
 }
 
-// ─── TOGGLE AUTO FOLLOW-UP (FIXED) ───
+// ─── ✅ TOGGLE AUTO FOLLOW-UP (FIXED - NO REDIRECT) ───
 async function toggleAutoFollowUp(days, forceState) {
     console.log('🔄 [AUTO-FOLLOWUP] toggleAutoFollowUp called with days:', days, 'forceState:', forceState);
     
@@ -623,15 +681,7 @@ async function toggleAutoFollowUp(days, forceState) {
     console.log('🔄 [AUTO-FOLLOWUP] New status:', newStatus);
 
     // Update UI instantly (optimistic update)
-    if (newStatus) {
-        followupStatus.textContent = 'ON';
-        followupStatus.className = 'followup-status on';
-        afCurrentEnabledState = true;
-    } else {
-        followupStatus.textContent = 'OFF';
-        followupStatus.className = 'followup-status';
-        afCurrentEnabledState = false;
-    }
+    afCurrentEnabledState = newStatus;
     updateModalStatus(afCurrentEnabledState);
 
     try {
@@ -646,65 +696,28 @@ async function toggleAutoFollowUp(days, forceState) {
 
         console.log('📡 [AUTO-FOLLOWUP] Response status:', res.status);
 
-        // ✅ FIX: Handle different error codes properly
         if (!res.ok) {
-            // ✅ 401/403 = Session expired - redirect to login
-            if (res.status === 401 || res.status === 403) {
+            // ✅ ONLY redirect on 401 - token expired
+            if (res.status === 401) {
+                console.log('🔐 [AUTO-FOLLOWUP] Token expired, redirecting to login...');
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
             
-            // ✅ 429 = Rate limit - show friendly message, don't redirect
-            if (res.status === 429) {
+            // ✅ For all other errors - show message, revert UI, DON'T redirect
+            let errorMessage = 'Failed to toggle auto follow-up.';
+            try {
                 const err = await res.json();
-                const revertStatus = !newStatus;
-                if (revertStatus) {
-                    followupStatus.textContent = 'ON';
-                    followupStatus.className = 'followup-status on';
-                    afCurrentEnabledState = true;
-                } else {
-                    followupStatus.textContent = 'OFF';
-                    followupStatus.className = 'followup-status';
-                    afCurrentEnabledState = false;
-                }
-                updateModalStatus(afCurrentEnabledState);
-                showToast(err.message || 'Daily limit reached. Upgrade your plan.');
-                return;
+                errorMessage = err.message || err.error || errorMessage;
+            } catch (e) {
+                // If response is not JSON
             }
             
-            // ✅ 403 = Free plan restriction - show upgrade message
-            if (res.status === 403) {
-                const err = await res.json();
-                const revertStatus = !newStatus;
-                if (revertStatus) {
-                    followupStatus.textContent = 'ON';
-                    followupStatus.className = 'followup-status on';
-                    afCurrentEnabledState = true;
-                } else {
-                    followupStatus.textContent = 'OFF';
-                    followupStatus.className = 'followup-status';
-                    afCurrentEnabledState = false;
-                }
-                updateModalStatus(afCurrentEnabledState);
-                showToast(err.message || 'Auto follow-up is only available on paid plans. Upgrade to Go or Pro.');
-                return;
-            }
-
-            // ✅ Other errors - show message, don't redirect
-            const err = await res.json();
-            const revertStatus = !newStatus;
-            if (revertStatus) {
-                followupStatus.textContent = 'ON';
-                followupStatus.className = 'followup-status on';
-                afCurrentEnabledState = true;
-            } else {
-                followupStatus.textContent = 'OFF';
-                followupStatus.className = 'followup-status';
-                afCurrentEnabledState = false;
-            }
+            // Revert UI
+            afCurrentEnabledState = !newStatus;
             updateModalStatus(afCurrentEnabledState);
-            showToast('Failed: ' + (err.message || 'Unknown error'));
+            showToast(errorMessage);
             return;
         }
 
@@ -714,29 +727,17 @@ async function toggleAutoFollowUp(days, forceState) {
         if (data.success) {
             afCurrentEnabledState = data.autoFollowUpEnabled;
             updateModalStatus(afCurrentEnabledState);
+            
             if (data.autoFollowUpEnabled) {
-                followupStatus.textContent = 'ON';
-                followupStatus.className = 'followup-status on';
                 showToast(`✅ Auto follow-up enabled. First follow-up in ${delayDays} day(s).`);
                 console.log('✅ [AUTO-FOLLOWUP] Enabled successfully');
             } else {
-                followupStatus.textContent = 'OFF';
-                followupStatus.className = 'followup-status';
                 showToast('❌ Auto follow-up disabled.');
                 console.log('❌ [AUTO-FOLLOWUP] Disabled successfully');
             }
         } else {
             // Revert UI on failure
-            const revertStatus = !newStatus;
-            if (revertStatus) {
-                followupStatus.textContent = 'ON';
-                followupStatus.className = 'followup-status on';
-                afCurrentEnabledState = true;
-            } else {
-                followupStatus.textContent = 'OFF';
-                followupStatus.className = 'followup-status';
-                afCurrentEnabledState = false;
-            }
+            afCurrentEnabledState = !newStatus;
             updateModalStatus(afCurrentEnabledState);
             showToast(data.message || 'Failed to toggle auto follow-up.');
         }
@@ -744,16 +745,7 @@ async function toggleAutoFollowUp(days, forceState) {
     } catch (err) {
         console.error('💥 [AUTO-FOLLOWUP] Error:', err);
         // Revert UI on error
-        const revertStatus = !newStatus;
-        if (revertStatus) {
-            followupStatus.textContent = 'ON';
-            followupStatus.className = 'followup-status on';
-            afCurrentEnabledState = true;
-        } else {
-            followupStatus.textContent = 'OFF';
-            followupStatus.className = 'followup-status';
-            afCurrentEnabledState = false;
-        }
+        afCurrentEnabledState = !newStatus;
         updateModalStatus(afCurrentEnabledState);
         showToast('Connection error. Please try again.');
     }
