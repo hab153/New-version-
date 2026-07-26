@@ -20,6 +20,7 @@
             --text:         #e2e8f0;
             --muted:        rgba(226,232,240,0.45);
             --error:        #fc8181;
+            --success:      #4ade80;
         }
 
         body {
@@ -122,6 +123,23 @@
             background: rgba(59,130,246,0.05);
             box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
+        .field input.error {
+            border-color: var(--error);
+            background: rgba(252,129,129,0.05);
+        }
+        .field input.success {
+            border-color: var(--success);
+            background: rgba(74,222,128,0.05);
+        }
+
+        .field .field-hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            display: block;
+        }
+        .field .field-hint.error { color: var(--error); }
+        .field .field-hint.success { color: var(--success); }
 
         .privacy-check {
             display: flex;
@@ -175,12 +193,12 @@
             transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
             box-shadow: 0 4px 18px rgba(59,130,246,0.35);
         }
-        button[type="submit"]:hover {
+        button[type="submit"]:hover:not(:disabled) {
             opacity: 0.92;
             transform: translateY(-1px);
             box-shadow: 0 8px 28px rgba(59,130,246,0.45);
         }
-        button[type="submit"]:active { transform: translateY(0); }
+        button[type="submit"]:active:not(:disabled) { transform: translateY(0); }
         button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .error {
@@ -223,22 +241,24 @@
     <h2>Create Account</h2>
     <p class="sub">Start your journey today — it's free</p>
 
-    <form id="signupForm">
+    <form id="signupForm" novalidate>
         <div class="field">
             <label for="username">Username</label>
-            <input type="text" id="username" placeholder="yourhandle" required>
+            <input type="text" id="username" placeholder="yourhandle" required autocomplete="username">
+            <span class="field-hint" id="usernameHint">Letters, numbers, underscores, and dots only</span>
         </div>
         <div class="field">
             <label for="email">Email Address</label>
-            <input type="email" id="email" placeholder="you@example.com" required>
+            <input type="email" id="email" placeholder="you@example.com" required autocomplete="email">
         </div>
         <div class="field">
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Password (Min 8 chars)" minlength="8" required>
+            <input type="password" id="password" placeholder="Password (Min 8 chars)" minlength="8" required autocomplete="new-password">
+            <span class="field-hint" id="passwordHint">Min 8 characters with uppercase, lowercase, and number</span>
         </div>
         <div class="field">
             <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" required autocomplete="new-password">
         </div>
 
         <div class="privacy-check">
@@ -246,7 +266,7 @@
             <label for="privacyPolicy">I agree to the <a href="Privacy.html" target="_blank">Privacy Policy</a></label>
         </div>
 
-        <button type="submit">Sign Up</button>
+        <button type="submit" id="submitBtn">Sign Up</button>
 
         <div id="errorMessage" class="error">
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0">
@@ -270,31 +290,150 @@
     }
     // ---------------------------
 
+    // ─── DOM REFS ───
+    const form = document.getElementById('signupForm');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorDiv = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const usernameHint = document.getElementById('usernameHint');
+    const passwordHint = document.getElementById('passwordHint');
+
+    // ─── VALIDATION HELPERS ───
     function showError(msg) {
-        document.getElementById('errorText').textContent = msg;
-        document.getElementById('errorMessage').classList.add('show');
+        errorText.textContent = msg;
+        errorDiv.classList.add('show');
     }
+
     function hideError() {
-        document.getElementById('errorMessage').classList.remove('show');
+        errorDiv.classList.remove('show');
     }
 
-    document.getElementById('signupForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const username        = document.getElementById('username').value;
-        const email           = document.getElementById('email').value;
-        const password        = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const submitBtn       = document.querySelector('button[type="submit"]');
+    function validateUsername() {
+        const val = usernameInput.value.trim();
+        // Allow letters, numbers, underscores, and dots
+        const valid = /^[a-zA-Z0-9_.]+$/.test(val);
+        if (val && !valid) {
+            usernameInput.className = 'error';
+            usernameHint.className = 'field-hint error';
+            usernameHint.textContent = '❌ Only letters, numbers, underscores, and dots allowed';
+            return false;
+        } else if (val) {
+            usernameInput.className = 'success';
+            usernameHint.className = 'field-hint success';
+            usernameHint.textContent = '✅ Username looks good';
+            return true;
+        }
+        usernameInput.className = '';
+        usernameHint.className = 'field-hint';
+        usernameHint.textContent = 'Letters, numbers, underscores, and dots only';
+        return false;
+    }
 
+    function validatePassword() {
+        const val = passwordInput.value;
+        const hasUpper = /[A-Z]/.test(val);
+        const hasLower = /[a-z]/.test(val);
+        const hasNumber = /\d/.test(val);
+        const hasMinLength = val.length >= 8;
+
+        if (val && hasMinLength && hasUpper && hasLower && hasNumber) {
+            passwordInput.className = 'success';
+            passwordHint.className = 'field-hint success';
+            passwordHint.textContent = '✅ Strong password';
+            return true;
+        } else if (val) {
+            passwordInput.className = 'error';
+            passwordHint.className = 'field-hint error';
+            let msg = '❌ ';
+            if (!hasMinLength) msg += 'Min 8 chars. ';
+            if (!hasUpper) msg += 'Uppercase letter. ';
+            if (!hasLower) msg += 'Lowercase letter. ';
+            if (!hasNumber) msg += 'Number.';
+            passwordHint.textContent = msg;
+            return false;
+        }
+        passwordInput.className = '';
+        passwordHint.className = 'field-hint';
+        passwordHint.textContent = 'Min 8 chars with uppercase, lowercase, and number';
+        return false;
+    }
+
+    function validateConfirm() {
+        const pass = passwordInput.value;
+        const confirm = confirmInput.value;
+        if (confirm && pass !== confirm) {
+            confirmInput.className = 'error';
+            return false;
+        } else if (confirm) {
+            confirmInput.className = 'success';
+            return true;
+        }
+        confirmInput.className = '';
+        return false;
+    }
+
+    // ─── REAL-TIME VALIDATION ───
+    usernameInput.addEventListener('input', validateUsername);
+    passwordInput.addEventListener('input', () => {
+        validatePassword();
+        validateConfirm();
+    });
+    confirmInput.addEventListener('input', validateConfirm);
+
+    // ─── FORM SUBMIT ───
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
         hideError();
 
-        if (password !== confirmPassword) {
-            showError("Passwords do not match.");
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmInput.value;
+
+        // ─── Frontend validation ───
+        if (!username) {
+            showError('Username is required.');
+            usernameInput.focus();
             return;
         }
 
-        submitBtn.disabled    = true;
-        submitBtn.textContent = "Creating Account...";
+        if (!email) {
+            showError('Email is required.');
+            emailInput.focus();
+            return;
+        }
+
+        if (!validateUsername()) {
+            showError('Please enter a valid username (letters, numbers, underscores, dots).');
+            usernameInput.focus();
+            return;
+        }
+
+        if (!validatePassword()) {
+            showError('Please enter a valid password (min 8 chars, uppercase, lowercase, number).');
+            passwordInput.focus();
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showError('Passwords do not match.');
+            confirmInput.focus();
+            return;
+        }
+
+        const privacyChecked = document.getElementById('privacyPolicy').checked;
+        if (!privacyChecked) {
+            showError('Please agree to the Privacy Policy.');
+            return;
+        }
+
+        // ─── Send to backend ───
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating Account...';
 
         try {
             const response = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/register', {
@@ -302,27 +441,47 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })
             });
+
             const data = await response.json();
 
             if (response.ok) {
+                // ✅ Success
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    window.location.href = "page.html";
+                    if (data.csrfToken) {
+                        localStorage.setItem('csrfToken', data.csrfToken);
+                    }
+                    window.location.href = 'page.html';
                 } else {
-                    alert("Account created successfully! Please login.");
-                    window.location.href = "login.html";
+                    // Should not happen, but just in case
+                    alert('Account created successfully! Please login.');
+                    window.location.href = 'login.html';
                 }
             } else {
-                showError(data.message || "Signup failed.");
+                // ❌ Error from backend
+                // Clean up the error message for better UX
+                let errorMsg = data.message || 'Signup failed. Please try again.';
+                
+                // Map specific error messages to user-friendly versions
+                if (errorMsg.includes('Email already registered')) {
+                    errorMsg = 'This email is already registered. Please login or use a different email.';
+                } else if (errorMsg.includes('Username already taken')) {
+                    errorMsg = 'This username is already taken. Please choose a different username.';
+                } else if (errorMsg.includes('duplicate')) {
+                    errorMsg = 'This email or username is already in use.';
+                }
+                
+                showError(errorMsg);
             }
         } catch (err) {
-            showError("Network error. Is the server running?");
+            console.error('Signup error:', err);
+            showError('Network error. Please check your connection and try again.');
         } finally {
-            submitBtn.disabled    = false;
-            submitBtn.textContent = "Sign Up";
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign Up';
         }
     });
 </script>
 
 </body>
-</html>
+                </html>
