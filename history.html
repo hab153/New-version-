@@ -700,7 +700,7 @@
 
     async function loadSessions() {
         try {
-            const res = await fetch(`${BACKEND}/api/history/sessions`, {
+            const res = await fetch(`${BACKEND}/api/sessions`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
