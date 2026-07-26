@@ -908,7 +908,7 @@
         if (inner.dataset.loaded === 'true') return;
 
         try {
-            const res = await fetch(`${BACKEND}/api/history/messages/${sessionId}`, {
+            const res = await fetch(`${BACKEND}/api/history/${sessionId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
