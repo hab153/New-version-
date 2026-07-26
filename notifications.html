@@ -19,13 +19,13 @@
         <span class="brand-sub">AA-1</span>
     </div>
 
-    <!-- ─── TOP RIGHT 3-DOT MENU ─── -->
+    <!-- ─── TOP RIGHT SLIDER MENU ─── -->
     <div class="menu-container">
         <button class="menu-btn" id="menuBtn" aria-label="Menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="1"/>
-                <circle cx="12" cy="5" r="1"/>
-                <circle cx="12" cy="19" r="1"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
         </button>
         <div class="menu-dropdown" id="menuDropdown">
@@ -136,13 +136,13 @@
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                     </svg>
                 </button>
-                <!-- ─── FOLLOW-UP BUTTON (3 DOTS) ─── -->
+                <!-- ─── FOLLOW-UP BUTTON (SLIDER ICON) ─── -->
                 <div class="chat-followup-wrap">
                     <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="1"/>
-                            <circle cx="12" cy="5" r="1"/>
-                            <circle cx="12" cy="19" r="1"/>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="6" x2="20" y2="6"/>
+                            <line x1="4" y1="12" x2="20" y2="12"/>
+                            <line x1="4" y1="18" x2="20" y2="18"/>
                         </svg>
                     </button>
                     <div class="chat-followup-dropdown" id="chatFollowupDropdown">
@@ -246,27 +246,27 @@
 
     <!-- ─── BOTTOM NAV ─── -->
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" onclick="return false;">
+        <a href="page.html" class="nav-item active" aria-label="Home">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             <span>Home</span>
         </a>
-        <a href="#" class="nav-item" onclick="return false;">
+        <a href="history.html" class="nav-item" aria-label="History">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12 6 12 12 16 14"/>
             </svg>
             <span>History</span>
         </a>
-        <a href="#" class="nav-item" onclick="return false;">
+        <a href="notifications.html" class="nav-item" aria-label="Inbox">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
             <span>Inbox</span>
         </a>
-        <a href="#" class="nav-item" onclick="return false;">
+        <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="3" width="7" height="7"/>
                 <rect x="14" y="3" width="7" height="7"/>
@@ -279,4 +279,4 @@
 
     <script src="notifications.js"></script>
 </body>
-        </html>
+                </html>
