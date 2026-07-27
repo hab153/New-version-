@@ -319,7 +319,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
 .wizard-card { animation: cardIn 0.55s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-/* ── LEAD CARDS CONTAINER ── */
 .leads-container {
     width: 100%;
     background: var(--base);
@@ -716,9 +715,6 @@ Start Search
 </a>
 </nav>
 
-<!-- ────────────────────────────────────────────────────────────── -->
-<!-- SCRIPT -->
-<!-- ────────────────────────────────────────────────────────────── -->
 <script>
 // ── CONFIG ──
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -789,7 +785,7 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  GET EDITED LEAD DATA FROM CARDS
+//  ✅ EXACT COPY FROM notifications.js - GET EDITED LEADS
 // ──────────────────────────────────────────────────────────────
 
 function getEditedLeads() {
@@ -879,7 +875,7 @@ return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ FIXED: SEND ALL EMAILS
+//  ✅ EXACT COPY FROM notifications.js - SEND ALL EMAILS
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
@@ -899,6 +895,7 @@ async function sendAllEmails() {
         return;
     }
 
+    // Log the leads to see what we're sending
     console.log('📤 [SEND] Valid leads:', JSON.stringify(validLeads, null, 2));
 
     const btn = document.getElementById('sendAllEmailsBtn');
@@ -907,6 +904,7 @@ async function sendAllEmails() {
     btn.disabled = true;
 
     try {
+        // STEP 1: Check if email is connected
         const userRes = await fetch(`${BACKEND}/api/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -917,6 +915,7 @@ async function sendAllEmails() {
         }
         const user = await userRes.json();
 
+        // STEP 2: Check Nylas connection
         if (!user.nylasIntegration?.isConnected) {
             const payload = {
                 leads: validLeads.map(lead => ({
@@ -941,19 +940,24 @@ async function sendAllEmails() {
             return;
         }
 
+        // STEP 3: Build the payload correctly - EXACTLY LIKE notifications.js
         const originalLeads = window.currentLeads || [];
         let successCount = 0;
         let errorCount = 0;
         const errors = [];
 
+        // Send each lead individually - EXACTLY LIKE notifications.js
         for (let i = 0; i < validLeads.length; i++) {
             const lead = validLeads[i];
             const originalLead = originalLeads[i] || {};
+            
+            // Get the lead ID from the original data
             const leadId = originalLead._id || originalLead.id || null;
             
             console.log(`📤 [SEND] Processing lead ${i+1}/${validLeads.length}: ${lead.email}`);
             console.log(`📤 [SEND] Lead ID: ${leadId}`);
 
+            // Build message - EXACTLY LIKE notifications.js
             let messages = [];
             if (lead.messages && Array.isArray(lead.messages) && lead.messages.length > 0) {
                 messages = lead.messages.map(msg => ({
@@ -967,6 +971,7 @@ async function sendAllEmails() {
                 }];
             }
 
+            // ✅ EXACTLY THE SAME PAYLOAD STRUCTURE AS notifications.js
             const payload = {
                 leads: [{
                     name: lead.name || lead.company || 'Unknown',
@@ -981,6 +986,7 @@ async function sendAllEmails() {
             console.log(`📤 [SEND] Payload for lead ${i+1}:`, JSON.stringify(payload, null, 2));
 
             try {
+                // ✅ EXACTLY THE SAME FETCH CALL AS notifications.js
                 const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
                     method: 'POST',
                     headers: {
@@ -993,6 +999,7 @@ async function sendAllEmails() {
                 const data = await res.json();
                 console.log(`📥 [SEND] Response for lead ${i+1}:`, data);
 
+                // ✅ EXACTLY THE SAME ERROR HANDLING AS notifications.js
                 if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
                     const pendingPayload = {
                         leads: validLeads.slice(i).map(l => ({
@@ -1029,9 +1036,11 @@ async function sendAllEmails() {
                 errors.push(`Failed to send to ${lead.email}: ${err.message}`);
             }
 
+            // ✅ EXACTLY THE SAME DELAY AS notifications.js
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
+        // STEP 5: Show final result - EXACTLY LIKE notifications.js
         if (successCount > 0) {
             showToast(`✅ ${successCount} emails sent successfully!${errorCount > 0 ? ` (${errorCount} failed)` : ''}`, 'success', 4000);
         }
@@ -1070,7 +1079,7 @@ async function sendAllEmails() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  LEGACY FUNCTIONS
+//  LEGACY FUNCTIONS (kept for compatibility)
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllLeads() { /* Legacy - kept for compatibility */ }
@@ -1078,7 +1087,7 @@ async function sendSingleLead(index) { /* Legacy - kept for compatibility */ }
 function viewLead(index) { /* Legacy - kept for compatibility */ }
 
 // ──────────────────────────────────────────────────────────────
-//  FORMAT AI RESPONSE
+//  FORMAT AI RESPONSE - DETECTS LEADS IN JSON
 // ──────────────────────────────────────────────────────────────
 
 function formatAI(text) {
@@ -1606,6 +1615,7 @@ inputBar.classList.add('active');
 await loadSession();
 }
 
+// Expose functions globally
 window.sendAllEmails = sendAllEmails;
 window.sendPendingEmails = sendPendingEmails;
 window.clearPendingEmails = clearPendingEmails;
