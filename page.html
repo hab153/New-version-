@@ -330,7 +330,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     padding: 0;
     margin: 0;
     flex-shrink: 0;
-    /* Critical: fixed height = 50% of viewport, positioned at bottom */
     height: 50dvh;
     min-height: 50dvh;
     max-height: 50dvh;
@@ -339,7 +338,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     overflow: hidden;
     position: relative;
     z-index: 5;
-    /* Remove any extra spacing */
     box-sizing: border-box;
 }
 
@@ -372,7 +370,7 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     flex-direction: column;
     gap: 8px;
     background: var(--base);
-    min-height: 0; /* flex override */
+    min-height: 0;
 }
 .leads-grid::-webkit-scrollbar { width: 3px; }
 .leads-grid::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 3px; }
@@ -384,7 +382,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     border-radius: 12px;
     padding: 14px 16px;
     transition: all 0.2s ease;
-    /* CRITICAL: 1:1 aspect ratio for square */
     aspect-ratio: 1 / 1;
     width: 100%;
     display: flex;
@@ -413,12 +410,10 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     padding: 2px 4px;
     margin: 0 -4px;
 }
-
 .email-box .box-field:hover {
     border-color: var(--br-dim);
     background: rgba(255,255,255,0.02);
 }
-
 .email-box .box-field:focus {
     border-color: rgba(201,168,76,0.35);
     background: var(--hover);
@@ -717,7 +712,7 @@ Start Search
 <div class="home-wrap">
 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
 <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-<polyline points="9 21 9 12 15 12 15 21"/>
+<polyline points="9 21 9 12 15 12 15 22"/>
 </svg>
 </div>
 </a>
@@ -907,7 +902,7 @@ return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  SEND ALL EMAILS (Uses edited values from cards)
+//  ✅ FIXED: SEND ALL EMAILS (Uses edited values from cards)
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
@@ -933,6 +928,7 @@ btn.textContent = '⏳ Sending...';
 btn.disabled = true;
 
 try {
+// ✅ STEP 1: Check if email is connected
 const userRes = await fetch(`${BACKEND}/api/users/me`, {
 headers: { 'Authorization': `Bearer ${token}` }
 });
@@ -943,6 +939,7 @@ return;
 }
 const user = await userRes.json();
 
+// ✅ STEP 2: Check Nylas connection
 if (!user.nylasIntegration?.isConnected) {
 const payload = {
 leads: validLeads.map(lead => ({
@@ -964,14 +961,20 @@ btn.disabled = false;
 return;
 }
 
-const payload = {
-leads: validLeads.map(lead => ({
+// ✅ STEP 3: Check each lead has a subject and body
+const finalLeads = validLeads.map(lead => ({
 name: lead.name || lead.company || 'Unknown',
 email: lead.email,
 company: lead.company || '',
-messages: lead.messages || [{ subject: '', body: '' }]
-}))
-};
+messages: [{
+subject: (lead.messages && lead.messages[0] && lead.messages[0].subject) ? lead.messages[0].subject : 'Hello from Skyline',
+body: (lead.messages && lead.messages[0] && lead.messages[0].body) ? lead.messages[0].body : 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
+}]
+}));
+
+// ✅ STEP 4: Send the emails
+const payload = { leads: finalLeads };
+console.log('📤 [PAGE] Sending payload:', JSON.stringify(payload));
 
 const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
 method: 'POST',
@@ -983,6 +986,7 @@ body: JSON.stringify(payload)
 });
 
 const data = await res.json();
+console.log('📥 [PAGE] Response:', data);
 
 if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
 localStorage.setItem('pendingEmailPayload', JSON.stringify({
@@ -1000,12 +1004,15 @@ showToast(`✅ ${validLeads.length} emails sent successfully!`, 'success');
 btn.textContent = '✅ Sent!';
 btn.style.background = 'var(--sage)';
 btn.style.color = '#060608';
+// ✅ Clear the leads from display
+const leadsContainer = document.querySelector('.leads-container');
+if (leadsContainer) leadsContainer.remove();
 } else {
-showToast(`❌ Failed to send: ${data.message || 'Unknown error'}`, 'error');
+showToast(`❌ Failed to send: ${data.message || data.error || 'Unknown error'}`, 'error');
 btn.textContent = originalText;
 }
 } catch (err) {
-console.error('Send all error:', err);
+console.error('❌ Send all error:', err);
 showToast('❌ Connection error. Please try again.', 'error');
 btn.textContent = originalText;
 } finally {
@@ -1207,8 +1214,6 @@ leadData = parsed;
 if (leadData) {
 currentGeneratedLeads = leadData;
 appendMsg('ai', `📊 Found <strong>${leadData.length}</strong> lead${leadData.length !== 1 ? 's' : ''}. Review the emails below.`);
-// The leads are rendered as part of the AI message content via formatAI
-// But we also store them for the send button
 window.currentLeads = leadData;
 } else {
 appendMsg('ai', data.reply || "Request received. How can I help further?");
@@ -1370,7 +1375,6 @@ if (container) container.innerHTML = '';
 conversationHistory = [];
 currentGeneratedLeads = [];
 currentSessionId = null;
-// Remove any lead container from the chat
 const leadContainer = document.querySelector('.leads-container');
 if (leadContainer) leadContainer.remove();
 const wizard = document.getElementById('setupWizard');
@@ -1569,7 +1573,7 @@ inputBar.classList.add('active');
 await loadSession();
 }
 
-// Expose functions globally
+// ✅ Expose functions globally
 window.sendAllEmails = sendAllEmails;
 window.sendPendingEmails = sendPendingEmails;
 window.clearPendingEmails = clearPendingEmails;
