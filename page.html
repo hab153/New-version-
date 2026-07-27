@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-/* ── ALL EXISTING STYLES ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -320,9 +319,7 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 .wizard-eyebrow { animation: fadeSlideUp 0.4s 0.05s ease both; }
 .wizard-card { animation: cardIn 0.55s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-/* ── UPDATED: LARGE SQUARE LEAD CARDS AT BOTTOM ── */
-
-/* Container for lead cards – fills bottom half, flush against bottom nav */
+/* ── LEAD CARDS CONTAINER ── */
 .leads-container {
     width: 100%;
     background: var(--base);
@@ -340,8 +337,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     z-index: 5;
     box-sizing: border-box;
 }
-
-/* Header inside the container – sits at top */
 .leads-header {
     display: flex;
     justify-content: space-between;
@@ -359,8 +354,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     font-weight: 500;
     letter-spacing: 0.02em;
 }
-
-/* Scrollable grid – fills remaining space, each card is a square */
 .leads-grid {
     flex: 1;
     overflow-y: auto;
@@ -374,8 +367,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 }
 .leads-grid::-webkit-scrollbar { width: 3px; }
 .leads-grid::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 3px; }
-
-/* ── SQUARE EMAIL BOX WITH EDITABLE FIELDS ── */
 .email-box {
     background: var(--surface);
     border: 1px solid var(--br-dim);
@@ -396,8 +387,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     background: var(--raised);
     transform: scale(1.01);
 }
-
-/* Editable fields inside the square card */
 .email-box .box-field {
     width: 100%;
     background: transparent;
@@ -419,8 +408,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     background: var(--hover);
     box-shadow: 0 0 0 2px rgba(201,168,76,0.06);
 }
-
-/* Company field - larger, bold */
 .email-box .box-company-field {
     font-size: 15px;
     font-weight: 600;
@@ -428,8 +415,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     letter-spacing: 0.01em;
     width: 70%;
 }
-
-/* Rank badge - non-editable */
 .email-box .box-rank {
     font-family: var(--mono);
     font-size: 10px;
@@ -440,24 +425,18 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     border: 1px solid var(--br-dim);
     flex-shrink: 0;
 }
-
-/* Email field - mono font */
 .email-box .box-email-field {
     font-family: var(--mono);
     font-size: 11px;
     color: var(--t2);
     margin-bottom: 2px;
 }
-
-/* Subject field */
 .email-box .box-subject-field {
     font-size: 13px;
     font-weight: 500;
     color: var(--gold-pale);
     margin-bottom: 2px;
 }
-
-/* Body textarea - scrollable */
 .email-box .box-body-field {
     font-size: 11px;
     color: var(--t3);
@@ -486,8 +465,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 }
 .email-box .box-body-field::-webkit-scrollbar { width: 2px; }
 .email-box .box-body-field::-webkit-scrollbar-thumb { background: var(--br-dim); border-radius: 2px; }
-
-/* ── Send All Button ── */
 .send-all-emails-btn {
     width: 100%;
     padding: 14px;
@@ -527,7 +504,6 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
     font-family: var(--mono);
     font-size: 14px;
 }
-
 .toast-msg {
 position: fixed;
 top: 20px;
@@ -689,7 +665,6 @@ Start Search
 </div>
 
 <!-- ─── REVIEW PANEL ─── -->
-<!-- We no longer use the old reviewPanel – the leads now render directly in the chat as a fixed bottom section -->
 <div id="reviewPanel" style="display:none;"></div>
 
 <!-- ─── INPUT BAR ─── -->
@@ -814,7 +789,7 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  GET EDITED LEAD DATA FROM CARDS (FIXED)
+//  GET EDITED LEAD DATA FROM CARDS
 // ──────────────────────────────────────────────────────────────
 
 function getEditedLeads() {
@@ -826,7 +801,6 @@ function getEditedLeads() {
         const subjectField = card.querySelector('.box-subject-field');
         const bodyField = card.querySelector('.box-body-field');
 
-        // Get the original lead data from window.currentLeads if available
         const originalLead = window.currentLeads && window.currentLeads[index] ? window.currentLeads[index] : {};
 
         const lead = {
@@ -844,7 +818,7 @@ function getEditedLeads() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  RENDER LEAD CARDS AS SQUARE EMAIL BOXES (BOTTOM SECTION)
+//  RENDER LEAD CARDS
 // ──────────────────────────────────────────────────────────────
 
 function renderLeadCards(leads) {
@@ -905,7 +879,7 @@ return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ FIXED: SEND ALL EMAILS (Uses edited values from cards)
+//  ✅ FIXED: SEND ALL EMAILS
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
@@ -925,7 +899,6 @@ async function sendAllEmails() {
         return;
     }
 
-    // Log the leads to see what we're sending
     console.log('📤 [SEND] Valid leads:', JSON.stringify(validLeads, null, 2));
 
     const btn = document.getElementById('sendAllEmailsBtn');
@@ -934,7 +907,6 @@ async function sendAllEmails() {
     btn.disabled = true;
 
     try {
-        // STEP 1: Check if email is connected
         const userRes = await fetch(`${BACKEND}/api/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -945,7 +917,6 @@ async function sendAllEmails() {
         }
         const user = await userRes.json();
 
-        // STEP 2: Check Nylas connection
         if (!user.nylasIntegration?.isConnected) {
             const payload = {
                 leads: validLeads.map(lead => ({
@@ -970,9 +941,19 @@ async function sendAllEmails() {
             return;
         }
 
-        // STEP 3: Build the payload correctly
-        const finalLeads = validLeads.map(lead => {
-            // Make sure messages array exists and has the right structure
+        const originalLeads = window.currentLeads || [];
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+
+        for (let i = 0; i < validLeads.length; i++) {
+            const lead = validLeads[i];
+            const originalLead = originalLeads[i] || {};
+            const leadId = originalLead._id || originalLead.id || null;
+            
+            console.log(`📤 [SEND] Processing lead ${i+1}/${validLeads.length}: ${lead.email}`);
+            console.log(`📤 [SEND] Lead ID: ${leadId}`);
+
             let messages = [];
             if (lead.messages && Array.isArray(lead.messages) && lead.messages.length > 0) {
                 messages = lead.messages.map(msg => ({
@@ -986,49 +967,82 @@ async function sendAllEmails() {
                 }];
             }
 
-            return {
-                name: lead.name || lead.company || 'Unknown',
-                email: lead.email,
-                company: lead.company || '',
-                messages: messages
+            const payload = {
+                leads: [{
+                    name: lead.name || lead.company || 'Unknown',
+                    email: lead.email,
+                    company: lead.company || '',
+                    messages: messages
+                }],
+                leadId: leadId,
+                allowNewLead: true
             };
-        });
 
-        // Log the final payload
-        console.log('📤 [SEND] Final payload:', JSON.stringify(finalLeads, null, 2));
+            console.log(`📤 [SEND] Payload for lead ${i+1}:`, JSON.stringify(payload, null, 2));
 
-        // STEP 4: Send the emails
-        const payload = { leads: finalLeads };
-        
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-        const data = await res.json();
-        console.log('📥 [SEND] Response:', data);
+                const data = await res.json();
+                console.log(`📥 [SEND] Response for lead ${i+1}:`, data);
 
-        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-            localStorage.setItem('pendingEmailPayload', JSON.stringify({
-                ...payload,
-                _timestamp: Date.now(),
-                _count: validLeads.length
-            }));
-            showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-            setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-            return;
+                if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+                    const pendingPayload = {
+                        leads: validLeads.slice(i).map(l => ({
+                            name: l.name || l.company || 'Unknown',
+                            email: l.email,
+                            company: l.company || '',
+                            messages: (l.messages && l.messages.length > 0) ? l.messages : [{ 
+                                subject: 'Hello from Skyline', 
+                                body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
+                            }]
+                        }))
+                    };
+                    localStorage.setItem('pendingEmailPayload', JSON.stringify({
+                        ...pendingPayload,
+                        _timestamp: Date.now(),
+                        _count: validLeads.length - i
+                    }));
+                    showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+                    setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                if (data.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    errors.push(`Failed to send to ${lead.email}: ${data.message || data.error || 'Unknown error'}`);
+                }
+            } catch (err) {
+                console.error(`❌ [SEND] Error for lead ${i+1}:`, err);
+                errorCount++;
+                errors.push(`Failed to send to ${lead.email}: ${err.message}`);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        if (data.success) {
-            showToast(`✅ ${validLeads.length} emails sent successfully!`, 'success', 4000);
-            btn.textContent = '✅ Sent!';
+        if (successCount > 0) {
+            showToast(`✅ ${successCount} emails sent successfully!${errorCount > 0 ? ` (${errorCount} failed)` : ''}`, 'success', 4000);
+        }
+        if (errorCount > 0 && successCount === 0) {
+            showToast(`❌ Failed to send ${errorCount} emails. Check console for details.`, 'error', 4000);
+        }
+
+        if (successCount > 0) {
+            btn.textContent = `✅ ${successCount} Sent!`;
             btn.style.background = 'var(--sage)';
             btn.style.color = '#060608';
-            // Clear the leads from display
             const leadsContainer = document.querySelector('.leads-container');
             if (leadsContainer) {
                 leadsContainer.style.opacity = '0.5';
@@ -1037,20 +1051,26 @@ async function sendAllEmails() {
                 }, 2000);
             }
         } else {
-            showToast(`❌ Failed to send: ${data.message || data.error || 'Unknown error'}`, 'error', 4000);
             btn.textContent = originalText;
         }
+
+        if (errors.length > 0) {
+            console.error('📤 [SEND] Errors:', errors);
+        }
+
     } catch (err) {
-        console.error('❌ Send all error:', err);
+        console.error('❌ [SEND] Fatal error:', err);
         showToast('❌ Connection error. Please try again.', 'error', 3000);
-        btn.textContent = originalText;
+        const btn = document.getElementById('sendAllEmailsBtn');
+        if (btn) btn.textContent = originalText;
     } finally {
-        btn.disabled = false;
+        const btn = document.getElementById('sendAllEmailsBtn');
+        if (btn) btn.disabled = false;
     }
 }
 
 // ──────────────────────────────────────────────────────────────
-//  LEGACY FUNCTIONS (kept for compatibility)
+//  LEGACY FUNCTIONS
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllLeads() { /* Legacy - kept for compatibility */ }
@@ -1058,7 +1078,7 @@ async function sendSingleLead(index) { /* Legacy - kept for compatibility */ }
 function viewLead(index) { /* Legacy - kept for compatibility */ }
 
 // ──────────────────────────────────────────────────────────────
-//  FORMAT AI RESPONSE - DETECTS LEADS IN JSON
+//  FORMAT AI RESPONSE
 // ──────────────────────────────────────────────────────────────
 
 function formatAI(text) {
@@ -1268,22 +1288,6 @@ msgInput.value = '';
 msgInput.style.height = 'auto';
 updateSend();
 await fetchResponse(text);
-}
-
-// ──────────────────────────────────────────────────────────────
-//  REVIEW PANEL (Legacy - disabled)
-// ──────────────────────────────────────────────────────────────
-
-function renderReview(leads) {
-// No-op: we now render leads inline in the chat via renderLeadCards
-}
-
-function closeReview() {
-// No-op
-}
-
-async function submitBatch() {
-// Legacy - use sendAllEmails instead
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1602,7 +1606,6 @@ inputBar.classList.add('active');
 await loadSession();
 }
 
-// Expose functions globally
 window.sendAllEmails = sendAllEmails;
 window.sendPendingEmails = sendPendingEmails;
 window.clearPendingEmails = clearPendingEmails;
