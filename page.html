@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-/* ── ALL EXISTING STYLES (kept the same) ── */
+/* ── ALL EXISTING STYLES ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -814,29 +814,33 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  GET EDITED LEAD DATA FROM CARDS
+//  GET EDITED LEAD DATA FROM CARDS (FIXED)
 // ──────────────────────────────────────────────────────────────
 
 function getEditedLeads() {
-const cards = document.querySelectorAll('.email-box');
-const leads = [];
-cards.forEach((card, index) => {
-const companyField = card.querySelector('.box-company-field');
-const emailField = card.querySelector('.box-email-field');
-const subjectField = card.querySelector('.box-subject-field');
-const bodyField = card.querySelector('.box-body-field');
+    const cards = document.querySelectorAll('.email-box');
+    const leads = [];
+    cards.forEach((card, index) => {
+        const companyField = card.querySelector('.box-company-field');
+        const emailField = card.querySelector('.box-email-field');
+        const subjectField = card.querySelector('.box-subject-field');
+        const bodyField = card.querySelector('.box-body-field');
 
-leads.push({
-name: companyField ? companyField.value : 'Unknown',
-company: companyField ? companyField.value : 'Unknown',
-email: emailField ? emailField.value : '',
-messages: [{
-subject: subjectField ? subjectField.value : '',
-body: bodyField ? bodyField.value : ''
-}]
-});
-});
-return leads;
+        // Get the original lead data from window.currentLeads if available
+        const originalLead = window.currentLeads && window.currentLeads[index] ? window.currentLeads[index] : {};
+
+        const lead = {
+            name: companyField ? companyField.value : (originalLead.name || 'Unknown'),
+            company: companyField ? companyField.value : (originalLead.company || ''),
+            email: emailField ? emailField.value : (originalLead.email || ''),
+            messages: [{
+                subject: subjectField ? subjectField.value : (originalLead.messages?.[0]?.subject || 'Hello from Skyline'),
+                body: bodyField ? bodyField.value : (originalLead.messages?.[0]?.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline')
+            }]
+        };
+        leads.push(lead);
+    });
+    return leads;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -905,118 +909,144 @@ return html;
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
-const leads = getEditedLeads();
-if (!leads || leads.length === 0) {
-showToast('No emails to send.', 'error');
-return;
-}
+    const leads = getEditedLeads();
+    if (!leads || leads.length === 0) {
+        showToast('No emails to send.', 'error');
+        return;
+    }
 
-const validLeads = leads.filter(l => {
-const email = l.email || '';
-return email && email.trim() !== '' && email !== 'No email found';
-});
+    const validLeads = leads.filter(l => {
+        const email = l.email || '';
+        return email && email.trim() !== '' && email !== 'No email found';
+    });
 
-if (validLeads.length === 0) {
-showToast('No leads have valid email addresses.', 'error');
-return;
-}
+    if (validLeads.length === 0) {
+        showToast('No leads have valid email addresses.', 'error');
+        return;
+    }
 
-const btn = document.getElementById('sendAllEmailsBtn');
-const originalText = btn.textContent;
-btn.textContent = '⏳ Sending...';
-btn.disabled = true;
+    // Log the leads to see what we're sending
+    console.log('📤 [SEND] Valid leads:', JSON.stringify(validLeads, null, 2));
 
-try {
-// ✅ STEP 1: Check if email is connected
-const userRes = await fetch(`${BACKEND}/api/users/me`, {
-headers: { 'Authorization': `Bearer ${token}` }
-});
-if (!userRes.ok) {
-localStorage.removeItem('token');
-window.location.href = 'login.html';
-return;
-}
-const user = await userRes.json();
+    const btn = document.getElementById('sendAllEmailsBtn');
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Sending...';
+    btn.disabled = true;
 
-// ✅ STEP 2: Check Nylas connection
-if (!user.nylasIntegration?.isConnected) {
-const payload = {
-leads: validLeads.map(lead => ({
-name: lead.name || lead.company || 'Unknown',
-email: lead.email,
-company: lead.company || '',
-messages: lead.messages || [{ subject: '', body: '' }]
-}))
-};
-localStorage.setItem('pendingEmailPayload', JSON.stringify({
-...payload,
-_timestamp: Date.now(),
-_count: validLeads.length
-}));
-showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
-setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-btn.textContent = originalText;
-btn.disabled = false;
-return;
-}
+    try {
+        // STEP 1: Check if email is connected
+        const userRes = await fetch(`${BACKEND}/api/users/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!userRes.ok) {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+            return;
+        }
+        const user = await userRes.json();
 
-// ✅ STEP 3: Check each lead has a subject and body
-const finalLeads = validLeads.map(lead => ({
-name: lead.name || lead.company || 'Unknown',
-email: lead.email,
-company: lead.company || '',
-messages: [{
-subject: (lead.messages && lead.messages[0] && lead.messages[0].subject) ? lead.messages[0].subject : 'Hello from Skyline',
-body: (lead.messages && lead.messages[0] && lead.messages[0].body) ? lead.messages[0].body : 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
-}]
-}));
+        // STEP 2: Check Nylas connection
+        if (!user.nylasIntegration?.isConnected) {
+            const payload = {
+                leads: validLeads.map(lead => ({
+                    name: lead.name || lead.company || 'Unknown',
+                    email: lead.email,
+                    company: lead.company || '',
+                    messages: (lead.messages && lead.messages.length > 0) ? lead.messages : [{ 
+                        subject: 'Hello from Skyline', 
+                        body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
+                    }]
+                }))
+            };
+            localStorage.setItem('pendingEmailPayload', JSON.stringify({
+                ...payload,
+                _timestamp: Date.now(),
+                _count: validLeads.length
+            }));
+            showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
+            setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+        }
 
-// ✅ STEP 4: Send the emails
-const payload = { leads: finalLeads };
-console.log('📤 [PAGE] Sending payload:', JSON.stringify(payload));
+        // STEP 3: Build the payload correctly
+        const finalLeads = validLeads.map(lead => {
+            // Make sure messages array exists and has the right structure
+            let messages = [];
+            if (lead.messages && Array.isArray(lead.messages) && lead.messages.length > 0) {
+                messages = lead.messages.map(msg => ({
+                    subject: msg.subject || 'Hello from Skyline',
+                    body: msg.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
+                }));
+            } else {
+                messages = [{
+                    subject: 'Hello from Skyline',
+                    body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
+                }];
+            }
 
-const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'Authorization': `Bearer ${token}`
-},
-body: JSON.stringify(payload)
-});
+            return {
+                name: lead.name || lead.company || 'Unknown',
+                email: lead.email,
+                company: lead.company || '',
+                messages: messages
+            };
+        });
 
-const data = await res.json();
-console.log('📥 [PAGE] Response:', data);
+        // Log the final payload
+        console.log('📤 [SEND] Final payload:', JSON.stringify(finalLeads, null, 2));
 
-if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-localStorage.setItem('pendingEmailPayload', JSON.stringify({
-...payload,
-_timestamp: Date.now(),
-_count: validLeads.length
-}));
-showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-return;
-}
+        // STEP 4: Send the emails
+        const payload = { leads: finalLeads };
+        
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
 
-if (data.success) {
-showToast(`✅ ${validLeads.length} emails sent successfully!`, 'success');
-btn.textContent = '✅ Sent!';
-btn.style.background = 'var(--sage)';
-btn.style.color = '#060608';
-// ✅ Clear the leads from display
-const leadsContainer = document.querySelector('.leads-container');
-if (leadsContainer) leadsContainer.remove();
-} else {
-showToast(`❌ Failed to send: ${data.message || data.error || 'Unknown error'}`, 'error');
-btn.textContent = originalText;
-}
-} catch (err) {
-console.error('❌ Send all error:', err);
-showToast('❌ Connection error. Please try again.', 'error');
-btn.textContent = originalText;
-} finally {
-btn.disabled = false;
-}
+        const data = await res.json();
+        console.log('📥 [SEND] Response:', data);
+
+        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+            localStorage.setItem('pendingEmailPayload', JSON.stringify({
+                ...payload,
+                _timestamp: Date.now(),
+                _count: validLeads.length
+            }));
+            showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+            setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
+            return;
+        }
+
+        if (data.success) {
+            showToast(`✅ ${validLeads.length} emails sent successfully!`, 'success', 4000);
+            btn.textContent = '✅ Sent!';
+            btn.style.background = 'var(--sage)';
+            btn.style.color = '#060608';
+            // Clear the leads from display
+            const leadsContainer = document.querySelector('.leads-container');
+            if (leadsContainer) {
+                leadsContainer.style.opacity = '0.5';
+                setTimeout(() => {
+                    if (leadsContainer) leadsContainer.remove();
+                }, 2000);
+            }
+        } else {
+            showToast(`❌ Failed to send: ${data.message || data.error || 'Unknown error'}`, 'error', 4000);
+            btn.textContent = originalText;
+        }
+    } catch (err) {
+        console.error('❌ Send all error:', err);
+        showToast('❌ Connection error. Please try again.', 'error', 3000);
+        btn.textContent = originalText;
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1572,7 +1602,7 @@ inputBar.classList.add('active');
 await loadSession();
 }
 
-// ✅ Expose functions globally
+// Expose functions globally
 window.sendAllEmails = sendAllEmails;
 window.sendPendingEmails = sendPendingEmails;
 window.clearPendingEmails = clearPendingEmails;
