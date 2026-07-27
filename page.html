@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
+/* ── ALL STYLES (same as your existing) ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
 --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d; --card: #1a1a1a; --card-hi: #242424;
@@ -785,7 +786,75 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ EXACT COPY FROM notifications.js - GET EDITED LEADS
+//  ✅ CONNECTED TO NOTIFICATIONS.JS - SEND EMAIL FUNCTION
+// ──────────────────────────────────────────────────────────────
+
+// This function creates a temporary notification-like environment
+// to use the SAME send logic as notifications.js
+async function sendEmailViaNotifications(lead) {
+    return new Promise((resolve, reject) => {
+        // Simulate the notifications.js environment
+        const tempContext = {
+            currentLeadId: null,  // Let backend handle it
+            currentLeadName: lead.name || lead.company || 'Unknown',
+            currentLeadEmail: lead.email,
+            isSending: false,
+            token: token,
+            BACKEND: BACKEND
+        };
+
+        // Replicate the send logic from notifications.js
+        async function executeSend() {
+            try {
+                const payload = {
+                    leads: [{
+                        name: tempContext.currentLeadName,
+                        email: tempContext.currentLeadEmail,
+                        company: lead.company || '',
+                        messages: [{
+                            subject: lead.messages?.[0]?.subject || 'Hello from Skyline',
+                            body: lead.messages?.[0]?.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
+                        }]
+                    }],
+                    leadId: null,
+                    allowNewLead: true
+                };
+
+                console.log('📡 [PAGE-SEND] Sending via notifications.js logic:', payload);
+
+                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                console.log('📥 [PAGE-SEND] Response:', data);
+
+                if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+                    reject({ error: 'NYLAS_DISCONNECTED', data: data });
+                    return;
+                }
+
+                if (data.success) {
+                    resolve({ success: true, data: data });
+                } else {
+                    reject({ error: data.message || data.error || 'Unknown error', data: data });
+                }
+            } catch (err) {
+                reject({ error: err.message });
+            }
+        }
+
+        executeSend();
+    });
+}
+
+// ──────────────────────────────────────────────────────────────
+//  GET EDITED LEAD DATA FROM CARDS
 // ──────────────────────────────────────────────────────────────
 
 function getEditedLeads() {
@@ -875,7 +944,7 @@ return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ EXACT COPY FROM notifications.js - SEND ALL EMAILS
+//  ✅ CONNECTED TO NOTIFICATIONS.JS - SEND ALL EMAILS
 // ──────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
@@ -895,187 +964,90 @@ async function sendAllEmails() {
         return;
     }
 
-    // Log the leads to see what we're sending
-    console.log('📤 [SEND] Valid leads:', JSON.stringify(validLeads, null, 2));
+    console.log('📤 [PAGE] Sending', validLeads.length, 'emails via notifications.js logic');
 
     const btn = document.getElementById('sendAllEmailsBtn');
     const originalText = btn.textContent;
     btn.textContent = '⏳ Sending...';
     btn.disabled = true;
 
-    try {
-        // STEP 1: Check if email is connected
-        const userRes = await fetch(`${BACKEND}/api/users/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!userRes.ok) {
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
-            return;
-        }
-        const user = await userRes.json();
+    let successCount = 0;
+    let errorCount = 0;
+    const errors = [];
 
-        // STEP 2: Check Nylas connection
-        if (!user.nylasIntegration?.isConnected) {
-            const payload = {
-                leads: validLeads.map(lead => ({
-                    name: lead.name || lead.company || 'Unknown',
-                    email: lead.email,
-                    company: lead.company || '',
-                    messages: (lead.messages && lead.messages.length > 0) ? lead.messages : [{ 
-                        subject: 'Hello from Skyline', 
-                        body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
-                    }]
-                }))
-            };
-            localStorage.setItem('pendingEmailPayload', JSON.stringify({
-                ...payload,
-                _timestamp: Date.now(),
-                _count: validLeads.length
-            }));
-            showToast(`📧 ${validLeads.length} emails pending. Please connect your email to send.`, 'warning', 4000);
-            setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-            btn.textContent = originalText;
-            btn.disabled = false;
-            return;
-        }
-
-        // STEP 3: Build the payload correctly - EXACTLY LIKE notifications.js
-        const originalLeads = window.currentLeads || [];
-        let successCount = 0;
-        let errorCount = 0;
-        const errors = [];
-
-        // Send each lead individually - EXACTLY LIKE notifications.js
-        for (let i = 0; i < validLeads.length; i++) {
-            const lead = validLeads[i];
-            const originalLead = originalLeads[i] || {};
+    // ✅ Send each lead using the notifications.js send logic
+    for (let i = 0; i < validLeads.length; i++) {
+        const lead = validLeads[i];
+        
+        try {
+            // ✅ Use the notifications.js send function
+            const result = await sendEmailViaNotifications(lead);
             
-            // Get the lead ID from the original data
-            const leadId = originalLead._id || originalLead.id || null;
+            if (result.success) {
+                successCount++;
+                console.log(`✅ [PAGE] Sent to ${lead.email}`);
+            }
+        } catch (err) {
+            console.error(`❌ [PAGE] Error for ${lead.email}:`, err);
+            errorCount++;
+            errors.push(`Failed to send to ${lead.email}: ${err.error || 'Unknown error'}`);
             
-            console.log(`📤 [SEND] Processing lead ${i+1}/${validLeads.length}: ${lead.email}`);
-            console.log(`📤 [SEND] Lead ID: ${leadId}`);
-
-            // Build message - EXACTLY LIKE notifications.js
-            let messages = [];
-            if (lead.messages && Array.isArray(lead.messages) && lead.messages.length > 0) {
-                messages = lead.messages.map(msg => ({
-                    subject: msg.subject || 'Hello from Skyline',
-                    body: msg.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
+            // If Nylas disconnected, save pending and redirect
+            if (err.error === 'NYLAS_DISCONNECTED') {
+                const pendingPayload = {
+                    leads: validLeads.slice(i).map(l => ({
+                        name: l.name || l.company || 'Unknown',
+                        email: l.email,
+                        company: l.company || '',
+                        messages: l.messages || [{ 
+                            subject: 'Hello from Skyline', 
+                            body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
+                        }]
+                    }))
+                };
+                localStorage.setItem('pendingEmailPayload', JSON.stringify({
+                    ...pendingPayload,
+                    _timestamp: Date.now(),
+                    _count: validLeads.length - i
                 }));
-            } else {
-                messages = [{
-                    subject: 'Hello from Skyline',
-                    body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
-                }];
+                showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+                setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
+                btn.textContent = originalText;
+                btn.disabled = false;
+                return;
             }
-
-            // ✅ EXACTLY THE SAME PAYLOAD STRUCTURE AS notifications.js
-            const payload = {
-                leads: [{
-                    name: lead.name || lead.company || 'Unknown',
-                    email: lead.email,
-                    company: lead.company || '',
-                    messages: messages
-                }],
-                leadId: leadId,
-                allowNewLead: true
-            };
-
-            console.log(`📤 [SEND] Payload for lead ${i+1}:`, JSON.stringify(payload, null, 2));
-
-            try {
-                // ✅ EXACTLY THE SAME FETCH CALL AS notifications.js
-                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-                console.log(`📥 [SEND] Response for lead ${i+1}:`, data);
-
-                // ✅ EXACTLY THE SAME ERROR HANDLING AS notifications.js
-                if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-                    const pendingPayload = {
-                        leads: validLeads.slice(i).map(l => ({
-                            name: l.name || l.company || 'Unknown',
-                            email: l.email,
-                            company: l.company || '',
-                            messages: (l.messages && l.messages.length > 0) ? l.messages : [{ 
-                                subject: 'Hello from Skyline', 
-                                body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
-                            }]
-                        }))
-                    };
-                    localStorage.setItem('pendingEmailPayload', JSON.stringify({
-                        ...pendingPayload,
-                        _timestamp: Date.now(),
-                        _count: validLeads.length - i
-                    }));
-                    showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-                    setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                    return;
-                }
-
-                if (data.success) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                    errors.push(`Failed to send to ${lead.email}: ${data.message || data.error || 'Unknown error'}`);
-                }
-            } catch (err) {
-                console.error(`❌ [SEND] Error for lead ${i+1}:`, err);
-                errorCount++;
-                errors.push(`Failed to send to ${lead.email}: ${err.message}`);
-            }
-
-            // ✅ EXACTLY THE SAME DELAY AS notifications.js
-            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        // STEP 5: Show final result - EXACTLY LIKE notifications.js
-        if (successCount > 0) {
-            showToast(`✅ ${successCount} emails sent successfully!${errorCount > 0 ? ` (${errorCount} failed)` : ''}`, 'success', 4000);
-        }
-        if (errorCount > 0 && successCount === 0) {
-            showToast(`❌ Failed to send ${errorCount} emails. Check console for details.`, 'error', 4000);
-        }
-
-        if (successCount > 0) {
-            btn.textContent = `✅ ${successCount} Sent!`;
-            btn.style.background = 'var(--sage)';
-            btn.style.color = '#060608';
-            const leadsContainer = document.querySelector('.leads-container');
-            if (leadsContainer) {
-                leadsContainer.style.opacity = '0.5';
-                setTimeout(() => {
-                    if (leadsContainer) leadsContainer.remove();
-                }, 2000);
-            }
-        } else {
-            btn.textContent = originalText;
-        }
-
-        if (errors.length > 0) {
-            console.error('📤 [SEND] Errors:', errors);
-        }
-
-    } catch (err) {
-        console.error('❌ [SEND] Fatal error:', err);
-        showToast('❌ Connection error. Please try again.', 'error', 3000);
-        const btn = document.getElementById('sendAllEmailsBtn');
-        if (btn) btn.textContent = originalText;
-    } finally {
-        const btn = document.getElementById('sendAllEmailsBtn');
-        if (btn) btn.disabled = false;
+        // Small delay between emails
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
+
+    // Show results
+    if (successCount > 0) {
+        showToast(`✅ ${successCount} emails sent successfully!${errorCount > 0 ? ` (${errorCount} failed)` : ''}`, 'success', 4000);
+    }
+    if (errorCount > 0 && successCount === 0) {
+        showToast(`❌ Failed to send ${errorCount} emails. Check console for details.`, 'error', 4000);
+    }
+
+    if (successCount > 0) {
+        btn.textContent = `✅ ${successCount} Sent!`;
+        btn.style.background = 'var(--sage)';
+        btn.style.color = '#060608';
+        const leadsContainer = document.querySelector('.leads-container');
+        if (leadsContainer) {
+            leadsContainer.style.opacity = '0.5';
+            setTimeout(() => { if (leadsContainer) leadsContainer.remove(); }, 2000);
+        }
+    } else {
+        btn.textContent = originalText;
+    }
+
+    if (errors.length > 0) {
+        console.error('📤 [PAGE] Errors:', errors);
+    }
+
+    btn.disabled = false;
 }
 
 // ──────────────────────────────────────────────────────────────
