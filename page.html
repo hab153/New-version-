@@ -871,7 +871,6 @@ body = lead.outreach.body || 'No message';
 const rank = lead.rank || index + 1;
 const rankEmoji = rank <= 3 ? '🏆' : rank <= 5 ? '⭐' : '📊';
 
-// Escape values for HTML attributes and content
 const safeCompany = escAttr(company);
 const safeEmail = escAttr(email);
 const safeSubject = escAttr(subject);
