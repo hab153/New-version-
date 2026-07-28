@@ -180,7 +180,7 @@ border-left: 2px solid rgba(201,168,76,0.25); font-family: var(--mono); font-siz
 .msg-row.ai .bubble .ai-ul { list-style: none; padding: 5px 0; margin: 0; }
 .msg-row.ai .bubble .ai-ul li { padding: 3px 0 3px 16px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.02); }
 .msg-row.ai .bubble .ai-ul li:last-child { border-bottom: none; }
-.msg-row.ai .bubble .ai-ul li::before { content: '▸'; position: absolute; left: 0; color: rgba(201,168,76,0.5); font-size: 9px; top: 5px; }
+.msg-row.ai .bubble .ai-ul li::before { content: ''; position: absolute; left: 0; color: rgba(201,168,76,0.5); font-size: 9px; top: 5px; }
 .av {
 width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
 font-family: var(--mono); font-size: 7px; font-weight: 600; margin-top: 2px; letter-spacing: 0.05em;
@@ -786,74 +786,6 @@ setTimeout(() => toast.remove(), duration);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ CONNECTED TO NOTIFICATIONS.JS - SEND EMAIL FUNCTION
-// ──────────────────────────────────────────────────────────────
-
-// This function creates a temporary notification-like environment
-// to use the SAME send logic as notifications.js
-async function sendEmailViaNotifications(lead) {
-    return new Promise((resolve, reject) => {
-        // Simulate the notifications.js environment
-        const tempContext = {
-            currentLeadId: null,  // Let backend handle it
-            currentLeadName: lead.name || lead.company || 'Unknown',
-            currentLeadEmail: lead.email,
-            isSending: false,
-            token: token,
-            BACKEND: BACKEND
-        };
-
-        // Replicate the send logic from notifications.js
-        async function executeSend() {
-            try {
-                const payload = {
-                    leads: [{
-                        name: tempContext.currentLeadName,
-                        email: tempContext.currentLeadEmail,
-                        company: lead.company || '',
-                        messages: [{
-                            subject: lead.messages?.[0]?.subject || 'Hello from Skyline',
-                            body: lead.messages?.[0]?.body || 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline'
-                        }]
-                    }],
-                    leadId: null,
-                    allowNewLead: true
-                };
-
-                console.log('📡 [PAGE-SEND] Sending via notifications.js logic:', payload);
-
-                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-                console.log('📥 [PAGE-SEND] Response:', data);
-
-                if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
-                    reject({ error: 'NYLAS_DISCONNECTED', data: data });
-                    return;
-                }
-
-                if (data.success) {
-                    resolve({ success: true, data: data });
-                } else {
-                    reject({ error: data.message || data.error || 'Unknown error', data: data });
-                }
-            } catch (err) {
-                reject({ error: err.message });
-            }
-        }
-
-        executeSend();
-    });
-}
-
-// ──────────────────────────────────────────────────────────────
 //  GET EDITED LEAD DATA FROM CARDS
 // ──────────────────────────────────────────────────────────────
 
@@ -944,8 +876,8 @@ return html;
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ CONNECTED TO NOTIFICATIONS.JS - SEND ALL EMAILS
-// ──────────────────────────────────────────────────────────────
+//  ✅ OPTIMIZED SEND ALL EMAILS (BATCH REQUEST)
+// ─────────────────────────────────────────────────────────────
 
 async function sendAllEmails() {
     const leads = getEditedLeads();
@@ -964,90 +896,78 @@ async function sendAllEmails() {
         return;
     }
 
-    console.log('📤 [PAGE] Sending', validLeads.length, 'emails via notifications.js logic');
+    console.log(' [PAGE] Sending', validLeads.length, 'emails in batch');
 
     const btn = document.getElementById('sendAllEmailsBtn');
     const originalText = btn.textContent;
     btn.textContent = '⏳ Sending...';
     btn.disabled = true;
 
-    let successCount = 0;
-    let errorCount = 0;
-    const errors = [];
+    try {
+        // ✅ Send ALL leads in a SINGLE batch request
+        const payload = {
+            leads: validLeads.map(l => ({
+                name: l.name || l.company || 'Unknown',
+                email: l.email,
+                company: l.company || '',
+                messages: l.messages || [{ 
+                    subject: 'Hello from Skyline', 
+                    body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
+                }]
+            })),
+            allowNewLead: true
+        };
 
-    // ✅ Send each lead using the notifications.js send logic
-    for (let i = 0; i < validLeads.length; i++) {
-        const lead = validLeads[i];
-        
-        try {
-            // ✅ Use the notifications.js send function
-            const result = await sendEmailViaNotifications(lead);
-            
-            if (result.success) {
-                successCount++;
-                console.log(`✅ [PAGE] Sent to ${lead.email}`);
-            }
-        } catch (err) {
-            console.error(`❌ [PAGE] Error for ${lead.email}:`, err);
-            errorCount++;
-            errors.push(`Failed to send to ${lead.email}: ${err.error || 'Unknown error'}`);
-            
-            // If Nylas disconnected, save pending and redirect
-            if (err.error === 'NYLAS_DISCONNECTED') {
-                const pendingPayload = {
-                    leads: validLeads.slice(i).map(l => ({
-                        name: l.name || l.company || 'Unknown',
-                        email: l.email,
-                        company: l.company || '',
-                        messages: l.messages || [{ 
-                            subject: 'Hello from Skyline', 
-                            body: 'Hi,\n\nI came across your company and wanted to reach out.\n\nBest,\nSkyline' 
-                        }]
-                    }))
-                };
-                localStorage.setItem('pendingEmailPayload', JSON.stringify({
-                    ...pendingPayload,
-                    _timestamp: Date.now(),
-                    _count: validLeads.length - i
-                }));
-                showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
-                setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
-                btn.textContent = originalText;
-                btn.disabled = false;
-                return;
-            }
+        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        console.log('📥 [PAGE] Batch response:', data);
+
+        if (res.status === 401 || data.error === 'NYLAS_DISCONNECTED') {
+            localStorage.setItem('pendingEmailPayload', JSON.stringify({
+                ...payload,
+                _timestamp: Date.now(),
+                _count: validLeads.length
+            }));
+            showToast('⚠️ Email session expired. Please reconnect.', 'warning', 3000);
+            setTimeout(() => { window.location.href = 'dashboard.html?connect=true'; }, 1500);
+            return;
         }
 
-        // Small delay between emails
-        await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    // Show results
-    if (successCount > 0) {
-        showToast(`✅ ${successCount} emails sent successfully!${errorCount > 0 ? ` (${errorCount} failed)` : ''}`, 'success', 4000);
-    }
-    if (errorCount > 0 && successCount === 0) {
-        showToast(`❌ Failed to send ${errorCount} emails. Check console for details.`, 'error', 4000);
-    }
-
-    if (successCount > 0) {
-        btn.textContent = `✅ ${successCount} Sent!`;
-        btn.style.background = 'var(--sage)';
-        btn.style.color = '#060608';
-        const leadsContainer = document.querySelector('.leads-container');
-        if (leadsContainer) {
-            leadsContainer.style.opacity = '0.5';
-            setTimeout(() => { if (leadsContainer) leadsContainer.remove(); }, 2000);
+        if (data.success) {
+            const sentCount = data.results ? data.results.filter(r => r.sent).length : validLeads.length;
+            const failedCount = validLeads.length - sentCount;
+            
+            showToast(`✅ ${sentCount} emails sent successfully!${failedCount > 0 ? ` (${failedCount} failed)` : ''}`, 'success', 4000);
+            
+            btn.textContent = `✅ ${sentCount} Sent!`;
+            btn.style.background = 'var(--sage)';
+            btn.style.color = '#060608';
+            
+            const leadsContainer = document.querySelector('.leads-container');
+            if (leadsContainer) {
+                leadsContainer.style.opacity = '0.5';
+                setTimeout(() => { if (leadsContainer) leadsContainer.remove(); }, 2000);
+            }
+        } else {
+            showToast(`❌ Failed: ${data.message || 'Unknown error'}`, 'error', 4000);
+            btn.textContent = originalText;
         }
-    } else {
+
+    } catch (err) {
+        console.error('💥 [PAGE] Batch send error:', err);
+        showToast('❌ Connection error. Please try again.', 'error', 4000);
         btn.textContent = originalText;
+    } finally {
+        btn.disabled = false;
     }
-
-    if (errors.length > 0) {
-        console.error('📤 [PAGE] Errors:', errors);
-    }
-
-    btn.disabled = false;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1319,7 +1239,7 @@ bar.className = 'status-bar disconnected';
 txt.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
 } else {
 bar.className = 'status-bar disconnected';
-txt.innerHTML = `❌ No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
+txt.innerHTML = ` No email connected · <a href="dashboard.html">Connect Gmail / Outlook</a>`;
 }
 } catch (err) {
 console.error('❌ Error checking email status:', err);
