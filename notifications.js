@@ -49,7 +49,7 @@ const afCurrentStatus = document.getElementById('afCurrentStatus');
 let afSelectedDays = 3;
 let afCurrentEnabledState = false;
 
-// ─── STATE ──
+// ─── STATE ─
 let allContacts = [];
 let toastTimeout = null;
 let currentLeadId = null;
@@ -72,7 +72,7 @@ function showToast(message, duration = 3000) {
     }, duration);
 }
 
-// ─── MENU TOGGLE ──
+// ─── MENU TOGGLE ─
 menuBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     menuDropdown.classList.toggle('show');
@@ -260,7 +260,7 @@ afDayButtons.forEach(btn => {
     });
 });
 
-// ─── CUSTOM INPUT IN MODAL ───
+// ── CUSTOM INPUT IN MODAL ───
 afCustomInput?.addEventListener('input', function() {
     let val = parseInt(this.value);
     if (isNaN(val) || val < 1) val = 1;
@@ -390,7 +390,7 @@ async function sendMessage() {
             allowNewLead: false
         };
 
-        console.log('📡 [FE-SEND] Sending payload:', JSON.stringify(payload));
+        console.log(' [FE-SEND] Sending payload:', JSON.stringify(payload));
 
         const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
             method: 'POST',
@@ -426,21 +426,19 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE (FIXED: Swapped alignment for User/Customer) ──
+// ─── APPEND MESSAGE (FIXED: Correct alignment mapping) ──
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
     let cssClass = '';
     let senderLabel = '';
 
-    // ✅ FIX: Swap classes to match desired alignment
-    // 'ai' = Skyline User → should be RIGHT (uses .from-lead CSS)
-    // 'lead' = Customer → should be LEFT (uses .from-ai CSS)
-    if (from === 'ai') {
-        cssClass = 'from-lead';  
+    // ✅ FIX: Map 'lead' (user messages) to RIGHT, 'ai' (customer/auto-reply) to LEFT
+    if (from === 'lead') {
+        cssClass = 'from-lead';  // Right-aligned per CSS
         senderLabel = 'You';
     } else {
-        cssClass = 'from-ai';   
+        cssClass = 'from-ai';    // Left-aligned per CSS
         senderLabel = 'Customer';
     }
 
@@ -537,7 +535,7 @@ async function loadChatHistory(leadId) {
 // ── ✅ OPEN CHAT (FIXED - loads status properly) ───
 function openChat(leadId, name, email) {
     console.log('📂 [FE-OPEN] Opening chat...');
-    console.log('🆔 [FE-OPEN] Target Lead ID:', leadId);
+    console.log(' [FE-OPEN] Target Lead ID:', leadId);
     
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         console.log(' [FE-OPEN] Chat already active. Reloading history and status.');
@@ -579,7 +577,7 @@ async function loadFollowUpStatus() {
         return;
     }
 
-    console.log('📊 [FOLLOW-UP] Loading status for lead:', currentLeadId);
+    console.log(' [FOLLOW-UP] Loading status for lead:', currentLeadId);
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
@@ -622,7 +620,7 @@ async function loadFollowUpStatus() {
     }
 }
 
-// ─── SUGGEST FOLLOW-UP ───
+// ── SUGGEST FOLLOW-UP ───
 async function suggestFollowUp() {
     if (!currentLeadId) {
         showToast('Open a chat first to get a follow-up suggestion.');
@@ -892,7 +890,7 @@ async function fetchRevenueData() {
     }
 }
 
-// ─── RENDER REVENUE DATA ───
+// ── RENDER REVENUE DATA ───
 function renderRevenueData(data) {
     const tier = data.tier || 'free';
     tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
