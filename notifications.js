@@ -7,7 +7,7 @@
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 
-// ─── DOM ELEMENTS ───
+// ── DOM ELEMENTS ───
 const loadingScreen = document.getElementById('loadingScreen');
 const contactList = document.getElementById('contactList');
 const emptyState = document.getElementById('emptyState');
@@ -177,7 +177,7 @@ autoFollowupModal?.addEventListener('click', function(e) {
     }
 });
 
-// ─ ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ───
+// ─ ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ──
 async function loadFollowUpStatusForModal() {
     if (!currentLeadId) {
         console.log('📊 [FOLLOW-UP] No current lead ID for modal');
@@ -277,7 +277,7 @@ confirmAutoFollowup?.addEventListener('click', function() {
     toggleAutoFollowUp(afSelectedDays, newState);
 });
 
-// ── CHAT BACK ───
+// ── CHAT BACK ──
 chatBack.addEventListener('click', function() {
     chatView.classList.remove('active');
     document.body.style.overflow = '';
@@ -313,7 +313,7 @@ chatRenameBtn.addEventListener('click', function() {
     renameLead(currentLeadId, newName.trim());
 });
 
-// ─── RENAME FUNCTION ───
+// ── RENAME FUNCTION ───
 async function renameLead(leadId, newName) {
     try {
         const res = await fetch(`${BACKEND}/api/leads/${leadId}/rename`, {
@@ -366,7 +366,7 @@ async function sendMessage() {
     if (!text || isSending || !currentLeadId) return;
 
     console.log(' [FE-SEND] Starting send process...');
-    console.log('🆔 [FE-SEND] Current Lead ID:', currentLeadId);
+    console.log(' [FE-SEND] Current Lead ID:', currentLeadId);
 
     isSending = true;
     chatSendBtn.disabled = true;
@@ -426,23 +426,27 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE (FIXED: Correct alignment mapping) ──
+// ─── APPEND MESSAGE (FIXED: Guaranteed alignment with inline fallback) ──
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
     let cssClass = '';
     let senderLabel = '';
+    let alignItems = ''; // ✅ Inline style fallback
 
-    // ✅ FIX: Map 'lead' (user messages) to RIGHT, 'ai' (customer/auto-reply) to LEFT
+    // ✅ Map 'lead' (user messages) to RIGHT, 'ai' (customer/auto-reply) to LEFT
     if (from === 'lead') {
-        cssClass = 'from-lead';  // Right-aligned per CSS
+        cssClass = 'from-lead';  
         senderLabel = 'You';
+        alignItems = 'flex-end'; // ✅ Force right alignment
     } else {
-        cssClass = 'from-ai';    // Left-aligned per CSS
+        cssClass = 'from-ai';   
         senderLabel = 'Customer';
+        alignItems = 'flex-start'; // ✅ Force left alignment
     }
 
     div.className = `msg-group ${cssClass}`;
+    div.style.alignSelf = alignItems; // ✅ Inline override guarantees correct side
 
     const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -591,7 +595,7 @@ async function loadFollowUpStatus() {
                 window.location.href = 'login.html';
                 return;
             }
-            console.log('⚠️ [FOLLOW-UP] Status check failed:', res.status);
+            console.log('️ [FOLLOW-UP] Status check failed:', res.status);
             return;
         }
 
@@ -620,7 +624,7 @@ async function loadFollowUpStatus() {
     }
 }
 
-// ── SUGGEST FOLLOW-UP ───
+// ── SUGGEST FOLLOW-UP ──
 async function suggestFollowUp() {
     if (!currentLeadId) {
         showToast('Open a chat first to get a follow-up suggestion.');
