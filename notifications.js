@@ -180,7 +180,7 @@ autoFollowupModal?.addEventListener('click', function(e) {
 // ─ ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ──
 async function loadFollowUpStatusForModal() {
     if (!currentLeadId) {
-        console.log('📊 [FOLLOW-UP] No current lead ID for modal');
+        console.log(' [FOLLOW-UP] No current lead ID for modal');
         return;
     }
 
@@ -247,7 +247,7 @@ function updateModalStatus(enabled) {
     }
 }
 
-// ─── DAY BUTTON CLICK IN MODAL ───
+// ─── DAY BUTTON CLICK IN MODAL ──
 afDayButtons.forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -426,27 +426,29 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE (FIXED: Guaranteed alignment with inline fallback) ──
+// ─── APPEND MESSAGE (FIXED: Your+Auto=RIGHT, Customer=LEFT) ──
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
     let cssClass = '';
     let senderLabel = '';
-    let alignItems = ''; // ✅ Inline style fallback
+    let alignItems = ''; 
 
-    // ✅ Map 'lead' (user messages) to RIGHT, 'ai' (customer/auto-reply) to LEFT
+    // ✅ LOGIC: 
+    // 'lead' = YOUR messages (manual + auto-reply) -> RIGHT
+    // 'ai' = CUSTOMER messages -> LEFT
     if (from === 'lead') {
         cssClass = 'from-lead';  
         senderLabel = 'You';
-        alignItems = 'flex-end'; // ✅ Force right alignment
+        alignItems = 'flex-end'; // ✅ FORCE RIGHT
     } else {
         cssClass = 'from-ai';   
         senderLabel = 'Customer';
-        alignItems = 'flex-start'; // ✅ Force left alignment
+        alignItems = 'flex-start'; // ✅ FORCE LEFT
     }
 
     div.className = `msg-group ${cssClass}`;
-    div.style.alignSelf = alignItems; // ✅ Inline override guarantees correct side
+    div.style.alignSelf = alignItems; // ✅ INLINE OVERRIDE GUARANTEES POSITION
 
     const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
@@ -460,7 +462,7 @@ function appendMessage(from, content, date) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── ✅ LOAD CHAT HISTORY (FIXED) ───
+// ── ✅ LOAD CHAT HISTORY (FIXED) ──
 async function loadChatHistory(leadId) {
     messagesContainer.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;">
@@ -520,8 +522,7 @@ async function loadChatHistory(leadId) {
         }
 
         messages.forEach(msg => {
-            const from = msg.from === 'ai' ? 'ai' : 'lead';
-            appendMessage(from, msg.content, msg.date);
+            appendMessage(msg.from, msg.content, msg.date); // ✅ Pass raw 'lead' or 'ai'
         });
 
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -661,7 +662,7 @@ async function suggestFollowUp() {
             chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
             chatSendBtn.disabled = false;
             chatInput.focus();
-            showToast('💡 Follow-up suggestion ready!');
+            showToast(' Follow-up suggestion ready!');
         } else {
             showToast(data.message || 'No suggestion generated.');
         }
@@ -729,7 +730,7 @@ async function generateHint() {
         }
 
         const data = await suggestRes.json();
-        console.log('📥 [HINT] Response:', data);
+        console.log(' [HINT] Response:', data);
 
         if (data.suggestion) {
             chatInput.value = data.suggestion;
@@ -793,7 +794,7 @@ async function toggleAutoFollowUp(days, forceState) {
             body: JSON.stringify({ enabled: newStatus, delayDays: delayDays })
         });
 
-        console.log('📡 [AUTO-FOLLOWUP] Response status:', res.status);
+        console.log(' [AUTO-FOLLOWUP] Response status:', res.status);
 
         if (!res.ok) {
             // ✅ ONLY redirect on 401 - token expired
@@ -821,7 +822,7 @@ async function toggleAutoFollowUp(days, forceState) {
         }
 
         const data = await res.json();
-        console.log('📥 [AUTO-FOLLOWUP] Response data:', data);
+        console.log(' [AUTO-FOLLOWUP] Response data:', data);
 
         if (data.success) {
             afCurrentEnabledState = data.autoFollowUpEnabled;
@@ -1006,7 +1007,7 @@ function renderRevenueData(data) {
         html += `
             <div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
                 <p style="color:#ffbb44; font-size:12px; margin:0;">
-                    🚀 Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
+                     Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
                 </p>
             </div>
         `;
