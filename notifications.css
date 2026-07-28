@@ -209,7 +209,7 @@ body {
     background: #1a1a1a;
 }
 
-/* ─── LOADING SCREEN ─── */
+/* ── LOADING SCREEN ─── */
 .loading-container {
     position: fixed;
     top: 0;
@@ -657,7 +657,7 @@ body {
     border-color: rgba(255,255,255,0.15);
 }
 
-/* ─── MESSAGES CONTAINER ─── */
+/* ─── MESSAGES CONTAINER ── */
 .messages-container {
     flex: 1;
     overflow-y: auto;
@@ -1259,4 +1259,4 @@ body {
     height: 20px;
     stroke: currentColor;
     fill: none;
-}
+   }
