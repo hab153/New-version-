@@ -49,7 +49,7 @@ const afCurrentStatus = document.getElementById('afCurrentStatus');
 let afSelectedDays = 3;
 let afCurrentEnabledState = false;
 
-// ─── STATE ───
+// ─── STATE ──
 let allContacts = [];
 let toastTimeout = null;
 let currentLeadId = null;
@@ -72,7 +72,7 @@ function showToast(message, duration = 3000) {
     }, duration);
 }
 
-// ─── MENU TOGGLE ───
+// ─── MENU TOGGLE ──
 menuBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     menuDropdown.classList.toggle('show');
@@ -129,7 +129,7 @@ revenueModal.addEventListener('click', function(e) {
     }
 });
 
-// ─── FOLLOW-UP DROPDOWN TOGGLE ───
+// ── FOLLOW-UP DROPDOWN TOGGLE ───
 if (followupBtn && followupDropdown) {
     followupBtn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -143,7 +143,7 @@ if (followupBtn && followupDropdown) {
     });
 }
 
-// ─── SUGGEST FOLLOW-UP ───
+// ── SUGGEST FOLLOW-UP ───
 document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEventListener('click', function() {
     followupDropdown.classList.remove('show');
     suggestFollowUp();
@@ -177,14 +177,14 @@ autoFollowupModal?.addEventListener('click', function(e) {
     }
 });
 
-// ─── ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ───
+// ── ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ───
 async function loadFollowUpStatusForModal() {
     if (!currentLeadId) {
         console.log('📊 [FOLLOW-UP] No current lead ID for modal');
         return;
     }
 
-    console.log('📊 [FOLLOW-UP] Loading status for modal, lead:', currentLeadId);
+    console.log(' [FOLLOW-UP] Loading status for modal, lead:', currentLeadId);
 
     try {
         const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
@@ -277,14 +277,14 @@ confirmAutoFollowup?.addEventListener('click', function() {
     toggleAutoFollowUp(afSelectedDays, newState);
 });
 
-// ─── CHAT BACK ───
+// ── CHAT BACK ───
 chatBack.addEventListener('click', function() {
     chatView.classList.remove('active');
     document.body.style.overflow = '';
     currentLeadId = null;
 });
 
-// ─── CHAT INPUT ───
+// ── CHAT INPUT ───
 chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 80) + 'px';
@@ -402,7 +402,7 @@ async function sendMessage() {
         });
 
         const data = await res.json();
-        console.log('📥 [FE-SEND] Backend Response:', data);
+        console.log(' [FE-SEND] Backend Response:', data);
 
         if (data.success) {
             console.log('✅ [FE-SEND] Success! Reloading history for ID:', currentLeadId);
@@ -426,18 +426,21 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE ───
+// ─── APPEND MESSAGE (FIXED: Swapped alignment for User/Customer) ───
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
     let cssClass = '';
     let senderLabel = '';
 
+    // ✅ FIX: Swap classes to match desired alignment
+    // 'ai' = Skyline User → should be RIGHT (uses .from-lead CSS)
+    // 'lead' = Customer → should be LEFT (uses .from-ai CSS)
     if (from === 'ai') {
-        cssClass = 'from-ai'; 
+        cssClass = 'from-lead';  
         senderLabel = 'You';
     } else {
-        cssClass = 'from-lead';
+        cssClass = 'from-ai';   
         senderLabel = 'Customer';
     }
 
@@ -537,7 +540,7 @@ function openChat(leadId, name, email) {
     console.log('🆔 [FE-OPEN] Target Lead ID:', leadId);
     
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
-        console.log('⚡ [FE-OPEN] Chat already active. Reloading history and status.');
+        console.log(' [FE-OPEN] Chat already active. Reloading history and status.');
         loadChatHistory(leadId);
         loadFollowUpStatus();
         return;
@@ -585,7 +588,7 @@ async function loadFollowUpStatus() {
 
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                console.log('⚠️ [FOLLOW-UP] Session expired, redirecting...');
+                console.log('️ [FOLLOW-UP] Session expired, redirecting...');
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
@@ -595,7 +598,7 @@ async function loadFollowUpStatus() {
         }
 
         const data = await res.json();
-        console.log('📊 [FOLLOW-UP] Status data:', data);
+        console.log(' [FOLLOW-UP] Status data:', data);
 
         // ✅ Update the followupStatus in the chat header
         if (followupStatus) {
@@ -772,7 +775,7 @@ async function toggleAutoFollowUp(days, forceState) {
     }
 
     const newStatus = typeof forceState !== 'undefined' ? forceState : !currentStatus;
-    console.log('🔄 [AUTO-FOLLOWUP] New status:', newStatus);
+    console.log(' [AUTO-FOLLOWUP] New status:', newStatus);
 
     // Update UI instantly (optimistic update)
     afCurrentEnabledState = newStatus;
@@ -849,7 +852,7 @@ async function toggleAutoFollowUp(days, forceState) {
 const CATEGORY_CONFIG = {
     contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
     replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
-    interested: { label: 'Interested', icon: '🟡', color: '#ffbb44' },
+    interested: { label: 'Interested', icon: '', color: '#ffbb44' },
     ongoing: { label: 'Ongoing', icon: '🟣', color: '#bb88ff' },
     win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
 };
@@ -878,7 +881,7 @@ async function fetchRevenueData() {
         renderRevenueData(data);
 
     } catch (err) {
-        console.error('❌ Failed to fetch revenue:', err);
+        console.error(' Failed to fetch revenue:', err);
         revenueBody.innerHTML = `
             <div class="modal-error">
                 <p>Failed to load revenue data.</p>
@@ -977,7 +980,7 @@ function renderRevenueData(data) {
     if (actions.length > 0) {
         html += `<div class="section-divider"></div>`;
         html += `<div class="actions-section">`;
-        html += `<div class="actions-title">🎯 Recommended Actions</div>`;
+        html += `<div class="actions-title"> Recommended Actions</div>`;
 
         actions.slice(0, 10).forEach((action, index) => {
             html += `
