@@ -3,7 +3,7 @@
 // Skyline AA-1 Inbox / Notifications Logic
 // ============================================================
 
-// ─── CONFIG ───
+// ── CONFIG ───
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 
@@ -129,7 +129,7 @@ revenueModal.addEventListener('click', function(e) {
     }
 });
 
-// ── FOLLOW-UP DROPDOWN TOGGLE ───
+// ── FOLLOW-UP DROPDOWN TOGGLE ──
 if (followupBtn && followupDropdown) {
     followupBtn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -161,7 +161,7 @@ document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventLis
     }
 });
 
-// ─── CLOSE MODAL ───
+// ── CLOSE MODAL ───
 function closeAutoFollowupModalFn() {
     if (autoFollowupModal) {
         autoFollowupModal.classList.remove('active');
@@ -177,7 +177,7 @@ autoFollowupModal?.addEventListener('click', function(e) {
     }
 });
 
-// ── ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ───
+// ─ ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ───
 async function loadFollowUpStatusForModal() {
     if (!currentLeadId) {
         console.log('📊 [FOLLOW-UP] No current lead ID for modal');
@@ -197,7 +197,7 @@ async function loadFollowUpStatusForModal() {
                 window.location.href = 'login.html';
                 return;
             }
-            console.log('⚠️ [FOLLOW-UP] Modal status check failed:', res.status);
+            console.log('️ [FOLLOW-UP] Modal status check failed:', res.status);
             return;
         }
 
@@ -365,7 +365,7 @@ async function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
 
-    console.log('🚀 [FE-SEND] Starting send process...');
+    console.log(' [FE-SEND] Starting send process...');
     console.log('🆔 [FE-SEND] Current Lead ID:', currentLeadId);
 
     isSending = true;
@@ -426,7 +426,7 @@ async function sendMessage() {
     }
 }
 
-// ─── APPEND MESSAGE (FIXED: Swapped alignment for User/Customer) ───
+// ─── APPEND MESSAGE (FIXED: Swapped alignment for User/Customer) ──
 function appendMessage(from, content, date) {
     const div = document.createElement('div');
     
@@ -534,7 +534,7 @@ async function loadChatHistory(leadId) {
     }
 }
 
-// ─── ✅ OPEN CHAT (FIXED - loads status properly) ───
+// ── ✅ OPEN CHAT (FIXED - loads status properly) ───
 function openChat(leadId, name, email) {
     console.log('📂 [FE-OPEN] Opening chat...');
     console.log('🆔 [FE-OPEN] Target Lead ID:', leadId);
@@ -796,7 +796,7 @@ async function toggleAutoFollowUp(days, forceState) {
         if (!res.ok) {
             // ✅ ONLY redirect on 401 - token expired
             if (res.status === 401) {
-                console.log('🔐 [AUTO-FOLLOWUP] Token expired, redirecting to login...');
+                console.log(' [AUTO-FOLLOWUP] Token expired, redirecting to login...');
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
@@ -853,7 +853,7 @@ const CATEGORY_CONFIG = {
     contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
     replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
     interested: { label: 'Interested', icon: '', color: '#ffbb44' },
-    ongoing: { label: 'Ongoing', icon: '🟣', color: '#bb88ff' },
+    ongoing: { label: 'Ongoing', icon: '', color: '#bb88ff' },
     win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
 };
 
@@ -1019,7 +1019,7 @@ function openChatFromRevenue(leadId, name, email) {
     openChat(leadId, name, email);
 }
 
-// ─── LOAD CONTACTS ───
+// ── LOAD CONTACTS ───
 async function loadContacts() {
     try {
         const res = await fetch(`${BACKEND}/api/conversations`, {
@@ -1118,5 +1118,5 @@ document.querySelector('.chat-followup-option[data-action="hint"]')?.addEventLis
     generateHint();
 });
 
-// ─── START ───
+// ── START ───
 loadContacts();
