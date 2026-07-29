@@ -32,13 +32,6 @@ const messagesContainer = document.getElementById('messagesContainer');
 const chatInput = document.getElementById('chatInput');
 const chatSendBtn = document.getElementById('chatSendBtn');
 
-// ✅ NEW: AI AUTO-REPLY DOM ELEMENTS
-const chatAutoReplyBtn = document.getElementById('chatAutoReplyBtn');
-const autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
-const closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
-const autoReplyInstructions = document.getElementById('autoReplyInstructions');
-const saveAutoReplyBtn = document.getElementById('saveAutoReplyBtn');
-
 // ─── FOLLOW-UP ELEMENTS ───
 const followupBtn = document.getElementById('chatFollowupBtn');
 const followupDropdown = document.getElementById('chatFollowupDropdown');
@@ -63,9 +56,6 @@ let currentLeadId = null;
 let currentLeadName = null;
 let currentLeadEmail = null;
 let isSending = false;
-
-// ✅ NEW: AI AUTO-REPLY STATE
-let isAutoReplyActive = false;
 
 // ─── AUTH CHECK ───
 if (!token) {
@@ -556,7 +546,6 @@ function openChat(leadId, name, email) {
         console.log(' [FE-OPEN] Chat already active. Reloading history and status.');
         loadChatHistory(leadId);
         loadFollowUpStatus();
-        loadAutoReplyStatus(); // ✅ Load auto-reply status too
         return;
     }
 
@@ -580,7 +569,6 @@ function openChat(leadId, name, email) {
     // ✅ Load both chat history AND follow-up status
     loadFollowUpStatus();
     loadChatHistory(leadId);
-    loadAutoReplyStatus(); // ✅ Load auto-reply status
 }
 
 // ============================================================
@@ -1132,99 +1120,6 @@ document.querySelector('.chat-followup-option[data-action="hint"]')?.addEventLis
     followupDropdown.classList.remove('show');
     generateHint();
 });
-
-// ============================================================
-// ✅ NEW: AI AUTO-REPLY FUNCTIONALITY
-// ============================================================
-
-async function loadAutoReplyStatus() {
-    if (!currentLeadId) return;
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            isAutoReplyActive = data.enabled || false;
-            autoReplyInstructions.value = data.instructions || '';
-            updateAutoReplyButtonUI();
-        }
-    } catch (err) { console.error('Failed to load auto-reply status:', err); }
-}
-
-function updateAutoReplyButtonUI() {
-    if (isAutoReplyActive) {
-        chatAutoReplyBtn.classList.add('active');
-        chatAutoReplyBtn.setAttribute('title', 'AI Auto-Reply ON - Click to turn OFF');
-    } else {
-        chatAutoReplyBtn.classList.remove('active');
-        chatAutoReplyBtn.setAttribute('title', 'AI Auto-Reply OFF - Click to configure');
-    }
-}
-
-// Toggle: If active → turn off immediately. If inactive → open modal.
-chatAutoReplyBtn.addEventListener('click', async () => {
-    if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    
-    if (isAutoReplyActive) {
-        // Turn OFF immediately
-        try {
-            await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled: false, instructions: autoReplyInstructions.value })
-            });
-            isAutoReplyActive = false;
-            updateAutoReplyButtonUI();
-            showToast('⚠️ AI Auto-Reply disabled');
-        } catch (err) { showToast('Failed to disable auto-reply'); }
-    } else {
-        // Open modal to configure/edit
-        autoReplyModalOverlay.classList.add('show');
-        autoReplyInstructions.focus();
-    }
-});
-
-// Close modal
-closeAutoReplyModal.addEventListener('click', () => autoReplyModalOverlay.classList.remove('show'));
-autoReplyModalOverlay.addEventListener('click', (e) => {
-    if (e.target === autoReplyModalOverlay) autoReplyModalOverlay.classList.remove('show');
-});
-
-// Save instructions & activate
-saveAutoReplyBtn.addEventListener('click', async () => {
-    const instructions = autoReplyInstructions.value.trim();
-    if (!instructions) { showToast('Please enter instructions first.'); return; }
-    
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: true, instructions })
-        });
-        
-        if (res.ok) {
-            isAutoReplyActive = true;
-            updateAutoReplyButtonUI();
-            autoReplyModalOverlay.classList.remove('show');
-            showToast('✅ AI Auto-Reply activated!');
-        } else {
-            showToast('Failed to save auto-reply settings');
-        }
-    } catch (err) { showToast('Connection error while saving'); }
-});
-
-// Legacy menu item handler for auto-reply (opens modal if inactive)
-function openAutoReplyModal() {
-    if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    if (isAutoReplyActive) {
-        // If already active, clicking menu item also turns it off
-        chatAutoReplyBtn.click();
-    } else {
-        autoReplyModalOverlay.classList.add('show');
-        autoReplyInstructions.focus();
-    }
-}
 
 // ── START ───
 loadContacts();
