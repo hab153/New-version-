@@ -131,11 +131,22 @@
             <div class="chat-info">
                 <span class="chat-name" id="chatName">Contact</span>
                 <span class="chat-email" id="chatEmail">email@example.com</span>
+                
+                <!-- ✅ NEW: AI AUTO-REPLY BUTTON (Beside Rename) -->
+                <button class="chat-autoreply-btn" id="chatAutoReplyBtn" title="AI Auto-Reply OFF">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                    </svg>
+                </button>
+
                 <button class="chat-rename-btn" id="chatRenameBtn" title="Rename">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                     </svg>
                 </button>
+                
                 <!-- ─── FOLLOW-UP BUTTON (SLIDER ICON - TOP RIGHT CORNER) ─── -->
                 <div class="chat-followup-wrap">
                     <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
@@ -248,6 +259,24 @@
         </div>
     </div>
 
+    <!-- ✅ NEW: AI AUTO-REPLY MINI MODAL -->
+    <div class="autoreply-modal-overlay" id="autoReplyModalOverlay">
+        <div class="autoreply-modal">
+            <div class="autoreply-modal-header">
+                <span class="autoreply-modal-title">🤖 AI Auto-Reply Instructions</span>
+                <button class="autoreply-modal-close" id="closeAutoReplyModal">&times;</button>
+            </div>
+            <textarea 
+                class="autoreply-instructions" 
+                id="autoReplyInstructions" 
+                placeholder="e.g., Keep replies professional. Always ask how I can help. Max 2 sentences."
+            ></textarea>
+            <div class="autoreply-modal-footer">
+                <button class="autoreply-save-btn" id="saveAutoReplyBtn">Save & Activate</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ─── TOAST ─── -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
 
@@ -286,4 +315,4 @@
 
     <script src="notifications.js"></script>
 </body>
-                    </html>
+            </html>
