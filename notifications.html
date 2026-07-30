@@ -19,10 +19,10 @@
         <span class="brand-sub">AA-1</span>
     </div>
 
-    <!-- ─── TOP RIGHT MENU & AUTO-REPLY ─── -->
+    <!-- ─── TOP RIGHT SLIDER MENU ─── -->
     <div class="menu-container">
-        <!-- ✅ NEW: AI AUTO-REPLY BUTTON (Beside 3 Dots) -->
-        <button class="chat-autoreply-btn-top" id="chatAutoReplyBtnTop" title="AI Auto-Reply OFF">
+        <!-- ✅ NEW: LARGE AI AUTO-REPLY BUTTON (Beside 3 Dots) -->
+        <button class="chat-autoreply-btn-large" id="chatAutoReplyBtn" title="AI Auto-Reply OFF">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
                 <circle cx="12" cy="12" r="3"/>
@@ -36,7 +36,6 @@
                 <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
         </button>
-        
         <div class="menu-dropdown" id="menuDropdown">
             <button class="menu-item" data-action="followup">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -74,7 +73,7 @@
         <div class="loading-text">Loading conversations...</div>
     </div>
 
-    <!-- ─── SEARCH BAR ── -->
+    <!-- ─── SEARCH BAR ─── -->
     <div class="search-container">
         <div class="search-wrap">
             <div class="search-icon">
@@ -223,6 +222,7 @@
             <div class="modal-body">
                 <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
                 
+                <!-- Day buttons - Large -->
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
                     <button class="af-day-btn" data-days="1">1</button>
                     <button class="af-day-btn" data-days="2">2</button>
@@ -233,6 +233,7 @@
                     <button class="af-day-btn" data-days="7">7</button>
                 </div>
                 
+                <!-- Custom input - Larger -->
                 <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
                     <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
                     <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
@@ -240,6 +241,7 @@
                     <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
                 </div>
 
+                <!-- Current status display -->
                 <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
                     <span style="font-size:11px; color:#707070;">Current status:</span>
                     <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
@@ -311,4 +313,4 @@
 
     <script src="notifications.js"></script>
 </body>
-    </html>
+                </html>
