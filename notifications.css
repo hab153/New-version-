@@ -80,28 +80,28 @@ body {
     z-index: 20;
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between auto-reply and 3-dots */
+    gap: 8px; /* Space between auto-reply btn and menu btn */
 }
 
-/* ✅ NEW: TOP-RIGHT AUTO-REPLY BUTTON STYLES */
-.chat-autoreply-btn-top {
+/* ✅ NEW: LARGE AI AUTO-REPLY BUTTON STYLES (Top Right Corner) */
+.chat-autoreply-btn-large {
     width: 32px; height: 32px; background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px;
     color: #707070; cursor: pointer; display: flex; align-items: center;
     justify-content: center; transition: all 0.2s; flex-shrink: 0;
 }
-.chat-autoreply-btn-top:hover { 
+.chat-autoreply-btn-large:hover { 
     background: rgba(255, 255, 255, 0.04); 
     border-color: rgba(255, 255, 255, 0.12); 
     color: #f5f5f5; 
 }
-.chat-autoreply-btn-top.active {
+.chat-autoreply-btn-large.active {
     background: rgba(102, 221, 153, 0.12); 
     border-color: #66dd99; 
     color: #66dd99;
     box-shadow: 0 0 12px rgba(102, 221, 153, 0.2);
 }
-.chat-autoreply-btn-top svg { width: 16px; height: 16px; }
+.chat-autoreply-btn-large svg { width: 18px; height: 18px; }
 
 .menu-btn {
     width: 32px;
@@ -232,7 +232,7 @@ body {
     background: #1a1a1a;
 }
 
-/* ── LOADING SCREEN ── */
+/* ── LOADING SCREEN ─── */
 .loading-container {
     position: fixed;
     top: 0;
@@ -289,7 +289,7 @@ body {
     50% { opacity: 1; }
 }
 
-/* ─── CONTACT LIST ─── */
+/* ── CONTACT LIST ─── */
 .contact-list {
     flex: 1;
     overflow-y: auto;
@@ -819,7 +819,7 @@ body {
     color: #505050;
 }
 
-/* ─── INPUT AREA ─── */
+/* ── INPUT AREA ─── */
 .chat-input-area {
     padding: 10px 12px 12px;
     background: #121212;
