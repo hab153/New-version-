@@ -65,44 +65,46 @@
         async function initDashboard() {
             const token = localStorage.getItem('adminToken');
             
-            // ✅ FIX: Only check if token exists, don't validate against user endpoint yet
             if (!token) {
                 window.location.href = '/admin-signup.html';
                 return;
             }
 
             try {
-                // Optional: Verify token is still valid using a safe endpoint
-                const res = await fetch(`${API_BASE}/api/health`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!res.ok) throw new Error('Server unreachable');
+                // Verify server is reachable
+                const healthRes = await fetch(`${API_BASE}/api/health`);
+                if (!healthRes.ok) throw new Error('Server unreachable');
 
                 document.getElementById('adminEmail').textContent = 'Authenticated Admin';
                 
-                // Fetch real stats if available
+                // ✅ Fetch real user count securely
                 try {
                     const usersRes = await fetch(`${API_BASE}/api/admin/users`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
+                    
                     if (usersRes.ok) {
                         const usersData = await usersRes.json();
                         document.getElementById('totalUsers').textContent = Array.isArray(usersData) ? usersData.length : 0;
+                    } else {
+                        console.warn('Users endpoint returned:', usersRes.status);
+                        document.getElementById('totalUsers').textContent = 'N/A';
                     }
-                } catch(e) { console.log('Stats fetch skipped'); }
+                } catch(e) { 
+                    console.error('Stats fetch failed:', e);
+                    document.getElementById('totalUsers').textContent = '--';
+                }
 
                 document.getElementById('loadingMsg').style.display = 'none';
                 document.getElementById('dashboardContent').style.display = 'block';
                 
             } catch (err) {
                 console.error('Auth failed:', err);
-                // Only redirect on actual auth failure, not server errors
                 if (err.message.includes('Invalid') || err.message.includes('Unauthorized')) {
                     localStorage.removeItem('adminToken');
                     window.location.href = '/admin-signup.html';
                 } else {
-                    // Show dashboard anyway if it's just a network blip
+                    // Show dashboard even if stats fail
                     document.getElementById('loadingMsg').style.display = 'none';
                     document.getElementById('dashboardContent').style.display = 'block';
                 }
