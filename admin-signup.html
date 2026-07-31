@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin Account</title>
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .form-container { background: #1a1a1a; padding: 40px; border-radius: 12px; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 20px; font-size: 22px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #121212; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus { outline: none; border-color: #66dd99; }
+        button { width: 100%; padding: 12px; background: #66dd99; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: opacity 0.2s; }
+        button:hover:not(:disabled) { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .error { color: #ff5555; font-size: 14px; margin-top: 10px; text-align: center; display: none; }
+        .success { color: #66dd99; font-size: 14px; margin-top: 10px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Create Admin Account</h2>
+        <form id="adminSignupForm">
+            <input type="email" id="email" placeholder="Admin Email" required autocomplete="off">
+            <input type="password" id="password" placeholder="Password (Min 8 chars)" minlength="8" required autocomplete="new-password">
+            <button type="submit" id="submitBtn">Create Account</button>
+            <div class="error" id="errorMsg"></div>
+            <div class="success" id="successMsg"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('adminSignupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errDiv = document.getElementById('errorMsg');
+            const sucDiv = document.getElementById('successMsg');
+            
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+            errDiv.style.display = 'none';
+            sucDiv.style.display = 'none';
+
+            try {
+                // ✅ SENDS TO YOUR RENDER BACKEND
+                const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    sucDiv.textContent = '✅ Admin account created! Redirecting to login...';
+                    sucDiv.style.display = 'block';
+                    setTimeout(() => window.location.href = '/login.html', 2000);
+                } else {
+                    errDiv.textContent = data.error || 'Failed to create account';
+                    errDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errDiv.textContent = 'Connection error. Check backend.';
+                errDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>
