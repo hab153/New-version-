@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyline Admin Dashboard</title>
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        h1 { margin: 0; font-size: 24px; color: #66dd99; }
+        .user-info { font-size: 14px; color: #888; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+        .card h3 { margin-top: 0; color: #aaa; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        .btn-logout { background: transparent; border: 1px solid #ff5555; color: #ff5555; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn-logout:hover { background: #ff5555; color: #fff; }
+        .loading { text-align: center; padding: 50px; color: #666; }
+    </style>
+</head>
+<body>
+    <div id="dashboardContent" style="display: none;">
+        <div class="header">
+            <div>
+                <h1>🛡️ Skyline Admin Dashboard</h1>
+                <div class="user-info" id="adminEmail">Loading...</div>
+            </div>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Total Users</h3>
+                <div class="stat" id="totalUsers">--</div>
+            </div>
+            <div class="card">
+                <h3>Active Leads</h3>
+                <div class="stat" id="activeLeads">--</div>
+            </div>
+            <div class="card">
+                <h3>System Status</h3>
+                <div class="stat" style="color: #66dd99; font-size: 20px;">● Online</div>
+            </div>
+            <div class="card">
+                <h3>Session Token</h3>
+                <div style="font-size: 12px; color: #666; word-break: break-all;" id="tokenPreview">--</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingMsg" class="loading">Verifying admin access...</div>
+
+    <script>
+        const API_BASE = 'https://skylineapp-backend-file.onrender.com';
+
+        async function initDashboard() {
+            const token = localStorage.getItem('adminToken');
+            
+            if (!token) {
+                window.location.href = '/admin-signup.html';
+                return;
+            }
+
+            try {
+                // Verify token validity with backend
+                const res = await fetch(`${API_BASE}/api/users/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Invalid session');
+                }
+
+                const data = await res.json();
+                
+                // Display admin info
+                document.getElementById('adminEmail').textContent = data.email || 'Admin User';
+                document.getElementById('tokenPreview').textContent = `${token.substring(0, 20)}...`;
+                
+                // Show dashboard, hide loading
+                document.getElementById('loadingMsg').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+                
+                // TODO: Fetch real stats from backend
+                document.getElementById('totalUsers').textContent = '5'; 
+                document.getElementById('activeLeads').textContent = '168';
+
+            } catch (err) {
+                console.error('Auth failed:', err);
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin-signup.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin-signup.html';
+        }
+
+        // Initialize on load
+        initDashboard();
+    </script>
+</body>
+</html>
