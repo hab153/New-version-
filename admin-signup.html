@@ -22,7 +22,7 @@
         <form id="loginForm">
             <input type="email" id="email" placeholder="Admin Email" required autocomplete="off">
             <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
-            <button type="submit" id="loginBtn">Next: Security Check</button>
+            <button type="submit" id="loginBtn">Login</button>
             <div class="error" id="loginError"></div>
         </form>
     </div>
@@ -38,7 +38,8 @@
             errDiv.style.display = 'none';
 
             try {
-                const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/login-step1', {
+                // ✅ DIRECT LOGIN - NO LAYER 2
+                const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -49,11 +50,9 @@
 
                 const data = await res.json();
 
-                if (res.ok && data.tempToken) {
-                    // Store temp token for KBA verification
-                    localStorage.setItem('adminTempToken', data.tempToken);
-                    // Redirect to Layer 2 verification page
-                    window.location.href = '/verify.html';
+                if (res.ok && data.token) {
+                    localStorage.setItem('adminToken', data.token);
+                    window.location.href = '/admindashboard.html';
                 } else {
                     errDiv.textContent = data.error || 'Invalid credentials';
                     errDiv.style.display = 'block';
@@ -63,7 +62,7 @@
                 errDiv.style.display = 'block';
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Next: Security Check';
+                btn.textContent = 'Login';
             }
         });
     </script>
