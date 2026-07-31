@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyline Admin - All Users</title>
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { margin: 0; font-size: 22px; color: #66dd99; }
+        .back-btn { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .back-btn:hover { border-color: #fff; color: #fff; }
+        .search-box { width: 100%; max-width: 400px; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+        .search-box:focus { outline: none; border-color: #66dd99; }
+        table { width: 100%; border-collapse: collapse; background: #1a1a1a; border-radius: 12px; overflow: hidden; }
+        th { background: #121212; color: #aaa; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 14px 16px; text-align: left; }
+        td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(102,221,153,0.05); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .badge-admin { background: rgba(102,221,153,0.15); color: #66dd99; }
+        .badge-user { background: rgba(255,255,255,0.08); color: #888; }
+        .loading { text-align: center; padding: 50px; color: #666; }
+        .empty { text-align: center; padding: 40px; color: #555; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👥 All Users</h1>
+        <a href="/admindashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+
+    <input type="text" class="search-box" id="searchInput" placeholder="Search by email or username...">
+
+    <div id="usersTableContainer">
+        <div class="loading">Loading users...</div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://skylineapp-backend-file.onrender.com';
+        let allUsers = [];
+
+        async function loadUsers() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) { window.location.href = '/admin-signup.html'; return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error('Unauthorized');
+
+                allUsers = await res.json();
+                renderUsers(allUsers);
+
+            } catch (err) {
+                document.getElementById('usersTableContainer').innerHTML = 
+                    `<div class="empty">Failed to load users. <a href="/admindashboard.html" style="color:#66dd99;">Return to dashboard</a></div>`;
+            }
+        }
+
+        function renderUsers(users) {
+            if (users.length === 0) {
+                document.getElementById('usersTableContainer').innerHTML = '<div class="empty">No users found.</div>';
+                return;
+            }
+
+            let html = `<table>
+                <thead><tr>
+                    <th>#</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                </tr></thead><tbody>`;
+
+            users.forEach((user, index) => {
+                const roleBadge = user.isAdmin 
+                    ? '<span class="badge badge-admin">ADMIN</span>' 
+                    : '<span class="badge badge-user">USER</span>';
+                
+                html += `<tr>
+                    <td>${index + 1}</td>
+                    <td>${user.email || '--'}</td>
+                    <td>${user.username || '--'}</td>
+                    <td>${roleBadge}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('usersTableContainer').innerHTML = html;
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                (u.email && u.email.toLowerCase().includes(query)) ||
+                (u.username && u.username.toLowerCase().includes(query))
+            );
+            renderUsers(filtered);
+        });
+
+        loadUsers();
+    </script>
+</body>
+</html>
