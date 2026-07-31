@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyline Admin - Security Verification</title>
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #1a1a1a; padding: 40px; border-radius: 12px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 10px; font-size: 20px; }
+        p.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 25px; }
+        label { display: block; font-size: 12px; color: #aaa; margin-bottom: 6px; margin-top: 15px; }
+        input { width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus { outline: none; border-color: #66dd99; }
+        button { width: 100%; padding: 12px; background: #66dd99; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 20px; transition: opacity 0.2s; }
+        button:hover:not(:disabled) { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .error { color: #ff5555; font-size: 13px; margin-top: 12px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔒 Layer 2 Verification</h2>
+        <p class="subtitle">Answer these personal questions to access the admin panel.</p>
+        
+        <form id="kbaForm">
+            <label>1. Name of your school</label>
+            <input type="text" id="q1" required autocomplete="off">
+            
+            <label>2. Who you hate the most</label>
+            <input type="text" id="q2" required autocomplete="off">
+            
+            <label>3. Who you love the most</label>
+            <input type="text" id="q3" required autocomplete="off">
+            
+            <label>4. Your favorite person</label>
+            <input type="text" id="q4" required autocomplete="off">
+            
+            <label>5. Your dream</label>
+            <input type="text" id="q5" required autocomplete="off">
+            
+            <button type="submit" id="verifyBtn">Verify & Access Dashboard</button>
+            <div class="error" id="errorMsg"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('kbaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('verifyBtn');
+            const errDiv = document.getElementById('errorMsg');
+            
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            errDiv.style.display = 'none';
+
+            // Get temp token from previous login step
+            const tempToken = localStorage.getItem('adminTempToken');
+            if (!tempToken) {
+                window.location.href = '/admin-signup.html';
+                return;
+            }
+
+            try {
+                const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/verify-kba', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${tempToken}`
+                    },
+                    body: JSON.stringify({
+                        answers: [
+                            document.getElementById('q1').value.trim(),
+                            document.getElementById('q2').value.trim(),
+                            document.getElementById('q3').value.trim(),
+                            document.getElementById('q4').value.trim(),
+                            document.getElementById('q5').value.trim()
+                        ]
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.removeItem('adminTempToken');
+                    localStorage.setItem('adminToken', data.token);
+                    window.location.href = '/admin/dashboard';
+                } else {
+                    errDiv.textContent = data.error || 'Incorrect answers. Please try again.';
+                    errDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errDiv.textContent = 'Verification failed. Check connection.';
+                errDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify & Access Dashboard';
+            }
+        });
+    </script>
+</body>
+</html>
