@@ -141,7 +141,7 @@
             <div id="leadStatsPanel" class="lead-stats-panel">
                 <div class="stats-grid">
                     <div class="mini-stat">
-                        <h5>Today</h5>
+                        <h5>Today (Live)</h5>
                         <div class="val" id="leadsDaily">--</div>
                     </div>
                     <div class="mini-stat">
@@ -180,6 +180,7 @@
     <script>
         const API_BASE = 'https://skylineapp-backend-file.onrender.com';
         let statsLoaded = false;
+        let eventSource = null;
 
         // ✅ TOGGLE FUNCTION FOR LEAD STATS
         function toggleLeadStats() {
@@ -191,10 +192,14 @@
                 btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg> Hide Lead Statistics`;
                 
                 // Fetch stats only when first opened to save resources
-                if (!statsLoaded) fetchLeadStats();
+                if (!statsLoaded) {
+                    fetchLeadStats();
+                    startLiveStats(); // Start listening for real-time updates
+                }
             } else {
                 panel.style.display = 'none';
                 btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Show Lead Statistics`;
+                if (eventSource) eventSource.close(); // Stop listening when hidden
             }
         }
 
@@ -213,6 +218,35 @@
                     statsLoaded = true;
                 }
             } catch(e) { console.error('Leads stats fetch failed:', e); }
+        }
+
+        // ✅ REAL-TIME LISTENER (SSE)
+        function startLiveStats() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) return;
+
+            // Close existing connection if any
+            if (eventSource) eventSource.close();
+
+            // Connect to SSE endpoint
+            eventSource = new EventSource(`${API_BASE}/api/admin/live-stats?token=${token}`);
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                // Update the UI instantly with animation
+                const dailyEl = document.getElementById('leadsDaily');
+                if (dailyEl && data.daily !== undefined) {
+                    dailyEl.textContent = data.daily;
+                    dailyEl.style.color = '#66dd99'; // Flash green
+                    setTimeout(() => dailyEl.style.color = '#fff', 500);
+                }
+            };
+
+            eventSource.onerror = function(err) {
+                console.error('SSE Connection error:', err);
+                eventSource.close();
+            };
         }
 
         async function initDashboard() {
@@ -252,10 +286,11 @@
 
         function logout() {
             localStorage.removeItem('adminToken');
+            if (eventSource) eventSource.close();
             window.location.href = '/admin-signup.html';
         }
 
         initDashboard();
     </script>
 </body>
-    </html>
+</html>
