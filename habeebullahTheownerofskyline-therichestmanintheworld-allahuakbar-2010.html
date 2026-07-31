@@ -47,7 +47,7 @@
     <div class="container">
         <!-- REGISTRATION VIEW -->
         <div id="registerView" class="hidden">
-            <h1>🛡️ Skyline Admin Setup</h1>
+            <h1>️ Skyline Admin Setup</h1>
             <p>Create the first administrator account.<br>This portal will convert to login-only after registration.</p>
             <div class="warning">⚠️ ONE-TIME SETUP. Save credentials securely.</div>
             <form id="setupForm">
@@ -100,7 +100,7 @@
             }
         }
 
-        // Registration handler
+        // ✅ REGISTRATION HANDLER - ONLY SENDS TO /api/admin/setup
         document.getElementById('setupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('setupBtn');
@@ -122,6 +122,7 @@
             sucDiv.style.display = 'none';
 
             try {
+                // ✅ EXPLICITLY TARGETING SETUP ENDPOINT
                 const res = await fetch(`${API_BASE}/api/admin/setup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -151,7 +152,7 @@
             }
         });
 
-        // Login handler
+        // ✅ LOGIN HANDLER - ONLY SENDS TO /api/admin/authenticate
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
@@ -162,6 +163,7 @@
             errDiv.style.display = 'none';
 
             try {
+                // ✅ EXPLICITLY TARGETING AUTHENTICATE ENDPOINT
                 const res = await fetch(`${API_BASE}/api/admin/authenticate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -193,4 +195,4 @@
         checkPortalState();
     </script>
 </body>
-      </html>
+</html>
