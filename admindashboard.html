@@ -5,106 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skyline Admin Dashboard</title>
     <style>
-        body { background: #0a0a0a; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
-        h1 { margin: 0; font-size: 24px; color: #66dd99; }
-        .user-info { font-size: 14px; color: #888; margin-top: 5px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); border-color: rgba(102,221,153,0.3); }
-        .card h3 { margin-top: 0; color: #aaa; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-        .stat { font-size: 32px; font-weight: bold; margin: 10px 0; }
-        .btn-action { 
-            width: 100%; background: #66dd99; color: #000; border: none; 
-            padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; 
-            font-size: 14px; margin-top: 10px; transition: opacity 0.2s; 
+        body { 
+            background: #0a0a0a; 
+            color: #fff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            padding: 40px; 
+            display: flex;
+            justify-content: center;
         }
-        .btn-action:hover { opacity: 0.9; }
-        .btn-logout { background: transparent; border: 1px solid #ff5555; color: #ff5555; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .btn-logout:hover { background: #ff5555; color: #fff; }
-        .loading { text-align: center; padding: 50px; color: #666; font-size: 18px; }
+        .container { width: 100%; max-width: 800px; }
+        
+        /* Header Styling */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 60px; 
+            border-bottom: 1px solid #222; 
+            padding-bottom: 20px; 
+        }
+        h1 { margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -0.5px; }
+        .user-info { font-size: 13px; color: #666; margin-top: 4px; }
+        
+        /* Compact Button Styling */
+        .btn-group { display: flex; gap: 15px; }
+        
+        .btn-icon { 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            color: #ccc; 
+            padding: 8px 16px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: all 0.2s ease; 
+        }
+        
+        .btn-icon svg { width: 16px; height: 16px; fill: currentColor; }
+        
+        .btn-icon:hover { 
+            background: #222; 
+            border-color: #66dd99; 
+            color: #66dd99; 
+        }
+
+        .btn-logout { border-color: #331111; color: #ff5555; }
+        .btn-logout:hover { background: #221111; border-color: #ff5555; }
+
+        /* Stats Row (Minimal) */
+        .stats-row { display: flex; gap: 40px; margin-top: 20px; }
+        .stat-item h4 { margin: 0 0 5px 0; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 24px; font-weight: 600; color: #fff; }
+        .status-dot { color: #66dd99; font-size: 12px; }
+
+        .loading { text-align: center; padding: 50px; color: #444; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div id="dashboardContent" style="display: none;">
-        <div class="header">
-            <div>
-                <h1>🛡️ Skyline Admin Dashboard</h1>
-                <div class="user-info" id="adminEmail">Admin Panel</div>
+    <div class="container">
+        <div id="dashboardContent" style="display: none;">
+            <div class="header">
+                <div>
+                    <h1>Skyline Admin</h1>
+                    <div class="user-info" id="adminEmail">Loading...</div>
+                </div>
+                
+                <!-- ✅ COMPACT BUTTONS -->
+                <div class="btn-group">
+                    <button class="btn-icon" onclick="window.location.href='/users.html'">
+                        <!-- SVG User Icon -->
+                        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        View Users
+                    </button>
+                    
+                    <button class="btn-icon btn-logout" onclick="logout()">
+                        <!-- SVG Logout Icon -->
+                        <svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+                        Logout
+                    </button>
+                </div>
             </div>
-            <button class="btn-logout" onclick="logout()">Logout</button>
+
+            <!-- Minimal Stats Display -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <h4>Total Users</h4>
+                    <div class="stat-value" id="totalUsers">--</div>
+                </div>
+                <div class="stat-item">
+                    <h4>System Status</h4>
+                    <div class="stat-value" style="font-size: 16px; margin-top: 5px;">
+                        <span class="status-dot">●</span> Online
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="grid">
-            <div class="card">
-                <h3>Total Users</h3>
-                <div class="stat" id="totalUsers">--</div>
-            </div>
-            <div class="card">
-                <h3>Active Leads</h3>
-                <div class="stat" id="activeLeads">--</div>
-            </div>
-            <div class="card">
-                <h3>System Status</h3>
-                <div class="stat" style="color: #66dd99; font-size: 20px;">● Online</div>
-            </div>
-            <!-- ✅ VIEW ALL USERS BUTTON -->
-            <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
-                <h3>User Management</h3>
-                <p style="color: #888; font-size: 13px; margin: 5px 0 15px;">View, search, and manage all registered users.</p>
-                <button class="btn-action" onclick="window.location.href='/users.html'">👥 View All Users</button>
-            </div>
-        </div>
+        <div id="loadingMsg" class="loading">Verifying access...</div>
     </div>
-
-    <div id="loadingMsg" class="loading">Verifying admin access...</div>
 
     <script>
         const API_BASE = 'https://skylineapp-backend-file.onrender.com';
 
         async function initDashboard() {
             const token = localStorage.getItem('adminToken');
-            
-            if (!token) {
-                window.location.href = '/admin-signup.html';
-                return;
-            }
+            if (!token) { window.location.href = '/admin-signup.html'; return; }
 
             try {
-                // Verify server is reachable
                 const healthRes = await fetch(`${API_BASE}/api/health`);
                 if (!healthRes.ok) throw new Error('Server unreachable');
 
-                document.getElementById('adminEmail').textContent = 'Authenticated Admin';
+                document.getElementById('adminEmail').textContent = 'Authenticated';
                 
-                // ✅ Fetch real user count securely
                 try {
                     const usersRes = await fetch(`${API_BASE}/api/admin/users`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    
                     if (usersRes.ok) {
                         const usersData = await usersRes.json();
                         document.getElementById('totalUsers').textContent = Array.isArray(usersData) ? usersData.length : 0;
-                    } else {
-                        console.warn('Users endpoint returned:', usersRes.status);
-                        document.getElementById('totalUsers').textContent = 'N/A';
                     }
-                } catch(e) { 
-                    console.error('Stats fetch failed:', e);
-                    document.getElementById('totalUsers').textContent = '--';
-                }
+                } catch(e) { console.error('Stats fetch failed:', e); }
 
                 document.getElementById('loadingMsg').style.display = 'none';
                 document.getElementById('dashboardContent').style.display = 'block';
                 
             } catch (err) {
-                console.error('Auth failed:', err);
                 if (err.message.includes('Invalid') || err.message.includes('Unauthorized')) {
                     localStorage.removeItem('adminToken');
                     window.location.href = '/admin-signup.html';
                 } else {
-                    // Show dashboard even if stats fail
                     document.getElementById('loadingMsg').style.display = 'none';
                     document.getElementById('dashboardContent').style.display = 'block';
                 }
