@@ -20,7 +20,7 @@
         .header { 
             display: flex; 
             justify-content: space-between; 
-            align-items: center; 
+            align-items: flex-start; 
             margin-bottom: 60px; 
             border-bottom: 1px solid #222; 
             padding-bottom: 20px; 
@@ -56,13 +56,56 @@
         .btn-logout { border-color: #331111; color: #ff5555; }
         .btn-logout:hover { background: #221111; border-color: #ff5555; }
 
-        /* Stats Row (Minimal) */
-        .stats-row { display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
+        /* Lead Stats Toggle Button */
+        .stats-toggle {
+            margin-top: 10px;
+            background: transparent;
+            border: none;
+            color: #66dd99;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .stats-toggle:hover { opacity: 1; text-decoration: underline; }
+        .stats-toggle svg { width: 12px; height: 12px; fill: currentColor; }
+
+        /* Hidden Stats Panel */
+        .lead-stats-panel {
+            display: none; /* Hidden by default */
+            background: #151515;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .mini-stat h5 { margin: 0 0 5px 0; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .mini-stat .val { font-size: 20px; font-weight: 600; color: #fff; }
+
+        /* Main Stats Row (Users & Status) */
+        .main-stats-row { display: flex; gap: 40px; margin-top: 20px; }
         .stat-item h4 { margin: 0 0 5px 0; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 24px; font-weight: 600; color: #fff; }
         .status-dot { color: #66dd99; font-size: 12px; }
 
         .loading { text-align: center; padding: 50px; color: #444; font-size: 14px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -72,9 +115,15 @@
                 <div>
                     <h1>Skyline Admin</h1>
                     <div class="user-info" id="adminEmail">Loading...</div>
+                    
+                    <!-- ✅ NEW: SMALL TOGGLE BUTTON UNDER AUTHENTICATED TEXT -->
+                    <button class="stats-toggle" onclick="toggleLeadStats()">
+                        <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                        Show Lead Statistics
+                    </button>
                 </div>
                 
-                <!-- ✅ COMPACT BUTTONS -->
+                <!-- Right Side Buttons -->
                 <div class="btn-group">
                     <button class="btn-icon" onclick="window.location.href='/users.html'">
                         <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -88,27 +137,33 @@
                 </div>
             </div>
 
-            <!-- ✅ UPDATED: MINIMAL STATS WITH LEAD METRICS -->
-            <div class="stats-row">
+            <!-- ✅ HIDDEN LEAD STATS PANEL -->
+            <div id="leadStatsPanel" class="lead-stats-panel">
+                <div class="stats-grid">
+                    <div class="mini-stat">
+                        <h5>Today</h5>
+                        <div class="val" id="leadsDaily">--</div>
+                    </div>
+                    <div class="mini-stat">
+                        <h5>This Week</h5>
+                        <div class="val" id="leadsWeekly">--</div>
+                    </div>
+                    <div class="mini-stat">
+                        <h5>This Month</h5>
+                        <div class="val" id="leadsMonthly">--</div>
+                    </div>
+                    <div class="mini-stat">
+                        <h5>This Year</h5>
+                        <div class="val" id="leadsYearly">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Stats (Users & Status) -->
+            <div class="main-stats-row">
                 <div class="stat-item">
                     <h4>Total Users</h4>
                     <div class="stat-value" id="totalUsers">--</div>
-                </div>
-                <div class="stat-item">
-                    <h4>Leads Today</h4>
-                    <div class="stat-value" id="leadsDaily">--</div>
-                </div>
-                <div class="stat-item">
-                    <h4>This Week</h4>
-                    <div class="stat-value" id="leadsWeekly">--</div>
-                </div>
-                <div class="stat-item">
-                    <h4>This Month</h4>
-                    <div class="stat-value" id="leadsMonthly">--</div>
-                </div>
-                <div class="stat-item">
-                    <h4>This Year</h4>
-                    <div class="stat-value" id="leadsYearly">--</div>
                 </div>
                 <div class="stat-item">
                     <h4>Status</h4>
@@ -124,6 +179,41 @@
 
     <script>
         const API_BASE = 'https://skylineapp-backend-file.onrender.com';
+        let statsLoaded = false;
+
+        // ✅ TOGGLE FUNCTION FOR LEAD STATS
+        function toggleLeadStats() {
+            const panel = document.getElementById('leadStatsPanel');
+            const btn = document.querySelector('.stats-toggle');
+            
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg> Hide Lead Statistics`;
+                
+                // Fetch stats only when first opened to save resources
+                if (!statsLoaded) fetchLeadStats();
+            } else {
+                panel.style.display = 'none';
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Show Lead Statistics`;
+            }
+        }
+
+        async function fetchLeadStats() {
+            const token = localStorage.getItem('adminToken');
+            try {
+                const leadsRes = await fetch(`${API_BASE}/api/admin/stats/leads`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (leadsRes.ok) {
+                    const data = await leadsRes.json();
+                    document.getElementById('leadsDaily').textContent = data.daily ?? 0;
+                    document.getElementById('leadsWeekly').textContent = data.weekly ?? 0;
+                    document.getElementById('leadsMonthly').textContent = data.monthly ?? 0;
+                    document.getElementById('leadsYearly').textContent = data.yearly ?? 0;
+                    statsLoaded = true;
+                }
+            } catch(e) { console.error('Leads stats fetch failed:', e); }
+        }
 
         async function initDashboard() {
             const token = localStorage.getItem('adminToken');
@@ -145,20 +235,6 @@
                         document.getElementById('totalUsers').textContent = Array.isArray(usersData) ? usersData.length : 0;
                     }
                 } catch(e) { console.error('Users fetch failed:', e); }
-
-                // ✅ Fetch lead statistics
-                try {
-                    const leadsRes = await fetch(`${API_BASE}/api/admin/stats/leads`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (leadsRes.ok) {
-                        const leadsData = await leadsRes.json();
-                        document.getElementById('leadsDaily').textContent = leadsData.daily ?? 0;
-                        document.getElementById('leadsWeekly').textContent = leadsData.weekly ?? 0;
-                        document.getElementById('leadsMonthly').textContent = leadsData.monthly ?? 0;
-                        document.getElementById('leadsYearly').textContent = leadsData.yearly ?? 0;
-                    }
-                } catch(e) { console.error('Leads stats fetch failed:', e); }
 
                 document.getElementById('loadingMsg').style.display = 'none';
                 document.getElementById('dashboardContent').style.display = 'block';
@@ -182,4 +258,4 @@
         initDashboard();
     </script>
 </body>
-</html>
+    </html>
