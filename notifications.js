@@ -357,7 +357,7 @@ async function renameLead(leadId, newName) {
 
         if (data.success) {
             currentLeadName = data.newName;
-            chatName.textContent = data.newName;
+            chatName.textContent = DOMPurify.sanitize(data.newName); // ✅ SANITIZE
             chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
             showToast('Renamed successfully!');
             loadContacts();
@@ -462,9 +462,10 @@ function appendMessage(from, content, date) {
 
     const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
+    // ✅ SANITIZE CONTENT BEFORE DISPLAY
     div.innerHTML = `
         <div class="msg-sender">${senderLabel}</div>
-        <div class="message-bubble">${escapeHtml(content)}</div>
+        <div class="message-bubble">${DOMPurify.sanitize(content)}</div>
         <div class="message-time">${time}</div>
     `;
 
@@ -565,8 +566,8 @@ function openChat(leadId, name, email) {
     currentLeadEmail = email || '';
 
     chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
-    chatName.textContent = currentLeadName;
-    chatEmail.textContent = currentLeadEmail || 'No email provided';
+    chatName.textContent = DOMPurify.sanitize(currentLeadName); // ✅ SANITIZE
+    chatEmail.textContent = DOMPurify.sanitize(currentLeadEmail || 'No email provided'); // ✅ SANITIZE
     
     chatView.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -945,10 +946,11 @@ function renderRevenueData(data) {
                 const name = lead.name || 'Unknown';
                 const company = lead.company || '';
                 const leadId = lead.id || '';
+                // ✅ SANITIZE ALL DYNAMIC DATA IN REVENUE MODAL
                 html += `
-                    <div class="lead-item" data-id="${leadId}" data-name="${escapeHtml(name)}" data-email="${escapeHtml(lead.email || '')}" onclick="openChatFromRevenue('${leadId}', '${escapeHtml(name)}', '${escapeHtml(lead.email || '')}')">
-                        <span class="lead-name">${escapeHtml(name)}</span>
-                        ${company ? `<span class="lead-company">· ${escapeHtml(company)}</span>` : ''}
+                    <div class="lead-item" data-id="${leadId}" data-name="${DOMPurify.sanitize(name)}" data-email="${DOMPurify.sanitize(lead.email || '')}" onclick="openChatFromRevenue('${leadId}', '${DOMPurify.sanitize(name)}', '${DOMPurify.sanitize(lead.email || '')}')">
+                        <span class="lead-name">${DOMPurify.sanitize(name)}</span>
+                        ${company ? `<span class="lead-company">· ${DOMPurify.sanitize(company)}</span>` : ''}
                     </div>
                 `;
             });
@@ -982,7 +984,7 @@ function renderRevenueData(data) {
             if (value && value.trim()) {
                 html += `
                     <div class="advice-item">
-                        <strong>${label}:</strong> ${escapeHtml(value)}
+                        <strong>${label}:</strong> ${DOMPurify.sanitize(value)}
                     </div>
                 `;
             }
@@ -1001,8 +1003,8 @@ function renderRevenueData(data) {
             html += `
                 <div class="action-item">
                     <span style="color:#505050; font-size:10px;">${index + 1}.</span>
-                    <span class="action-lead">${escapeHtml(action.leadName || 'Lead')}</span>
-                    <span class="action-text">— ${escapeHtml(action.action || 'Follow up')}</span>
+                    <span class="action-lead">${DOMPurify.sanitize(action.leadName || 'Lead')}</span>
+                    <span class="action-text">— ${DOMPurify.sanitize(action.action || 'Follow up')}</span>
                 </div>
             `;
         });
@@ -1087,12 +1089,13 @@ function renderContacts(contacts) {
             minute: '2-digit'
         }) : '';
 
+        // ✅ SANITIZE ALL CONTACT DATA
         return `
-            <div class="contact-item" data-id="${c.id}" onclick="openChat('${c.id}', '${escapeHtml(c.name || 'Unknown')}', '${escapeHtml(c.email || '')}')">
+            <div class="contact-item" data-id="${c.id}" onclick="openChat('${c.id}', '${DOMPurify.sanitize(c.name || 'Unknown')}', '${DOMPurify.sanitize(c.email || '')}')">
                 <div class="contact-avatar">${initials}</div>
                 <div class="contact-info">
-                    <div class="contact-name">${escapeHtml(c.name || 'Unknown')}</div>
-                    <div class="contact-preview">${escapeHtml(preview)}</div>
+                    <div class="contact-name">${DOMPurify.sanitize(c.name || 'Unknown')}</div>
+                    <div class="contact-preview">${DOMPurify.sanitize(preview)}</div>
                 </div>
                 ${time ? `<div class="contact-time">${time}</div>` : ''}
             </div>
@@ -1118,13 +1121,6 @@ function showEmptyState() {
     contactList.classList.remove('active');
     emptyState.classList.add('active');
     noResults.classList.remove('active');
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
 }
 
 // ─── AI HINT FROM DROPDOWN ───
