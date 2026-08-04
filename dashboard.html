@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard | Skyline AA-1</title>
+  <!-- ✅ XSS PROTECTION LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -619,11 +621,7 @@
     </div>
   </div>
 
-  <script type="module">
-    // ✅ XSS PROTECTION HELPER
-    import DOMPurify from 'dompurify';
-    const sanitize = (html) => DOMPurify.sanitize(html);
-
+  <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token   = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -824,9 +822,9 @@
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             return `
               <tr>
-                <td>${sanitize(lead.name || '—')}</td>
-                <td>${sanitize(lead.company || '—')}</td>
-                <td><span class="status-badge status-${statusClass}">${sanitize(lead.status || 'New')}</span></td>
+                <td>${DOMPurify.sanitize(lead.name || '—')}</td>
+                <td>${DOMPurify.sanitize(lead.company || '—')}</td>
+                <td><span class="status-badge status-${statusClass}">${DOMPurify.sanitize(lead.status || 'New')}</span></td>
                 <td>${lastDate}</td>
               </tr>
             `;
@@ -843,7 +841,7 @@
       currentReplyLeadId = leadId;
       currentReplyEmail = email;
 
-      document.getElementById('modalLeadName').innerText = sanitize(name);
+      document.getElementById('modalLeadName').innerText = DOMPurify.sanitize(name);
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
       document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
@@ -863,9 +861,9 @@
               <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
                 <div class="reply-meta">
                   ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
-                  ${reply.subject ? `<br>Subject: ${sanitize(reply.subject)}` : ''}
+                  ${reply.subject ? `<br>Subject: ${DOMPurify.sanitize(reply.subject)}` : ''}
                 </div>
-                <div class="reply-content">${sanitize(reply.content)}</div>
+                <div class="reply-content">${DOMPurify.sanitize(reply.content)}</div>
               </div>
             `;
           }).join('');
@@ -1023,4 +1021,4 @@
     }, 15000);
   </script>
 </body>
-              </html>
+            </html>
