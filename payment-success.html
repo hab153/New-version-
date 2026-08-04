@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment Success | Skyline AA-1</title>
+  <!-- ✅ XSS PROTECTION LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -166,7 +168,8 @@
     const retryBtn = document.getElementById('retryBtn');
     const debugInfo = document.getElementById('debugInfo');
     
-    debugInfo.textContent = `tx_ref: ${tx_ref || 'Not found'} | status: ${status || 'Not provided'}`;
+    // ✅ SANITIZE DEBUG INFO
+    debugInfo.textContent = `tx_ref: ${DOMPurify.sanitize(tx_ref || 'Not found')} | status: ${DOMPurify.sanitize(status || 'Not provided')}`;
     
     // Function to verify payment
     async function verifyPayment() {
@@ -210,7 +213,7 @@
                 retryBtn.style.display = 'inline-block';
                 dashboardBtn.style.display = 'inline-block';
                 dashboardBtn.textContent = 'Go to Dashboard Anyway';
-                debugInfo.innerHTML += `<br>⚠️ Verification issue: ${data.message || 'Unknown error'}`;
+                debugInfo.innerHTML += `<br>⚠️ Verification issue: ${DOMPurify.sanitize(data.message || 'Unknown error')}`;
             }
         } catch (error) {
             console.error('Verification error:', error);
@@ -242,7 +245,7 @@
         debugInfo.innerHTML += '<br>✅ Flutterwave reports successful payment';
         verifyPayment();
     } else if (status && status !== 'successful') {
-        titleEl.textContent = "Payment Status: " + status;
+        titleEl.textContent = "Payment Status: " + DOMPurify.sanitize(status);
         titleEl.style.color = "#ff4d4d";
         document.querySelector('.icon-circle').style.borderColor = "#ff4d4d";
         document.querySelector('.icon-circle').style.color = "#ff4d4d";
@@ -250,7 +253,7 @@
         dashboardBtn.style.display = 'inline-block';
         dashboardBtn.textContent = 'Return to Dashboard';
         retryBtn.style.display = 'inline-block';
-        debugInfo.innerHTML += `<br>⚠️ Payment status: ${status}`;
+        debugInfo.innerHTML += `<br>⚠️ Payment status: ${DOMPurify.sanitize(status)}`;
     } else if (tx_ref) {
         // We have tx_ref, verify the payment
         verifyPayment();
@@ -265,4 +268,4 @@
   </script>
 
 </body>
-  </html>
+</html>
