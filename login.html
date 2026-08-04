@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In — Skyline AA-1</title>
+  <!-- ✅ XSS PROTECTION LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -244,13 +246,15 @@
     }
 
     function showError(msg) {
-        document.getElementById('errorText').textContent = msg;
+        // ✅ SANITIZE ERROR MESSAGE
+        document.getElementById('errorText').textContent = DOMPurify.sanitize(msg);
         document.getElementById('errorMessage').classList.add('visible');
         document.getElementById('successMessage').classList.remove('visible');
     }
 
     function showSuccess(msg) {
-        document.getElementById('successText').textContent = msg;
+        // ✅ SANITIZE SUCCESS MESSAGE
+        document.getElementById('successText').textContent = DOMPurify.sanitize(msg);
         document.getElementById('successMessage').classList.add('visible');
         document.getElementById('errorMessage').classList.remove('visible');
     }
@@ -378,4 +382,4 @@
     });
 </script>
 </body>
-              </html>
+                </html>
