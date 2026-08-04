@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Email Settings | Skyline AA-1</title>
+  <!-- ✅ XSS PROTECTION LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -91,7 +93,8 @@
         });
         if (res.ok) {
           const user = await res.json();
-          document.getElementById('currentEmailDisplay').value = user.email;
+          // ✅ SANITIZE EMAIL BEFORE DISPLAY
+          document.getElementById('currentEmailDisplay').value = DOMPurify.sanitize(user.email || '');
         }
       } catch (err) {
         console.error("Failed to load email info");
@@ -119,13 +122,15 @@
         const data = await res.json();
 
         if (res.ok) {
-          statusMsg.textContent = data.message;
+          // ✅ SANITIZE SUCCESS MESSAGE
+          statusMsg.textContent = DOMPurify.sanitize(data.message);
           statusMsg.className = "status-msg success";
           document.getElementById('currentEmailDisplay').value = newEmail;
           document.getElementById('newEmail').value = '';
           document.getElementById('currentPassword').value = '';
         } else {
-          statusMsg.textContent = data.message;
+          // ✅ SANITIZE ERROR MESSAGE
+          statusMsg.textContent = DOMPurify.sanitize(data.message);
           statusMsg.className = "status-msg error";
         }
       } catch (err) {
@@ -137,4 +142,4 @@
     loadEmailInfo();
   </script>
 </body>
-</html>
+  </html>
