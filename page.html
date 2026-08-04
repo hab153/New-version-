@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Skyline · Business Agent</title>
+<!-- ✅ XSS PROTECTION LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
@@ -780,7 +782,7 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 <div class="home-wrap">
 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
 <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-<polyline points="9 21 9 12 15 12 15 22"/>
+<polyline points="9 22 9 12 15 12 15 22"/>
 </svg>
 </div>
 </a>
@@ -870,7 +872,7 @@ setTimeout(() => toast.remove(), duration);
 
 function formatAI(text) {
 if (!text) return '';
-let s = esc(text);
+let s = DOMPurify.sanitize(text); // ✅ SANITIZE BEFORE FORMATTING
 s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
 s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, m => `<ul class="ai-ul">${m}</ul>`);
@@ -917,7 +919,7 @@ let displayContent;
 if (role === 'ai') {
 displayContent = formatAI(content);
 } else {
-displayContent = esc(content);
+displayContent = DOMPurify.sanitize(content); // ✅ SANITIZE USER INPUT
 }
 row.innerHTML = `
 <div class="av">${role === 'ai' ? 'AI' : 'ME'}</div>
@@ -933,7 +935,7 @@ function showLeadTyping(label = 'Thinking…') {
 let row = document.getElementById('leadTypingRow');
 if (row) {
 const lbl = row.querySelector('.t-label');
-if (lbl) lbl.textContent = label;
+if (lbl) lbl.textContent = DOMPurify.sanitize(label); // ✅ SANITIZE LABEL
 scrollDown(leadChatArea);
 return;
 }
@@ -943,7 +945,7 @@ row.id = 'leadTypingRow';
 row.innerHTML = `
 <div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div>
 <div class="typing-bubble">
-<span class="t-label">${label}</span>
+<span class="t-label">${DOMPurify.sanitize(label)}</span>
 <div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>
 </div>`;
 leadMsgContainer.appendChild(row);
@@ -1044,7 +1046,7 @@ let displayContent;
 if (role === 'ai') {
 displayContent = formatAI(content);
 } else {
-displayContent = esc(content);
+displayContent = DOMPurify.sanitize(content); // ✅ SANITIZE USER INPUT
 }
 row.innerHTML = `
 <div class="av">${role === 'ai' ? 'AI' : 'ME'}</div>
@@ -1060,7 +1062,7 @@ function showAssistantTyping(label = 'Thinking…') {
 let row = document.getElementById('assistantTypingRow');
 if (row) {
 const lbl = row.querySelector('.t-label');
-if (lbl) lbl.textContent = label;
+if (lbl) lbl.textContent = DOMPurify.sanitize(label); // ✅ SANITIZE LABEL
 scrollDown(assistantChatArea);
 return;
 }
@@ -1070,7 +1072,7 @@ row.id = 'assistantTypingRow';
 row.innerHTML = `
 <div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div>
 <div class="typing-bubble">
-<span class="t-label">${label}</span>
+<span class="t-label">${DOMPurify.sanitize(label)}</span>
 <div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>
 </div>`;
 assistantMsgContainer.appendChild(row);
@@ -1179,7 +1181,7 @@ if (!res.ok) throw new Error(`Status check failed: ${res.status}`);
 const data = await res.json();
 if (data.connected && !data.isExpired) {
 bar.className = 'status-bar connected';
-txt.innerHTML = data.email ? `✅ Connected as ${data.email} · <a href="dashboard.html">Manage →</a>` : `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
+txt.innerHTML = data.email ? `✅ Connected as ${DOMPurify.sanitize(data.email)} · <a href="dashboard.html">Manage →</a>` : `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
 } else if (data.connected && data.isExpired) {
 bar.className = 'status-bar disconnected';
 txt.innerHTML = `⚠️ Session expired · <a href="dashboard.html">Reconnect</a>`;
