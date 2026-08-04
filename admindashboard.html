@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Skyline Admin · Dashboard</title>
+    <!-- ✅ XSS PROTECTION LIBRARY -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <style>
         /* ─── RESET ─── */
         * {
@@ -470,11 +472,7 @@
     <!-- ─── TOAST ─── -->
     <div class="toast" id="toast"></div>
 
-    <script type="module">
-        // ✅ XSS PROTECTION HELPER
-        import DOMPurify from 'dompurify';
-        const sanitize = (html) => DOMPurify.sanitize(html);
-
+    <script>
         const API_BASE = 'https://skylineapp-backend-file.onrender.com';
         let allUsers = [];
 
@@ -605,7 +603,7 @@
                     '<span class="badge badge-user">User</span>';
 
                 // ✅ SANITIZE EMAIL BEFORE DISPLAY
-                const safeEmail = sanitize(user.email || '—');
+                const safeEmail = DOMPurify.sanitize(user.email || '—');
 
                 html += `
                     <tr>
@@ -668,7 +666,7 @@
                     const admin = users.find(u => u.isAdmin);
                     if (admin) {
                         // ✅ SANITIZE ADMIN EMAIL
-                        document.getElementById('adminEmail').textContent = sanitize(admin.email);
+                        document.getElementById('adminEmail').textContent = DOMPurify.sanitize(admin.email);
                     }
                 }
             } catch (err) {
@@ -688,4 +686,4 @@
     </script>
 
 </body>
-                    </html>
+                </html>
