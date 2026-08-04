@@ -619,7 +619,11 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    // ✅ XSS PROTECTION HELPER
+    import DOMPurify from 'dompurify';
+    const sanitize = (html) => DOMPurify.sanitize(html);
+
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token   = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -820,9 +824,9 @@
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             return `
               <tr>
-                <td>${escapeHtml(lead.name || '—')}</td>
-                <td>${escapeHtml(lead.company || '—')}</td>
-                <td><span class="status-badge status-${statusClass}">${lead.status || 'New'}</span></td>
+                <td>${sanitize(lead.name || '—')}</td>
+                <td>${sanitize(lead.company || '—')}</td>
+                <td><span class="status-badge status-${statusClass}">${sanitize(lead.status || 'New')}</span></td>
                 <td>${lastDate}</td>
               </tr>
             `;
@@ -834,20 +838,12 @@
       }
     }
 
-    // ── Safe HTML escape ─────────────────────────────────────────────────────
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.appendChild(document.createTextNode(str));
-      return div.innerHTML;
-    }
-
     // ── Open Reply Modal ─────────────────────────────────────────────────────
     async function openReplyModal(leadId, name, email) {
       currentReplyLeadId = leadId;
       currentReplyEmail = email;
 
-      document.getElementById('modalLeadName').innerText = name;
+      document.getElementById('modalLeadName').innerText = sanitize(name);
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
       document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
@@ -867,9 +863,9 @@
               <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
                 <div class="reply-meta">
                   ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
-                  ${reply.subject ? `<br>Subject: ${escapeHtml(reply.subject)}` : ''}
+                  ${reply.subject ? `<br>Subject: ${sanitize(reply.subject)}` : ''}
                 </div>
-                <div class="reply-content">${escapeHtml(reply.content)}</div>
+                <div class="reply-content">${sanitize(reply.content)}</div>
               </div>
             `;
           }).join('');
@@ -1027,4 +1023,4 @@
     }, 15000);
   </script>
 </body>
-  </html>
+              </html>
