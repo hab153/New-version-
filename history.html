@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>History | Skyline AA-1</title>
+    <!-- ✅ XSS PROTECTION LIBRARY -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
@@ -672,7 +674,7 @@
 
     function formatAI(text) {
         if (!text) return '';
-        let s = escapeHtml(text);
+        let s = DOMPurify.sanitize(text); // ✅ SANITIZE BEFORE FORMATTING
         s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
         s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) {
@@ -809,6 +811,7 @@
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'session-name';
+        // ✅ SANITIZE SESSION NAME
         nameSpan.innerHTML = `
             ${isPinned ? `<span class="pin-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c8ff57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -820,7 +823,7 @@
                     <path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/>
                 </svg>
             </span>` : ''}
-            ${escapeHtml(name)}
+            ${DOMPurify.sanitize(name)}
         `;
         header.appendChild(nameSpan);
 
@@ -961,7 +964,8 @@
                             const name = l.name || l.company || 'Unknown';
                             const company = l.company || '';
                             const email = l.email || '';
-                            leadText += `${i+1}. ${name}${company ? ' - ' + company : ''}${email ? ' (' + email + ')' : ''}\n`;
+                            // ✅ SANITIZE LEAD DATA IN CHAT
+                            leadText += `${i+1}. ${DOMPurify.sanitize(name)}${company ? ' - ' + DOMPurify.sanitize(company) : ''}${email ? ' (' + DOMPurify.sanitize(email) + ')' : ''}\n`;
                         }
                         if (parsed.length > 5) {
                             leadText += `\n... and ${parsed.length - 5} more`;
@@ -977,7 +981,7 @@
                 displayContent = formatAI(content);
             }
         } else {
-            displayContent = escapeHtml(content);
+            displayContent = DOMPurify.sanitize(content); // ✅ SANITIZE USER INPUT
         }
 
         const time = msg.time || formatTime(msg.createdAt);
