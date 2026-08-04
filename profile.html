@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile | Skyline AA-1</title>
+  <!-- ✅ XSS PROTECTION LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -124,15 +126,16 @@
         });
         if (res.ok) {
           const user = await res.json();
-          document.getElementById('fullName').value = user.fullName || '';
-          document.getElementById('username').value = user.username || '';
-          document.getElementById('email').value = user.email || '';
-          document.getElementById('primaryGoal').value = user.primaryGoal || '';
+          // ✅ SANITIZE ALL PROFILE DATA BEFORE DISPLAY
+          document.getElementById('fullName').value = DOMPurify.sanitize(user.fullName || '');
+          document.getElementById('username').value = DOMPurify.sanitize(user.username || '');
+          document.getElementById('email').value = DOMPurify.sanitize(user.email || '');
+          document.getElementById('primaryGoal').value = DOMPurify.sanitize(user.primaryGoal || '');
           document.getElementById('skillLevel').value = user.skillLevel || 'Beginner';
-          document.getElementById('interests').value = user.interests || '';
-          document.getElementById('country').value = user.country || '';
-          document.getElementById('bio').value = user.bio || '';
-          document.getElementById('profilePicture').value = user.profilePicture || '';
+          document.getElementById('interests').value = DOMPurify.sanitize(user.interests || '');
+          document.getElementById('country').value = DOMPurify.sanitize(user.country || '');
+          document.getElementById('bio').value = DOMPurify.sanitize(user.bio || '');
+          document.getElementById('profilePicture').value = DOMPurify.sanitize(user.profilePicture || '');
         }
       } catch (err) {
         statusMsg.textContent = "Failed to load profile.";
