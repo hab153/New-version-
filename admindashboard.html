@@ -6,388 +6,126 @@
     <title>Skyline Admin · Dashboard</title>
     <style>
         /* ─── RESET ─── */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #0a0a0a;
-            color: #e8e0d0;
+            background: #0a0a0a; color: #e8e0d0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            min-height: 100vh;
-            padding: 24px;
+            min-height: 100vh; padding: 24px;
         }
-
         /* ─── CONTAINER ─── */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 1200px; margin: 0 auto; }
         /* ─── HEADER ─── */
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
         }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .logo { display: flex; align-items: center; gap: 10px; }
         .logo .mark {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 32px; height: 32px; border-radius: 8px;
             background: linear-gradient(135deg, #c9a84c, #e8c96a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-            color: #0a0a0a;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; color: #0a0a0a;
         }
-        .logo h1 {
-            font-size: 20px;
-            font-weight: 600;
-            color: #f0ece0;
-            letter-spacing: -0.5px;
-        }
-        .logo h1 span {
-            color: #c9a84c;
-        }
+        .logo h1 { font-size: 20px; font-weight: 600; color: #f0ece0; letter-spacing: -0.5px; }
+        .logo h1 span { color: #c9a84c; }
         .badge-admin {
-            font-size: 10px;
-            background: rgba(201, 168, 76, 0.12);
-            color: #c9a84c;
-            padding: 3px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(201, 168, 76, 0.15);
+            font-size: 10px; background: rgba(201, 168, 76, 0.12); color: #c9a84c;
+            padding: 3px 12px; border-radius: 12px; border: 1px solid rgba(201, 168, 76, 0.15);
             font-weight: 500;
         }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .admin-email {
-            font-size: 13px;
-            color: #7a7468;
-        }
+        .header-right { display: flex; align-items: center; gap: 14px; }
+        .admin-email { font-size: 13px; color: #7a7468; }
         .btn-logout {
-            background: transparent;
-            border: 1px solid rgba(255, 85, 85, 0.15);
-            color: #b85c5c;
-            padding: 7px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid rgba(255, 85, 85, 0.15);
+            color: #b85c5c; padding: 7px 16px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; transition: all 0.2s;
         }
-        .btn-logout:hover {
-            background: rgba(255, 85, 85, 0.08);
-            border-color: #b85c5c;
-        }
-
+        .btn-logout:hover { background: rgba(255, 85, 85, 0.08); border-color: #b85c5c; }
         /* ─── STATS GRID ─── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 28px;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
         .stat-card {
-            background: #111111;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 12px;
-            padding: 18px 20px;
-            transition: border-color 0.2s;
+            background: #111111; border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px; padding: 18px 20px; transition: border-color 0.2s;
         }
-        .stat-card:hover {
-            border-color: rgba(255, 255, 255, 0.08);
-        }
-        .stat-card .stat-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #7a7468;
-            margin-bottom: 4px;
-        }
-        .stat-card .stat-number {
-            font-size: 28px;
-            font-weight: 600;
-            color: #f0ece0;
-        }
-        .stat-card .stat-number.gold {
-            color: #c9a84c;
-        }
-        .stat-card .stat-number.green {
-            color: #6b9e7a;
-        }
-        .stat-card .stat-number.blue {
-            color: #5e9ab8;
-        }
-        .stat-card .stat-number.purple {
-            color: #bb88ff;
-        }
-
+        .stat-card:hover { border-color: rgba(255, 255, 255, 0.08); }
+        .stat-card .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #7a7468; margin-bottom: 4px; }
+        .stat-card .stat-number { font-size: 28px; font-weight: 600; color: #f0ece0; }
+        .stat-card .stat-number.gold { color: #c9a84c; }
+        .stat-card .stat-number.green { color: #6b9e7a; }
+        .stat-card .stat-number.blue { color: #5e9ab8; }
+        .stat-card .stat-number.purple { color: #bb88ff; }
         /* ─── USER LIST SECTION ─── */
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #f0ece0;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .section-title .count {
-            font-size: 12px;
-            font-weight: 400;
-            color: #7a7468;
-        }
-
+        .section-title { font-size: 14px; font-weight: 600; color: #f0ece0; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .section-title .count { font-size: 12px; font-weight: 400; color: #7a7468; }
         /* ─── TOOLBAR ─── */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .search-wrap {
-            position: relative;
-            flex: 1;
-            max-width: 300px;
-        }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .search-wrap { position: relative; flex: 1; max-width: 300px; }
         .search-wrap input {
-            width: 100%;
-            background: #111111;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 8px;
-            padding: 10px 16px 10px 38px;
-            color: #f0ece0;
-            font-size: 13px;
-            outline: none;
-            transition: border-color 0.2s;
+            width: 100%; background: #111111; border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px; padding: 10px 16px 10px 38px; color: #f0ece0;
+            font-size: 13px; outline: none; transition: border-color 0.2s;
         }
-        .search-wrap input:focus {
-            border-color: rgba(201, 168, 76, 0.3);
-        }
-        .search-wrap input::placeholder {
-            color: #3a3630;
-        }
-        .search-wrap .icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #3a3630;
-            font-size: 14px;
-        }
-        .toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .count-badge {
-            font-size: 12px;
-            color: #7a7468;
-            background: #111111;
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-        }
+        .search-wrap input:focus { border-color: rgba(201, 168, 76, 0.3); }
+        .search-wrap input::placeholder { color: #3a3630; }
+        .search-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #3a3630; font-size: 14px; }
+        .toolbar-right { display: flex; align-items: center; gap: 12px; }
+        .count-badge { font-size: 12px; color: #7a7468; background: #111111; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.04); }
         .btn-refresh {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #7a7468;
-            padding: 7px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #7a7468; padding: 7px 14px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; transition: all 0.2s;
         }
-        .btn-refresh:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            color: #f0ece0;
-        }
-
+        .btn-refresh:hover { border-color: rgba(255, 255, 255, 0.15); color: #f0ece0; }
         /* ─── TABLE ─── */
-        .table-wrap {
-            background: #111111;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            overflow: hidden;
-        }
-        .table-scroll {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        thead {
-            background: #0d0d0d;
-        }
-        th {
-            padding: 14px 18px;
-            text-align: left;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #7a7468;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        }
-        td {
-            padding: 14px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            color: #d0c8b8;
-            vertical-align: middle;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
+        .table-wrap { background: #111111; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.04); overflow: hidden; }
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead { background: #0d0d0d; }
+        th { padding: 14px 18px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #7a7468; font-weight: 600; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+        td { padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: #d0c8b8; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
         /* ─── BADGES ─── */
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        .badge-admin {
-            background: rgba(201, 168, 76, 0.12);
-            color: #c9a84c;
-            border: 1px solid rgba(201, 168, 76, 0.12);
-        }
-        .badge-user {
-            background: rgba(255, 255, 255, 0.03);
-            color: #7a7468;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+        .badge-admin { background: rgba(201, 168, 76, 0.12); color: #c9a84c; border: 1px solid rgba(201, 168, 76, 0.12); }
+        .badge-user { background: rgba(255, 255, 255, 0.03); color: #7a7468; border: 1px solid rgba(255, 255, 255, 0.03); }
         /* ─── LOADING ─── */
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: #3a3630;
-        }
-        .loading .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(255, 255, 255, 0.04);
-            border-top-color: #c9a84c;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
+        .loading { text-align: center; padding: 60px 20px; color: #3a3630; }
+        .loading .spinner { width: 32px; height: 32px; border: 3px solid rgba(255, 255, 255, 0.04); border-top-color: #c9a84c; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         /* ─── EMPTY ─── */
-        .empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #3a3630;
-        }
-
+        .empty { text-align: center; padding: 60px 20px; color: #3a3630; }
         /* ─── TOAST ─── */
         .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #1a1a1a;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            padding: 14px 24px;
-            color: #f0ece0;
-            font-size: 13px;
-            z-index: 999;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            max-width: 400px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            position: fixed; bottom: 30px; right: 30px; background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px;
+            padding: 14px 24px; color: #f0ece0; font-size: 13px; z-index: 999;
+            opacity: 0; transform: translateY(20px); transition: all 0.3s ease;
+            pointer-events: none; max-width: 400px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
+        .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         /* ─── RESPONSIVE ─── */
-        @media (max-width: 900px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+        @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) {
-            body {
-                padding: 16px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .search-wrap {
-                max-width: 100%;
-            }
-            .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .toolbar-right {
-                justify-content: space-between;
-            }
+            body { padding: 16px; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .header-right { width: 100%; justify-content: space-between; }
+            .search-wrap { max-width: 100%; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-right { justify-content: space-between; }
         }
         @media (max-width: 480px) {
-            body {
-                padding: 12px;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .badge-admin {
-                display: none;
-            }
-            .admin-email {
-                font-size: 11px;
-            }
+            body { padding: 12px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .badge-admin { display: none; }
+            .admin-email { font-size: 11px; }
         }
     </style>
 </head>
 <body>
-
     <div class="container">
-
         <!-- ─── HEADER ─── -->
         <header class="header">
             <div class="header-left">
@@ -405,29 +143,14 @@
 
         <!-- ─── LEAD STATS ─── -->
         <div class="stats-grid" id="leadStatsGrid">
-            <div class="stat-card">
-                <div class="stat-label">📊 Today</div>
-                <div class="stat-number gold" id="leadsDaily">--</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">📈 This Week</div>
-                <div class="stat-number green" id="leadsWeekly">--</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">📅 This Month</div>
-                <div class="stat-number blue" id="leadsMonthly">--</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">📆 This Year</div>
-                <div class="stat-number purple" id="leadsYearly">--</div>
-            </div>
+            <div class="stat-card"><div class="stat-label">📊 Today</div><div class="stat-number gold" id="leadsDaily">--</div></div>
+            <div class="stat-card"><div class="stat-label">📈 This Week</div><div class="stat-number green" id="leadsWeekly">--</div></div>
+            <div class="stat-card"><div class="stat-label">📅 This Month</div><div class="stat-number blue" id="leadsMonthly">--</div></div>
+            <div class="stat-card"><div class="stat-label">📆 This Year</div><div class="stat-number purple" id="leadsYearly">--</div></div>
         </div>
 
         <!-- ─── USERS SECTION ─── -->
-        <div class="section-title">
-            👥 All Users
-            <span class="count" id="userCount">(0)</span>
-        </div>
+        <div class="section-title">👥 All Users <span class="count" id="userCount">(0)</span></div>
 
         <!-- ─── TOOLBAR ─── -->
         <div class="toolbar">
@@ -452,66 +175,42 @@
                         </tr>
                     </thead>
                     <tbody id="userTableBody">
-                        <tr>
-                            <td colspan="3">
-                                <div class="loading">
-                                    <div class="spinner"></div>
-                                    Loading users...
-                                </div>
-                            </td>
-                        </tr>
+                        <tr><td colspan="3"><div class="loading"><div class="spinner"></div>Loading users...</div></td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 
     <!-- ─── TOAST ─── -->
     <div class="toast" id="toast"></div>
 
-    <script>
+    <script type="module">
+        import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.es.mjs';
+
         const API_BASE = 'https://skylineapp-backend-file.onrender.com';
         let allUsers = [];
 
+        // ✅ XSS Sanitizer Helper
+        const sanitize = (str) => DOMPurify.sanitize(str || '');
+
         // ─── CHECK AUTH ───
         const token = localStorage.getItem('adminToken');
-        if (!token) {
-            window.location.href = '/admin-signup.html';
-        }
+        if (!token) window.location.href = '/admin-signup.html';
 
         // ─── LOAD LEAD STATS ───
         async function loadLeadStats() {
             try {
-                const token = localStorage.getItem('adminToken');
                 const res = await fetch(`${API_BASE}/api/admin/stats/leads`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
-                if (!res.ok) {
-                    if (res.status === 401 || res.status === 403) {
-                        localStorage.removeItem('adminToken');
-                        window.location.href = '/admin-signup.html';
-                        return;
-                    }
-                    throw new Error('Failed to load stats');
-                }
-
+                if (!res.ok) throw new Error('Failed to load stats');
                 const data = await res.json();
-                
-                // Update the UI with animation
                 animateNumber('leadsDaily', data.daily || 0, '#c9a84c');
                 animateNumber('leadsWeekly', data.weekly || 0, '#6b9e7a');
                 animateNumber('leadsMonthly', data.monthly || 0, '#5e9ab8');
                 animateNumber('leadsYearly', data.yearly || 0, '#bb88ff');
-
-            } catch (err) {
-                console.error('Error loading lead stats:', err);
-                document.getElementById('leadsDaily').textContent = '—';
-                document.getElementById('leadsWeekly').textContent = '—';
-                document.getElementById('leadsMonthly').textContent = '—';
-                document.getElementById('leadsYearly').textContent = '—';
-            }
+            } catch (err) { console.error('Error loading lead stats:', err); }
         }
 
         // ─── ANIMATE NUMBER ───
@@ -520,108 +219,66 @@
             const startValue = parseInt(element.textContent) || 0;
             const duration = 600;
             const startTime = performance.now();
-
             function update(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const currentValue = Math.round(startValue + (targetValue - startValue) * progress);
                 element.textContent = currentValue;
                 element.style.color = color;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                } else {
-                    element.textContent = targetValue;
-                }
+                if (progress < 1) requestAnimationFrame(update);
+                else element.textContent = targetValue;
             }
             requestAnimationFrame(update);
         }
 
         // ─── LOAD USERS ───
         async function loadUsers() {
-            const token = localStorage.getItem('adminToken');
             const tbody = document.getElementById('userTableBody');
-
-            tbody.innerHTML = `
-                <tr><td colspan="3">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Loading users...
-                    </div>
-                </td></tr>
-            `;
-
+            tbody.innerHTML = `<tr><td colspan="3"><div class="loading"><div class="spinner"></div>Loading users...</div></td></tr>`;
             try {
                 const res = await fetch(`${API_BASE}/api/admin/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
-                if (!res.ok) {
-                    if (res.status === 401 || res.status === 403) {
-                        localStorage.removeItem('adminToken');
-                        window.location.href = '/admin-signup.html';
-                        return;
-                    }
-                    throw new Error('Failed to load users');
-                }
-
+                if (!res.ok) throw new Error('Failed to load users');
                 allUsers = await res.json();
                 renderUsers(allUsers);
-
             } catch (err) {
                 console.error('Error loading users:', err);
-                tbody.innerHTML = `
-                    <tr><td colspan="3">
-                        <div class="empty">Failed to load users.</div>
-                    </td></tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="3"><div class="empty">Failed to load users.</div></td></tr>`;
             }
         }
 
-        // ─── RENDER USERS ───
+        // ─── RENDER USERS (SECURED) ───
         function renderUsers(users) {
             const tbody = document.getElementById('userTableBody');
-
-            // Update user count
             document.getElementById('userCount').textContent = `(${users.length})`;
-
             if (users.length === 0) {
-                tbody.innerHTML = `
-                    <tr><td colspan="3">
-                        <div class="empty">No users found.</div>
-                    </td></tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="3"><div class="empty">No users found.</div></td></tr>`;
                 return;
             }
-
             let html = '';
             users.forEach((user, index) => {
                 const roleBadge = user.isAdmin ?
                     '<span class="badge badge-admin">Admin</span>' :
                     '<span class="badge badge-user">User</span>';
-
+                
+                // ✅ Sanitize email before inserting into HTML
                 html += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td>${user.email || '—'}</td>
+                        <td>${sanitize(user.email)}</td>
                         <td>${roleBadge}</td>
                     </tr>
                 `;
             });
-
             tbody.innerHTML = html;
         }
 
         // ─── SEARCH ───
         document.getElementById('searchInput').addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
-            if (!query) {
-                renderUsers(allUsers);
-                return;
-            }
-            const filtered = allUsers.filter(u =>
-                (u.email && u.email.toLowerCase().includes(query))
-            );
+            if (!query) { renderUsers(allUsers); return; }
+            const filtered = allUsers.filter(u => (u.email && u.email.toLowerCase().includes(query)));
             renderUsers(filtered);
         });
 
@@ -644,40 +301,28 @@
             toast.textContent = message;
             toast.className = 'toast show';
             clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            toast._timeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
         // ─── LOAD ADMIN EMAIL ───
         async function loadAdminInfo() {
             try {
-                const token = localStorage.getItem('adminToken');
                 const res = await fetch(`${API_BASE}/api/admin/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
                     const users = await res.json();
                     const admin = users.find(u => u.isAdmin);
-                    if (admin) {
-                        document.getElementById('adminEmail').textContent = admin.email;
-                    }
+                    if (admin) document.getElementById('adminEmail').textContent = sanitize(admin.email);
                 }
-            } catch (err) {
-                console.error('Failed to load admin info:', err);
-            }
+            } catch (err) { console.error('Failed to load admin info:', err); }
         }
 
         // ─── INIT ───
         loadAdminInfo();
         loadLeadStats();
         loadUsers();
-
-        // ─── AUTO REFRESH EVERY 60 SECONDS ───
-        setInterval(() => {
-            loadLeadStats();
-        }, 60000);
+        setInterval(() => { loadLeadStats(); }, 60000);
     </script>
-
 </body>
-                    </html>
+</html>
