@@ -850,7 +850,8 @@ const existing = document.querySelector('.toast-msg');
 if (existing) existing.remove();
 const toast = document.createElement('div');
 toast.className = 'toast-msg';
-toast.textContent = message;
+// ✅ SANITIZE TOAST MESSAGE
+toast.textContent = DOMPurify.sanitize(message);
 const colors = {
 success: { bg: 'rgba(0,230,118,0.12)', border: '#00e676', text: '#00e676' },
 error: { bg: 'rgba(255,77,77,0.12)', border: '#ff4d4d', text: '#ff4d4d' },
@@ -1181,6 +1182,7 @@ if (!res.ok) throw new Error(`Status check failed: ${res.status}`);
 const data = await res.json();
 if (data.connected && !data.isExpired) {
 bar.className = 'status-bar connected';
+// ✅ SANITIZE EMAIL IN STATUS BAR
 txt.innerHTML = data.email ? `✅ Connected as ${DOMPurify.sanitize(data.email)} · <a href="dashboard.html">Manage →</a>` : `✅ Email connected · <a href="dashboard.html">Manage →</a>`;
 } else if (data.connected && data.isExpired) {
 bar.className = 'status-bar disconnected';
