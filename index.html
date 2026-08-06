@@ -15,17 +15,43 @@
             --bg: #0a0a0a; --card: #121212; --card-border: rgba(255,255,255,0.08); --input-bg: #1a1a1a;
             --input-border: rgba(255,255,255,0.1); --input-focus: #ffffff; --accent: #ffffff;
             --accent-dim: rgba(255,255,255,0.15); --text: #f5f5f5; --muted: rgba(255,255,255,0.6);
-            --error: #ff5555; --font: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            --error: #ff5555; --success: #4ade80; --font: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         body {
             background-color: var(--bg);
             background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%);
             color: var(--text); font-family: var(--font); line-height: 1.5;
+            overflow-x: hidden;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid var(--card-border); }
+        
+        /* Enhanced Navigation */
+        .nav { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px 0; 
+            flex-wrap: wrap; 
+            gap: 16px; 
+            border-bottom: 1px solid var(--card-border); 
+            position: sticky;
+            top: 0;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
         .logo { display: flex; align-items: center; gap: 10px; }
-        .logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon { 
+            width: 36px; 
+            height: 36px; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--card-border); 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            animation: pulse 2s infinite;
+        }
         .logo-icon svg { width: 20px; height: 20px; stroke: var(--accent); stroke-width: 1.8; }
         .logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
         .logo-text span { font-weight: 400; opacity: 0.7; }
@@ -34,55 +60,446 @@
         .nav-links a:hover { color: var(--text); }
         .btn-outline { background: transparent; border: 1px solid var(--accent-dim); padding: 8px 18px; border-radius: 40px; color: var(--text); font-weight: 500; transition: all 0.2s; }
         .btn-outline:hover { background: var(--accent-dim); border-color: var(--accent); }
-        .hero { text-align: center; padding: 60px 0 40px; }
+        
+        /* Enhanced Hero Section */
+        .hero { 
+            text-align: center; 
+            padding: 80px 0 60px; 
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
         .hero h1 {
-            font-size: 48px; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
-            max-width: 900px; margin: 0 auto 20px;
+            font-size: 48px; 
+            font-weight: 800; 
+            line-height: 1.2; 
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent;
+            max-width: 900px; 
+            margin: 0 auto 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
         }
-        .hero p { font-size: 18px; color: var(--muted); max-width: 700px; margin: 0 auto 32px; }
-        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-        .btn-primary { background: var(--accent); color: #000; padding: 12px 28px; border-radius: 40px; font-weight: 600; text-decoration: none; display: inline-block; transition: transform 0.2s, box-shadow 0.2s; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.15); }
-        .btn-secondary { background: transparent; border: 1px solid var(--accent-dim); color: var(--text); padding: 12px 28px; border-radius: 40px; font-weight: 500; text-decoration: none; transition: all 0.2s; }
-        .btn-secondary:hover { background: var(--accent-dim); border-color: var(--accent); }
-        .features { padding: 60px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
-        .feature-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: 28px 24px; transition: transform 0.2s; }
-        .feature-card:hover { transform: translateY(-4px); }
-        .feature-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        .feature-icon svg { width: 24px; height: 24px; stroke: var(--accent); stroke-width: 1.5; }
-        .feature-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
-        .feature-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
-        .pricing { text-align: center; padding: 40px 0 60px; }
-        .pricing h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
-        .pricing-sub { color: var(--muted); margin-bottom: 48px; }
-        .pricing-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
-        .plan { background: var(--card); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px 24px; width: 280px; transition: all 0.2s; }
-        .plan.popular { border-color: var(--accent); background: rgba(255,255,255,0.02); }
-        .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-        .plan-price { font-size: 36px; font-weight: 800; margin: 16px 0; }
-        .plan-price span { font-size: 14px; font-weight: 400; color: var(--muted); }
-        .plan-features { list-style: none; margin: 20px 0 30px; }
-        .plan-features li { margin: 12px 0; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-        .plan-features li::before { content: "✓"; color: var(--accent); font-weight: bold; }
-        .plan-btn { background: var(--accent-dim); border: none; border-radius: 40px; padding: 10px 20px; width: 100%; font-weight: 600; cursor: pointer; transition: background 0.2s; color: var(--text); }
-        .plan-btn:hover { background: var(--accent); color: #000; }
+        .hero p { 
+            font-size: 18px; 
+            color: var(--muted); 
+            max-width: 700px; 
+            margin: 0 auto 32px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+        }
+        .hero-buttons { 
+            display: flex; 
+            gap: 16px; 
+            justify-content: center; 
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+        }
+        .btn-primary { 
+            background: var(--accent); 
+            color: #000; 
+            padding: 12px 28px; 
+            border-radius: 40px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-block; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(255,255,255,0.15); 
+        }
+        .btn-secondary { 
+            background: transparent; 
+            border: 1px solid var(--accent-dim); 
+            color: var(--text); 
+            padding: 12px 28px; 
+            border-radius: 40px; 
+            font-weight: 500; 
+            text-decoration: none; 
+            transition: all 0.2s; 
+        }
+        .btn-secondary:hover { 
+            background: var(--accent-dim); 
+            border-color: var(--accent); 
+        }
+        
+        /* Trust Indicators */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px auto;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+        }
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+        .badge-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .badge-icon svg {
+            width: 12px;
+            height: 12px;
+            stroke: var(--accent);
+        }
+        
+        /* Features Section */
+        .features { 
+            padding: 60px 0; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 32px; 
+        }
+        .feature-card { 
+            background: var(--card); 
+            border: 1px solid var(--card-border); 
+            border-radius: 20px; 
+            padding: 28px 24px; 
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        .feature-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .feature-icon { 
+            width: 48px; 
+            height: 48px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+        }
+        .feature-icon svg { 
+            width: 24px; 
+            height: 24px; 
+            stroke: var(--accent); 
+            stroke-width: 1.5; 
+        }
+        .feature-card h3 { 
+            font-size: 20px; 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+        }
+        .feature-card p { 
+            color: var(--muted); 
+            font-size: 14px; 
+            line-height: 1.5; 
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            padding: 60px 0;
+            text-align: center;
+        }
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+        .testimonial-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: left;
+        }
+        .testimonial-text {
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 16px;
+            position: relative;
+            padding-left: 20px;
+        }
+        .testimonial-text::before {
+            content: """;
+            position: absolute;
+            left: 0;
+            top: -10px;
+            font-size: 60px;
+            color: var(--accent-dim);
+            line-height: 1;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .author-info h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        .author-info p {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        
+        /* Pricing Section */
+        .pricing { 
+            text-align: center; 
+            padding: 60px 0 80px; 
+        }
+        .pricing h2 { 
+            font-size: 32px; 
+            font-weight: 700; 
+            margin-bottom: 12px; 
+        }
+        .pricing-sub { 
+            color: var(--muted); 
+            margin-bottom: 48px; 
+        }
+        .pricing-grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 24px; 
+            position: relative;
+        }
+        .plan { 
+            background: var(--card); 
+            border: 1px solid var(--card-border); 
+            border-radius: 24px; 
+            padding: 32px 24px; 
+            width: 280px; 
+            transition: all 0.2s; 
+            position: relative;
+            overflow: hidden;
+        }
+        .popular-tag {
+            position: absolute;
+            top: -10px;
+            right: -30px;
+            background: var(--accent);
+            color: #000;
+            padding: 4px 30px;
+            font-size: 12px;
+            font-weight: 600;
+            transform: rotate(45deg);
+        }
+        .plan.popular { 
+            border-color: var(--accent); 
+            background: rgba(255,255,255,0.02);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .plan.popular:hover {
+            transform: scale(1.07);
+        }
+        .plan-name { 
+            font-size: 24px; 
+            font-weight: 700; 
+            margin-bottom: 8px; 
+        }
+        .plan-price { 
+            font-size: 36px; 
+            font-weight: 800; 
+            margin: 16px 0; 
+        }
+        .plan-price span { 
+            font-size: 14px; 
+            font-weight: 400; 
+            color: var(--muted); 
+        }
+        .plan-features { 
+            list-style: none; 
+            margin: 20px 0 30px; 
+        }
+        .plan-features li { 
+            margin: 12px 0; 
+            font-size: 14px; 
+            color: var(--muted); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .plan-features li::before { 
+            content: "✓"; 
+            color: var(--accent); 
+            font-weight: bold; 
+        }
+        .plan-btn { 
+            background: var(--accent-dim); 
+            border: none; 
+            border-radius: 40px; 
+            padding: 10px 20px; 
+            width: 100%; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: background 0.2s; 
+            color: var(--text); 
+        }
+        .plan-btn:hover { 
+            background: var(--accent); 
+            color: #000; 
+        }
+        
+        /* Enhanced Signup Section */
         .signup-section {
-            background: var(--card); border: 1px solid var(--card-border); border-radius: 32px; padding: 48px 40px; margin: 40px 0 60px;
-            display: flex; flex-wrap: wrap; gap: 48px; align-items: center; justify-content: space-between;
+            background: var(--card); 
+            border: 1px solid var(--card-border); 
+            border-radius: 32px; 
+            padding: 48px 40px; 
+            margin: 40px 0 60px;
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 48px; 
+            align-items: center; 
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
-        .signup-text { flex: 1; }
-        .signup-text h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-        .signup-text p { color: var(--muted); margin-bottom: 16px; }
-        .signup-form { flex: 1; min-width: 280px; }
-        .form-field { margin-bottom: 16px; }
+        .signup-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--accent);
+        }
+        .signup-text { 
+            flex: 1; 
+        }
+        .signup-text h2 { 
+            font-size: 28px; 
+            font-weight: 700; 
+            margin-bottom: 12px; 
+        }
+        .signup-text p { 
+            color: var(--muted); 
+            margin-bottom: 16px; 
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .signup-form { 
+            flex: 1; 
+            min-width: 280px; 
+        }
+        .form-field { 
+            margin-bottom: 16px; 
+            position: relative;
+        }
         .form-field input {
-            width: 100%; padding: 12px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px;
-            color: var(--text); font-family: inherit; font-size: 14px; outline: none;
+            width: 100%; 
+            padding: 12px 14px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--input-border); 
+            border-radius: 12px;
+            color: var(--text); 
+            font-family: inherit; 
+            font-size: 14px; 
+            outline: none;
+            transition: border-color 0.2s;
         }
-        .form-field input:focus { border-color: var(--accent); background: rgba(255,255,255,0.03); }
-
-        /* ✅ CUSTOM CHECKBOX - Shows white checkmark when clicked */
+        .form-field input:focus { 
+            border-color: var(--accent); 
+            background: rgba(255,255,255,0.03); 
+        }
+        .password-strength {
+            height: 4px;
+            background: var(--input-bg);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            background: var(--error);
+            transition: width 0.3s, background 0.3s;
+        }
+        
+        /* Custom Checkbox */
         .checkbox-row {
             display: flex;
             align-items: flex-start;
@@ -140,13 +557,66 @@
         .checkbox-row label a:hover {
             opacity: 0.7;
         }
-
-        .error-message { display: none; background: rgba(255,68,68,0.1); border-radius: 12px; padding: 12px; margin-top: 12px; color: var(--error); font-size: 13px; }
-        .footer { text-align: center; padding: 32px 0; border-top: 1px solid var(--card-border); color: var(--muted); font-size: 12px; }
-        .signup-form .forgot-link { display: block; text-align: center; margin-top: 10px; font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
-        .signup-form .forgot-link:hover { color: var(--accent); }
+        
+        .error-message { 
+            display: none; 
+            background: rgba(255,68,68,0.1); 
+            border-radius: 12px; 
+            padding: 12px; 
+            margin-top: 12px; 
+            color: var(--error); 
+            font-size: 13px; 
+        }
+        .success-message { 
+            display: none; 
+            background: rgba(74,222,128,0.1); 
+            border-radius: 12px; 
+            padding: 12px; 
+            margin-top: 12px; 
+            color: var(--success); 
+            font-size: 13px; 
+        }
+        .footer { 
+            text-align: center; 
+            padding: 32px 0; 
+            border-top: 1px solid var(--card-border); 
+            color: var(--muted); 
+            font-size: 12px; 
+        }
+        .signup-form .forgot-link { 
+            display: block; 
+            text-align: center; 
+            margin-top: 10px; 
+            font-size: 13px; 
+            color: var(--muted); 
+            text-decoration: none; 
+            transition: color 0.2s; 
+        }
+        .signup-form .forgot-link:hover { 
+            color: var(--accent); 
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+            70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+        
+        /* Responsive */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 32px; } .signup-section { flex-direction: column; padding: 32px 24px; } .nav-links { display: none; }
+            .hero h1 { font-size: 32px; }
+            .signup-section { flex-direction: column; padding: 32px 24px; }
+            .nav-links { display: none; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .plan.popular { transform: scale(1); }
+            .plan.popular:hover { transform: scale(1); }
         }
     </style>
 </head>
@@ -163,10 +633,12 @@
         </div>
         <div class="nav-links">
             <a href="#features">Features</a>
+            <a href="#testimonials">Testimonials</a>
             <a href="#pricing">Pricing</a>
             <a href="#signup" class="btn-outline">Get Started</a>
         </div>
     </nav>
+    
     <div class="hero">
         <h1>AI That Finds Leads, Writes Emails & Auto-Replies While You Sleep</h1>
         <p>Your autonomous sales assistant – lead generation, smart inbox, auto-follow‑ups. Start free, upgrade when you grow.</p>
@@ -174,7 +646,29 @@
             <a href="#signup" class="btn-primary">Start Free →</a>
             <a href="#features" class="btn-secondary">See how it works</a>
         </div>
+        
+        <div class="trust-badges">
+            <div class="badge">
+                <div class="badge-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <span>Used by 5,000+ businesses</span>
+            </div>
+            <div class="badge">
+                <div class="badge-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <span>99.9% uptime</span>
+            </div>
+            <div class="badge">
+                <div class="badge-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <span>Enterprise security</span>
+            </div>
+        </div>
     </div>
+    
     <div id="features" class="features">
         <div class="feature-card">
             <div class="feature-icon">
@@ -198,6 +692,49 @@
             <p>Set delays (1–7 days or custom). AI automatically sends follow‑up emails. Never lose a lead again.</p>
         </div>
     </div>
+    
+    <div id="testimonials" class="testimonials">
+        <h2>Trusted by Growth Teams</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "Skyline AA-1 has completely transformed our lead generation process. We've increased our response rate by 40%."
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">SJ</div>
+                    <div class="author-info">
+                        <h4>Sarah Johnson</h4>
+                        <p>Head of Sales, TechCorp</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "The AI-powered follow-ups have saved us hours each week while significantly improving our conversion rates."
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">MR</div>
+                    <div class="author-info">
+                        <h4>Michael Rodriguez</h4>
+                        <p>Growth Manager, StartupX</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "We've reduced our customer acquisition cost by 35% since implementing Skyline AA-1 into our workflow."
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">EP</div>
+                    <div class="author-info">
+                        <h4>Emma Patel</h4>
+                        <p>CMO, ScaleFast</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div id="pricing" class="pricing">
         <h2>Simple, transparent pricing</h2>
         <p class="pricing-sub">All plans include daily resets. No hidden fees.</p>
@@ -211,6 +748,7 @@
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
             </div>
             <div class="plan popular">
+                <div class="popular-tag">POPULAR</div>
                 <div class="plan-name">Go</div>
                 <div class="plan-price">$49<span>/mo</span></div>
                 <ul class="plan-features">
@@ -228,24 +766,45 @@
             </div>
         </div>
     </div>
+    
     <div id="signup" class="signup-section">
         <div class="signup-text">
             <h2>Get started for free</h2>
             <p>No credit card required. Upgrade anytime.</p>
-            <div style="display: flex; gap: 16px; margin-top: 16px;">
-                <div><strong>Free tier</strong><br>10 chats/day</div>
-                <div><strong>Go tier</strong><br>50 chats/day</div>
-                <div><strong>Pro tier</strong><br>150 chats/day</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">10k+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
             </div>
         </div>
         <div class="signup-form">
             <form id="signupForm">
-                <div class="form-field"><input type="text" id="username" placeholder="Username" required></div>
-                <div class="form-field"><input type="email" id="email" placeholder="Email address" required></div>
-                <div class="form-field"><input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required></div>
-                <div class="form-field"><input type="password" id="confirmPassword" placeholder="Confirm password" required></div>
+                <div class="form-field">
+                    <input type="text" id="username" placeholder="Username" required>
+                </div>
+                <div class="form-field">
+                    <input type="email" id="email" placeholder="Email address" required>
+                    <div id="emailValidation" class="error-message" style="margin-top: 5px; display: none;"></div>
+                </div>
+                <div class="form-field">
+                    <input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required>
+                    <div class="password-strength">
+                        <div id="strengthMeter" class="strength-meter"></div>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                </div>
 
-                <!-- ✅ FIXED: Custom Checkbox with visible checkmark -->
                 <div class="checkbox-row">
                     <input type="checkbox" id="privacyPolicy" required>
                     <span class="checkbox-custom"></span>
@@ -256,6 +815,7 @@
 
                 <button type="submit" class="btn-primary" style="width:100%; background:white; color:black;">Sign Up →</button>
                 <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
             </form>
             <p style="margin-top: 16px; font-size: 13px; text-align: center;">
                 Already have an account? <a href="login.html" style="color:white;">Login</a>
@@ -268,12 +828,58 @@
 </div>
 <script>
     if (localStorage.getItem('token')) { window.location.href = "page.html"; }
+    
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    const strengthMeter = document.getElementById('strengthMeter');
+    
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 25;
+        if (/[A-Z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 25;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+        
+        strengthMeter.style.width = strength + '%';
+        
+        if (strength < 50) {
+            strengthMeter.style.background = 'var(--error)';
+        } else if (strength < 75) {
+            strengthMeter.style.background = '#fbbf24'; // yellow
+        } else {
+            strengthMeter.style.background = 'var(--success)';
+        }
+    });
+    
+    // Email validation
+    const emailInput = document.getElementById('email');
+    const emailValidation = document.getElementById('emailValidation');
+    
+    emailInput.addEventListener('blur', function() {
+        const email = this.value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email && !emailRegex.test(email)) {
+            emailValidation.textContent = 'Please enter a valid email address';
+            emailValidation.style.display = 'block';
+        } else {
+            emailValidation.style.display = 'none';
+        }
+    });
+    
+    // Form submission
     const form = document.getElementById('signupForm');
     const errorDiv = document.getElementById('errorMessage');
+    const successDiv = document.getElementById('successMessage');
+    
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
         errorDiv.textContent = '';
+        successDiv.textContent = '';
 
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -314,17 +920,17 @@
             if (res.ok) {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    // ✅ Store CSRF Token
                     if (data.csrfToken) {
                         localStorage.setItem('csrfToken', data.csrfToken);
                     }
                     window.location.href = "page.html";
                 } else {
-                    alert("Account created! Please log in.");
-                    window.location.href = "login.html";
+                    showSuccess("Account created successfully! Redirecting to login...");
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 2000);
                 }
             } else {
-                // ✅ SANITIZE ERROR MESSAGE FROM BACKEND
                 showError(DOMPurify.sanitize(data.message || "Signup failed. Try a different email."));
             }
         } catch (err) {
@@ -336,10 +942,36 @@
     });
 
     function showError(msg) {
-        // ✅ SANITIZE ERROR MESSAGE BEFORE DISPLAY
         errorDiv.textContent = DOMPurify.sanitize(msg);
         errorDiv.style.display = 'block';
+        successDiv.style.display = 'none';
     }
+    
+    function showSuccess(msg) {
+        successDiv.textContent = DOMPurify.sanitize(msg);
+        successDiv.style.display = 'block';
+        errorDiv.style.display = 'none';
+    }
+    
+    // Intersection Observer for animations
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe elements for animations
+    document.querySelectorAll('.feature-card, .testimonial-card, .plan').forEach(el => {
+        observer.observe(el);
+    });
 </script>
 </body>
-</html>
+    </html>
