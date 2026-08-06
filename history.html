@@ -410,32 +410,13 @@
 
         /* ── Bottom Navigation ── */
         .bottom-nav {
-            width: 100%;
-            max-width: 1000px;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-around;
-            gap: 8px;
-            border-top: 1px solid var(--br-dim);
-            margin-top: auto;
-            background: var(--base);
-            flex-shrink: 0;
+            height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base);
+            border-top: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; padding: 0 8px;
         }
+        .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); }
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            flex: 1;
-            cursor: pointer;
-            padding: 7px 0;
-            text-decoration: none;
-            color: var(--t3);
-            transition: color 0.25s;
-            position: relative;
-            border: none;
-            background: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex: 1; cursor: pointer;
+            padding: 7px 0; text-decoration: none; color: var(--t3); transition: color 0.25s; position: relative; border: none; background: none;
         }
         .nav-item svg { transition: transform 0.2s; }
         .nav-item:hover { color: var(--gold); }
@@ -463,7 +444,7 @@
         .nav-item.has-notifs .nav-badge { display: flex; }
 
         @media (max-width: 600px) {
-            .bottom-nav { gap: 4px; padding: 8px 8px; }
+            .bottom-nav { padding: 0 6%; }
             .container { padding: 12px; }
             .session-header { padding: 12px 14px; flex-wrap: wrap; gap: 6px; }
             .session-name { font-size: 13px; }
@@ -1210,4 +1191,4 @@
     });
 </script>
 </body>
-            </html>
+    </html>
