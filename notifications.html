@@ -6,24 +6,620 @@
     <title>Skyline AA-1</title>
     <!-- ✅ XSS PROTECTION LIBRARY -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <link rel="stylesheet" href="notifications.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ── Reset & Base ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+            --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+            --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
+            --platinum: #d4d0c8; --sage: #66dd99; --sage-dim: rgba(102,221,153,0.10); --rose: #ff5555; --rose-dim: rgba(255,85,85,0.10); --sky: #66ddff;
+            --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+            --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'Monaco', 'Menlo', monospace;
+            --nav-h: 68px; --top-h: 54px; --bar-h: 30px;
+            --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+        }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(201,168,76,0.055) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%),
+            radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%);
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 9999;
+            display: none;
+            animation: slideDown 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid #00e676; color: #00e676; }
+        .toast.error   { background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; }
+        .toast.info    { background: rgba(0, 210, 255, 0.15); border: 1px solid #00d2ff; color: #00d2ff; }
+        .toast.warning { background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ── Container ── */
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            width: 100%;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: calc(var(--nav-h) + 20px); /* Space for fixed nav */
+        }
+
+        /* ── Brand ── */
+        .brand {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            z-index: 10;
+        }
+        .brand-mark {
+            width: 24px;
+            height: 24px;
+            border-radius: 5px;
+            background: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-mark svg {
+            width: 14px;
+            height: 14px;
+            stroke: var(--void);
+            stroke-width: 2.5;
+            fill: none;
+        }
+        .brand-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--t1);
+            letter-spacing: 0.04em;
+            line-height: 1;
+            font-family: var(--ui);
+        }
+        .brand-name span {
+            color: var(--gold);
+            font-weight: 400;
+        }
+        .brand-sub {
+            font-size: 7px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--t3);
+            font-weight: 400;
+            font-family: var(--mono);
+        }
+
+        /* ── Top Right Menu ── */
+        .menu-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-autoreply-btn-large {
+            width: 32px; height: 32px; background: transparent;
+            border: 1px solid var(--br-dim); border-radius: var(--r-sm);
+            color: var(--t3); cursor: pointer; display: flex; align-items: center;
+            justify-content: center; transition: all 0.2s; flex-shrink: 0;
+        }
+        .chat-autoreply-btn-large:hover { 
+            background: rgba(255, 255, 255, 0.04); 
+            border-color: var(--br-md); 
+            color: var(--t1); 
+        }
+        .chat-autoreply-btn-large.active {
+            background: var(--sage-dim); 
+            border-color: var(--sage); 
+            color: var(--sage);
+            box-shadow: 0 0 12px rgba(102, 221, 153, 0.2);
+        }
+        .chat-autoreply-btn-large svg { width: 18px; height: 18px; }
+        .menu-btn {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-sm);
+            color: var(--t3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--br-md);
+        }
+        .menu-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: var(--base);
+            border: 1px solid var(--br-md);
+            border-radius: var(--r-sm);
+            min-width: 170px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            z-index: 30;
+        }
+        .menu-dropdown.show { display: block; }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--t2);
+            font-size: 12px;
+            font-family: var(--ui);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--t1);
+        }
+        .menu-item svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .menu-item.danger { color: var(--rose); }
+        .menu-item.danger:hover { background: var(--rose-dim); }
+        .menu-divider {
+            height: 1px;
+            background: var(--br-dim);
+            margin: 4px 12px;
+        }
+
+        /* ── Search Bar ── */
+        .search-container {
+            padding: 68px 16px 12px 16px;
+            background: var(--void);
+            flex-shrink: 0;
+        }
+        .search-wrap {
+            position: relative;
+            width: 100%;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+        .search-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--t4);
+            fill: none;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: var(--surface);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-sm);
+            color: var(--t1);
+            font-size: 13px;
+            font-family: var(--ui);
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .search-input::placeholder { color: var(--t3); }
+        .search-input:focus {
+            border-color: rgba(201,168,76,0.35);
+            background: var(--raised);
+        }
+
+        /* ── Contact List ── */
+        .contact-list { display: none; flex-direction: column; gap: 6px; }
+        .contact-list.active { display: flex; }
+        .contact-item {
+            background: var(--surface);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-lg);
+            overflow: hidden;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .contact-item:hover { border-color: var(--br-md); background: var(--raised); }
+        .contact-item.pinned { border-color: rgba(200,255,87,0.25); }
+
+        /* ── Contact Item Header ── */
+        .contact-header {
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            gap: 12px;
+        }
+        .contact-info {
+            font-weight: 500;
+            font-size: 14px;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .contact-info .pin-icon {
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+        .contact-meta {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--t3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .contact-meta .count {
+            background: rgba(255,255,255,0.05);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .contact-arrow {
+            color: var(--t3);
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        .contact-item.expanded .contact-arrow { transform: rotate(180deg); }
+        .type-badge {
+            font-size: 7px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: var(--t3);
+            border: 1px solid var(--br-dim);
+        }
+        .type-badge.lead { border-color: rgba(200,255,87,0.2); color: var(--gold); }
+        .type-badge.assistant { border-color: rgba(0,210,255,0.2); color: var(--sky); }
+
+        /* ── Contact Messages ── */
+        .contact-messages {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--br-dim);
+        }
+        .contact-item.expanded .contact-messages { max-height: 3000px; }
+        .contact-messages-inner {
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ── Message Bubbles ── */
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: var(--r-sm);
+            font-size: 13px;
+            line-height: 1.6;
+            max-width: 88%;
+            word-break: break-word;
+        }
+        .msg-bubble.user {
+            background: var(--raised);
+            border: 1px solid var(--br-md);
+            align-self: flex-end;
+            border-bottom-right-radius: var(--r-xs);
+        }
+        .msg-bubble.ai {
+            background: var(--surface);
+            border: 1px solid var(--br-dim);
+            border-left: 2px solid rgba(201,168,76,0.3);
+            align-self: flex-start;
+            border-bottom-left-radius: var(--r-xs);
+            color: #ccc7bb;
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+        .msg-bubble .msg-role {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.4;
+            margin-bottom: 2px;
+        }
+        .msg-bubble .msg-content { white-space: pre-wrap; }
+        .msg-bubble .msg-time {
+            font-size: 9px;
+            color: var(--t3);
+            margin-top: 4px;
+            font-family: var(--mono);
+        }
+
+        /* ── Empty States ── */
+        .empty-state {
+            text-align: center;
+            color: var(--t3);
+            padding: 60px 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .loading-spinner {
+            text-align: center;
+            color: var(--t3);
+            padding: 40px;
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+        .no-messages {
+            color: var(--t3);
+            font-size: 12px;
+            text-align: center;
+            padding: 10px 0;
+            font-family: var(--mono);
+        }
+        .error-msg {
+            color: var(--rose);
+            font-size: 12px;
+            text-align: center;
+            padding: 10px 0;
+            font-family: var(--mono);
+        }
+
+        /* ── Context Menu ── */
+        #contextMenu {
+            display: none;
+            position: fixed;
+            background: var(--base);
+            border: 1px solid var(--br-md);
+            border-radius: var(--r-sm);
+            padding: 6px 0;
+            z-index: 1000;
+            min-width: 170px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        #contextMenu .ctx-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--t2);
+            font-family: var(--ui);
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            text-align: left;
+        }
+        #contextMenu .ctx-btn svg { flex-shrink: 0; opacity: 0.6; }
+        #contextMenu .ctx-btn:hover { background: rgba(255,255,255,0.05); color: var(--t1); }
+        #contextMenu .ctx-btn:hover svg { opacity: 1; }
+        #contextMenu .ctx-btn.danger { color: var(--rose); }
+        #contextMenu .ctx-btn.danger:hover { background: var(--rose-dim); }
+        #contextMenu .ctx-divider {
+            height: 1px;
+            background: var(--br-dim);
+            margin: 4px 12px;
+        }
+
+        /* ── Rename Modal ── */
+        #renameModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        #renameModal.active { display: flex; }
+        .modal-box {
+            background: var(--base);
+            border: 1px solid var(--br-md);
+            border-radius: var(--r-lg);
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box h3 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+        .modal-box .modal-sub { color: var(--t3); font-size: 13px; margin-bottom: 18px; }
+        .modal-box input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-sm);
+            padding: 11px 14px;
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        .modal-box input:focus { border-color: rgba(201,168,76,0.35); }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: var(--r-sm);
+            font-family: var(--ui);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .modal-actions .btn-cancel {
+            background: var(--surface);
+            color: var(--t2);
+        }
+        .modal-actions .btn-cancel:hover { background: var(--hover); color: var(--t1); }
+        .modal-actions .btn-save {
+            background: var(--gold);
+            color: #0d0a04;
+        }
+        .modal-actions .btn-save:hover { background: var(--gold-bright); }
+
+        /* ── Bottom Navigation ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: var(--base);
+            border-top: 1px solid var(--br-dim);
+            z-index: 10;
+            padding: 0 8px;
+        }
+        .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex: 1;
+            cursor: pointer;
+            padding: 7px 0;
+            text-decoration: none;
+            color: var(--t3);
+            transition: color 0.25s;
+            position: relative;
+            border: none;
+            background: none;
+        }
+        .nav-item svg { transition: transform 0.2s; }
+        .nav-item:hover { color: var(--gold); }
+        .nav-item:hover svg { transform: scale(1.1) translateY(-1px); }
+        .nav-item.active { color: var(--gold); }
+        .nav-item.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border-radius: 2px 2px 0 0;
+        }
+        .nav-item.nav-home .home-wrap {
+            width: 44px; height: 44px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+            border-radius: var(--r-md); display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
+            position: relative; overflow: hidden;
+        }
+        .nav-item.nav-home .home-wrap::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); }
+        .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); }
+        .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
+        .nav-item.nav-home::after { display: none; }
+        .nav-badge {
+            position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: var(--rose);
+            border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono);
+            font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+        }
+        .nav-item.has-notifs .nav-badge { display: flex; }
+
+        @media (max-width: 600px) {
+            .bottom-nav { gap: 4px; padding: 8px 8px; }
+            .container { padding: 12px; }
+            .contact-header { padding: 12px 14px; flex-wrap: wrap; gap: 6px; }
+            .contact-info { font-size: 13px; }
+            .contact-meta { font-size: 9px; gap: 6px; }
+            .msg-bubble { max-width: 94%; font-size: 12px; }
+            h1 { font-size: 24px; }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- ─── TOP LEFT LOGO ─── -->
+<div class="toast" id="toast"></div>
+
+<div class="container">
+    <!-- Brand -->
     <div class="brand">
         <div class="brand-mark">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
         </div>
-        <span class="brand-name">Sky<span>line</span></span>
+        <span class="brand-name">Sky<em>line</em></span>
         <span class="brand-sub">AA-1</span>
     </div>
 
-    <!-- ─── TOP RIGHT SLIDER MENU ─── -->
+    <!-- Top Right Menu -->
     <div class="menu-container">
-        <!-- ✅ NEW: LARGE AI AUTO-REPLY BUTTON (Beside 3 Dots) -->
         <button class="chat-autoreply-btn-large" id="chatAutoReplyBtn" title="AI Auto-Reply OFF">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
@@ -69,13 +665,7 @@
         </div>
     </div>
 
-    <!-- ─── LOADING SCREEN ─── -->
-    <div class="loading-container" id="loadingScreen">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading conversations...</div>
-    </div>
-
-    <!-- ─── SEARCH BAR ─── -->
+    <!-- Search Bar -->
     <div class="search-container">
         <div class="search-wrap">
             <div class="search-icon">
@@ -88,10 +678,12 @@
         </div>
     </div>
 
-    <!-- ─── CONTACT LIST ─── -->
-    <div class="contact-list" id="contactList"></div>
+    <!-- Contact List -->
+    <div class="contact-list" id="contactList">
+        <div class="loading-spinner">Loading conversations...</div>
+    </div>
 
-    <!-- ─── EMPTY STATE ─── -->
+    <!-- Empty State -->
     <div class="empty-state" id="emptyState">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -100,7 +692,7 @@
         <p>Send your first message to get started.</p>
     </div>
 
-    <!-- ─── NO RESULTS ─── -->
+    <!-- No Results -->
     <div class="no-results" id="noResults">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
@@ -108,211 +700,705 @@
         </svg>
         <p>No contacts found</p>
     </div>
+</div>
 
-    <!-- ─── REVENUE MODAL ─── -->
-    <div class="modal-overlay" id="revenueModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    Revenue Tracker
-                    <span class="tier-badge" id="tierBadge">Free</span>
-                </div>
-                <button class="modal-close" id="closeRevenueModal">✕</button>
-            </div>
-            <div class="modal-body" id="revenueBody">
-                <div class="modal-loading">Loading revenue data...</div>
-            </div>
+<!-- Context Menu -->
+<div id="contextMenu">
+    <button class="ctx-btn" data-action="rename">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        Rename
+    </button>
+    <button class="ctx-btn" data-action="pin" id="pinBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 17v5"/>
+            <path d="M5 17h14"/>
+            <path d="M7 7l10 10"/>
+            <path d="M9 5l2 2"/>
+            <path d="M15 11l2 2"/>
+            <path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/>
+        </svg>
+        <span id="pinLabel">Pin</span>
+    </button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-btn danger" data-action="delete">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+        </svg>
+        Delete
+    </button>
+</div>
+
+<!-- Rename Modal -->
+<div id="renameModal">
+    <div class="modal-box">
+        <h3>Rename Session</h3>
+        <p class="modal-sub">Give this session a custom name.</p>
+        <input type="text" id="renameInput" placeholder="New session name…" />
+        <div class="modal-actions">
+            <button class="btn-cancel" id="renameCancel">Cancel</button>
+            <button class="btn-save" id="renameConfirm">Save</button>
         </div>
     </div>
+</div>
 
-    <!-- ─── CHAT VIEW ─── -->
-    <div class="chat-view" id="chatView">
-        <div class="chat-header">
-            <button class="chat-back" id="chatBack">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
-                </svg>
-            </button>
-            <div class="chat-avatar" id="chatAvatar">?</div>
-            <div class="chat-info">
-                <span class="chat-name" id="chatName">Contact</span>
-                <span class="chat-email" id="chatEmail">email@example.com</span>
-                
-                <button class="chat-rename-btn" id="chatRenameBtn" title="Rename">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                    </svg>
-                </button>
-                
-                <!-- ─── FOLLOW-UP BUTTON (SLIDER ICON - TOP RIGHT CORNER) ─── -->
-                <div class="chat-followup-wrap">
-                    <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="4" y1="6" x2="20" y2="6"/>
-                            <line x1="4" y1="12" x2="20" y2="12"/>
-                            <line x1="4" y1="18" x2="20" y2="18"/>
-                        </svg>
-                    </button>
-                    <div class="chat-followup-dropdown" id="chatFollowupDropdown">
-                        <button class="chat-followup-option" data-action="suggest">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                            </svg>
-                            Suggest Follow‑up
-                        </button>
-                        <button class="chat-followup-option" data-action="auto">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                            Auto Follow‑up
-                            <span class="followup-status" id="followupStatus">OFF</span>
-                        </button>
-                        <button class="chat-followup-option" data-action="hint">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                            </svg>
-                            AI Hint
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Messages Container -->
-        <div class="messages-container" id="messagesContainer">
-            <div class="empty-chat">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <h3>No messages yet</h3>
-                <p>Send a message to start the conversation.</p>
-            </div>
-        </div>
-
-        <!-- Chat Input Area -->
-        <div class="chat-input-area">
-            <div class="chat-input-wrap">
-                <textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message..." aria-label="Message"></textarea>
-            </div>
-            <button class="chat-send-btn" id="chatSendBtn" aria-label="Send" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
-    <div class="modal-overlay" id="autoFollowupModal">
-        <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
-            <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
-                <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    Auto Follow-up
-                    <span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span>
-                </div>
-                <button class="modal-close" id="closeAutoFollowupModal" style="width:32px; height:32px; font-size:18px; border-radius:8px;">✕</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
-                
-                <!-- Day buttons - Large -->
-                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                    <button class="af-day-btn" data-days="1">1</button>
-                    <button class="af-day-btn" data-days="2">2</button>
-                    <button class="af-day-btn active" data-days="3">3</button>
-                    <button class="af-day-btn" data-days="4">4</button>
-                    <button class="af-day-btn" data-days="5">5</button>
-                    <button class="af-day-btn" data-days="6">6</button>
-                    <button class="af-day-btn" data-days="7">7</button>
-                </div>
-                
-                <!-- Custom input - Larger -->
-                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-                    <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
-                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
-                    <span style="font-size:11px; color:#505050;">days</span>
-                    <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
-                </div>
-
-                <!-- Current status display -->
-                <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:11px; color:#707070;">Current status:</span>
-                    <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
-                    <span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span>
-                </div>
-            </div>
-            <div class="modal-footer" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); gap:10px;">
-                <button class="btn-ghost" id="cancelAutoFollowup" style="padding:10px 20px; font-size:12px;">Cancel</button>
-                <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">
-                    ✅ Enable Auto Follow-up
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ✅ NEW: AI AUTO-REPLY MINI MODAL -->
-    <div class="autoreply-modal-overlay" id="autoReplyModalOverlay">
-        <div class="autoreply-modal">
-            <div class="autoreply-modal-header">
-                <span class="autoreply-modal-title">🤖 AI Auto-Reply Instructions</span>
-                <button class="autoreply-modal-close" id="closeAutoReplyModal">&times;</button>
-            </div>
-            <textarea 
-                class="autoreply-instructions" 
-                id="autoReplyInstructions" 
-                placeholder="e.g., Keep replies professional. Always ask how I can help. Max 2 sentences."
-            ></textarea>
-            <div class="autoreply-modal-footer">
-                <button class="autoreply-save-btn" id="saveAutoReplyBtn">Save & Activate</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── TOAST ─── -->
-    <div class="toast" id="toast">Please open a chat to access this feature.</div>
-
-    <!-- ─── BOTTOM NAV ─── -->
-    <nav class="bottom-nav">
-        <a href="page.html" class="nav-item active" aria-label="Home">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+    <a href="page.html" class="nav-item nav-home">
+        <div class="home-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
-            <span>Home</span>
-        </a>
-        <a href="history.html" class="nav-item" aria-label="History">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <span>History</span>
-        </a>
-        <a href="notifications.html" class="nav-item" aria-label="Inbox">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span>Inbox</span>
-        </a>
-        <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            <span>Dashboard</span>
-        </a>
-    </nav>
+        </div>
+    </a>
+    <a href="history.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 15"/>
+            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+            <polyline points="3 4 3 11 10 11"/>
+        </svg>
+        History
+    </a>
+    <a href="notifications.html" class="nav-item active">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Inbox
+    </a>
+    <a href="dashboard.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+    </a>
+</nav>
 
-    <script src="notifications.js"></script>
+<script>
+    // ──────────────────────────────────────────────────────────────
+    //  TOAST
+    // ──────────────────────────────────────────────────────────────
+
+    function showToast(message, type = 'success', duration = 4000) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast ${type}`;
+        toast.style.display = 'block';
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  CONFIG
+    // ──────────────────────────────────────────────────────────────
+
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = 'login.html';
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  STATE
+    // ──────────────────────────────────────────────────────────────
+
+    let allContacts = [];
+    let contextTargetId = null;
+    let currentRenameId = null;
+    let expandedContacts = new Set();
+
+    // ──────────────────────────────────────────────────────────────
+    //  DOM REFS
+    // ──────────────────────────────────────────────────────────────
+
+    const contactList = document.getElementById('contactList');
+    const searchInput = document.getElementById('searchInput');
+    const contextMenu = document.getElementById('contextMenu');
+    const renameModal = document.getElementById('renameModal');
+    const renameInput = document.getElementById('renameInput');
+
+    // ──────────────────────────────────────────────────────────────
+    //  UTILITY FUNCTIONS
+    // ──────────────────────────────────────────────────────────────
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function getDateGroup(dateStr) {
+        if (!dateStr) return 'more';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return 'more';
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+
+            const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+            if (dateOnly.getTime() === today.getTime()) return 'today';
+            if (dateOnly.getTime() === yesterday.getTime()) return 'yesterday';
+            if (dateOnly > weekAgo) return 'week';
+            if (dateOnly > monthAgo) return 'month';
+            return 'more';
+        } catch { return 'more'; }
+    }
+
+    function getDateGroupLabel(group) {
+        const labels = {
+            'today': 'Today',
+            'yesterday': 'Yesterday',
+            'week': 'This Week',
+            'month': 'This Month',
+            'more': 'Older'
+        };
+        return labels[group] || 'Older';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            const now = new Date();
+            const diff = now - d;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch { return ''; }
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch { return ''; }
+    }
+
+    function formatAI(text) {
+        if (!text) return '';
+        let s = DOMPurify.sanitize(text); // ✅ SANITIZE BEFORE FORMATTING
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+        s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) {
+            return '<ul style="margin:4px 0;padding-left:20px;list-style:none;">' + m + '</ul>';
+        });
+        s = s.replace(/\n/g, '<br>');
+        return s;
+    }
+
+    function getTypeLabel(type) {
+        if (type === 'assistant') return 'ASSISTANT';
+        if (type === 'lead') return 'LEAD';
+        return 'CHAT';
+    }
+
+    function getTypeClass(type) {
+        if (type === 'assistant') return 'assistant';
+        if (type === 'lead') return 'lead';
+        return 'chat';
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  LOAD CONTACTS
+    // ──────────────────────────────────────────────────────────────
+
+    async function loadContacts() {
+        try {
+            const res = await fetch(`${BACKEND}/api/conversations`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            allContacts = await res.json();
+            renderContacts(allContacts);
+
+        } catch (err) {
+            console.error('Error loading contacts:', err);
+            contactList.innerHTML = `
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 16px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    Failed to load conversations.<br>
+                    <span style="font-size:12px;color:var(--t4);">${err.message}</span>
+                </div>
+            `;
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  RENDER CONTACTS WITH DATE GROUPING
+    // ──────────────────────────────────────────────────────────────
+
+    function renderContacts(contacts) {
+        contactList.innerHTML = '';
+        countBadge.textContent = contacts.length;
+
+        if (contacts.length === 0) {
+            contactList.innerHTML = `
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 16px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    No conversations yet.<br>
+                    <span style="font-size:13px;color:var(--t4);">Start a new search in the Dream Architect.</span>
+                </div>
+            `;
+            return;
+        }
+
+        // Group contacts by date
+        const groups = {};
+        const order = ['today', 'yesterday', 'week', 'month', 'more'];
+
+        for (const contact of contacts) {
+            const group = getDateGroup(contact.lastUpdated || contact.createdAt);
+            if (!groups[group]) groups[group] = [];
+            groups[group].push(contact);
+        }
+
+        // Sort contacts within each group by date (newest first)
+        for (const key in groups) {
+            groups[key].sort((a, b) => {
+                const dateA = new Date(a.lastUpdated || a.createdAt);
+                const dateB = new Date(b.lastUpdated || b.createdAt);
+                return dateB - dateA;
+            });
+        }
+
+        // Render each group
+        for (const key of order) {
+            if (!groups[key] || groups[key].length === 0) continue;
+
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'date-group-header';
+            groupDiv.textContent = getDateGroupLabel(key);
+            contactList.appendChild(groupDiv);
+
+            for (const contact of groups[key]) {
+                const item = createContactElement(contact);
+                contactList.appendChild(item);
+            }
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  CREATE CONTACT ELEMENT
+    // ──────────────────────────────────────────────────────────────
+
+    function createContactElement(contact) {
+        const contactId = contact.id;
+        const name = contact.name || 'Untitled';
+        const type = contact.type || 'chat';
+        const msgCount = contact.messageCount || 0;
+        const isPinned = contact.pinned || false;
+        const isExpanded = expandedContacts.has(contactId);
+        const date = formatDate(contact.lastUpdated || contact.createdAt);
+        const typeLabel = getTypeLabel(type);
+        const typeClass = getTypeClass(type);
+
+        const div = document.createElement('div');
+        div.className = `contact-item${isPinned ? ' pinned' : ''}${isExpanded ? ' expanded' : ''}`;
+        div.dataset.contactId = contactId;
+
+        // ── Header ──
+        const header = document.createElement('div');
+        header.className = 'contact-header';
+        header.dataset.contactId = contactId;
+
+        const infoSpan = document.createElement('span');
+        infoSpan.className = 'contact-info';
+        // ✅ SANITIZE CONTACT NAME
+        infoSpan.innerHTML = `
+            ${isPinned ? `<span class="pin-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 17v5"/>
+                    <path d="M5 17h14"/>
+                    <path d="M7 7l10 10"/>
+                    <path d="M9 5l2 2"/>
+                    <path d="M15 11l2 2"/>
+                    <path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/>
+                </svg>
+            </span>` : ''}
+            ${DOMPurify.sanitize(name)}
+        `;
+        header.appendChild(infoSpan);
+
+        const meta = document.createElement('div');
+        meta.className = 'contact-meta';
+        meta.innerHTML = `
+            <span class="count">${msgCount}</span>
+            <span>${date}</span>
+            <span class="type-badge ${typeClass}">${typeLabel}</span>
+            <span class="contact-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </span>
+        `;
+        header.appendChild(meta);
+
+        // ── Messages Container ──
+        const messagesDiv = document.createElement('div');
+        messagesDiv.className = 'contact-messages';
+
+        const inner = document.createElement('div');
+        inner.className = 'contact-messages-inner';
+        inner.innerHTML = `<div class="loading-spinner" style="padding:12px;font-size:11px;">Loading messages…</div>`;
+        messagesDiv.appendChild(inner);
+
+        div.appendChild(header);
+        div.appendChild(messagesDiv);
+
+        // ── Click to Expand ──
+        header.onclick = function(e) {
+            e.stopPropagation();
+            const cid = this.dataset.contactId;
+            toggleContact(cid, div, messagesDiv);
+        };
+
+        // ── Context Menu (Right Click) ──
+        header.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            const cid = this.dataset.contactId;
+            showContextMenu(e.clientX, e.clientY, cid);
+        });
+
+        // ── Long Press for Mobile ──
+        let timer;
+        header.addEventListener('touchstart', function(e) {
+            timer = setTimeout(() => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const cid = this.dataset.contactId;
+                showContextMenu(touch.clientX, touch.clientY, cid);
+            }, 600);
+        });
+        header.addEventListener('touchend', () => clearTimeout(timer));
+        header.addEventListener('touchmove', () => clearTimeout(timer));
+
+        return div;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  TOGGLE CONTACT
+    // ──────────────────────────────────────────────────────────────
+
+    function toggleContact(contactId, element, messagesDiv) {
+        const isExpanded = expandedContacts.has(contactId);
+
+        if (isExpanded) {
+            expandedContacts.delete(contactId);
+            element.classList.remove('expanded');
+        } else {
+            expandedContacts.add(contactId);
+            element.classList.add('expanded');
+            loadMessages(contactId, messagesDiv);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  LOAD MESSAGES
+    // ──────────────────────────────────────────────────────────────
+
+    async function loadMessages(contactId, container) {
+        const inner = container.querySelector('.contact-messages-inner');
+        if (!inner) return;
+
+        if (inner.dataset.loaded === 'true') return;
+
+        try {
+            const res = await fetch(`${BACKEND}/api/conversations/${contactId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const data = await res.json();
+            const messages = data.messages || [];
+
+            inner.innerHTML = '';
+
+            if (!messages || messages.length === 0) {
+                inner.innerHTML = `<div class="no-messages">No messages in this conversation.</div>`;
+            } else {
+                for (const msg of messages) {
+                    const bubble = createMessageBubble(msg);
+                    inner.appendChild(bubble);
+                }
+            }
+
+            inner.dataset.loaded = 'true';
+
+        } catch (err) {
+            console.error('Error loading messages:', err);
+            inner.innerHTML = `<div class="error-msg">⚠️ Failed to load messages: ${err.message}</div>`;
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  CREATE MESSAGE BUBBLE
+    // ──────────────────────────────────────────────────────────────
+
+    function createMessageBubble(msg) {
+        const div = document.createElement('div');
+        const role = msg.role || 'user';
+        div.className = `msg-bubble ${role}`;
+
+        const roleLabel = role === 'ai' ? 'AI' : 'You';
+
+        let content = msg.content || '';
+        let displayContent = content;
+
+        if (role === 'ai') {
+            if ((content.startsWith('[') || content.startsWith('{')) && content.length > 2) {
+                try {
+                    const parsed = JSON.parse(content);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        let leadText = `📊 ${parsed.length} lead${parsed.length > 1 ? 's' : ''} found\n\n`;
+                        const maxShow = Math.min(parsed.length, 5);
+                        for (let i = 0; i < maxShow; i++) {
+                            const l = parsed[i];
+                            const name = l.name || l.company || 'Unknown';
+                            const company = l.company || '';
+                            const email = l.email || '';
+                            // ✅ SANITIZE LEAD DATA IN CHAT
+                            leadText += `${i+1}. ${DOMPurify.sanitize(name)}${company ? ' - ' + DOMPurify.sanitize(company) : ''}${email ? ' (' + DOMPurify.sanitize(email) + ')' : ''}\n`;
+                        }
+                        if (parsed.length > 5) {
+                            leadText += `\n... and ${parsed.length - 5} more`;
+                        }
+                        displayContent = leadText;
+                    } else {
+                        displayContent = JSON.stringify(parsed, null, 2);
+                    }
+                } catch (e) {
+                    displayContent = content;
+                }
+            } else {
+                displayContent = formatAI(content);
+            }
+        } else {
+            displayContent = DOMPurify.sanitize(content); // ✅ SANITIZE USER INPUT
+        }
+
+        const time = msg.time || formatTime(msg.createdAt);
+
+        div.innerHTML = `
+            <div class="msg-role">${roleLabel}</div>
+            <div class="msg-content">${displayContent}</div>
+            ${time ? `<div class="msg-time">${time}</div>` : ''}
+        `;
+
+        return div;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  CONTEXT MENU
+    // ──────────────────────────────────────────────────────────────
+
+    function showContextMenu(x, y, contactId) {
+        contextTargetId = contactId;
+        const contact = allContacts.find(s => s.id === contactId);
+        const isPinned = contact?.pinned || false;
+
+        const pinBtn = document.getElementById('pinBtn');
+        const pinLabel = document.getElementById('pinLabel');
+        pinLabel.textContent = isPinned ? 'Unpin' : 'Pin';
+
+        const menuWidth = 170;
+        const menuHeight = 140;
+        const left = Math.min(x, window.innerWidth - menuWidth - 10);
+        const top = Math.min(y, window.innerHeight - menuHeight - 10);
+        contextMenu.style.left = Math.max(10, left) + 'px';
+        contextMenu.style.top = Math.max(10, top) + 'px';
+        contextMenu.style.display = 'block';
+    }
+
+    function hideContextMenu() {
+        contextMenu.style.display = 'none';
+        contextTargetId = null;
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!contextMenu.contains(e.target)) hideContextMenu();
+    });
+
+    document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const action = this.dataset.action;
+            const cid = contextTargetId;
+            hideContextMenu();
+
+            if (action === 'rename') openRenameModal(cid);
+            else if (action === 'pin') togglePin(cid);
+            else if (action === 'delete') deleteContact(cid);
+        });
+    });
+
+    // ──────────────────────────────────────────────────────────────
+    //  RENAME CONTACT
+    // ──────────────────────────────────────────────────────────────
+
+    function openRenameModal(contactId) {
+        currentRenameId = contactId;
+        const contact = allContacts.find(s => s.id === contactId);
+        renameInput.value = contact?.name || '';
+        renameModal.classList.add('active');
+        renameInput.focus();
+        renameInput.select();
+    }
+
+    document.getElementById('renameCancel').onclick = function() {
+        renameModal.classList.remove('active');
+        currentRenameId = null;
+    };
+
+    document.getElementById('renameConfirm').onclick = async function() {
+        const name = renameInput.value.trim();
+        if (!name) return;
+
+        try {
+            const res = await fetch(`${BACKEND}/api/conversations/rename/${currentRenameId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (res.ok) {
+                renameModal.classList.remove('active');
+                currentRenameId = null;
+                showToast('✅ Conversation renamed successfully', 'success');
+                loadContacts();
+            } else {
+                showToast('❌ Failed to rename conversation', 'error');
+            }
+        } catch (err) {
+            showToast('❌ Connection error', 'error');
+        }
+    };
+
+    renameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('renameConfirm').click();
+        if (e.key === 'Escape') document.getElementById('renameCancel').click();
+    });
+
+    // ──────────────────────────────────────────────────────────────
+    //  PIN / UNPIN
+    // ──────────────────────────────────────────────────────────────
+
+    async function togglePin(contactId) {
+        const contact = allContacts.find(s => s.id === contactId);
+        if (!contact) return;
+
+        const newPinned = !contact.pinned;
+
+        try {
+            const res = await fetch(`${BACKEND}/api/conversations/pin/${contactId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ pinned: newPinned })
+            });
+
+            if (res.ok) {
+                showToast(newPinned ? '📌 Conversation pinned' : '📌 Conversation unpinned', 'success');
+                loadContacts();
+            } else {
+                showToast('❌ Failed to update pin', 'error');
+            }
+        } catch (err) {
+            showToast('❌ Connection error', 'error');
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  DELETE CONTACT
+    // ──────────────────────────────────────────────────────────────
+
+    async function deleteContact(contactId) {
+        if (!confirm('Delete this conversation and all its messages?')) return;
+
+        try {
+            const res = await fetch(`${BACKEND}/api/conversations/delete/${contactId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                expandedContacts.delete(contactId);
+                showToast('🗑️ Conversation deleted', 'success');
+                loadContacts();
+            } else {
+                showToast('❌ Failed to delete conversation', 'error');
+            }
+        } catch (err) {
+            showToast('❌ Connection error', 'error');
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  SEARCH
+    // ──────────────────────────────────────────────────────────────
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        if (!query) {
+            renderContacts(allContacts);
+            return;
+        }
+        const filtered = allContacts.filter(s =>
+            (s.name || '').toLowerCase().includes(query)
+        );
+        renderContacts(filtered);
+    });
+
+    // ──────────────────────────────────────────────────────────────
+    //  INIT
+    // ──────────────────────────────────────────────────────────────
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadContacts();
+
+        document.addEventListener('click', function(e) {
+            if (!contextMenu.contains(e.target)) hideContextMenu();
+        });
+    });
+</script>
 </body>
     </html>
