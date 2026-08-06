@@ -108,216 +108,217 @@
         </svg>
         <p>No contacts found</p>
     </div>
+</div>
 
-    <!-- ─── REVENUE MODAL ─── -->
-    <div class="modal-overlay" id="revenueModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    Revenue Tracker
-                    <span class="tier-badge" id="tierBadge">Free</span>
-                </div>
-                <button class="modal-close" id="closeRevenueModal">✕</button>
-            </div>
-            <div class="modal-body" id="revenueBody">
-                <div class="modal-loading">Loading revenue data...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── CHAT VIEW ─── -->
-    <div class="chat-view" id="chatView">
-        <div class="chat-header">
-            <button class="chat-back" id="chatBack">
+<!-- ─── REVENUE MODAL ─── -->
+<div class="modal-overlay" id="revenueModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Revenue Tracker
+                <span class="tier-badge" id="tierBadge">Free</span>
+            </div>
+            <button class="modal-close" id="closeRevenueModal">✕</button>
+        </div>
+        <div class="modal-body" id="revenueBody">
+            <div class="modal-loading">Loading revenue data...</div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── CHAT VIEW ─── -->
+<div class="chat-view" id="chatView">
+    <div class="chat-header">
+        <button class="chat-back" id="chatBack">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
+            </svg>
+        </button>
+        <div class="chat-avatar" id="chatAvatar">?</div>
+        <div class="chat-info">
+            <span class="chat-name" id="chatName">Contact</span>
+            <span class="chat-email" id="chatEmail">email@example.com</span>
+            
+            <button class="chat-rename-btn" id="chatRenameBtn" title="Rename">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                 </svg>
             </button>
-            <div class="chat-avatar" id="chatAvatar">?</div>
-            <div class="chat-info">
-                <span class="chat-name" id="chatName">Contact</span>
-                <span class="chat-email" id="chatEmail">email@example.com</span>
-                
-                <button class="chat-rename-btn" id="chatRenameBtn" title="Rename">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            
+            <!-- ─── FOLLOW-UP BUTTON (SLIDER ICON - TOP RIGHT CORNER) ─── -->
+            <div class="chat-followup-wrap">
+                <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="4" y1="6" x2="20" y2="6"/>
+                        <line x1="4" y1="12" x2="20" y2="12"/>
+                        <line x1="4" y1="18" x2="20" y2="18"/>
                     </svg>
                 </button>
-                
-                <!-- ─── FOLLOW-UP BUTTON (SLIDER ICON - TOP RIGHT CORNER) ─── -->
-                <div class="chat-followup-wrap">
-                    <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="4" y1="6" x2="20" y2="6"/>
-                            <line x1="4" y1="12" x2="20" y2="12"/>
-                            <line x1="4" y1="18" x2="20" y2="18"/>
+                <div class="chat-followup-dropdown" id="chatFollowupDropdown">
+                    <button class="chat-followup-option" data-action="suggest">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                         </svg>
+                        Suggest Follow‑up
                     </button>
-                    <div class="chat-followup-dropdown" id="chatFollowupDropdown">
-                        <button class="chat-followup-option" data-action="suggest">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                            </svg>
-                            Suggest Follow‑up
-                        </button>
-                        <button class="chat-followup-option" data-action="auto">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                            Auto Follow‑up
-                            <span class="followup-status" id="followupStatus">OFF</span>
-                        </button>
-                        <button class="chat-followup-option" data-action="hint">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                            </svg>
-                            AI Hint
-                        </button>
-                    </div>
+                    <button class="chat-followup-option" data-action="auto">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Auto Follow‑up
+                        <span class="followup-status" id="followupStatus">OFF</span>
+                    </button>
+                    <button class="chat-followup-option" data-action="hint">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        AI Hint
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Messages Container -->
-        <div class="messages-container" id="messagesContainer">
-            <div class="empty-chat">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <!-- Messages Container -->
+    <div class="messages-container" id="messagesContainer">
+        <div class="empty-chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <h3>No messages yet</h3>
+            <p>Send a message to start the conversation.</p>
+        </div>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="chat-input-area">
+        <div class="chat-input-wrap">
+            <textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message..." aria-label="Message"></textarea>
+        </div>
+        <button class="chat-send-btn" id="chatSendBtn" aria-label="Send" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- ─── AUTO FOLLOW-UP MODAL ─── -->
+<div class="modal-overlay" id="autoFollowupModal">
+    <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
+        <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
+            <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
                 </svg>
-                <h3>No messages yet</h3>
-                <p>Send a message to start the conversation.</p>
+                Auto Follow-up
+                <span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span>
+            </div>
+            <button class="modal-close" id="closeAutoFollowupModal" style="width:32px; height:32px; font-size:18px; border-radius:8px;">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
+            
+            <!-- Day buttons - Large -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+                <button class="af-day-btn" data-days="1">1</button>
+                <button class="af-day-btn" data-days="2">2</button>
+                <button class="af-day-btn active" data-days="3">3</button>
+                <button class="af-day-btn" data-days="4">4</button>
+                <button class="af-day-btn" data-days="5">5</button>
+                <button class="af-day-btn" data-days="6">6</button>
+                <button class="af-day-btn" data-days="7">7</button>
+            </div>
+            
+            <!-- Custom input - Larger -->
+            <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
+                <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
+                <span style="font-size:11px; color:#505050;">days</span>
+                <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
+            </div>
+
+            <!-- Current status display -->
+            <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
+                <span style="font-size:11px; color:#707070;">Current status:</span>
+                <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
+                <span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span>
             </div>
         </div>
-
-        <!-- Chat Input Area -->
-        <div class="chat-input-area">
-            <div class="chat-input-wrap">
-                <textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message..." aria-label="Message"></textarea>
-            </div>
-            <button class="chat-send-btn" id="chatSendBtn" aria-label="Send" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                </svg>
+        <div class="modal-footer" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); gap:10px;">
+            <button class="btn-ghost" id="cancelAutoFollowup" style="padding:10px 20px; font-size:12px;">Cancel</button>
+            <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">
+                ✅ Enable Auto Follow-up
             </button>
         </div>
     </div>
+</div>
 
-    <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
-    <div class="modal-overlay" id="autoFollowupModal">
-        <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
-            <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
-                <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    Auto Follow-up
-                    <span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span>
-                </div>
-                <button class="modal-close" id="closeAutoFollowupModal" style="width:32px; height:32px; font-size:18px; border-radius:8px;">✕</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
-                
-                <!-- Day buttons - Large -->
-                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                    <button class="af-day-btn" data-days="1">1</button>
-                    <button class="af-day-btn" data-days="2">2</button>
-                    <button class="af-day-btn active" data-days="3">3</button>
-                    <button class="af-day-btn" data-days="4">4</button>
-                    <button class="af-day-btn" data-days="5">5</button>
-                    <button class="af-day-btn" data-days="6">6</button>
-                    <button class="af-day-btn" data-days="7">7</button>
-                </div>
-                
-                <!-- Custom input - Larger -->
-                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-                    <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
-                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
-                    <span style="font-size:11px; color:#505050;">days</span>
-                    <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
-                </div>
-
-                <!-- Current status display -->
-                <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:11px; color:#707070;">Current status:</span>
-                    <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
-                    <span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span>
-                </div>
-            </div>
-            <div class="modal-footer" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); gap:10px;">
-                <button class="btn-ghost" id="cancelAutoFollowup" style="padding:10px 20px; font-size:12px;">Cancel</button>
-                <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">
-                    ✅ Enable Auto Follow-up
-                </button>
-            </div>
+<!-- ✅ NEW: AI AUTO-REPLY MINI MODAL -->
+<div class="autoreply-modal-overlay" id="autoReplyModalOverlay">
+    <div class="autoreply-modal">
+        <div class="autoreply-modal-header">
+            <span class="autoreply-modal-title">🤖 AI Auto-Reply Instructions</span>
+            <button class="autoreply-modal-close" id="closeAutoReplyModal">&times;</button>
+        </div>
+        <textarea 
+            class="autoreply-instructions" 
+            id="autoReplyInstructions" 
+            placeholder="e.g., Keep replies professional. Always ask how I can help. Max 2 sentences."
+        ></textarea>
+        <div class="autoreply-modal-footer">
+            <button class="autoreply-save-btn" id="saveAutoReplyBtn">Save & Activate</button>
         </div>
     </div>
+</div>
 
-    <!-- ✅ NEW: AI AUTO-REPLY MINI MODAL -->
-    <div class="autoreply-modal-overlay" id="autoReplyModalOverlay">
-        <div class="autoreply-modal">
-            <div class="autoreply-modal-header">
-                <span class="autoreply-modal-title">🤖 AI Auto-Reply Instructions</span>
-                <button class="autoreply-modal-close" id="closeAutoReplyModal">&times;</button>
-            </div>
-            <textarea 
-                class="autoreply-instructions" 
-                id="autoReplyInstructions" 
-                placeholder="e.g., Keep replies professional. Always ask how I can help. Max 2 sentences."
-            ></textarea>
-            <div class="autoreply-modal-footer">
-                <button class="autoreply-save-btn" id="saveAutoReplyBtn">Save & Activate</button>
-            </div>
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast">Please open a chat to access this feature.</div>
+
+<!-- ─── BOTTOM NAVIGATION (Updated to match history.html) ─── -->
+<nav class="bottom-nav">
+    <a href="page.html" class="nav-item nav-home">
+        <div class="home-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
         </div>
-    </div>
+    </a>
+    <a href="history.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 15"/>
+            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+            <polyline points="3 4 3 11 10 11"/>
+        </svg>
+        History
+    </a>
+    <a href="notifications.html" class="nav-item active">
+        <div class="nav-badge"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Inbox
+    </a>
+    <a href="dashboard.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+    </a>
+</nav>
 
-    <!-- ─── TOAST ─── -->
-    <div class="toast" id="toast">Please open a chat to access this feature.</div>
-
-    <!-- ─── BOTTOM NAVIGATION (Updated to match history.html) ─── -->
-    <nav class="bottom-nav">
-        <a href="page.html" class="nav-item nav-home">
-            <div class="home-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-            </div>
-        </a>
-        <a href="history.html" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <polyline points="12 7 12 12 15 15"/>
-                <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-                <polyline points="3 4 3 11 10 11"/>
-            </svg>
-            History
-        </a>
-        <a href="notifications.html" class="nav-item active">
-            <div class="nav-badge"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            Inbox
-        </a>
-        <a href="dashboard.html" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            Dashboard
-        </a>
-    </nav>
-
-    <script src="notifications.js"></script>
+<script src="notifications.js"></script>
 </body>
-                                                   </html>
+                    </html>
