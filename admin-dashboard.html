@@ -537,7 +537,7 @@
     if (!token) window.location.href = 'login.html';
 
     let currentMsgUserId = null;
-    // ── Dropdown ─────────────────────────────────────
+    // ── Dropdown ────────────────────────────────────
     function toggleDropdown() {
       document.getElementById('dd').classList.toggle('open');
     }
@@ -551,19 +551,19 @@
     // ── Load Users ────────────────────────────────────
     async function loadUsers() {
       const tbody = document.getElementById('userList');
-      tbody.innerHTML = `<tr><td colspan="4" class="table-empty">Loading users…</td></tr>`;
+      tbody.innerHTML = '<tr><td colspan="4" class="table-empty">Loading users\u2026</td></tr>';
       try {
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/users', {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!res.ok) throw new Error('Unauthorized or server error');
         const users = await res.json();
         tbody.innerHTML = '';
 
-        document.getElementById('userCount').textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
+        document.getElementById('userCount').textContent = users.length + ' user' + (users.length !== 1 ? 's' : '');
 
         if (users.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="table-empty">No users found.</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="4" class="table-empty">No users found.</td></tr>';
           return;
         }
 
@@ -572,31 +572,65 @@
           const isActive = !user.isSuspended;
           const suspendLabel = user.isSuspended ? 'Unsuspend' : 'Suspend';
           const suspendClass = user.isSuspended ? 'btn-unsuspend' : 'btn-suspend';
-          row.innerHTML = `
-            <td><strong>${escHtml(user.username)}</strong></td>
-            <td class="email">${escHtml(user.email)}</td>
-            <td>
-              <span class="status-badge ${isActive ? 'active' : 'suspended'}">
-                ${isActive ? 'Active' : 'Suspended'}
-              </span>
-            </td>
-            <td>
-              <div class="actions">
-                <button class="action-btn btn-view" onclick="openGodMode('${user._id}')">View Chat</button>
-                <button class="action-btn btn-msg" onclick="openMsgModal('${user._id}', '${escHtml(user.username)}')">Message</button>
-                <button class="action-btn ${suspendClass}" onclick="toggleSuspend('${user._id}', ${user.isSuspended})">${suspendLabel}</button>
-                <button class="action-btn btn-delete" onclick="deleteUser('${user._id}')">Delete</button>
-              </div>            </td>
-          `;
+
+          const tdName = document.createElement('td');
+          const strong = document.createElement('strong');
+          strong.textContent = user.username;
+          tdName.appendChild(strong);
+
+          const tdEmail = document.createElement('td');
+          tdEmail.className = 'email';
+          tdEmail.textContent = user.email;
+
+          const tdStatus = document.createElement('td');
+          const badge = document.createElement('span');
+          badge.className = 'status-badge ' + (isActive ? 'active' : 'suspended');
+          badge.textContent = isActive ? 'Active' : 'Suspended';
+          tdStatus.appendChild(badge);
+
+          const tdActions = document.createElement('td');
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'actions';
+
+          const btnView = document.createElement('button');
+          btnView.className = 'action-btn btn-view';
+          btnView.textContent = 'View Chat';
+          btnView.onclick = function() { openGodMode(user._id); };
+
+          const btnMsg = document.createElement('button');
+          btnMsg.className = 'action-btn btn-msg';
+          btnMsg.textContent = 'Message';
+          btnMsg.onclick = function() { openMsgModal(user._id, user.username); };
+
+          const btnSuspend = document.createElement('button');
+          btnSuspend.className = 'action-btn ' + suspendClass;
+          btnSuspend.textContent = suspendLabel;
+          btnSuspend.onclick = function() { toggleSuspend(user._id, user.isSuspended); };
+
+          const btnDelete = document.createElement('button');
+          btnDelete.className = 'action-btn btn-delete';
+          btnDelete.textContent = 'Delete';
+          btnDelete.onclick = function() { deleteUser(user._id); };
+
+          actionsDiv.appendChild(btnView);
+          actionsDiv.appendChild(btnMsg);
+          actionsDiv.appendChild(btnSuspend);
+          actionsDiv.appendChild(btnDelete);
+          tdActions.appendChild(actionsDiv);
+
+          row.appendChild(tdName);
+          row.appendChild(tdEmail);
+          row.appendChild(tdStatus);
+          row.appendChild(tdActions);
           tbody.appendChild(row);
         });
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" class="table-empty" style="color:var(--danger)">Error: ${escHtml(err.message)}</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="4" class="table-empty" style="color:var(--danger)">Error loading users.</td></tr>';
       }
     }
 
     function openGodMode(userId) {
-      window.open(`admin-view-chat.html?uid=${userId}`, '_blank');
+      window.open('admin-view-chat.html?uid=' + encodeURIComponent(userId), '_blank');
     }
 
     // ── Send Message Logic ────────────────────────────
@@ -613,59 +647,60 @@
       const statusDiv = document.getElementById('msgStatus');
       
       if (!content) {
-        statusDiv.textContent = "Message cannot be empty.";
-        statusDiv.style.color = "var(--danger)";
+        statusDiv.textContent = 'Message cannot be empty.';
+        statusDiv.style.color = 'var(--danger)';
         return;
       }
 
-      statusDiv.textContent = "Sending...";
-      statusDiv.style.color = "var(--text-2)";
+      statusDiv.textContent = 'Sending...';
+      statusDiv.style.color = 'var(--text-2)';
 
       try {
-        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/admin/users/${currentMsgUserId}/message`, {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/users/' + encodeURIComponent(currentMsgUserId) + '/message', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
+            'Authorization': 'Bearer ' + token 
           },
           body: JSON.stringify({ messageContent: content })
         });
 
         if (res.ok) {
-          statusDiv.textContent = "Sent successfully!";
-          statusDiv.style.color = "var(--accent)";
-          setTimeout(() => closeModal('msgModal'), 1000);
-        } else {          throw new Error("Failed");
+          statusDiv.textContent = 'Sent successfully!';
+          statusDiv.style.color = 'var(--accent)';
+          setTimeout(function() { closeModal('msgModal'); }, 1000);
+        } else {
+          throw new Error('Failed');
         }
       } catch (err) {
-        statusDiv.textContent = "Error sending message.";
-        statusDiv.style.color = "var(--danger)";
+        statusDiv.textContent = 'Error sending message.';
+        statusDiv.style.color = 'var(--danger)';
       }
     }
 
     // ── Suspend/Delete Logic ──────────────────────────
     async function toggleSuspend(id, isSuspended) {
-      if (!confirm(`${isSuspended ? 'Unsuspend' : 'Suspend'} this user?`)) return;
+      if (!confirm((isSuspended ? 'Unsuspend' : 'Suspend') + ' this user?')) return;
       try {
-        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/admin/users/${id}/suspend`, {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/users/' + encodeURIComponent(id) + '/suspend', {
           method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!res.ok) throw new Error('Request failed');
         loadUsers();
-      } catch { alert('Failed to update user status.'); }
+      } catch (e) { alert('Failed to update user status.'); }
     }
 
     async function deleteUser(id) {
       if (!confirm('Permanently delete this user? This cannot be undone.')) return;
       try {
-        const res = await fetch(`https://skylineapp-backend-file.onrender.com/api/admin/users/${id}`, {
+        const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/users/' + encodeURIComponent(id), {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!res.ok) throw new Error('Request failed');
         loadUsers();
-      } catch { alert('Failed to delete user.'); }
+      } catch (e) { alert('Failed to delete user.'); }
     }
 
     // ── Reports Modal ─────────────────────────────────
@@ -675,40 +710,60 @@
       const list = document.getElementById('reportList');
       const badge = document.getElementById('reportCountBadge');
       modal.classList.add('open');
-      list.innerHTML = `<p style="text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:13px; padding:32px 0;">Loading…</p>`;
-      badge.textContent = '—';
+      list.innerHTML = '<p style="text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:13px; padding:32px 0;">Loading\u2026</p>';
+      badge.textContent = '\u2014';
 
       try {
         const res = await fetch('https://skylineapp-backend-file.onrender.com/api/admin/reports', {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!res.ok) throw new Error('Failed to load');
         const reports = await res.json();
-        badge.textContent = `${reports.length}`;
+        badge.textContent = String(reports.length);
         if (reports.length === 0) {
-          list.innerHTML = `<p style="text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:13px; padding:32px 0;">No reports found.</p>`;
+          list.innerHTML = '<p style="text-align:center; color:var(--text-3); font-family:var(--font-mono); font-size:13px; padding:32px 0;">No reports found.</p>';
           return;
         }
 
         list.innerHTML = '';
-        reports.forEach(r => {
+        reports.forEach(function(r) {
           const date = new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
           const div = document.createElement('div');
           div.className = 'report-item';
-          div.innerHTML = `
-            <div class="report-header">
-              <span class="report-subject">${escHtml(r.subject)}</span>
-              <div class="report-meta">
-                <span class="report-user">${escHtml(r.username)}</span>
-                <span class="report-date">${date}</span>
-              </div>
-            </div>
-            <div class="report-msg">${escHtml(r.message)}</div>
-          `;
+
+          const header = document.createElement('div');
+          header.className = 'report-header';
+
+          const subject = document.createElement('span');
+          subject.className = 'report-subject';
+          subject.textContent = r.subject;
+
+          const meta = document.createElement('div');
+          meta.className = 'report-meta';
+
+          const userBadge = document.createElement('span');
+          userBadge.className = 'report-user';
+          userBadge.textContent = r.username;
+
+          const dateSpan = document.createElement('span');
+          dateSpan.className = 'report-date';
+          dateSpan.textContent = date;
+
+          meta.appendChild(userBadge);
+          meta.appendChild(dateSpan);
+          header.appendChild(subject);
+          header.appendChild(meta);
+
+          const msg = document.createElement('div');
+          msg.className = 'report-msg';
+          msg.textContent = r.message;
+
+          div.appendChild(header);
+          div.appendChild(msg);
           list.appendChild(div);
         });
-      } catch {
-        list.innerHTML = `<p style="text-align:center; color:var(--danger); font-family:var(--font-mono); font-size:13px; padding:32px 0;">Failed to load reports.</p>`;
+      } catch (e) {
+        list.innerHTML = '<p style="text-align:center; color:var(--danger); font-family:var(--font-mono); font-size:13px; padding:32px 0;">Failed to load reports.</p>';
       }
     }
 
@@ -723,20 +778,27 @@
     }
 
     // ── Utilities ─────────────────────────────────────
+    // ✅ FIX #4-#7: escHtml now properly encodes HTML entities.
+    // Old code replaced & with &, < with <, etc. — replacing each char with itself (no-op).
+    // New code replaces & with &amp;, < with &lt;, > with &gt;, " with &quot;, ' with &#39;.
+    // NOTE: escHtml is no longer used for DOM insertion since we switched to textContent.
+    // It is kept as a utility for any future string-based HTML construction.
     function escHtml(str) {
       return String(str)
-        .replace(/&/g, '&')
-        .replace(/</g, '<')
-        .replace(/>/g, '>')
-        .replace(/"/g, '"');
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     function logout() {
       localStorage.removeItem('token');
-      window.location.href = 'login.html';    }
+      window.location.href = 'login.html';
+    }
 
     // ── Init ─────────────────────────────────────────
     loadUsers();
   </script>
 </body>
-</html>
+  </html>
