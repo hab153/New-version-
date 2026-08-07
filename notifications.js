@@ -56,7 +56,7 @@ var afCurrentStatus = document.getElementById('afCurrentStatus');
 var afSelectedDays = 3;
 var afCurrentEnabledState = false;
 
-// ─── STATE ─
+// ─── STATE 
 var allContacts = [];
 var toastTimeout = null;
 var currentLeadId = null;
@@ -222,7 +222,6 @@ function loadFollowUpStatusForModal() {
         return;
     }
 
-    // ✅ PERF: Use cached status if fresh
     var cached = _cachedFollowUpStatus[currentLeadId];
     if (cached && (Date.now() - cached.time) < FOLLOWUP_CACHE_TTL) {
         afCurrentEnabledState = cached.data.autoFollowUpEnabled || false;
@@ -325,6 +324,9 @@ chatBack.addEventListener('click', function() {
     chatView.classList.remove('active');
     document.body.style.overflow = '';
     currentLeadId = null;
+    // ✅ SSE: Stop listening for this chat's updates when going back
+    disconnectSSE();
+    connectSSE();
 });
 
 // ── CHAT INPUT ───
@@ -388,7 +390,6 @@ function renameLead(leadId, newName) {
             chatName.textContent = data.newName;
             chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
             showToast('Renamed successfully!');
-            // ✅ PERF: Invalidate caches after rename
             _cachedContacts = null;
             _cachedContactsTime = 0;
             loadContacts(true);
@@ -439,7 +440,6 @@ function sendMessage() {
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.success) {
-            // ✅ PERF: Invalidate chat history cache after sending
             delete _cachedChatHistory[currentLeadId];
             loadChatHistory(currentLeadId);
             
@@ -497,7 +497,6 @@ function appendMessage(from, content, date) {
 function loadChatHistory(leadId) {
     messagesContainer.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;"><div class="spinner" style="width:28px; height:28px; border-width:2px;"></div><div style="color:#505050; font-size:11px; letter-spacing:0.05em;">Loading messages...</div></div>';
 
-    // ✅ PERF: Use cached chat history if fresh
     var cached = _cachedChatHistory[leadId];
     if (cached && (Date.now() - cached.time) < CHAT_HISTORY_CACHE_TTL) {
         renderChatMessages(cached.data);
@@ -556,7 +555,6 @@ function renderChatMessages(messages) {
 // ── ✅ OPEN CHAT — loads status in parallel
 function openChat(leadId, name, email) {
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
-        // ✅ PERF: Load all 3 in parallel instead of sequential
         Promise.all([
             loadChatHistory(leadId),
             loadFollowUpStatus(),
@@ -582,9 +580,6 @@ function openChat(leadId, name, email) {
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
-    // ✅ PERF #2: Fire all 3 API calls in PARALLEL instead of one-by-one
-    // Old: loadFollowUpStatus() → wait → loadChatHistory() → wait → loadAutoReplyStatus() = 3x slower
-    // New: all 3 fire at the same time = 1x speed
     Promise.all([
         loadFollowUpStatus(),
         loadChatHistory(leadId),
@@ -596,13 +591,11 @@ function openChat(leadId, name, email) {
 // FOLLOW-UP FUNCTIONS
 // ============================================================
 
-// ─── ✅ LOAD FOLLOW-UP STATUS — with caching
 function loadFollowUpStatus() {
     if (!currentLeadId) {
         return Promise.resolve();
     }
 
-    // ✅ PERF: Use cached status if fresh
     var cached = _cachedFollowUpStatus[currentLeadId];
     if (cached && (Date.now() - cached.time) < FOLLOWUP_CACHE_TTL) {
         var data = cached.data;
@@ -657,7 +650,6 @@ function loadFollowUpStatus() {
     });
 }
 
-// ── SUGGEST FOLLOW-UP ──
 function suggestFollowUp() {
     if (!currentLeadId) {
         showToast('Open a chat first to get a follow-up suggestion.');
@@ -705,7 +697,6 @@ function suggestFollowUp() {
     });
 }
 
-// ─── ✅ GENERATE AI HINT — parallel fetches
 function generateHint() {
     if (!currentLeadId) {
         showToast('Open a chat first to get a hint.');
@@ -714,7 +705,6 @@ function generateHint() {
 
     showToast('Generating AI hint...');
 
-    // ✅ PERF: Fetch conversation history first, then suggestion
     fetch(BACKEND + '/api/conversations/' + encodeURIComponent(currentLeadId), {
         headers: { 'Authorization': 'Bearer ' + token }
     })
@@ -783,7 +773,6 @@ function generateHint() {
     });
 }
 
-// ─── ✅ TOGGLE AUTO FOLLOW-UP
 function toggleAutoFollowUp(days, forceState) {
     if (!currentLeadId) {
         showToast('Open a chat first to manage auto follow-up.');
@@ -795,7 +784,6 @@ function toggleAutoFollowUp(days, forceState) {
     var currentStatus = afCurrentEnabledState;
     var newStatus = typeof forceState !== 'undefined' ? forceState : !currentStatus;
 
-    // Update UI instantly (optimistic update)
     afCurrentEnabledState = newStatus;
     updateModalStatus(afCurrentEnabledState);
 
@@ -818,7 +806,6 @@ function toggleAutoFollowUp(days, forceState) {
             var errorMessage = 'Failed to toggle auto follow-up.';
             return res.json().then(function(err) {
                 errorMessage = err.message || err.error || errorMessage;
-                // Revert UI
                 afCurrentEnabledState = !newStatus;
                 updateModalStatus(afCurrentEnabledState);
                 showToast(errorMessage);
@@ -834,7 +821,6 @@ function toggleAutoFollowUp(days, forceState) {
         if (!data) return;
         if (data.success) {
             afCurrentEnabledState = data.autoFollowUpEnabled;
-            // ✅ PERF: Invalidate follow-up cache after toggle
             delete _cachedFollowUpStatus[currentLeadId];
             updateModalStatus(afCurrentEnabledState);
             
@@ -857,7 +843,6 @@ function toggleAutoFollowUp(days, forceState) {
     });
 }
 
-// ─── CATEGORY CONFIG ───
 var CATEGORY_CONFIG = {
     contacted: { label: 'Contacted', icon: '\ud83d\udd35', color: '#66ddff' },
     replied: { label: 'Replied', icon: '\ud83d\udfe2', color: '#66dd99' },
@@ -866,7 +851,6 @@ var CATEGORY_CONFIG = {
     win: { label: 'Win', icon: '\ud83d\udd34', color: '#ff6b6b' }
 };
 
-// ─── FETCH REVENUE DATA ───
 function fetchRevenueData() {
     revenueModal.classList.add('active');
     revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
@@ -903,7 +887,6 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// ── RENDER REVENUE DATA ──
 function renderRevenueData(data) {
     var tier = data.tier || 'free';
     tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
@@ -997,17 +980,14 @@ function renderRevenueData(data) {
     revenueBody.innerHTML = html;
 }
 
-// ─── OPEN CHAT FROM REVENUE MODAL ───
 function openChatFromRevenue(leadId, name, email) {
     revenueModal.classList.remove('active');
     openChat(leadId, name, email);
 }
 
-// ── ✅ LOAD CONTACTS — with caching
 function loadContacts(forceRefresh) {
     var now_ts = Date.now();
 
-    // ✅ PERF: Use cached contacts if fresh
     if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
         allContacts = _cachedContacts;
         renderContacts(allContacts);
@@ -1101,7 +1081,6 @@ function showEmptyState() {
     noResults.classList.remove('active');
 }
 
-// ─── AI HINT FROM DROPDOWN ───
 var hintOption = document.querySelector('.chat-followup-option[data-action="hint"]');
 if (hintOption) {
     hintOption.addEventListener('click', function() {
@@ -1144,7 +1123,6 @@ function updateAutoReplyButtonUI() {
     }
 }
 
-// Toggle: If active → turn off immediately. If inactive → open modal.
 chatAutoReplyBtn.addEventListener('click', function() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
     
@@ -1168,13 +1146,11 @@ chatAutoReplyBtn.addEventListener('click', function() {
     }
 });
 
-// Close modal
 closeAutoReplyModal.addEventListener('click', function() { autoReplyModalOverlay.classList.remove('show'); });
 autoReplyModalOverlay.addEventListener('click', function(e) {
     if (e.target === autoReplyModalOverlay) autoReplyModalOverlay.classList.remove('show');
 });
 
-// Save instructions & activate
 saveAutoReplyBtn.addEventListener('click', function() {
     var instructions = autoReplyInstructions.value.trim();
     if (!instructions) { showToast('Please enter instructions first.'); return; }
@@ -1197,7 +1173,6 @@ saveAutoReplyBtn.addEventListener('click', function() {
     .catch(function() { showToast('Connection error while saving'); });
 });
 
-// Legacy menu item handler for auto-reply
 function openAutoReplyModal() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
     if (isAutoReplyActive) {
@@ -1208,6 +1183,146 @@ function openAutoReplyModal() {
     }
 }
 
-// ── ✅ PERF #3: START — load contacts immediately
-// Benefits from server-side cache + gzip + keep-alive already configured in server.js
+// ============================================================
+// ✅ SSE: REAL-TIME MESSAGE DELIVERY — Instant (< 1 second)
+// When a customer replies, the server pushes it to your browser instantly.
+// No polling. No refresh. Message appears in under 1 second.
+// ============================================================
+
+var _eventSource = null;
+var _sseReconnectTimer = null;
+var _sseConnected = false;
+var _sseLastMessageId = '';
+
+function connectSSE() {
+    // Close existing connection if any
+    if (_eventSource) {
+        try { _eventSource.close(); } catch (e) {}
+        _eventSource = null;
+    }
+
+    if (!token) return;
+
+    console.log('\ud83d\udce1 [SSE] Connecting to real-time stream...');
+
+    // EventSource can't send custom headers, so token goes in query string
+    // server.js has middleware that reads it and sets Authorization header
+    _eventSource = new EventSource(BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
+
+    _eventSource.onopen = function() {
+        console.log('\ud83d\udce1 [SSE] Connected! Real-time messages enabled.');
+        _sseConnected = true;
+        if (_sseReconnectTimer) {
+            clearTimeout(_sseReconnectTimer);
+            _sseReconnectTimer = null;
+        }
+    };
+
+    _eventSource.onmessage = function(e) {
+        try {
+            var data = JSON.parse(e.data);
+            handleSSEEvent(data);
+        } catch (err) {
+            console.error('\ud83d\udce1 [SSE] Parse error:', err);
+        }
+    };
+
+    _eventSource.onerror = function() {
+        console.warn('\ud83d\udce1 [SSE] Connection lost, reconnecting in 5 seconds...');
+        _sseConnected = false;
+        try { _eventSource.close(); } catch (ex) {}
+        _eventSource = null;
+
+        if (_sseReconnectTimer) clearTimeout(_sseReconnectTimer);
+        _sseReconnectTimer = setTimeout(function() {
+            connectSSE();
+        }, 5000);
+    };
+}
+
+function handleSSEEvent(data) {
+    if (!data || !data.type) return;
+
+    switch (data.type) {
+        case 'connected':
+            console.log('\ud83d\udce1 [SSE] Server confirmed connection at:', new Date(data.time).toLocaleTimeString());
+            break;
+
+        case 'new_message':
+            console.log('\ud83d\udce1 [SSE] New message received for lead:', data.leadId);
+
+            // Prevent duplicate processing of the same message
+            if (data.messageId && data.messageId === _sseLastMessageId) {
+                console.log('\ud83d\udce1 [SSE] Duplicate message skipped:', data.messageId);
+                return;
+            }
+            if (data.messageId) _sseLastMessageId = data.messageId;
+
+            // If this message is for the currently open chat — show it instantly
+            if (currentLeadId && data.leadId === currentLeadId) {
+                // Invalidate chat history cache so next full reload gets fresh data
+                delete _cachedChatHistory[currentLeadId];
+
+                // Determine the sender role
+                var senderRole = 'customer';
+                if (data.sent || data.fromEmail === '') {
+                    senderRole = 'lead'; // It's our sent message or auto-reply
+                }
+
+                // Append the new message directly to the chat — instant, no API call needed
+                appendMessage(senderRole, data.content, data.date);
+
+                // Show toast notification
+                if (data.autoReply) {
+                    showToast('\ud83e\udd16 AI Auto-Reply sent to ' + (data.leadName || 'customer') + '!');
+                } else if (data.sent) {
+                    showToast('\u2709\ufe0f Email sent to ' + (data.leadName || 'customer') + '!');
+                } else {
+                    showToast('\ud83d\udcac New reply from ' + (data.leadName || 'customer') + '!');
+                }
+
+                // Also do a full history reload in background after 500ms to stay perfectly in sync
+                setTimeout(function() {
+                    if (currentLeadId === data.leadId) {
+                        loadChatHistory(currentLeadId);
+                    }
+                }, 500);
+            }
+
+            // Always refresh the contact list to update preview text + timestamps
+            _cachedContacts = null;
+            _cachedContactsTime = 0;
+            loadContacts(true);
+            break;
+
+        case 'connection_expired':
+            showToast('\u26a0\ufe0f ' + (data.message || 'Email connection expired. Please reconnect.'));
+            // Refresh status bar if on a page that shows it
+            _cachedContacts = null;
+            _cachedContactsTime = 0;
+            loadContacts(true);
+            break;
+
+        default:
+            console.log('\ud83d\udce1 [SSE] Unknown event type:', data.type);
+    }
+}
+
+function disconnectSSE() {
+    if (_eventSource) {
+        try { _eventSource.close(); } catch (e) {}
+        _eventSource = null;
+    }
+    if (_sseReconnectTimer) {
+        clearTimeout(_sseReconnectTimer);
+        _sseReconnectTimer = null;
+    }
+    _sseConnected = false;
+}
+
+// Clean up SSE connection when user leaves the page
+window.addEventListener('beforeunload', disconnectSSE);
+
+// ── START EVERYTHING ───
 loadContacts();
+connectSSE();
