@@ -325,7 +325,6 @@ function closeChatAndGoBack() {
     document.body.classList.remove('chat-active');
     document.body.style.overflow = '';
     currentLeadId = null;
-    // Reconnect SSE for general updates
     disconnectSSE();
     connectSSE();
 }
@@ -409,7 +408,7 @@ function renameLead(leadId, newName) {
     });
 }
 
-// ── SEND MESSAGE ──
+// ── ✅ SEND MESSAGE — Optimistic UI (WhatsApp-style instant display) ──
 function sendMessage() {
     var text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
@@ -420,6 +419,9 @@ function sendMessage() {
     var originalText = text;
     chatInput.value = '';
     chatInput.style.height = 'auto';
+
+    // ✅ STEP 1: Show message INSTANTLY before server responds (optimistic UI)
+    appendMessage('lead', originalText, new Date().toISOString());
 
     var payload = {
         leads: [{
@@ -435,6 +437,7 @@ function sendMessage() {
         allowNewLead: false
     };
 
+    // ✅ STEP 2: Send to server in background
     fetch(BACKEND + '/api/leads/batch-send', {
         method: 'POST',
         headers: { 
@@ -446,8 +449,11 @@ function sendMessage() {
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.success) {
+            // ✅ STEP 3: Server confirmed — sync with full history in background
             delete _cachedChatHistory[currentLeadId];
-            loadChatHistory(currentLeadId);
+            setTimeout(function() {
+                loadChatHistory(currentLeadId);
+            }, 500);
             
             setTimeout(function() {
                 _cachedContacts = null;
@@ -455,14 +461,14 @@ function sendMessage() {
                 loadContacts(true); 
             }, 800);
         } else {
-            chatInput.value = originalText;
+            // Server rejected — message stays visible but show error toast
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(function(err) {
         console.error('Network Error:', err);
-        chatInput.value = originalText;
-        showToast('Connection error. Please try again.');
+        // Network failed — message stays visible but show error toast
+        showToast('Connection error. Message may not have been sent.');
     })
     .finally(function() {
         isSending = false;
@@ -578,7 +584,6 @@ function openChat(leadId, name, email) {
     chatEmail.textContent = currentLeadEmail || 'No email provided';
     
     chatView.classList.add('active');
-    // ✅ Hide logo + menu when chat is open
     document.body.classList.add('chat-active');
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
@@ -588,7 +593,6 @@ function openChat(leadId, name, email) {
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
-    // Push browser history state so phone back button goes to contact list
     history.pushState({ chatOpen: true }, '', window.location.href);
 
     Promise.all([
@@ -1322,9 +1326,7 @@ window.addEventListener('beforeunload', disconnectSSE);
 // ✅ PHONE BACK BUTTON: If chat is open, go back to contact list instead of page.html
 window.addEventListener('popstate', function(e) {
     if (chatView.classList.contains('active')) {
-        // Prevent navigation away — close chat instead
         closeChatAndGoBack();
-        // Re-push state so next back press also stays on this page
         history.pushState(null, '', window.location.href);
     }
 });
@@ -1332,5 +1334,4 @@ window.addEventListener('popstate', function(e) {
 // ── START EVERYTHING ───
 loadContacts();
 connectSSE();
-// Push initial state so popstate listener works
 history.pushState(null, '', window.location.href);
