@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skyline AA-1 – AI Sales & Lead Assistant</title>
     <meta name="description" content="AI that finds leads, writes personalized emails, auto-replies, and follows up – all in one inbox. Start free.">
-    <!-- ✅ XSS PROTECTION LIBRARY -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,8 +19,6 @@
             --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --mono: 'Monaco', 'Menlo', monospace;
-            --nav-h: 68px; --top-h: 54px; --bar-h: 30px;
-            --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
         }
         body {
             background-color: var(--void);
@@ -31,8 +28,7 @@
             line-height: 1.5;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
+            min-height: 100vh;
         }
         body::before {
             content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -51,11 +47,8 @@
             padding: 0 24px; 
             width: 100%; 
             flex: 1;
-            overflow-y: auto;
-            padding-bottom: calc(var(--nav-h) + 20px); /* Space for fixed nav */
         }
         
-        /* Enhanced Navigation */
         .nav { 
             display: flex; 
             justify-content: space-between; 
@@ -91,7 +84,6 @@
         .btn-outline { background: transparent; border: 1px solid var(--br-dim); padding: 8px 18px; border-radius: 40px; color: var(--t1); font-weight: 500; transition: all 0.2s; }
         .btn-outline:hover { background: var(--br-dim); border-color: var(--gold); }
         
-        /* Enhanced Hero Section */
         .hero { 
             text-align: center; 
             padding: 80px 0 60px; 
@@ -159,29 +151,10 @@
             background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%);
             pointer-events: none;
         }
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-        .btn-primary:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 10px 20px rgba(255,255,255,0.15); 
-        }
-        .btn-secondary { 
-            background: transparent; 
-            border: 1px solid var(--br-dim); 
-            color: var(--t1); 
-            padding: 12px 28px; 
-            border-radius: 40px; 
-            font-weight: 500; 
-            text-decoration: none; 
-            transition: all 0.2s; 
-        }
-        .btn-secondary:hover { 
-            background: var(--br-dim); 
-            border-color: var(--gold); 
-        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.15); }
+        .btn-secondary { background: transparent; border: 1px solid var(--br-dim); color: var(--t1); padding: 12px 28px; border-radius: 40px; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+        .btn-secondary:hover { background: var(--br-dim); border-color: var(--gold); }
         
-        /* Trust Indicators */
         .trust-badges {
             display: flex;
             justify-content: center;
@@ -192,451 +165,91 @@
             transform: translateY(20px);
             animation: fadeInUp 0.8s ease-out 0.6s forwards;
         }
-        .badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: var(--t2);
-        }
-        .badge-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--br-dim);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .badge-icon svg {
-            width: 12px;
-            height: 12px;
-            stroke: var(--gold);
-        }
+        .badge { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--t2); }
+        .badge-icon { width: 24px; height: 24px; background: var(--br-dim); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .badge-icon svg { width: 12px; height: 12px; stroke: var(--gold); }
         
-        /* Features Section */
-        .features { 
-            padding: 60px 0; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 32px; 
-        }
-        .feature-card { 
-            background: var(--card); 
-            border: 1px solid var(--br-dim); 
-            border-radius: 20px; 
-            padding: 28px 24px; 
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--gold);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
-        }
-        .feature-card:hover::before {
-            transform: scaleX(1);
-        }
-        .feature-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .feature-icon { 
-            width: 48px; 
-            height: 48px; 
-            background: rgba(255,255,255,0.05); 
-            border-radius: 16px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin-bottom: 20px; 
-        }
-        .feature-icon svg { 
-            width: 24px; 
-            height: 24px; 
-            stroke: var(--gold); 
-            stroke-width: 1.5; 
-        }
-        .feature-card h3 { 
-            font-size: 20px; 
-            font-weight: 700; 
-            margin-bottom: 10px; 
-        }
-        .feature-card p { 
-            color: var(--t2); 
-            font-size: 14px; 
-            line-height: 1.5; 
-        }
+        .features { padding: 60px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+        .feature-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: 20px; padding: 28px 24px; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+        .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .feature-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .feature-icon svg { width: 24px; height: 24px; stroke: var(--gold); stroke-width: 1.5; }
+        .feature-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+        .feature-card p { color: var(--t2); font-size: 14px; line-height: 1.5; }
         
-        /* Testimonials */
-        .testimonials {
-            padding: 60px 0;
-            text-align: center;
-        }
-        .testimonial-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-top: 30px;
-        }
-        .testimonial-card {
-            background: var(--card);
-            border: 1px solid var(--br-dim);
-            border-radius: 20px;
-            padding: 24px;
-            text-align: left;
-        }
-        .testimonial-text {
-            font-style: italic;
-            color: var(--t1);
-            margin-bottom: 16px;
-            position: relative;
-            padding-left: 20px;
-        }
-        .testimonial-text::before {
-            content: """;
-            position: absolute;
-            left: 0;
-            top: -10px;
-            font-size: 60px;
-            color: var(--br-dim);
-            line-height: 1;
-        }
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .author-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--br-dim);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        .author-info h4 {
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-        .author-info p {
-            font-size: 12px;
-            color: var(--t2);
-        }
+        .testimonials { padding: 60px 0; text-align: center; }
+        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 30px; }
+        .testimonial-card { background: var(--card); border: 1px solid var(--br-dim); border-radius: 20px; padding: 24px; text-align: left; }
+        .testimonial-text { font-style: italic; color: var(--t1); margin-bottom: 16px; position: relative; padding-left: 20px; }
+        .testimonial-text::before { content: "\201C"; position: absolute; left: 0; top: -10px; font-size: 60px; color: var(--br-dim); line-height: 1; }
+        .testimonial-author { display: flex; align-items: center; gap: 12px; }
+        .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--br-dim); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .author-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .author-info p { font-size: 12px; color: var(--t2); }
         
-        /* Pricing Section */
-        .pricing { 
-            text-align: center; 
-            padding: 60px 0 80px; 
-        }
-        .pricing h2 { 
-            font-size: 32px; 
-            font-weight: 700; 
-            margin-bottom: 12px; 
-        }
-        .pricing-sub { 
-            color: var(--t2); 
-            margin-bottom: 48px; 
-        }
-        .pricing-grid { 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 24px; 
-            position: relative;
-        }
-        .plan { 
-            background: var(--card); 
-            border: 1px solid var(--br-dim); 
-            border-radius: 24px; 
-            padding: 32px 24px; 
-            width: 280px; 
-            transition: all 0.2s; 
-            position: relative;
-            overflow: hidden;
-        }
-        .popular-tag {
-            position: absolute;
-            top: -10px;
-            right: -30px;
-            background: var(--gold);
-            color: #000;
-            padding: 4px 30px;
-            font-size: 12px;
-            font-weight: 600;
-            transform: rotate(45deg);
-        }
-        .plan.popular { 
-            border-color: var(--gold); 
-            background: rgba(255,255,255,0.02);
-            transform: scale(1.05);
-            z-index: 10;
-        }
-        .plan.popular:hover {
-            transform: scale(1.07);
-        }
-        .plan-name { 
-            font-size: 24px; 
-            font-weight: 700; 
-            margin-bottom: 8px; 
-        }
-        .plan-price { 
-            font-size: 36px; 
-            font-weight: 800; 
-            margin: 16px 0; 
-        }
-        .plan-price span { 
-            font-size: 14px; 
-            font-weight: 400; 
-            color: var(--t2); 
-        }
-        .plan-features { 
-            list-style: none; 
-            margin: 20px 0 30px; 
-        }
-        .plan-features li { 
-            margin: 12px 0; 
-            font-size: 14px; 
-            color: var(--t2); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        .plan-features li::before { 
-            content: "✓"; 
-            color: var(--gold); 
-            font-weight: bold; 
-        }
-        .plan-btn { 
-            background: var(--br-dim); 
-            border: none; 
-            border-radius: 40px; 
-            padding: 10px 20px; 
-            width: 100%; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: background 0.2s; 
-            color: var(--t1); 
-        }
-        .plan-btn:hover { 
-            background: var(--gold); 
-            color: #000; 
-        }
+        .pricing { text-align: center; padding: 60px 0 80px; }
+        .pricing h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+        .pricing-sub { color: var(--t2); margin-bottom: 48px; }
+        .pricing-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; position: relative; }
+        .plan { background: var(--card); border: 1px solid var(--br-dim); border-radius: 24px; padding: 32px 24px; width: 280px; transition: all 0.2s; position: relative; overflow: hidden; }
+        .popular-tag { position: absolute; top: -10px; right: -30px; background: var(--gold); color: #000; padding: 4px 30px; font-size: 12px; font-weight: 600; transform: rotate(45deg); }
+        .plan.popular { border-color: var(--gold); background: rgba(255,255,255,0.02); transform: scale(1.05); z-index: 10; }
+        .plan.popular:hover { transform: scale(1.07); }
+        .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .plan-price { font-size: 36px; font-weight: 800; margin: 16px 0; }
+        .plan-price span { font-size: 14px; font-weight: 400; color: var(--t2); }
+        .plan-features { list-style: none; margin: 20px 0 30px; }
+        .plan-features li { margin: 12px 0; font-size: 14px; color: var(--t2); display: flex; align-items: center; gap: 8px; }
+        .plan-features li::before { content: "✓"; color: var(--gold); font-weight: bold; }
+        .plan-btn { background: var(--br-dim); border: none; border-radius: 40px; padding: 10px 20px; width: 100%; font-weight: 600; cursor: pointer; transition: background 0.2s; color: var(--t1); }
+        .plan-btn:hover { background: var(--gold); color: #000; }
         
-        /* Enhanced Signup Section */
         .signup-section {
-            background: var(--card); 
-            border: 1px solid var(--br-dim); 
-            border-radius: 32px; 
-            padding: 48px 40px; 
-            margin: 40px 0 60px;
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 48px; 
-            align-items: center; 
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
+            background: var(--card); border: 1px solid var(--br-dim); border-radius: 32px; padding: 48px 40px; margin: 40px 0 60px;
+            display: flex; flex-wrap: wrap; gap: 48px; align-items: center; justify-content: space-between; position: relative; overflow: hidden;
         }
-        .signup-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--gold), transparent);
-        }
-        .signup-text { 
-            flex: 1; 
-        }
-        .signup-text h2 { 
-            font-size: 28px; 
-            font-weight: 700; 
-            margin-bottom: 12px; 
-        }
-        .signup-text p { 
-            color: var(--t2); 
-            margin-bottom: 16px; 
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-top: 16px;
-        }
-        .stat-item {
-            text-align: center;
-            padding: 12px;
-        }
-        .stat-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gold);
-        }
-        .stat-label {
-            font-size: 12px;
-            color: var(--t2);
-        }
-        .signup-form { 
-            flex: 1; 
-            min-width: 280px; 
-        }
-        .form-field { 
-            margin-bottom: 16px; 
-            position: relative;
-        }
+        .signup-section::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: linear-gradient(180deg, var(--gold), transparent); }
+        .signup-text { flex: 1; }
+        .signup-text h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+        .signup-text p { color: var(--t2); margin-bottom: 16px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+        .stat-item { text-align: center; padding: 12px; }
+        .stat-value { font-size: 20px; font-weight: 700; color: var(--gold); }
+        .stat-label { font-size: 12px; color: var(--t2); }
+        .signup-form { flex: 1; min-width: 280px; }
+        .form-field { margin-bottom: 16px; position: relative; }
         .form-field input {
-            width: 100%; 
-            padding: 12px 14px; 
-            background: var(--input-bg); 
-            border: 1px solid var(--input-border); 
-            border-radius: 12px;
-            color: var(--t1); 
-            font-family: inherit; 
-            font-size: 14px; 
-            outline: none;
-            transition: border-color 0.2s;
+            width: 100%; padding: 12px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px;
+            color: var(--t1); font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s;
         }
-        .form-field input:focus { 
-            border-color: var(--accent); 
-            background: rgba(255,255,255,0.03); 
-        }
-        .password-strength {
-            height: 4px;
-            background: var(--input-bg);
-            border-radius: 2px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        .strength-meter {
-            height: 100%;
-            width: 0;
-            background: var(--error);
-            transition: width 0.3s, background 0.3s;
-        }
+        .form-field input:focus { border-color: var(--accent); background: rgba(255,255,255,0.03); }
+        .password-strength { height: 4px; background: var(--input-bg); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+        .strength-meter { height: 100%; width: 0; background: var(--error); transition: width 0.3s, background 0.3s; }
         
-        /* Custom Checkbox */
         .checkbox-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin: 16px 0;
-            font-size: 13px;
-            color: var(--t2);
-            cursor: pointer;
+            display: flex; align-items: flex-start; gap: 12px; margin: 16px 0; font-size: 13px; color: var(--t2); cursor: pointer;
         }
-        .checkbox-row input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            pointer-events: none;
-        }
+        .checkbox-row input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
         .checkbox-custom {
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            border: 2px solid rgba(255,255,255,0.25);
-            border-radius: 4px;
-            background: var(--input-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            margin-top: 1px;
+            width: 20px; height: 20px; min-width: 20px; border: 2px solid rgba(255,255,255,0.25); border-radius: 4px;
+            background: var(--input-bg); display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-top: 1px;
         }
-        .checkbox-row input:checked + .checkbox-custom {
-            background: var(--gold);
-            border-color: var(--gold);
-        }
-        .checkbox-row input:checked + .checkbox-custom::after {
-            content: "✓";
-            color: #000;
-            font-size: 14px;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .checkbox-row:hover .checkbox-custom {
-            border-color: var(--gold);
-        }
-        .checkbox-row label {
-            cursor: pointer;
-            user-select: none;
-            line-height: 1.5;
-        }
-        .checkbox-row label a {
-            color: var(--gold);
-            text-decoration: underline;
-            transition: opacity 0.2s;
-        }
-        .checkbox-row label a:hover {
-            opacity: 0.7;
-        }
+        .checkbox-row input:checked + .checkbox-custom { background: var(--gold); border-color: var(--gold); }
+        .checkbox-row input:checked + .checkbox-custom::after { content: "✓"; color: #000; font-size: 14px; font-weight: 700; line-height: 1; }
+        .checkbox-row:hover .checkbox-custom { border-color: var(--gold); }
+        .checkbox-row label { cursor: pointer; user-select: none; line-height: 1.5; }
+        .checkbox-row label a { color: var(--gold); text-decoration: underline; transition: opacity 0.2s; }
+        .checkbox-row label a:hover { opacity: 0.7; }
         
-        .error-message { 
-            display: none; 
-            background: var(--error-dim); 
-            border-radius: 12px; 
-            padding: 12px; 
-            margin-top: 12px; 
-            color: var(--error); 
-            font-size: 13px; 
-        }
-        .success-message { 
-            display: none; 
-            background: var(--success-dim); 
-            border-radius: 12px; 
-            padding: 12px; 
-            margin-top: 12px; 
-            color: var(--success); 
-            font-size: 13px; 
-        }
-        .footer { 
-            text-align: center; 
-            padding: 32px 0; 
-            border-top: 1px solid var(--br-dim); 
-            color: var(--t2); 
-            font-size: 12px; 
-        }
-        .signup-form .forgot-link { 
-            display: block; 
-            text-align: center; 
-            margin-top: 10px; 
-            font-size: 13px; 
-            color: var(--t2); 
-            text-decoration: none; 
-            transition: color 0.2s; 
-        }
-        .signup-form .forgot-link:hover { 
-            color: var(--gold); 
-        }
+        .error-message { display: none; background: var(--error-dim); border-radius: 12px; padding: 12px; margin-top: 12px; color: var(--error); font-size: 13px; }
+        .success-message { display: none; background: var(--success-dim); border-radius: 12px; padding: 12px; margin-top: 12px; color: var(--success); font-size: 13px; }
+        .footer { text-align: center; padding: 32px 0; border-top: 1px solid var(--br-dim); color: var(--t2); font-size: 12px; }
         
-        /* Animations */
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 var(--br-dim); }
-            70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
-            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-        }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--br-dim); } 70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .hero h1 { font-size: 32px; }
             .signup-section { flex-direction: column; padding: 32px 24px; }
@@ -644,124 +257,6 @@
             .stats-grid { grid-template-columns: 1fr; }
             .plan.popular { transform: scale(1); }
             .plan.popular:hover { transform: scale(1); }
-        }
-        
-        /* ─── BOTTOM NAVIGATION ─── */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav-h);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            background: var(--base);
-            border-top: 1px solid var(--br-dim);
-            z-index: 100;
-            padding: 0 8px;
-        }
-        .bottom-nav::before { 
-            content: ''; 
-            position: absolute; 
-            top: 0; 
-            left: 20%; 
-            right: 20%; 
-            height: 1px; 
-            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); 
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            flex: 1;
-            cursor: pointer;
-            padding: 7px 0;
-            text-decoration: none;
-            color: var(--t3);
-            transition: color 0.25s;
-            position: relative;
-            border: none;
-            background: none;
-        }
-        .nav-item svg { 
-            transition: transform 0.2s; 
-        }
-        .nav-item:hover { 
-            color: var(--gold); 
-        }
-        .nav-item:hover svg { 
-            transform: scale(1.1) translateY(-1px); 
-        }
-        .nav-item.active { 
-            color: var(--gold); 
-        }
-        .nav-item.active::after {
-            content: ''; 
-            position: absolute; 
-            bottom: -1px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            width: 20px; 
-            height: 2px; 
-            background: linear-gradient(90deg, transparent, var(--gold), transparent); 
-            border-radius: 2px 2px 0 0;
-        }
-        .nav-item.nav-home .home-wrap {
-            width: 44px; 
-            height: 44px; 
-            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
-            border-radius: var(--r-md); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            transition: transform 0.2s, box-shadow 0.2s; 
-            box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
-            position: relative; 
-            overflow: hidden;
-        }
-        .nav-item.nav-home .home-wrap::before { 
-            content: ''; 
-            position: absolute; 
-            inset: 0; 
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); 
-        }
-        .nav-item.nav-home:hover .home-wrap { 
-            transform: scale(1.07) translateY(-2px); 
-            box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); 
-        }
-        .nav-item.nav-home svg { 
-            color: #0d0a04; 
-            position: relative; 
-            z-index: 1; 
-        }
-        .nav-item.nav-home::after { 
-            display: none; 
-        }
-        .nav-badge {
-            position: absolute; 
-            top: 2px; 
-            right: calc(50% - 20px); 
-            min-width: 14px; 
-            height: 14px; 
-            background: var(--rose);
-            border-radius: 10px; 
-            border: 1.5px solid var(--base); 
-            display: none; 
-            color: white; 
-            font-family: var(--mono);
-            font-size: 7px; 
-            font-weight: 600; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 0 3px; 
-            z-index: 2; 
-            box-shadow: 0 2px 6px rgba(184,92,92,0.4);
-        }
-        .nav-item.has-notifs .nav-badge { 
-            display: flex; 
         }
     </style>
 </head>
@@ -791,24 +286,17 @@
             <a href="#signup" class="btn-primary">Start Free →</a>
             <a href="#features" class="btn-secondary">See how it works</a>
         </div>
-        
         <div class="trust-badges">
             <div class="badge">
-                <div class="badge-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>
-                </div>
+                <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg></div>
                 <span>Used by 5,000+ businesses</span>
             </div>
             <div class="badge">
-                <div class="badge-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>
-                </div>
+                <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg></div>
                 <span>99.9% uptime</span>
             </div>
             <div class="badge">
-                <div class="badge-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>
-                </div>
+                <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg></div>
                 <span>Enterprise security</span>
             </div>
         </div>
@@ -816,23 +304,17 @@
     
     <div id="features" class="features">
         <div class="feature-card">
-            <div class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-            </div>
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
             <h3>Lead Generation</h3>
             <p>Describe your ideal customer – industry, location, job title. AI finds real contacts and drafts personalised outreach emails.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </div>
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <h3>Smart Inbox</h3>
             <p>All conversations in one place. AI suggests replies, auto‑replies based on your instructions, and learns your tone.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <h3>Auto Follow‑ups</h3>
             <p>Set delays (1–7 days or custom). AI automatically sends follow‑up emails. Never lose a lead again.</p>
         </div>
@@ -842,40 +324,16 @@
         <h2>Trusted by Growth Teams</h2>
         <div class="testimonial-grid">
             <div class="testimonial-card">
-                <div class="testimonial-text">
-                    "Skyline AA-1 has completely transformed our lead generation process. We've increased our response rate by 40%."
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-avatar">SJ</div>
-                    <div class="author-info">
-                        <h4>Sarah Johnson</h4>
-                        <p>Head of Sales, TechCorp</p>
-                    </div>
-                </div>
+                <div class="testimonial-text">"Skyline AA-1 has completely transformed our lead generation process. We've increased our response rate by 40%."</div>
+                <div class="testimonial-author"><div class="author-avatar">SJ</div><div class="author-info"><h4>Sarah Johnson</h4><p>Head of Sales, TechCorp</p></div></div>
             </div>
             <div class="testimonial-card">
-                <div class="testimonial-text">
-                    "The AI-powered follow-ups have saved us hours each week while significantly improving our conversion rates."
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-avatar">MR</div>
-                    <div class="author-info">
-                        <h4>Michael Rodriguez</h4>
-                        <p>Growth Manager, StartupX</p>
-                    </div>
-                </div>
+                <div class="testimonial-text">"The AI-powered follow-ups have saved us hours each week while significantly improving our conversion rates."</div>
+                <div class="testimonial-author"><div class="author-avatar">MR</div><div class="author-info"><h4>Michael Rodriguez</h4><p>Growth Manager, StartupX</p></div></div>
             </div>
             <div class="testimonial-card">
-                <div class="testimonial-text">
-                    "We've reduced our customer acquisition cost by 35% since implementing Skyline AA-1 into our workflow."
-                </div>
-                <div class="testimonial-author">
-                    <div class="author-avatar">EP</div>
-                    <div class="author-info">
-                        <h4>Emma Patel</h4>
-                        <p>CMO, ScaleFast</p>
-                    </div>
-                </div>
+                <div class="testimonial-text">"We've reduced our customer acquisition cost by 35% since implementing Skyline AA-1 into our workflow."</div>
+                <div class="testimonial-author"><div class="author-avatar">EP</div><div class="author-info"><h4>Emma Patel</h4><p>CMO, ScaleFast</p></div></div>
             </div>
         </div>
     </div>
@@ -917,47 +375,25 @@
             <h2>Get started for free</h2>
             <p>No credit card required. Upgrade anytime.</p>
             <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value">10k+</div>
-                    <div class="stat-label">Active Users</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">99.9%</div>
-                    <div class="stat-label">Uptime</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">24/7</div>
-                    <div class="stat-label">Support</div>
-                </div>
+                <div class="stat-item"><div class="stat-value">10k+</div><div class="stat-label">Active Users</div></div>
+                <div class="stat-item"><div class="stat-value">99.9%</div><div class="stat-label">Uptime</div></div>
+                <div class="stat-item"><div class="stat-value">24/7</div><div class="stat-label">Support</div></div>
             </div>
         </div>
         <div class="signup-form">
             <form id="signupForm">
-                <div class="form-field">
-                    <input type="text" id="username" placeholder="Username" required>
-                </div>
-                <div class="form-field">
-                    <input type="email" id="email" placeholder="Email address" required>
-                    <div id="emailValidation" class="error-message" style="margin-top: 5px; display: none;"></div>
-                </div>
+                <div class="form-field"><input type="text" id="username" placeholder="Username" required></div>
+                <div class="form-field"><input type="email" id="email" placeholder="Email address" required></div>
                 <div class="form-field">
                     <input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required>
-                    <div class="password-strength">
-                        <div id="strengthMeter" class="strength-meter"></div>
-                    </div>
+                    <div class="password-strength"><div id="strengthMeter" class="strength-meter"></div></div>
                 </div>
-                <div class="form-field">
-                    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
-                </div>
-
+                <div class="form-field"><input type="password" id="confirmPassword" placeholder="Confirm password" required></div>
                 <div class="checkbox-row">
                     <input type="checkbox" id="privacyPolicy" required>
                     <span class="checkbox-custom"></span>
-                    <label for="privacyPolicy">
-                        I agree to the <a href="Privacy.html" target="_blank">Privacy Policy</a>
-                    </label>
+                    <label for="privacyPolicy">I agree to the <a href="Privacy.html" target="_blank">Privacy Policy</a></label>
                 </div>
-
                 <button type="submit" class="btn-primary" style="width:100%; background:white; color:black;">Sign Up →</button>
                 <div id="errorMessage" class="error-message"></div>
                 <div id="successMessage" class="success-message"></div>
@@ -972,190 +408,76 @@
     <div class="footer">© 2025 Skyline AA-1 – Autonomous Sales Assistant. All rights reserved.</div>
 </div>
 
-<!-- ─── BOTTOM NAVIGATION ─── -->
-<nav class="bottom-nav">
-    <a href="page.html" class="nav-item nav-home active">
-        <div class="home-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </div>
-    </a>
-    <a href="history.html" class="nav-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <polyline points="12 7 12 12 15 15"/>
-            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-            <polyline points="3 4 3 11 10 11"/>
-        </svg>
-        History
-    </a>
-    <a href="notifications.html" class="nav-item">
-        <div class="nav-badge"></div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        Inbox
-    </a>
-    <a href="dashboard.html" class="nav-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-        Dashboard
-    </a>
-</nav>
-
 <script>
     if (localStorage.getItem('token')) { window.location.href = "page.html"; }
     
-    // Password strength indicator
     const passwordInput = document.getElementById('password');
     const strengthMeter = document.getElementById('strengthMeter');
-    
     passwordInput.addEventListener('input', function() {
         const password = this.value;
         let strength = 0;
-        
         if (password.length >= 8) strength += 25;
         if (/[A-Z]/.test(password)) strength += 25;
         if (/[0-9]/.test(password)) strength += 25;
         if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-        
         strengthMeter.style.width = strength + '%';
-        
-        if (strength < 50) {
-            strengthMeter.style.background = 'var(--error)';
-        } else if (strength < 75) {
-            strengthMeter.style.background = '#fbbf24'; // yellow
-        } else {
-            strengthMeter.style.background = 'var(--success)';
-        }
+        if (strength < 50) strengthMeter.style.background = 'var(--error)';
+        else if (strength < 75) strengthMeter.style.background = '#fbbf24';
+        else strengthMeter.style.background = 'var(--success)';
     });
     
-    // Email validation
     const emailInput = document.getElementById('email');
     const emailValidation = document.getElementById('emailValidation');
-    
     emailInput.addEventListener('blur', function() {
         const email = this.value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
         if (email && !emailRegex.test(email)) {
             emailValidation.textContent = 'Please enter a valid email address';
             emailValidation.style.display = 'block';
-        } else {
-            emailValidation.style.display = 'none';
-        }
+        } else { emailValidation.style.display = 'none'; }
     });
     
-    // Form submission
     const form = document.getElementById('signupForm');
     const errorDiv = document.getElementById('errorMessage');
     const successDiv = document.getElementById('successMessage');
-    
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         errorDiv.style.display = 'none';
         successDiv.style.display = 'none';
-        errorDiv.textContent = '';
-        successDiv.textContent = '';
-
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirm = document.getElementById('confirmPassword').value;
         const privacy = document.getElementById('privacyPolicy').checked;
-
-        if (!username || !email || !password || !confirm) {
-            showError("All fields are required.");
-            return;
-        }
-        if (password !== confirm) {
-            showError("Passwords do not match.");
-            return;
-        }
-        if (password.length < 8) {
-            showError("Password must be at least 8 characters.");
-            return;
-        }
-        if (!privacy) {
-            showError("You must agree to the Privacy Policy.");
-            return;
-        }
-
+        if (!username || !email || !password || !confirm) { showError("All fields are required."); return; }
+        if (password !== confirm) { showError("Passwords do not match."); return; }
+        if (password.length < 8) { showError("Password must be at least 8 characters."); return; }
+        if (!privacy) { showError("You must agree to the Privacy Policy."); return; }
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = "Creating account...";
-
         try {
             const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email, password })
             });
             const data = await res.json();
-
             if (res.ok) {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    if (data.csrfToken) {
-                        localStorage.setItem('csrfToken', data.csrfToken);
-                    }
+                    if (data.csrfToken) localStorage.setItem('csrfToken', data.csrfToken);
                     window.location.href = "page.html";
                 } else {
                     showSuccess("Account created successfully! Redirecting to login...");
-                    setTimeout(() => {
-                        window.location.href = "login.html";
-                    }, 2000);
+                    setTimeout(() => { window.location.href = "login.html"; }, 2000);
                 }
-            } else {
-                showError(DOMPurify.sanitize(data.message || "Signup failed. Try a different email."));
-            }
-        } catch (err) {
-            showError("Network error. Please try again.");
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }
+            } else { showError(DOMPurify.sanitize(data.message || "Signup failed. Try a different email.")); }
+        } catch (err) { showError("Network error. Please try again."); }
+        finally { submitBtn.disabled = false; submitBtn.textContent = originalText; }
     });
-
-    function showError(msg) {
-        errorDiv.textContent = DOMPurify.sanitize(msg);
-        errorDiv.style.display = 'block';
-        successDiv.style.display = 'none';
-    }
-    
-    function showSuccess(msg) {
-        successDiv.textContent = DOMPurify.sanitize(msg);
-        successDiv.style.display = 'block';
-        errorDiv.style.display = 'none';
-    }
-    
-    // Intersection Observer for animations
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animated');
-            }
-        });
-    }, observerOptions);
-    
-    // Observe elements for animations
-    document.querySelectorAll('.feature-card, .testimonial-card, .plan').forEach(el => {
-        observer.observe(el);
-    });
+    function showError(msg) { errorDiv.textContent = DOMPurify.sanitize(msg); errorDiv.style.display = 'block'; successDiv.style.display = 'none'; }
+    function showSuccess(msg) { successDiv.textContent = DOMPurify.sanitize(msg); successDiv.style.display = 'block'; errorDiv.style.display = 'none'; }
 </script>
 </body>
     </html>
