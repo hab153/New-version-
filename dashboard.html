@@ -7,31 +7,25 @@
   <!-- ✅ XSS PROTECTION LIBRARY -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg-void: #060608;
-      --bg-base: #0b0c0f;
-      --bg-surface: #111318;
-      --bg-raised: #181b22;
-      --bg-hover: #1e2229;
-      --border: rgba(255,255,255,0.06);
-      --accent: #c8ff57;
-      --accent-go: #00d2ff;
-      --text-1: #e8eaf0;
-      --text-2: #8c909e;
-      --text-3: #52566a;
-      --danger: #ff4d4d;
-      --success: #00e676;
-      --warning: #ffaa00;
-      --font-mono: 'IBM Plex Mono', monospace;
-      --font-sans: 'Syne', sans-serif;
+      --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+      --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+      --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
+      --platinum: #d4d0c8; --sage: #66dd99; --sage-dim: rgba(102,221,153,0.10); --rose: #ff5555; --rose-dim: rgba(255,85,85,0.10); --sky: #66ddff;
+      --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+      --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'Monaco', 'Menlo', monospace;
+      --nav-h: 68px; --top-h: 54px; --bar-h: 30px;
+      --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
     }
 
     body {
-      background: var(--bg-void);
-      color: var(--text-1);
-      font-family: var(--font-sans);
+      background: var(--void);
+      color: var(--t1);
+      font-family: var(--ui);
       margin: 0;
       padding: 0;
       min-height: 100vh;
@@ -42,12 +36,12 @@
 
     .toast {
       position: fixed;
-      top: 16px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
       padding: 12px 24px;
       border-radius: 8px;
-      font-family: var(--font-mono);
+      font-family: var(--mono);
       font-size: 13px;
       font-weight: 600;
       z-index: 9999;
@@ -57,8 +51,8 @@
       text-align: center;
     }
     .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid var(--success); color: var(--success); }
-    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--danger);  color: var(--danger); }
-    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--accent-go); color: var(--accent-go); }
+    .toast.error   { background: rgba(255, 77, 77, 0.15);  border: 1px solid var(--rose);  color: var(--rose); }
+    .toast.info    { background: rgba(0, 210, 255, 0.15);  border: 1px solid var(--sky);  color: var(--sky); }
     .toast.warning { background: rgba(255, 170, 0, 0.15);  border: 1px solid var(--warning); color: var(--warning); }
     @keyframes slideDown {
       from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
@@ -68,8 +62,8 @@
     .topbar {
       width: 100%;
       height: 58px;
-      background: var(--bg-base);
-      border-bottom: 1px solid var(--border);
+      background: var(--base);
+      border-bottom: 1px solid var(--br-dim);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -78,19 +72,19 @@
     }
     .topbar-left { display: flex; align-items: center; gap: 16px; }
     .brand {
-      font-family: var(--font-mono);
+      font-family: var(--mono);
       font-size: 12px;
       letter-spacing: 0.12em;
-      color: var(--text-2);
+      color: var(--t2);
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .brand .dot {
       width: 6px; height: 6px;
-      background: var(--accent);
+      background: var(--gold);
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
+      box-shadow: 0 0 8px var(--gold);
     }
 
     .notif-wrapper { display: flex; align-items: center; gap: 8px; }
@@ -105,11 +99,11 @@
       align-items: center;
       justify-content: center;
       transition: background 0.2s;
-      color: var(--text-2);
+      color: var(--t2);
     }
     .notif-btn:hover {
       background: rgba(255,255,255,0.05);
-      color: var(--text-1);
+      color: var(--t1);
     }
     .notif-btn svg {
       width: 22px;
@@ -118,7 +112,7 @@
       transition: color 0.2s;
     }
     .notif-btn.has-notifs {
-      color: var(--danger);
+      color: var(--rose);
       animation: pulse-red 2s infinite;
     }
     @keyframes pulse-red {
@@ -130,7 +124,7 @@
       position: absolute;
       top: 1px;
       right: 1px;
-      background: var(--danger);
+      background: var(--rose);
       color: #fff;
       font-size: 9px;
       font-weight: 700;
@@ -141,18 +135,25 @@
       display: none;
       align-items: center;
       justify-content: center;
-      border: 2px solid var(--bg-base);
-      font-family: var(--font-mono);
+      border: 2px solid var(--base);
+      font-family: var(--mono);
       line-height: 1;
     }
 
-    .container { width: 100%; max-width: 1000px; padding: 32px 20px; flex: 1; }
+    .container { 
+      width: 100%; 
+      max-width: 1000px; 
+      padding: 32px 20px; 
+      flex: 1; 
+      overflow-y: auto;
+      padding-bottom: calc(var(--nav-h) + 20px); /* Space for fixed nav */
+    }
     .section-title {
-      font-family: var(--font-mono);
+      font-family: var(--mono);
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--text-3);
+      color: var(--t3);
       margin-bottom: 16px;
       margin-top: 32px;
       padding-left: 4px;
@@ -161,30 +162,30 @@
 
     .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 40px; }
     .menu-item {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
+      background: var(--surface);
+      border: 1px solid var(--br-dim);
       padding: 16px 20px;
       border-radius: 12px;
       text-decoration: none;
-      color: var(--text-1);
+      color: var(--t1);
       font-weight: 500;
       display: flex;
       align-items: center;
       justify-content: space-between;
       transition: all 0.2s ease;
     }
-    .menu-item:hover { background: var(--bg-raised); border-color: var(--accent); transform: translateX(4px); }
+    .menu-item:hover { background: var(--raised); border-color: var(--gold); transform: translateX(4px); }
     .menu-item span { font-size: 14px; display: flex; align-items: center; gap: 10px; }
     .menu-item span svg { flex-shrink: 0; opacity: 0.7; }
     .menu-item:hover span svg { opacity: 1; }
-    .arrow { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; }
+    .arrow { color: var(--t3); font-family: var(--mono); font-size: 12px; }
     .danger-zone .menu-item { border-color: rgba(255, 77, 77, 0.1); }
-    .danger-zone .menu-item:hover { border-color: var(--danger); background: rgba(255, 77, 77, 0.05); }
-    .danger-text { color: var(--danger); }
+    .danger-zone .menu-item:hover { border-color: var(--rose); background: rgba(255, 77, 77, 0.05); }
+    .danger-text { color: var(--rose); }
 
     .command-center {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
+      background: var(--surface);
+      border: 1px solid var(--br-dim);
       border-radius: 16px;
       margin-bottom: 40px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -192,26 +193,26 @@
     .cc-header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 20px 24px;
-      background: var(--bg-raised);
-      border-bottom: 1px solid var(--border);
+      background: var(--raised);
+      border-bottom: 1px solid var(--br-dim);
       cursor: pointer; user-select: none;
       transition: background 0.2s ease;
     }
-    .cc-header:hover { background: #1e2229; }
-    .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--accent); }
+    .cc-header:hover { background: var(--hover); }
+    .cc-header:hover .toggle-button-circle { background: rgba(200, 255, 87, 0.15); border-color: var(--gold); }
     .cc-title-group { display: flex; align-items: center; gap: 12px; }
-    .cc-title { font-size: 16px; font-weight: 600; color: var(--text-1); letter-spacing: -0.3px; }
+    .cc-title { font-size: 16px; font-weight: 600; color: var(--t1); letter-spacing: -0.3px; }
     .toggle-button { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 0; }
     .toggle-button-circle {
       width: 32px; height: 32px; border-radius: 50%;
       background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
+      border: 1px solid var(--br-dim);
       display: flex; align-items: center; justify-content: center;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .toggle-icon-svg { width: 16px; height: 16px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .toggle-icon-svg path { stroke: var(--text-2); stroke-width: 2; transition: stroke 0.2s ease; }
-    .toggle-button:hover .toggle-icon-svg path { stroke: var(--accent); }
+    .toggle-icon-svg path { stroke: var(--t2); stroke-width: 2; transition: stroke 0.2s ease; }
+    .toggle-button:hover .toggle-icon-svg path { stroke: var(--gold); }
     .command-center.collapsed .toggle-icon-svg { transform: rotate(-90deg); }
     .cc-content-wrapper { max-height: 2000px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .command-center.collapsed .cc-content-wrapper { max-height: 0; }
@@ -219,42 +220,42 @@
     .command-center.collapsed .cc-content { opacity: 0; }
 
     .connect-btn {
-      background: var(--accent-go); color: #000;
+      background: var(--sky); color: #000;
       border: none; padding: 8px 16px; border-radius: 6px;
-      font-weight: 600; cursor: pointer; font-family: var(--font-mono);
+      font-weight: 600; cursor: pointer; font-family: var(--mono);
       font-size: 12px; transition: all 0.2s; z-index: 2; position: relative;
     }
     .connect-btn:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); transform: translateY(-1px); }
-    .connect-btn.connected { background: var(--bg-surface); color: var(--accent); border: 1px solid var(--accent); }
+    .connect-btn.connected { background: var(--surface); color: var(--gold); border: 1px solid var(--gold); }
     .connect-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
-      background: var(--bg-base); padding: 16px; border-radius: 8px;
-      text-align: center; border: 1px solid var(--border);
+      background: var(--base); padding: 16px; border-radius: 8px;
+      text-align: center; border: 1px solid var(--br-dim);
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
-    .stat-card:hover { border-color: var(--text-3); transform: translateY(-2px); }
-    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
-    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
+    .stat-card:hover { border-color: var(--t3); transform: translateY(-2px); }
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
+    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--t3); font-family: var(--mono); }
 
     .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .lead-table th {
-      text-align: left; padding: 12px; color: var(--text-3);
-      border-bottom: 1px solid var(--border);
-      font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
+      text-align: left; padding: 12px; color: var(--t3);
+      border-bottom: 1px solid var(--br-dim);
+      font-family: var(--mono); font-size: 10px; text-transform: uppercase;
     }
-    .lead-table td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+    .lead-table td { padding: 12px; border-bottom: 1px solid var(--br-dim); color: var(--t2); }
     .status-badge {
       padding: 4px 8px; border-radius: 4px;
       font-size: 10px; font-weight: 600; text-transform: uppercase;
     }
-    .status-queued     { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-new        { background: rgba(255,255,255,0.05); color: var(--text-2); }
-    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--accent-go); }
-    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--accent); }
-    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--accent); }
-    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--danger); }
+    .status-queued     { background: rgba(255,255,255,0.05); color: var(--t3); }
+    .status-new        { background: rgba(255,255,255,0.05); color: var(--t2); }
+    .status-contacted  { background: rgba(0, 210, 255, 0.1); color: var(--sky); }
+    .status-interested { background: rgba(200, 255, 87, 0.1); color: var(--gold); }
+    .status-replied    { background: rgba(200, 255, 87, 0.07); color: var(--gold); }
+    .status-closed     { background: rgba(255, 77, 77, 0.1); color: var(--rose); }
 
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -262,95 +263,167 @@
       justify-content: center; align-items: center;
     }
     .modal-content {
-      background: var(--bg-surface); border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid var(--br-dim);
       border-radius: 16px; padding: 24px; width: 90%; max-width: 650px;
       max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
     .modal-header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+      margin-bottom: 20px; border-bottom: 1px solid var(--br-dim); padding-bottom: 10px;
     }
-    .modal-header h3 { color: var(--accent); margin: 0; font-size: 18px; }
-    .close-modal { background: none; border: none; color: var(--text-3); font-size: 24px; cursor: pointer; }
+    .modal-header h3 { color: var(--gold); margin: 0; font-size: 18px; }
+    .close-modal { background: none; border: none; color: var(--t3); font-size: 24px; cursor: pointer; }
     .reply-history {
-      background: var(--bg-base); padding: 15px; border-radius: 8px;
-      margin-bottom: 20px; border-left: 3px solid var(--accent);
+      background: var(--base); padding: 15px; border-radius: 8px;
+      margin-bottom: 20px; border-left: 3px solid var(--gold);
       max-height: 300px; overflow-y: auto;
     }
-    .reply-history h4 { margin-top: 0; color: var(--text-2); font-size: 12px; text-transform: uppercase; }
+    .reply-history h4 { margin-top: 0; color: var(--t2); font-size: 12px; text-transform: uppercase; }
     .reply-history .reply-item {
-      background: var(--bg-raised); padding: 12px; border-radius: 8px; margin-bottom: 12px;
+      background: var(--raised); padding: 12px; border-radius: 8px; margin-bottom: 12px;
     }
-    .reply-history .reply-meta { font-size: 10px; color: var(--text-3); margin-bottom: 6px; font-family: var(--font-mono); }
-    .reply-history .reply-content { color: var(--text-1); font-size: 13px; }
+    .reply-history .reply-meta { font-size: 10px; color: var(--t3); margin-bottom: 6px; font-family: var(--mono); }
+    .reply-history .reply-content { color: var(--t1); font-size: 13px; }
     .reply-input-area textarea {
-      width: 100%; background: var(--bg-raised); border: 1px solid var(--border);
-      color: var(--text-1); padding: 12px; border-radius: 8px;
-      min-height: 100px; resize: vertical; font-family: var(--font-sans); font-size: 14px;
+      width: 100%; background: var(--raised); border: 1px solid var(--br-dim);
+      color: var(--t1); padding: 12px; border-radius: 8px;
+      min-height: 100px; resize: vertical; font-family: var(--ui); font-size: 14px;
     }
     .send-reply-btn {
       margin-top: 15px; width: 100%; padding: 12px;
-      background: var(--accent); color: #000; border: none;
-      border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--font-mono);
+      background: var(--gold); color: #000; border: none;
+      border-radius: 8px; font-weight: bold; cursor: pointer; font-family: var(--mono);
     }
     .send-reply-btn:hover { background: #d4ff70; }
-    .send-reply-btn:disabled { background: var(--text-3); cursor: not-allowed; }
-    .refresh-indicator { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 8px; font-family: var(--font-mono); }
+    .send-reply-btn:disabled { background: var(--t3); cursor: not-allowed; }
+    .refresh-indicator { font-size: 10px; color: var(--t3); text-align: right; margin-top: 8px; font-family: var(--mono); }
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .command-center:not(.collapsed) .analytics-grid,
     .command-center:not(.collapsed) .lead-table,
     .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
 
-    /* ── Bottom Navigation (100% IDENTICAL to notifications.html) ── */
+    /* ── Bottom Navigation (100% IDENTICAL to notifications.html and history.html) ── */
     .bottom-nav {
-      width: 100%;
-      max-width: 1000px;
-      padding: 12px 20px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-h);
       display: flex;
-      justify-content: center;
-      gap: 16px;
-      border-top: 1px solid var(--border);
-      margin-top: 8px;
-      background: var(--bg-void);
+      align-items: center;
+      justify-content: space-around;
+      background: var(--base);
+      border-top: 1px solid var(--br-dim);
+      z-index: 40;
+      padding: 0 8px;
     }
-    .bottom-nav .nav-item {
+    .bottom-nav::before { 
+      content: ''; 
+      position: absolute; 
+      top: 0; 
+      left: 20%; 
+      right: 20%; 
+      height: 1px; 
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); 
+    }
+    .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding: 8px 16px;
-      border-radius: 10px;
+      gap: 5px;
+      flex: 1;
+      cursor: pointer;
+      padding: 7px 0;
       text-decoration: none;
-      color: var(--text-3);
-      transition: all 0.2s ease;
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      color: var(--t3);
+      transition: color 0.25s;
+      position: relative;
+      border: none;
+      background: none;
     }
-    .bottom-nav .nav-item svg {
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      transition: stroke 0.2s ease;
+    .nav-item svg { 
+      transition: transform 0.2s; 
     }
-    .bottom-nav .nav-item:hover {
-      color: var(--text-1);
-      background: var(--bg-surface);
+    .nav-item:hover { 
+      color: var(--gold); 
     }
-    .bottom-nav .nav-item.active {
-      color: var(--accent);
+    .nav-item:hover svg { 
+      transform: scale(1.1) translateY(-1px); 
     }
-    .bottom-nav .nav-item.active svg {
-      stroke: var(--accent);
+    .nav-item.active { 
+      color: var(--gold); 
+    }
+    .nav-item.active::after {
+      content: ''; 
+      position: absolute; 
+      bottom: -1px; 
+      left: 50%; 
+      transform: translateX(-50%);
+      width: 20px; 
+      height: 2px; 
+      background: linear-gradient(90deg, transparent, var(--gold), transparent); 
+      border-radius: 2px 2px 0 0;
+    }
+    .nav-item.nav-home .home-wrap {
+      width: 44px; 
+      height: 44px; 
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+      border-radius: var(--r-md); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s; 
+      box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
+      position: relative; 
+      overflow: hidden;
+    }
+    .nav-item.nav-home .home-wrap::before { 
+      content: ''; 
+      position: absolute; 
+      inset: 0; 
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); 
+    }
+    .nav-item.nav-home:hover .home-wrap { 
+      transform: scale(1.07) translateY(-2px); 
+      box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); 
+    }
+    .nav-item.nav-home svg { 
+      color: #0d0a04; 
+      position: relative; 
+      z-index: 1; 
+    }
+    .nav-item.nav-home::after { 
+      display: none; 
+    }
+    .nav-badge {
+      position: absolute; 
+      top: 2px; 
+      right: calc(50% - 20px); 
+      min-width: 14px; 
+      height: 14px; 
+      background: var(--rose);
+      border-radius: 10px; 
+      border: 1.5px solid var(--base); 
+      display: none; 
+      color: white; 
+      font-family: var(--mono);
+      font-size: 7px; 
+      font-weight: 600; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 0 3px; 
+      z-index: 2; 
+      box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+    }
+    .nav-item.has-notifs .nav-badge { 
+      display: flex; 
     }
 
     @media (max-width: 600px) {
       .bottom-nav { gap: 4px; padding: 8px 8px; }
-      .bottom-nav .nav-item { padding: 6px 10px; font-size: 8px; }
+      .bottom-nav .nav-item { padding: 7px 0; font-size: 8px; }
       .bottom-nav .nav-item svg { width: 18px; height: 18px; }
       .container { padding: 16px; }
       .topbar { padding: 0 16px; }
@@ -429,7 +502,7 @@
             </thead>
             <tbody id="leadList">
               <tr>
-                <td colspan="4" style="text-align:center; color: var(--text-3); padding: 24px;">
+                <td colspan="4" style="text-align:center; color: var(--t3); padding: 24px;">
                   Loading leads...
                 </td>
               </tr>
@@ -570,36 +643,41 @@
 
   </div>
 
-  <!-- ─── Bottom Navigation (100% IDENTICAL to notifications.html) ─── -->
+  <!-- ─── Bottom Navigation (Updated to match notifications.html and history.html) ─── -->
   <nav class="bottom-nav">
-    <a href="page.html" class="nav-item">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      <span>Architect</span>
+    <a href="page.html" class="nav-item nav-home">
+      <div class="home-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
     </a>
     <a href="history.html" class="nav-item">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12 7 12 12 15 15"/>
+        <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+        <polyline points="3 4 3 11 10 11"/>
       </svg>
-      <span>History</span>
+      History
     </a>
     <a href="notifications.html" class="nav-item">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <div class="nav-badge"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
       </svg>
-      <span>Inbox</span>
+      Inbox
     </a>
     <a href="dashboard.html" class="nav-item active">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
       </svg>
-      <span>Dashboard</span>
+      Dashboard
     </a>
   </nav>
 
@@ -614,7 +692,7 @@
         <div id="conversationHistory">Loading...</div>
       </div>
       <div class="reply-input-area">
-        <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-3);">Your Reply:</label>
+        <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--t3);">Your Reply:</label>
         <textarea id="replyTextArea" placeholder="Type your reply here..."></textarea>
         <button id="sendReplyBtn" class="send-reply-btn" onclick="sendDirectReply()">🚀 Send Reply</button>
       </div>
@@ -815,13 +893,13 @@
         document.getElementById('replyRate').innerText = rate + '%';
 
         if (leads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--t3); padding:24px;">No leads yet. Say "Research [company]" in the Architect to start.</td></tr>';
         } else {
           tbody.innerHTML = leads.map(lead => {
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             return `
-              <tr>
+              <tr onclick="openReplyModal('${lead._id}', '${lead.name || '—'}', '${lead.email || ''}')">
                 <td>${DOMPurify.sanitize(lead.name || '—')}</td>
                 <td>${DOMPurify.sanitize(lead.company || '—')}</td>
                 <td><span class="status-badge status-${statusClass}">${DOMPurify.sanitize(lead.status || 'New')}</span></td>
@@ -832,7 +910,7 @@
         }
       } catch (err) {
         console.error('Error loading leads:', err);
-        document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
+        document.getElementById('leadList').innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--t3); padding:24px;">Could not load leads. Refresh to try again.</td></tr>';
       }
     }
 
@@ -844,7 +922,7 @@
       document.getElementById('modalLeadName').innerText = DOMPurify.sanitize(name);
       document.getElementById('replyModal').style.display = 'flex';
       document.getElementById('replyTextArea').value = '';
-      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">Loading conversation...</div>';
+      document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--t3);">Loading conversation...</div>';
 
       try {
         const res = await fetch(`${BACKEND}/api/leads`, {
@@ -858,7 +936,7 @@
             const isLead = reply.from === 'lead';
             const date = reply.date ? new Date(reply.date).toLocaleString() : 'Unknown date';
             return `
-              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--accent)' : 'var(--accent-go)'}; padding-left: 12px;">
+              <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--gold)' : 'var(--sky)'}; padding-left: 12px;">
                 <div class="reply-meta">
                   ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
                   ${reply.subject ? `<br>Subject: ${DOMPurify.sanitize(reply.subject)}` : ''}
@@ -869,11 +947,11 @@
           }).join('');
           document.getElementById('conversationHistory').innerHTML = conversationHtml;
         } else {
-          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--text-3);">No conversation history yet.</div>';
+          document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--t3);">No conversation history yet.</div>';
         }
       } catch (err) {
         console.error('Error loading conversation:', err);
-        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--danger);">Error loading conversation.</div>';
+        document.getElementById('conversationHistory').innerHTML = '<div style="color: var(--rose);">Error loading conversation.</div>';
       }
     }
 
@@ -1021,4 +1099,4 @@
     }, 15000);
   </script>
 </body>
-            </html>
+  </html>
