@@ -319,14 +319,20 @@ if (confirmAutoFollowup) {
     });
 }
 
-// ── CHAT BACK ──
-chatBack.addEventListener('click', function() {
+// ✅ Helper: Close chat and return to contact list
+function closeChatAndGoBack() {
     chatView.classList.remove('active');
+    document.body.classList.remove('chat-active');
     document.body.style.overflow = '';
     currentLeadId = null;
-    // ✅ SSE: Stop listening for this chat's updates when going back
+    // Reconnect SSE for general updates
     disconnectSSE();
     connectSSE();
+}
+
+// ── CHAT BACK ──
+chatBack.addEventListener('click', function() {
+    closeChatAndGoBack();
 });
 
 // ── CHAT INPUT ───
@@ -552,7 +558,7 @@ function renderChatMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ── ✅ OPEN CHAT — loads status in parallel
+// ── ✅ OPEN CHAT — loads status in parallel + hides logo
 function openChat(leadId, name, email) {
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         Promise.all([
@@ -572,6 +578,8 @@ function openChat(leadId, name, email) {
     chatEmail.textContent = currentLeadEmail || 'No email provided';
     
     chatView.classList.add('active');
+    // ✅ Hide logo + menu when chat is open
+    document.body.classList.add('chat-active');
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
     if (followupDropdown) followupDropdown.classList.remove('show');
@@ -579,6 +587,9 @@ function openChat(leadId, name, email) {
     chatInput.value = '';
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
+
+    // Push browser history state so phone back button goes to contact list
+    history.pushState({ chatOpen: true }, '', window.location.href);
 
     Promise.all([
         loadFollowUpStatus(),
@@ -1185,8 +1196,6 @@ function openAutoReplyModal() {
 
 // ============================================================
 // ✅ SSE: REAL-TIME MESSAGE DELIVERY — Instant (< 1 second)
-// When a customer replies, the server pushes it to your browser instantly.
-// No polling. No refresh. Message appears in under 1 second.
 // ============================================================
 
 var _eventSource = null;
@@ -1195,7 +1204,6 @@ var _sseConnected = false;
 var _sseLastMessageId = '';
 
 function connectSSE() {
-    // Close existing connection if any
     if (_eventSource) {
         try { _eventSource.close(); } catch (e) {}
         _eventSource = null;
@@ -1205,8 +1213,6 @@ function connectSSE() {
 
     console.log('\ud83d\udce1 [SSE] Connecting to real-time stream...');
 
-    // EventSource can't send custom headers, so token goes in query string
-    // server.js has middleware that reads it and sets Authorization header
     _eventSource = new EventSource(BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
 
     _eventSource.onopen = function() {
@@ -1251,28 +1257,22 @@ function handleSSEEvent(data) {
         case 'new_message':
             console.log('\ud83d\udce1 [SSE] New message received for lead:', data.leadId);
 
-            // Prevent duplicate processing of the same message
             if (data.messageId && data.messageId === _sseLastMessageId) {
                 console.log('\ud83d\udce1 [SSE] Duplicate message skipped:', data.messageId);
                 return;
             }
             if (data.messageId) _sseLastMessageId = data.messageId;
 
-            // If this message is for the currently open chat — show it instantly
             if (currentLeadId && data.leadId === currentLeadId) {
-                // Invalidate chat history cache so next full reload gets fresh data
                 delete _cachedChatHistory[currentLeadId];
 
-                // Determine the sender role
                 var senderRole = 'customer';
                 if (data.sent || data.fromEmail === '') {
-                    senderRole = 'lead'; // It's our sent message or auto-reply
+                    senderRole = 'lead';
                 }
 
-                // Append the new message directly to the chat — instant, no API call needed
                 appendMessage(senderRole, data.content, data.date);
 
-                // Show toast notification
                 if (data.autoReply) {
                     showToast('\ud83e\udd16 AI Auto-Reply sent to ' + (data.leadName || 'customer') + '!');
                 } else if (data.sent) {
@@ -1281,7 +1281,6 @@ function handleSSEEvent(data) {
                     showToast('\ud83d\udcac New reply from ' + (data.leadName || 'customer') + '!');
                 }
 
-                // Also do a full history reload in background after 500ms to stay perfectly in sync
                 setTimeout(function() {
                     if (currentLeadId === data.leadId) {
                         loadChatHistory(currentLeadId);
@@ -1289,7 +1288,6 @@ function handleSSEEvent(data) {
                 }, 500);
             }
 
-            // Always refresh the contact list to update preview text + timestamps
             _cachedContacts = null;
             _cachedContactsTime = 0;
             loadContacts(true);
@@ -1297,7 +1295,6 @@ function handleSSEEvent(data) {
 
         case 'connection_expired':
             showToast('\u26a0\ufe0f ' + (data.message || 'Email connection expired. Please reconnect.'));
-            // Refresh status bar if on a page that shows it
             _cachedContacts = null;
             _cachedContactsTime = 0;
             loadContacts(true);
@@ -1320,9 +1317,20 @@ function disconnectSSE() {
     _sseConnected = false;
 }
 
-// Clean up SSE connection when user leaves the page
 window.addEventListener('beforeunload', disconnectSSE);
+
+// ✅ PHONE BACK BUTTON: If chat is open, go back to contact list instead of page.html
+window.addEventListener('popstate', function(e) {
+    if (chatView.classList.contains('active')) {
+        // Prevent navigation away — close chat instead
+        closeChatAndGoBack();
+        // Re-push state so next back press also stays on this page
+        history.pushState(null, '', window.location.href);
+    }
+});
 
 // ── START EVERYTHING ───
 loadContacts();
 connectSSE();
+// Push initial state so popstate listener works
+history.pushState(null, '', window.location.href);
