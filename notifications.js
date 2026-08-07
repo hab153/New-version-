@@ -449,12 +449,11 @@ function sendMessage() {
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if (data.success) {
-            // ✅ STEP 3: Server confirmed — sync with full history in background
+            // ✅ STEP 3: Silent background sync — NO loading spinner
+            // Just invalidate cache so next manual refresh gets fresh data
             delete _cachedChatHistory[currentLeadId];
-            setTimeout(function() {
-                loadChatHistory(currentLeadId);
-            }, 500);
             
+            // Refresh contact list preview silently
             setTimeout(function() {
                 _cachedContacts = null;
                 _cachedContactsTime = 0;
@@ -1285,11 +1284,8 @@ function handleSSEEvent(data) {
                     showToast('\ud83d\udcac New reply from ' + (data.leadName || 'customer') + '!');
                 }
 
-                setTimeout(function() {
-                    if (currentLeadId === data.leadId) {
-                        loadChatHistory(currentLeadId);
-                    }
-                }, 500);
+                // ✅ Silent sync — just invalidate cache, no reload flash
+                delete _cachedChatHistory[currentLeadId];
             }
 
             _cachedContacts = null;
