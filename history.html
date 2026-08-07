@@ -4,10 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>History | Skyline AA-1</title>
-    <!-- ✅ XSS PROTECTION LIBRARY -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <!-- ✅ PERF #1: Preconnect to backend — warms up TLS+TCP before first API call -->
+    <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
+    <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
+
+    <!-- ✅ PERF #2: DOMPurify deferred — doesn't block page render -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
+
+    <!-- ✅ PERF #3: Non-blocking Google Fonts — page shows instantly with system fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+
     <style>
         /* ── Reset & Base ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,7 +80,7 @@
             to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* ── Container ── */
+        /* ── Container ─ */
         .container {
             max-width: 820px;
             margin: 0 auto;
@@ -78,7 +88,7 @@
             width: 100%;
             flex: 1;
             overflow-y: auto;
-            padding-bottom: calc(var(--nav-h) + 20px); /* Space for fixed nav */
+            padding-bottom: calc(var(--nav-h) + 20px);
         }
 
         /* ── Header ── */
@@ -602,18 +612,18 @@
     function showToast(message, type = 'success', duration = 4000) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
-        toast.className = `toast ${type}`;
+        toast.className = 'toast ' + type;
         toast.style.display = 'block';
         clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        toast._timeout = setTimeout(function() { toast.style.display = 'none'; }, duration);
     }
 
     // ──────────────────────────────────────────────────────────────
     //  CONFIG
     // ──────────────────────────────────────────────────────────────
 
-    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token = localStorage.getItem('token');
+    var BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    var token = localStorage.getItem('token');
 
     if (!token) {
         window.location.href = 'login.html';
@@ -623,21 +633,26 @@
     //  STATE
     // ──────────────────────────────────────────────────────────────
 
-    let allSessions = [];
-    let contextTargetId = null;
-    let currentRenameId = null;
-    let expandedSessions = new Set();
+    var allSessions = [];
+    var contextTargetId = null;
+    var currentRenameId = null;
+    var expandedSessions = {};
+
+    // ✅ PERF #4: Cache sessions list — skip API if data < 60s old
+    var _cachedSessions = null;
+    var _cachedSessionsTime = 0;
+    var SESSIONS_CACHE_TTL = 60000; // 60 seconds
 
     // ──────────────────────────────────────────────────────────────
     //  DOM REFS
     // ──────────────────────────────────────────────────────────────
 
-    const sessionList = document.getElementById('sessionList');
-    const searchInput = document.getElementById('searchInput');
-    const countBadge = document.getElementById('countBadge');
-    const contextMenu = document.getElementById('contextMenu');
-    const renameModal = document.getElementById('renameModal');
-    const renameInput = document.getElementById('renameInput');
+    var sessionList = document.getElementById('sessionList');
+    var searchInput = document.getElementById('searchInput');
+    var countBadge = document.getElementById('countBadge');
+    var contextMenu = document.getElementById('contextMenu');
+    var renameModal = document.getElementById('renameModal');
+    var renameInput = document.getElementById('renameInput');
 
     // ──────────────────────────────────────────────────────────────
     //  UTILITY FUNCTIONS
@@ -645,74 +660,75 @@
 
     function escapeHtml(str) {
         if (!str) return '';
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    }
+
+    // ✅ PERF: Safe DOMPurify wrapper — works even if DOMPurify hasn't loaded yet (deferred)
+    function safeSanitize(str) {
+        if (!str) return '';
+        if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
+        return escapeHtml(str);
     }
 
     function getDateGroup(dateStr) {
         if (!dateStr) return 'more';
         try {
-            const d = new Date(dateStr);
+            var d = new Date(dateStr);
             if (isNaN(d.getTime())) return 'more';
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const yesterday = new Date(today);
+            var now = new Date();
+            var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            var yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
-            const weekAgo = new Date(today);
+            var weekAgo = new Date(today);
             weekAgo.setDate(weekAgo.getDate() - 7);
-            const monthAgo = new Date(today);
+            var monthAgo = new Date(today);
             monthAgo.setMonth(monthAgo.getMonth() - 1);
 
-            const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            var dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
             if (dateOnly.getTime() === today.getTime()) return 'today';
             if (dateOnly.getTime() === yesterday.getTime()) return 'yesterday';
             if (dateOnly > weekAgo) return 'week';
             if (dateOnly > monthAgo) return 'month';
             return 'more';
-        } catch { return 'more'; }
+        } catch (e) { return 'more'; }
     }
 
     function getDateGroupLabel(group) {
-        const labels = {
-            'today': 'Today',
-            'yesterday': 'Yesterday',
-            'week': 'This Week',
-            'month': 'This Month',
-            'more': 'Older'
-        };
+        var labels = { 'today': 'Today', 'yesterday': 'Yesterday', 'week': 'This Week', 'month': 'This Month', 'more': 'Older' };
         return labels[group] || 'Older';
     }
 
     function formatDate(dateStr) {
         if (!dateStr) return '';
         try {
-            const d = new Date(dateStr);
+            var d = new Date(dateStr);
             if (isNaN(d.getTime())) return '';
-            const now = new Date();
-            const diff = now - d;
+            var now = new Date();
+            var diff = now - d;
 
             if (diff < 60000) return 'Just now';
             if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
             if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
             if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
             return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        } catch { return ''; }
+        } catch (e) { return ''; }
     }
 
     function formatTime(dateStr) {
         if (!dateStr) return '';
         try {
-            const d = new Date(dateStr);
+            var d = new Date(dateStr);
             if (isNaN(d.getTime())) return '';
             return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch { return ''; }
+        } catch (e) { return ''; }
     }
 
     function formatAI(text) {
         if (!text) return '';
-        let s = DOMPurify.sanitize(text); // ✅ SANITIZE BEFORE FORMATTING
+        var s = safeSanitize(text);
         s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
         s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) {
@@ -735,35 +751,37 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  LOAD SESSIONS
+    //  ✅ PERF #4: LOAD SESSIONS — cached, skips API if data < 60s old
     // ──────────────────────────────────────────────────────────────
 
-    async function loadSessions() {
-        try {
-            const res = await fetch(`${BACKEND}/api/sessions`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+    function loadSessions(forceRefresh) {
+        var now_ts = Date.now();
 
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            allSessions = await res.json();
+        // Use cache if available and fresh (unless force refresh after rename/delete/pin)
+        if (!forceRefresh && _cachedSessions && (now_ts - _cachedSessionsTime) < SESSIONS_CACHE_TTL) {
+            allSessions = _cachedSessions;
             renderSessions(allSessions);
-
-        } catch (err) {
-            console.error('Error loading sessions:', err);
-            sessionList.innerHTML = `
-                <div class="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 16px;">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                    Failed to load sessions.<br>
-                    <span style="font-size:12px;color:var(--t4);">${err.message}</span>
-                </div>
-            `;
-            countBadge.textContent = '0';
+            return Promise.resolve();
         }
+
+        return fetch(BACKEND + '/api/sessions', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function(data) {
+            allSessions = data;
+            _cachedSessions = data;
+            _cachedSessionsTime = Date.now();
+            renderSessions(allSessions);
+        })
+        .catch(function(err) {
+            console.error('Error loading sessions:', err);
+            sessionList.innerHTML = '<div class="empty-state">Failed to load sessions.<br><span style="font-size:12px;color:var(--t4);">' + escapeHtml(err.message) + '</span></div>';
+            countBadge.textContent = '0';
+        });
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -775,49 +793,39 @@
         countBadge.textContent = sessions.length;
 
         if (sessions.length === 0) {
-            sessionList.innerHTML = `
-                <div class="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 16px;">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    No conversations yet.<br>
-                    <span style="font-size:13px;color:var(--t4);">Start a new search in the Dream Architect.</span>
-                </div>
-            `;
+            sessionList.innerHTML = '<div class="empty-state">No conversations yet.<br><span style="font-size:13px;color:var(--t4);">Start a new search in the Dream Architect.</span></div>';
             return;
         }
 
-        // Group sessions by date
-        const groups = {};
-        const order = ['today', 'yesterday', 'week', 'month', 'more'];
+        var groups = {};
+        var order = ['today', 'yesterday', 'week', 'month', 'more'];
 
-        for (const session of sessions) {
-            const group = getDateGroup(session.lastUpdated || session.createdAt);
+        for (var i = 0; i < sessions.length; i++) {
+            var session = sessions[i];
+            var group = getDateGroup(session.lastUpdated || session.createdAt);
             if (!groups[group]) groups[group] = [];
             groups[group].push(session);
         }
 
-        // Sort sessions within each group by date (newest first)
-        for (const key in groups) {
-            groups[key].sort((a, b) => {
-                const dateA = new Date(a.lastUpdated || a.createdAt);
-                const dateB = new Date(b.lastUpdated || b.createdAt);
+        for (var key in groups) {
+            groups[key].sort(function(a, b) {
+                var dateA = new Date(a.lastUpdated || a.createdAt);
+                var dateB = new Date(b.lastUpdated || b.createdAt);
                 return dateB - dateA;
             });
         }
 
-        // Render each group
-        for (const key of order) {
-            if (!groups[key] || groups[key].length === 0) continue;
+        for (var j = 0; j < order.length; j++) {
+            var gKey = order[j];
+            if (!groups[gKey] || groups[gKey].length === 0) continue;
 
-            const groupDiv = document.createElement('div');
+            var groupDiv = document.createElement('div');
             groupDiv.className = 'date-group-header';
-            groupDiv.textContent = getDateGroupLabel(key);
+            groupDiv.textContent = getDateGroupLabel(gKey);
             sessionList.appendChild(groupDiv);
 
-            for (const session of groups[key]) {
-                const item = createSessionElement(session);
+            for (var k = 0; k < groups[gKey].length; k++) {
+                var item = createSessionElement(groups[gKey][k]);
                 sessionList.appendChild(item);
             }
         }
@@ -828,95 +836,70 @@
     // ──────────────────────────────────────────────────────────────
 
     function createSessionElement(session) {
-        const sessionId = session.sessionId;
-        const name = session.name || 'Untitled';
-        const type = session.type || 'chat';
-        const msgCount = session.messageCount || 0;
-        const isPinned = session.pinned || false;
-        const isExpanded = expandedSessions.has(sessionId);
-        const date = formatDate(session.lastUpdated || session.createdAt);
-        const typeLabel = getTypeLabel(type);
-        const typeClass = getTypeClass(type);
+        var sessionId = session.sessionId;
+        var name = session.name || 'Untitled';
+        var type = session.type || 'chat';
+        var msgCount = session.messageCount || 0;
+        var isPinned = session.pinned || false;
+        var isExpanded = !!expandedSessions[sessionId];
+        var date = formatDate(session.lastUpdated || session.createdAt);
+        var typeLabel = getTypeLabel(type);
+        var typeClass = getTypeClass(type);
 
-        const div = document.createElement('div');
-        div.className = `session-item${isPinned ? ' pinned' : ''}${isExpanded ? ' expanded' : ''}`;
+        var div = document.createElement('div');
+        div.className = 'session-item' + (isPinned ? ' pinned' : '') + (isExpanded ? ' expanded' : '');
         div.dataset.sessionId = sessionId;
 
-        // ── Header ──
-        const header = document.createElement('div');
+        var header = document.createElement('div');
         header.className = 'session-header';
         header.dataset.sessionId = sessionId;
 
-        const nameSpan = document.createElement('span');
+        var nameSpan = document.createElement('span');
         nameSpan.className = 'session-name';
-        // ✅ SANITIZE SESSION NAME
-        nameSpan.innerHTML = `
-            ${isPinned ? `<span class="pin-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 17v5"/>
-                    <path d="M5 17h14"/>
-                    <path d="M7 7l10 10"/>
-                    <path d="M9 5l2 2"/>
-                    <path d="M15 11l2 2"/>
-                    <path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/>
-                </svg>
-            </span>` : ''}
-            ${DOMPurify.sanitize(name)}
-        `;
+        var pinSvg = isPinned ? '<span class="pin-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>' : '';
+        nameSpan.innerHTML = pinSvg + safeSanitize(name);
         header.appendChild(nameSpan);
 
-        const meta = document.createElement('div');
+        var meta = document.createElement('div');
         meta.className = 'session-meta';
-        meta.innerHTML = `
-            <span class="count">${msgCount}</span>
-            <span>${date}</span>
-            <span class="type-badge ${typeClass}">${typeLabel}</span>
-            <span class="session-arrow">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </span>
-        `;
+        meta.innerHTML = '<span class="count">' + msgCount + '</span><span>' + date + '</span><span class="type-badge ' + typeClass + '">' + typeLabel + '</span><span class="session-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span>';
         header.appendChild(meta);
 
-        // ── Messages Container ──
-        const messagesDiv = document.createElement('div');
+        var messagesDiv = document.createElement('div');
         messagesDiv.className = 'session-messages';
 
-        const inner = document.createElement('div');
+        var inner = document.createElement('div');
         inner.className = 'session-messages-inner';
-        inner.innerHTML = `<div class="loading-spinner" style="padding:12px;font-size:11px;">Loading messages…</div>`;
+        inner.innerHTML = '<div class="loading-spinner" style="padding:12px;font-size:11px;">Loading messages\u2026</div>';
         messagesDiv.appendChild(inner);
 
         div.appendChild(header);
         div.appendChild(messagesDiv);
 
-        // ── Click to Expand ──
         header.onclick = function(e) {
             e.stopPropagation();
-            const sid = this.dataset.sessionId;
+            var sid = this.dataset.sessionId;
             toggleSession(sid, div, messagesDiv);
         };
 
-        // ── Context Menu (Right Click) ──
         header.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            const sid = this.dataset.sessionId;
+            var sid = this.dataset.sessionId;
             showContextMenu(e.clientX, e.clientY, sid);
         });
 
-        // ── Long Press for Mobile ──
-        let timer;
+        var timer;
         header.addEventListener('touchstart', function(e) {
-            timer = setTimeout(() => {
+            var self = this;
+            timer = setTimeout(function() {
                 e.preventDefault();
-                const touch = e.touches[0];
-                const sid = this.dataset.sessionId;
+                var touch = e.touches[0];
+                var sid = self.dataset.sessionId;
                 showContextMenu(touch.clientX, touch.clientY, sid);
             }, 600);
         });
-        header.addEventListener('touchend', () => clearTimeout(timer));
-        header.addEventListener('touchmove', () => clearTimeout(timer));
+        header.addEventListener('touchend', function() { clearTimeout(timer); });
+        header.addEventListener('touchmove', function() { clearTimeout(timer); });
 
         return div;
     }
@@ -926,13 +909,13 @@
     // ──────────────────────────────────────────────────────────────
 
     function toggleSession(sessionId, element, messagesDiv) {
-        const isExpanded = expandedSessions.has(sessionId);
+        var isExpanded = !!expandedSessions[sessionId];
 
         if (isExpanded) {
-            expandedSessions.delete(sessionId);
+            delete expandedSessions[sessionId];
             element.classList.remove('expanded');
         } else {
-            expandedSessions.add(sessionId);
+            expandedSessions[sessionId] = true;
             element.classList.add('expanded');
             loadMessages(sessionId, messagesDiv);
         }
@@ -942,38 +925,37 @@
     //  LOAD MESSAGES
     // ──────────────────────────────────────────────────────────────
 
-    async function loadMessages(sessionId, container) {
-        const inner = container.querySelector('.session-messages-inner');
+    function loadMessages(sessionId, container) {
+        var inner = container.querySelector('.session-messages-inner');
         if (!inner) return;
 
         if (inner.dataset.loaded === 'true') return;
 
-        try {
-            const res = await fetch(`${BACKEND}/api/history/messages/${sessionId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            const messages = await res.json();
-
+        fetch(BACKEND + '/api/history/messages/' + encodeURIComponent(sessionId), {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function(messages) {
             inner.innerHTML = '';
 
             if (!messages || messages.length === 0) {
-                inner.innerHTML = `<div class="no-messages">No messages in this session.</div>`;
+                inner.innerHTML = '<div class="no-messages">No messages in this session.</div>';
             } else {
-                for (const msg of messages) {
-                    const bubble = createMessageBubble(msg);
+                for (var i = 0; i < messages.length; i++) {
+                    var bubble = createMessageBubble(messages[i]);
                     inner.appendChild(bubble);
                 }
             }
 
             inner.dataset.loaded = 'true';
-
-        } catch (err) {
+        })
+        .catch(function(err) {
             console.error('Error loading messages:', err);
-            inner.innerHTML = `<div class="error-msg">⚠️ Failed to load messages: ${err.message}</div>`;
-        }
+            inner.innerHTML = '<div class="error-msg">\u26a0\ufe0f Failed to load messages</div>';
+        });
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -981,32 +963,31 @@
     // ──────────────────────────────────────────────────────────────
 
     function createMessageBubble(msg) {
-        const div = document.createElement('div');
-        const role = msg.role || 'user';
-        div.className = `msg-bubble ${role}`;
+        var div = document.createElement('div');
+        var role = msg.role || 'user';
+        div.className = 'msg-bubble ' + role;
 
-        const roleLabel = role === 'ai' ? 'AI' : 'You';
+        var roleLabel = role === 'ai' ? 'AI' : 'You';
 
-        let content = msg.content || '';
-        let displayContent = content;
+        var content = msg.content || '';
+        var displayContent = content;
 
         if (role === 'ai') {
-            if ((content.startsWith('[') || content.startsWith('{')) && content.length > 2) {
+            if ((content.charAt(0) === '[' || content.charAt(0) === '{') && content.length > 2) {
                 try {
-                    const parsed = JSON.parse(content);
+                    var parsed = JSON.parse(content);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                        let leadText = `📊 ${parsed.length} lead${parsed.length > 1 ? 's' : ''} found\n\n`;
-                        const maxShow = Math.min(parsed.length, 5);
-                        for (let i = 0; i < maxShow; i++) {
-                            const l = parsed[i];
-                            const name = l.name || l.company || 'Unknown';
-                            const company = l.company || '';
-                            const email = l.email || '';
-                            // ✅ SANITIZE LEAD DATA IN CHAT
-                            leadText += `${i+1}. ${DOMPurify.sanitize(name)}${company ? ' - ' + DOMPurify.sanitize(company) : ''}${email ? ' (' + DOMPurify.sanitize(email) + ')' : ''}\n`;
+                        var leadText = '\ud83d\udcca ' + parsed.length + ' lead' + (parsed.length > 1 ? 's' : '') + ' found\n\n';
+                        var maxShow = Math.min(parsed.length, 5);
+                        for (var i = 0; i < maxShow; i++) {
+                            var l = parsed[i];
+                            var lname = l.name || l.company || 'Unknown';
+                            var company = l.company || '';
+                            var email = l.email || '';
+                            leadText += (i + 1) + '. ' + safeSanitize(lname) + (company ? ' - ' + safeSanitize(company) : '') + (email ? ' (' + safeSanitize(email) + ')' : '') + '\n';
                         }
                         if (parsed.length > 5) {
-                            leadText += `\n... and ${parsed.length - 5} more`;
+                            leadText += '\n... and ' + (parsed.length - 5) + ' more';
                         }
                         displayContent = leadText;
                     } else {
@@ -1019,16 +1000,12 @@
                 displayContent = formatAI(content);
             }
         } else {
-            displayContent = DOMPurify.sanitize(content); // ✅ SANITIZE USER INPUT
+            displayContent = safeSanitize(content);
         }
 
-        const time = msg.time || formatTime(msg.createdAt);
+        var time = msg.time || formatTime(msg.createdAt);
 
-        div.innerHTML = `
-            <div class="msg-role">${roleLabel}</div>
-            <div class="msg-content">${displayContent}</div>
-            ${time ? `<div class="msg-time">${time}</div>` : ''}
-        `;
+        div.innerHTML = '<div class="msg-role">' + roleLabel + '</div><div class="msg-content">' + displayContent + '</div>' + (time ? '<div class="msg-time">' + time + '</div>' : '');
 
         return div;
     }
@@ -1039,17 +1016,20 @@
 
     function showContextMenu(x, y, sessionId) {
         contextTargetId = sessionId;
-        const session = allSessions.find(s => s.sessionId === sessionId);
-        const isPinned = session?.pinned || false;
+        var session = null;
+        for (var i = 0; i < allSessions.length; i++) {
+            if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; }
+        }
+        var isPinned = session ? (session.pinned || false) : false;
 
-        const pinBtn = document.getElementById('pinBtn');
-        const pinLabel = document.getElementById('pinLabel');
+        var pinBtn = document.getElementById('pinBtn');
+        var pinLabel = document.getElementById('pinLabel');
         pinLabel.textContent = isPinned ? 'Unpin' : 'Pin';
 
-        const menuWidth = 170;
-        const menuHeight = 140;
-        const left = Math.min(x, window.innerWidth - menuWidth - 10);
-        const top = Math.min(y, window.innerHeight - menuHeight - 10);
+        var menuWidth = 170;
+        var menuHeight = 140;
+        var left = Math.min(x, window.innerWidth - menuWidth - 10);
+        var top = Math.min(y, window.innerHeight - menuHeight - 10);
         contextMenu.style.left = Math.max(10, left) + 'px';
         contextMenu.style.top = Math.max(10, top) + 'px';
         contextMenu.style.display = 'block';
@@ -1064,17 +1044,18 @@
         if (!contextMenu.contains(e.target)) hideContextMenu();
     });
 
-    document.querySelectorAll('#contextMenu .ctx-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const action = this.dataset.action;
-            const sid = contextTargetId;
+    var ctxBtns = document.querySelectorAll('#contextMenu .ctx-btn');
+    for (var ci = 0; ci < ctxBtns.length; ci++) {
+        ctxBtns[ci].addEventListener('click', function() {
+            var action = this.dataset.action;
+            var sid = contextTargetId;
             hideContextMenu();
 
             if (action === 'rename') openRenameModal(sid);
             else if (action === 'pin') togglePin(sid);
             else if (action === 'delete') deleteSession(sid);
         });
-    });
+    }
 
     // ──────────────────────────────────────────────────────────────
     //  RENAME SESSION
@@ -1082,8 +1063,11 @@
 
     function openRenameModal(sessionId) {
         currentRenameId = sessionId;
-        const session = allSessions.find(s => s.sessionId === sessionId);
-        renameInput.value = session?.name || '';
+        var session = null;
+        for (var i = 0; i < allSessions.length; i++) {
+            if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; }
+        }
+        renameInput.value = session ? (session.name || '') : '';
         renameModal.classList.add('active');
         renameInput.focus();
         renameInput.select();
@@ -1094,31 +1078,31 @@
         currentRenameId = null;
     };
 
-    document.getElementById('renameConfirm').onclick = async function() {
-        const name = renameInput.value.trim();
+    document.getElementById('renameConfirm').onclick = function() {
+        var name = renameInput.value.trim();
         if (!name) return;
 
-        try {
-            const res = await fetch(`${BACKEND}/api/history/rename/${currentRenameId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ name })
-            });
-
+        fetch(BACKEND + '/api/history/rename/' + encodeURIComponent(currentRenameId), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ name: name })
+        })
+        .then(function(res) {
             if (res.ok) {
                 renameModal.classList.remove('active');
                 currentRenameId = null;
-                showToast('✅ Session renamed successfully', 'success');
-                loadSessions();
+                showToast('\u2705 Session renamed successfully', 'success');
+                // ✅ PERF: Invalidate cache after rename — force fresh data
+                _cachedSessions = null;
+                _cachedSessionsTime = 0;
+                loadSessions(true);
             } else {
-                showToast('❌ Failed to rename session', 'error');
+                showToast('\u274c Failed to rename session', 'error');
             }
-        } catch (err) {
-            showToast('❌ Connection error', 'error');
-        }
+        })
+        .catch(function() {
+            showToast('\u274c Connection error', 'error');
+        });
     };
 
     renameInput.addEventListener('keydown', function(e) {
@@ -1130,56 +1114,62 @@
     //  PIN / UNPIN
     // ──────────────────────────────────────────────────────────────
 
-    async function togglePin(sessionId) {
-        const session = allSessions.find(s => s.sessionId === sessionId);
+    function togglePin(sessionId) {
+        var session = null;
+        for (var i = 0; i < allSessions.length; i++) {
+            if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; }
+        }
         if (!session) return;
 
-        const newPinned = !session.pinned;
+        var newPinned = !session.pinned;
 
-        try {
-            const res = await fetch(`${BACKEND}/api/history/pin/${sessionId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ pinned: newPinned })
-            });
-
+        fetch(BACKEND + '/api/history/pin/' + encodeURIComponent(sessionId), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ pinned: newPinned })
+        })
+        .then(function(res) {
             if (res.ok) {
-                showToast(newPinned ? '📌 Session pinned' : '📌 Session unpinned', 'success');
-                loadSessions();
+                showToast(newPinned ? '\ud83d\udccc Session pinned' : '\ud83d\udccc Session unpinned', 'success');
+                // ✅ PERF: Invalidate cache after pin change
+                _cachedSessions = null;
+                _cachedSessionsTime = 0;
+                loadSessions(true);
             } else {
-                showToast('❌ Failed to update pin', 'error');
+                showToast('\u274c Failed to update pin', 'error');
             }
-        } catch (err) {
-            showToast('❌ Connection error', 'error');
-        }
+        })
+        .catch(function() {
+            showToast('\u274c Connection error', 'error');
+        });
     }
 
     // ──────────────────────────────────────────────────────────────
     //  DELETE SESSION
     // ──────────────────────────────────────────────────────────────
 
-    async function deleteSession(sessionId) {
+    function deleteSession(sessionId) {
         if (!confirm('Delete this session and all its messages?')) return;
 
-        try {
-            const res = await fetch(`${BACKEND}/api/history/delete/${sessionId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
+        fetch(BACKEND + '/api/history/delete/' + encodeURIComponent(sessionId), {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(res) {
             if (res.ok) {
-                expandedSessions.delete(sessionId);
-                showToast('🗑️ Session deleted', 'success');
-                loadSessions();
+                delete expandedSessions[sessionId];
+                showToast('\ud83d\uddd1\ufe0f Session deleted', 'success');
+                // ✅ PERF: Invalidate cache after delete
+                _cachedSessions = null;
+                _cachedSessionsTime = 0;
+                loadSessions(true);
             } else {
-                showToast('❌ Failed to delete session', 'error');
+                showToast('\u274c Failed to delete session', 'error');
             }
-        } catch (err) {
-            showToast('❌ Connection error', 'error');
-        }
+        })
+        .catch(function() {
+            showToast('\u274c Connection error', 'error');
+        });
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -1187,14 +1177,17 @@
     // ──────────────────────────────────────────────────────────────
 
     searchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
+        var query = this.value.toLowerCase().trim();
         if (!query) {
             renderSessions(allSessions);
             return;
         }
-        const filtered = allSessions.filter(s =>
-            (s.name || '').toLowerCase().includes(query)
-        );
+        var filtered = [];
+        for (var i = 0; i < allSessions.length; i++) {
+            if ((allSessions[i].name || '').toLowerCase().indexOf(query) !== -1) {
+                filtered.push(allSessions[i]);
+            }
+        }
         renderSessions(filtered);
     });
 
@@ -1203,12 +1196,9 @@
     // ──────────────────────────────────────────────────────────────
 
     document.addEventListener('DOMContentLoaded', function() {
+        // ✅ PERF: Load sessions immediately — benefits from server-side cache + gzip + keep-alive
         loadSessions();
-
-        document.addEventListener('click', function(e) {
-            if (!contextMenu.contains(e.target)) hideContextMenu();
-        });
     });
 </script>
 </body>
-                </html>
+    </html>
