@@ -18,8 +18,21 @@
       --success: #66dd99;
       --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
       --font-mono: 'Monaco', 'Menlo', monospace;
+      --nav-h: 68px; --top-h: 54px; --bar-h: 30px;
+      --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
     }
     html, body { height: 100%; background: var(--void); color: var(--text-1); overflow: hidden; font-family: var(--font-display); }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(201,168,76,0.055) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%),
+      radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%);
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 180px;
+    }
     .page { display: flex; height: 100vh; width: 100vw; animation: pageIn 0.6s ease-out both; }
     @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
     .panel-left {
@@ -47,7 +60,7 @@
     .quote-text { font-family: var(--font-display); font-size: 24px; font-weight: 400; line-height: 1.5; color: var(--text-1); letter-spacing: -0.01em; max-width: 340px; }
     .quote-text em { font-weight: 600; color: var(--accent); font-style: normal; }
     .quote-attr { margin-top: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
-    .panel-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 64px; background: var(--base); position: relative; }
+    .panel-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 64px; background: var(--void); position: relative; }
     .panel-right::before { content: ''; position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle at top right, rgba(255,255,255,0.02), transparent 70%); pointer-events: none; }
     .form-card { width: 100%; max-width: 400px; position: relative; z-index: 1; background: var(--surface); border-radius: 16px; padding: 40px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .form-header { margin-bottom: 40px; animation: fadeUp 0.6s 0.15s both; }
@@ -138,110 +151,278 @@
     @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); } 70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
     @media (max-width: 768px) { .panel-left { display: none; } .panel-right { padding: 32px 24px; } .form-card { max-width: 420px; } }
+    
+    /* ─── LOGIN SPECIFIC STYLES ─── */
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+      padding-bottom: calc(var(--nav-h) + 20px); /* Space for fixed nav */
+    }
+    
+    /* ─── BOTTOM NAVIGATION ─── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: var(--base);
+      border-top: 1px solid var(--border);
+      z-index: 40;
+      padding: 0 8px;
+    }
+    .bottom-nav::before { 
+      content: ''; 
+      position: absolute; 
+      top: 0; 
+      left: 20%; 
+      right: 20%; 
+      height: 1px; 
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); 
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      flex: 1;
+      cursor: pointer;
+      padding: 7px 0;
+      text-decoration: none;
+      color: var(--text-3);
+      transition: color 0.25s;
+      position: relative;
+      border: none;
+      background: none;
+    }
+    .nav-item svg { 
+      transition: transform 0.2s; 
+    }
+    .nav-item:hover { 
+      color: var(--accent); 
+    }
+    .nav-item:hover svg { 
+      transform: scale(1.1) translateY(-1px); 
+    }
+    .nav-item.active { 
+      color: var(--accent); 
+    }
+    .nav-item.active::after {
+      content: ''; 
+      position: absolute; 
+      bottom: -1px; 
+      left: 50%; 
+      transform: translateX(-50%);
+      width: 20px; 
+      height: 2px; 
+      background: linear-gradient(90deg, transparent, var(--accent), transparent); 
+      border-radius: 2px 2px 0 0;
+    }
+    .nav-item.nav-home .home-wrap {
+      width: 44px; 
+      height: 44px; 
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-lt) 50%, var(--accent) 100%);
+      border-radius: var(--r-md); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s; 
+      box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
+      position: relative; 
+      overflow: hidden;
+    }
+    .nav-item.nav-home .home-wrap::before { 
+      content: ''; 
+      position: absolute; 
+      inset: 0; 
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); 
+    }
+    .nav-item.nav-home:hover .home-wrap { 
+      transform: scale(1.07) translateY(-2px); 
+      box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); 
+    }
+    .nav-item.nav-home svg { 
+      color: #0d0a04; 
+      position: relative; 
+      z-index: 1; 
+    }
+    .nav-item.nav-home::after { 
+      display: none; 
+    }
+    .nav-badge {
+      position: absolute; 
+      top: 2px; 
+      right: calc(50% - 20px); 
+      min-width: 14px; 
+      height: 14px; 
+      background: var(--error);
+      border-radius: 10px; 
+      border: 1.5px solid var(--base); 
+      display: none; 
+      color: white; 
+      font-family: var(--font-mono);
+      font-size: 7px; 
+      font-weight: 600; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 0 3px; 
+      z-index: 2; 
+      box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+    }
+    .nav-item.has-notifs .nav-badge { 
+      display: flex; 
+    }
   </style>
 </head>
 <body>
-<div class="page">
-  <aside class="panel-left">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M6 6L10 10M10 6L6 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+<div class="container">
+  <div class="page">
+    <aside class="panel-left">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M6 6L10 10M10 6L6 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <span class="brand-name">Skyline AA-1</span>
       </div>
-      <span class="brand-name">Skyline AA-1</span>
-    </div>
-    <div class="art-wrap">
-      <svg class="art-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="200" cy="200" r="180" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
-        <circle cx="200" cy="200" r="140" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
-        <circle cx="200" cy="200" r="100" stroke="currentColor" stroke-width="0.5" opacity="0.15"/>
-        <polygon points="200,30 360,280 40,280" stroke="currentColor" stroke-width="0.6" fill="none" opacity="0.2"/>
-        <line x1="40" y1="200" x2="360" y2="200" stroke="currentColor" stroke-width="0.4" opacity="0.15"/>
-        <line x1="200" y1="40" x2="200" y2="360" stroke="currentColor" stroke-width="0.4" opacity="0.15"/>
+      <div class="art-wrap">
+        <svg class="art-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="200" cy="200" r="180" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+          <circle cx="200" cy="200" r="140" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+          <circle cx="200" cy="200" r="100" stroke="currentColor" stroke-width="0.5" opacity="0.15"/>
+          <polygon points="200,30 360,280 40,280" stroke="currentColor" stroke-width="0.6" fill="none" opacity="0.2"/>
+          <line x1="40" y1="200" x2="360" y2="200" stroke="currentColor" stroke-width="0.4" opacity="0.15"/>
+          <line x1="200" y1="40" x2="200" y2="360" stroke="currentColor" stroke-width="0.4" opacity="0.15"/>
+        </svg>
+      </div>
+      <div class="panel-quote">
+        <span class="quote-line"></span>
+        <p class="quote-text">Every <em>great dream</em> begins with a single step forward.</p>
+        <p class="quote-attr">Skyline AA-1 · Business Agent</p>
+      </div>
+    </aside>
+    <main class="panel-right">
+      <div class="form-card">
+        <div class="form-header">
+          <p class="form-eyebrow">Secure Access</p>
+          <h1 class="form-title">Welcome<br><strong>back</strong></h1>
+          <p class="form-sub">Sign in to your account to continue.</p>
+        </div>
+        
+        <div class="social-login">
+          <button class="social-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 4H12a10 10 0 0 0-7.33 16.76 1 1 0 0 0 1.56 1.24A8 8 0 0 1 12 6h10a1 1 0 0 1 1 1v5.26a1 1 0 0 0 1 1 1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/>
+            </svg>
+            Google
+          </button>
+          <button class="social-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+            Facebook
+          </button>
+        </div>
+        
+        <div class="divider"><span>or</span></div>
+        
+        <form id="loginForm" novalidate autocomplete="off">
+          <div class="fields">
+            <div class="field">
+              <label class="field-label" for="identifier">Email or Username</label>
+              <div class="input-wrap">
+                <span class="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 13.5c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </span>
+                <input type="text" id="identifier" placeholder="you@example.com" required autocomplete="username" spellcheck="false" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="password">Password</label>
+              <div class="input-wrap">
+                <span class="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="7.5" cy="10" r="1" fill="currentColor"/></svg>
+                </span>
+                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+                <button type="button" class="pw-toggle" id="pwToggle" title="Show/hide password" tabindex="-1">
+                  <svg id="eyeIcon" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="options-row">
+            <label class="remember-label">
+              <input type="checkbox" id="rememberMe" />
+              <span class="checkbox-box"><span class="checkbox-check">✓</span></span>
+              <span>Remember me</span>
+            </label>
+            <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+          </div>
+          <div class="submit-wrap">
+            <button type="submit" class="submit-btn"><span class="btn-text">Sign In</span><span class="spinner"></span></button>
+          </div>
+          <div id="errorMessage" class="msg-box error">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span id="errorText"></span>
+          </div>
+          <div id="successMessage" class="msg-box success">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="successText"></span>
+          </div>
+          <div class="attempt-bar-wrap" id="attemptBar">
+            <div class="attempt-label"><span>failed attempts</span><span><span id="attemptCount">0</span>/5</span></div>
+            <div class="attempt-bar"><div class="attempt-fill" id="attemptFill"></div></div>
+          </div>
+        </form>
+        <div class="form-footer">Don't have an account? <a href="index.html">Sign up here</a></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ─── BOTTOM NAVIGATION ─── -->
+<nav class="bottom-nav">
+  <a href="page.html" class="nav-item nav-home">
+    <div class="home-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
     </div>
-    <div class="panel-quote">
-      <span class="quote-line"></span>
-      <p class="quote-text">Every <em>great dream</em> begins with a single step forward.</p>
-      <p class="quote-attr">Skyline AA-1 · Business Agent</p>
-    </div>
-  </aside>
-  <main class="panel-right">
-    <div class="form-card">
-      <div class="form-header">
-        <p class="form-eyebrow">Secure Access</p>
-        <h1 class="form-title">Welcome<br><strong>back</strong></h1>
-        <p class="form-sub">Sign in to your account to continue.</p>
-      </div>
-      
-      <div class="social-login">
-        <button class="social-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 4H12a10 10 0 0 0-7.33 16.76 1 1 0 0 0 1.56 1.24A8 8 0 0 1 12 6h10a1 1 0 0 1 1 1v5.26a1 1 0 0 0 1 1 1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/>
-          </svg>
-          Google
-        </button>
-        <button class="social-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-          </svg>
-          Facebook
-        </button>
-      </div>
-      
-      <div class="divider"><span>or</span></div>
-      
-      <form id="loginForm" novalidate autocomplete="off">
-        <div class="fields">
-          <div class="field">
-            <label class="field-label" for="identifier">Email or Username</label>
-            <div class="input-wrap">
-              <span class="input-icon">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 13.5c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              </span>
-              <input type="text" id="identifier" placeholder="you@example.com" required autocomplete="username" spellcheck="false" />
-            </div>
-          </div>
-          <div class="field">
-            <label class="field-label" for="password">Password</label>
-            <div class="input-wrap">
-              <span class="input-icon">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="7.5" cy="10" r="1" fill="currentColor"/></svg>
-              </span>
-              <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
-              <button type="button" class="pw-toggle" id="pwToggle" title="Show/hide password" tabindex="-1">
-                <svg id="eyeIcon" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="options-row">
-          <label class="remember-label">
-            <input type="checkbox" id="rememberMe" />
-            <span class="checkbox-box"><span class="checkbox-check">✓</span></span>
-            <span>Remember me</span>
-          </label>
-          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
-        </div>
-        <div class="submit-wrap">
-          <button type="submit" class="submit-btn"><span class="btn-text">Sign In</span><span class="spinner"></span></button>
-        </div>
-        <div id="errorMessage" class="msg-box error">
-          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <span id="errorText"></span>
-        </div>
-        <div id="successMessage" class="msg-box success">
-          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="successText"></span>
-        </div>
-        <div class="attempt-bar-wrap" id="attemptBar">
-          <div class="attempt-label"><span>failed attempts</span><span><span id="attemptCount">0</span>/5</span></div>
-          <div class="attempt-bar"><div class="attempt-fill" id="attemptFill"></div></div>
-        </div>
-      </form>
-      <div class="form-footer">Don't have an account? <a href="index.html">Sign up here</a></div>
-    </div>
-  </main>
-</div>
+  </a>
+  <a href="history.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <polyline points="12 7 12 12 15 15"/>
+      <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+      <polyline points="3 4 3 11 10 11"/>
+    </svg>
+    History
+  </a>
+  <a href="notifications.html" class="nav-item">
+    <div class="nav-badge"></div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+    Inbox
+  </a>
+  <a href="dashboard.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+</nav>
+
 <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 
@@ -430,4 +611,4 @@
     });
 </script>
 </body>
-                </html>
+                                                                                                                                                                               </html>
