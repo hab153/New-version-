@@ -4,68 +4,88 @@
 // ============================================================
 
 // ── CONFIG ───
-const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-const token = localStorage.getItem('token');
+var BACKEND = 'https://skylineapp-backend-file.onrender.com';
+var token = localStorage.getItem('token');
 
 // ── DOM ELEMENTS ──
-const loadingScreen = document.getElementById('loadingScreen');
-const contactList = document.getElementById('contactList');
-const emptyState = document.getElementById('emptyState');
-const noResults = document.getElementById('noResults');
-const searchInput = document.getElementById('searchInput');
-const menuBtn = document.getElementById('menuBtn');
-const menuDropdown = document.getElementById('menuDropdown');
-const toast = document.getElementById('toast');
-const revenueModal = document.getElementById('revenueModal');
-const revenueBody = document.getElementById('revenueBody');
-const closeRevenueModal = document.getElementById('closeRevenueModal');
-const tierBadge = document.getElementById('tierBadge');
+var loadingScreen = document.getElementById('loadingScreen');
+var contactList = document.getElementById('contactList');
+var emptyState = document.getElementById('emptyState');
+var noResults = document.getElementById('noResults');
+var searchInput = document.getElementById('searchInput');
+var menuBtn = document.getElementById('menuBtn');
+var menuDropdown = document.getElementById('menuDropdown');
+var toast = document.getElementById('toast');
+var revenueModal = document.getElementById('revenueModal');
+var revenueBody = document.getElementById('revenueBody');
+var closeRevenueModal = document.getElementById('closeRevenueModal');
+var tierBadge = document.getElementById('tierBadge');
 
 // Chat elements
-const chatView = document.getElementById('chatView');
-const chatBack = document.getElementById('chatBack');
-const chatAvatar = document.getElementById('chatAvatar');
-const chatName = document.getElementById('chatName');
-const chatEmail = document.getElementById('chatEmail');
-const chatRenameBtn = document.getElementById('chatRenameBtn');
-const messagesContainer = document.getElementById('messagesContainer');
-const chatInput = document.getElementById('chatInput');
-const chatSendBtn = document.getElementById('chatSendBtn');
+var chatView = document.getElementById('chatView');
+var chatBack = document.getElementById('chatBack');
+var chatAvatar = document.getElementById('chatAvatar');
+var chatName = document.getElementById('chatName');
+var chatEmail = document.getElementById('chatEmail');
+var chatRenameBtn = document.getElementById('chatRenameBtn');
+var messagesContainer = document.getElementById('messagesContainer');
+var chatInput = document.getElementById('chatInput');
+var chatSendBtn = document.getElementById('chatSendBtn');
 
 // ✅ NEW: AI AUTO-REPLY DOM ELEMENTS
-const chatAutoReplyBtn = document.getElementById('chatAutoReplyBtn');
-const autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
-const closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
-const autoReplyInstructions = document.getElementById('autoReplyInstructions');
-const saveAutoReplyBtn = document.getElementById('saveAutoReplyBtn');
+var chatAutoReplyBtn = document.getElementById('chatAutoReplyBtn');
+var autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
+var closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
+var autoReplyInstructions = document.getElementById('autoReplyInstructions');
+var saveAutoReplyBtn = document.getElementById('saveAutoReplyBtn');
 
 // ─── FOLLOW-UP ELEMENTS ───
-const followupBtn = document.getElementById('chatFollowupBtn');
-const followupDropdown = document.getElementById('chatFollowupDropdown');
-const followupStatus = document.getElementById('followupStatus');
+var followupBtn = document.getElementById('chatFollowupBtn');
+var followupDropdown = document.getElementById('chatFollowupDropdown');
+var followupStatus = document.getElementById('followupStatus');
 
 // ─── AUTO FOLLOW-UP MODAL ELEMENTS ───
-const autoFollowupModal = document.getElementById('autoFollowupModal');
-const closeAutoFollowupModal = document.getElementById('closeAutoFollowupModal');
-const cancelAutoFollowup = document.getElementById('cancelAutoFollowup');
-const confirmAutoFollowup = document.getElementById('confirmAutoFollowup');
-const afDayButtons = document.querySelectorAll('.af-day-btn');
-const afCustomInput = document.getElementById('afCustomInput');
-const afStatusBadge = document.getElementById('afStatusBadge');
-const afCurrentStatus = document.getElementById('afCurrentStatus');
-let afSelectedDays = 3;
-let afCurrentEnabledState = false;
+var autoFollowupModal = document.getElementById('autoFollowupModal');
+var closeAutoFollowupModal = document.getElementById('closeAutoFollowupModal');
+var cancelAutoFollowup = document.getElementById('cancelAutoFollowup');
+var confirmAutoFollowup = document.getElementById('confirmAutoFollowup');
+var afDayButtons = document.querySelectorAll('.af-day-btn');
+var afCustomInput = document.getElementById('afCustomInput');
+var afStatusBadge = document.getElementById('afStatusBadge');
+var afCurrentStatus = document.getElementById('afCurrentStatus');
+var afSelectedDays = 3;
+var afCurrentEnabledState = false;
 
 // ─── STATE ─
-let allContacts = [];
-let toastTimeout = null;
-let currentLeadId = null;
-let currentLeadName = null;
-let currentLeadEmail = null;
-let isSending = false;
+var allContacts = [];
+var toastTimeout = null;
+var currentLeadId = null;
+var currentLeadName = null;
+var currentLeadEmail = null;
+var isSending = false;
 
 // ✅ NEW: AI AUTO-REPLY STATE
-let isAutoReplyActive = false;
+var isAutoReplyActive = false;
+
+// ✅ PERF #1: Client-side cache — skip API calls if data is fresh
+var _cachedContacts = null;
+var _cachedContactsTime = 0;
+var CONTACTS_CACHE_TTL = 60000; // 60 seconds
+
+var _cachedChatHistory = {};
+var CHAT_HISTORY_CACHE_TTL = 30000; // 30 seconds
+
+var _cachedFollowUpStatus = {};
+var FOLLOWUP_CACHE_TTL = 30000; // 30 seconds
+
+// ✅ PERF: Safe DOMPurify wrapper — works even if DOMPurify hasn't loaded yet (deferred)
+function safeSanitize(str) {
+    if (!str) return '';
+    if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
 // ─── AUTH CHECK ───
 if (!token) {
@@ -73,11 +93,12 @@ if (!token) {
 }
 
 // ─── ✅ TOAST HELPER ───
-function showToast(message, duration = 3000) {
+function showToast(message, duration) {
+    duration = duration || 3000;
     toast.textContent = message;
     toast.classList.add('show');
     clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => {
+    toastTimeout = setTimeout(function() {
         toast.classList.remove('show');
     }, duration);
 }
@@ -92,10 +113,10 @@ document.addEventListener('click', function() {
     menuDropdown.classList.remove('show');
 });
 
-document.querySelectorAll('.menu-item').forEach(item => {
+document.querySelectorAll('.menu-item').forEach(function(item) {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
-        const action = this.dataset.action;
+        var action = this.dataset.action;
         menuDropdown.classList.remove('show');
         if (action === 'revenue') {
             fetchRevenueData();
@@ -154,22 +175,28 @@ if (followupBtn && followupDropdown) {
 }
 
 // ── SUGGEST FOLLOW-UP ───
-document.querySelector('.chat-followup-option[data-action="suggest"]')?.addEventListener('click', function() {
-    followupDropdown.classList.remove('show');
-    suggestFollowUp();
-});
+var suggestBtn = document.querySelector('.chat-followup-option[data-action="suggest"]');
+if (suggestBtn) {
+    suggestBtn.addEventListener('click', function() {
+        followupDropdown.classList.remove('show');
+        suggestFollowUp();
+    });
+}
 
 // ─── OPEN AUTO FOLLOW-UP MODAL ───
-document.querySelector('.chat-followup-option[data-action="auto"]')?.addEventListener('click', function(e) {
-    e.stopPropagation();
-    if (followupDropdown) {
-        followupDropdown.classList.remove('show');
-    }
-    loadFollowUpStatusForModal();
-    if (autoFollowupModal) {
-        autoFollowupModal.classList.add('active');
-    }
-});
+var autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
+if (autoFollowupOption) {
+    autoFollowupOption.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (followupDropdown) {
+            followupDropdown.classList.remove('show');
+        }
+        loadFollowUpStatusForModal();
+        if (autoFollowupModal) {
+            autoFollowupModal.classList.add('active');
+        }
+    });
+}
 
 // ── CLOSE MODAL ───
 function closeAutoFollowupModalFn() {
@@ -178,54 +205,59 @@ function closeAutoFollowupModalFn() {
     }
 }
 
-closeAutoFollowupModal?.addEventListener('click', closeAutoFollowupModalFn);
-cancelAutoFollowup?.addEventListener('click', closeAutoFollowupModalFn);
+if (closeAutoFollowupModal) closeAutoFollowupModal.addEventListener('click', closeAutoFollowupModalFn);
+if (cancelAutoFollowup) cancelAutoFollowup.addEventListener('click', closeAutoFollowupModalFn);
 
-autoFollowupModal?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeAutoFollowupModalFn();
-    }
-});
+if (autoFollowupModal) {
+    autoFollowupModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAutoFollowupModalFn();
+        }
+    });
+}
 
-// ─ ✅ LOAD FOLLOW-UP STATUS FOR MODAL (FIXED) ──
-async function loadFollowUpStatusForModal() {
+// ─ ✅ LOAD FOLLOW-UP STATUS FOR MODAL ──
+function loadFollowUpStatusForModal() {
     if (!currentLeadId) {
-        console.log(' [FOLLOW-UP] No current lead ID for modal');
         return;
     }
 
-    console.log(' [FOLLOW-UP] Loading status for modal, lead:', currentLeadId);
+    // ✅ PERF: Use cached status if fresh
+    var cached = _cachedFollowUpStatus[currentLeadId];
+    if (cached && (Date.now() - cached.time) < FOLLOWUP_CACHE_TTL) {
+        afCurrentEnabledState = cached.data.autoFollowUpEnabled || false;
+        updateModalStatus(afCurrentEnabledState);
+        return Promise.resolve();
+    }
 
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
+    return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/follow-up-status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
-            console.log('️ [FOLLOW-UP] Modal status check failed:', res.status);
             return;
         }
-
-        const data = await res.json();
-        console.log(' [FOLLOW-UP] Modal status data:', data);
-        
-        afCurrentEnabledState = data.autoFollowUpEnabled || false;
-        updateModalStatus(afCurrentEnabledState);
-    } catch (err) {
-        console.error('❌ Failed to load follow-up status for modal:', err);
-    }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data) {
+            _cachedFollowUpStatus[currentLeadId] = { data: data, time: Date.now() };
+            afCurrentEnabledState = data.autoFollowUpEnabled || false;
+            updateModalStatus(afCurrentEnabledState);
+        }
+    })
+    .catch(function(err) {
+        console.error('Failed to load follow-up status for modal:', err);
+    });
 }
 
-// ─── ✅ UPDATE MODAL STATUS (FIXED) ───
+// ─── ✅ UPDATE MODAL STATUS ───
 function updateModalStatus(enabled) {
-    console.log('🔄 [FOLLOW-UP] Updating UI status to:', enabled ? 'ON' : 'OFF');
-    
-    // Update chat header status
     if (followupStatus) {
         if (enabled) {
             followupStatus.textContent = 'ON';
@@ -236,32 +268,29 @@ function updateModalStatus(enabled) {
         }
     }
     
-    // Update modal badge
     if (afStatusBadge) {
         afStatusBadge.textContent = enabled ? 'ON' : 'OFF';
         afStatusBadge.style.background = enabled ? 'rgba(102,221,153,0.12)' : 'rgba(255,85,85,0.12)';
         afStatusBadge.style.color = enabled ? 'var(--green)' : '#ff5555';
     }
     
-    // Update modal status text
     if (afCurrentStatus) {
         afCurrentStatus.textContent = enabled ? 'ON' : 'OFF';
         afCurrentStatus.style.color = enabled ? 'var(--green)' : '#ff5555';
     }
     
-    // Update confirm button
     if (confirmAutoFollowup) {
-        confirmAutoFollowup.textContent = enabled ? '❌ Disable Auto Follow-up' : '✅ Enable Auto Follow-up';
+        confirmAutoFollowup.textContent = enabled ? '\u274c Disable Auto Follow-up' : '\u2705 Enable Auto Follow-up';
         confirmAutoFollowup.style.background = enabled ? '#ff5555' : 'var(--green)';
         confirmAutoFollowup.style.color = enabled ? '#fff' : '#000';
     }
 }
 
 // ─── DAY BUTTON CLICK IN MODAL ──
-afDayButtons.forEach(btn => {
+afDayButtons.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        afDayButtons.forEach(b => b.classList.remove('active'));
+        afDayButtons.forEach(function(b) { b.classList.remove('active'); });
         this.classList.add('active');
         afSelectedDays = parseInt(this.dataset.days);
         if (afCustomInput) {
@@ -271,21 +300,25 @@ afDayButtons.forEach(btn => {
 });
 
 // ── CUSTOM INPUT IN MODAL ───
-afCustomInput?.addEventListener('input', function() {
-    let val = parseInt(this.value);
-    if (isNaN(val) || val < 1) val = 1;
-    if (val > 7) val = 7;
-    this.value = val;
-    afSelectedDays = val;
-    afDayButtons.forEach(b => b.classList.remove('active'));
-});
+if (afCustomInput) {
+    afCustomInput.addEventListener('input', function() {
+        var val = parseInt(this.value);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 7) val = 7;
+        this.value = val;
+        afSelectedDays = val;
+        afDayButtons.forEach(function(b) { b.classList.remove('active'); });
+    });
+}
 
 // ─── CONFIRM AUTO FOLLOW-UP ───
-confirmAutoFollowup?.addEventListener('click', function() {
-    const newState = !afCurrentEnabledState;
-    closeAutoFollowupModalFn();
-    toggleAutoFollowUp(afSelectedDays, newState);
-});
+if (confirmAutoFollowup) {
+    confirmAutoFollowup.addEventListener('click', function() {
+        var newState = !afCurrentEnabledState;
+        closeAutoFollowupModalFn();
+        toggleAutoFollowUp(afSelectedDays, newState);
+    });
+}
 
 // ── CHAT BACK ──
 chatBack.addEventListener('click', function() {
@@ -318,35 +351,30 @@ chatRenameBtn.addEventListener('click', function() {
         showToast('No lead selected.');
         return;
     }
-    const newName = prompt('Enter new name for this contact:', currentLeadName || '');
+    var newName = prompt('Enter new name for this contact:', currentLeadName || '');
     if (newName === null || newName.trim() === '') return;
     renameLead(currentLeadId, newName.trim());
 });
 
 // ── RENAME FUNCTION ───
-async function renameLead(leadId, newName) {
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${leadId}/rename`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ newName })
-        });
-
-        const text = await res.text();
-        let data = {};
-        if (text) {
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                data = { message: text || 'Empty response' };
-            }
+function renameLead(leadId, newName) {
+    fetch(BACKEND + '/api/leads/' + encodeURIComponent(leadId) + '/rename', {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newName: newName })
+    })
+    .then(function(res) { return res.text().then(function(text) { return { ok: res.ok, status: res.status, text: text }; }); })
+    .then(function(result) {
+        var data = {};
+        if (result.text) {
+            try { data = JSON.parse(result.text); } catch (e) { data = { message: result.text || 'Empty response' }; }
         }
 
-        if (!res.ok) {
-            if (res.status === 401 || res.status === 403) {
+        if (!result.ok) {
+            if (result.status === 401 || result.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
@@ -357,136 +385,129 @@ async function renameLead(leadId, newName) {
 
         if (data.success) {
             currentLeadName = data.newName;
-            chatName.textContent = DOMPurify.sanitize(data.newName); // ✅ SANITIZE
+            chatName.textContent = data.newName;
             chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
             showToast('Renamed successfully!');
-            loadContacts();
+            // ✅ PERF: Invalidate caches after rename
+            _cachedContacts = null;
+            _cachedContactsTime = 0;
+            loadContacts(true);
         } else {
             showToast('Failed to rename: ' + (data.message || 'Unknown error'));
         }
-    } catch (err) {
-        console.error('❌ Rename error:', err);
+    })
+    .catch(function(err) {
+        console.error('Rename error:', err);
         showToast('Connection error while renaming.');
-    }
+    });
 }
 
-// ── SEND MESSAGE ───
-async function sendMessage() {
-    const text = chatInput.value.trim();
+// ── SEND MESSAGE ──
+function sendMessage() {
+    var text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
-
-    console.log(' [FE-SEND] Starting send process...');
-    console.log(' [FE-SEND] Current Lead ID:', currentLeadId);
 
     isSending = true;
     chatSendBtn.disabled = true;
 
-    const originalText = text;
+    var originalText = text;
     chatInput.value = '';
     chatInput.style.height = 'auto';
 
-    try {
-        const payload = {
-            leads: [{
-                name: currentLeadName || 'Unknown',
-                email: currentLeadEmail || '',
-                company: '',
-                messages: [{ 
-                    subject: 'Re: Conversation', 
-                    body: originalText 
-                }]
-            }],
-            leadId: currentLeadId,
-            allowNewLead: false
-        };
+    var payload = {
+        leads: [{
+            name: currentLeadName || 'Unknown',
+            email: currentLeadEmail || '',
+            company: '',
+            messages: [{ 
+                subject: 'Re: Conversation', 
+                body: originalText 
+            }]
+        }],
+        leadId: currentLeadId,
+        allowNewLead: false
+    };
 
-        console.log(' [FE-SEND] Sending payload:', JSON.stringify(payload));
-
-        const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
-            method: 'POST',
-            headers: { 
-                'Authorization': `Bearer ${token}`, 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-        console.log(' [FE-SEND] Backend Response:', data);
-
+    fetch(BACKEND + '/api/leads/batch-send', {
+        method: 'POST',
+        headers: { 
+            'Authorization': 'Bearer ' + token, 
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
         if (data.success) {
-            console.log('✅ [FE-SEND] Success! Reloading history for ID:', currentLeadId);
-            await loadChatHistory(currentLeadId);
+            // ✅ PERF: Invalidate chat history cache after sending
+            delete _cachedChatHistory[currentLeadId];
+            loadChatHistory(currentLeadId);
             
-            setTimeout(() => {
-                loadContacts(); 
+            setTimeout(function() {
+                _cachedContacts = null;
+                _cachedContactsTime = 0;
+                loadContacts(true); 
             }, 800);
         } else {
-            console.error('❌ [FE-SEND] Backend reported failure:', data);
             chatInput.value = originalText;
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
-    } catch (err) {
-        console.error('💥 [FE-SEND] Network Error:', err);
+    })
+    .catch(function(err) {
+        console.error('Network Error:', err);
         chatInput.value = originalText;
         showToast('Connection error. Please try again.');
-    } finally {
+    })
+    .finally(function() {
         isSending = false;
         chatSendBtn.disabled = !chatInput.value.trim();
-    }
+    });
 }
 
-// ─── APPEND MESSAGE (FIXED: Your+Auto=RIGHT, Customer=LEFT) ──
+// ─── APPEND MESSAGE ──
 function appendMessage(from, content, date) {
-    const div = document.createElement('div');
+    var div = document.createElement('div');
     
-    let cssClass = '';
-    let senderLabel = '';
-    let alignItems = ''; 
+    var cssClass = '';
+    var senderLabel = '';
+    var alignItems = ''; 
 
-    // ✅ LOGIC: 
-    // 'lead' = YOUR messages (manual + auto-reply) -> RIGHT
-    // 'ai' = CUSTOMER messages -> LEFT
     if (from === 'lead') {
         cssClass = 'from-lead';  
         senderLabel = 'You';
-        alignItems = 'flex-end'; // ✅ FORCE RIGHT
+        alignItems = 'flex-end';
     } else {
         cssClass = 'from-ai';   
         senderLabel = 'Customer';
-        alignItems = 'flex-start'; // ✅ FORCE LEFT
+        alignItems = 'flex-start';
     }
 
-    div.className = `msg-group ${cssClass}`;
-    div.style.alignSelf = alignItems; // ✅ INLINE OVERRIDE GUARANTEES POSITION
+    div.className = 'msg-group ' + cssClass;
+    div.style.alignSelf = alignItems;
 
-    const time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    var time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-    // ✅ SANITIZE CONTENT BEFORE DISPLAY
-    div.innerHTML = `
-        <div class="msg-sender">${senderLabel}</div>
-        <div class="message-bubble">${DOMPurify.sanitize(content)}</div>
-        <div class="message-time">${time}</div>
-    `;
+    div.innerHTML = '<div class="msg-sender">' + senderLabel + '</div><div class="message-bubble">' + safeSanitize(content) + '</div><div class="message-time">' + time + '</div>';
 
     messagesContainer.appendChild(div);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─ ✅ LOAD CHAT HISTORY (FIXED) ─
-async function loadChatHistory(leadId) {
-    messagesContainer.innerHTML = `
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;">
-            <div class="spinner" style="width:28px; height:28px; border-width:2px;"></div>
-            <div style="color:#505050; font-size:11px; letter-spacing:0.05em;">Loading messages...</div>
-        </div>
-    `;
+// ─ ✅ LOAD CHAT HISTORY — with caching
+function loadChatHistory(leadId) {
+    messagesContainer.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;"><div class="spinner" style="width:28px; height:28px; border-width:2px;"></div><div style="color:#505050; font-size:11px; letter-spacing:0.05em;">Loading messages...</div></div>';
 
-    try {
-        const res = await fetch(`${BACKEND}/api/conversations/${leadId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+    // ✅ PERF: Use cached chat history if fresh
+    var cached = _cachedChatHistory[leadId];
+    if (cached && (Date.now() - cached.time) < CHAT_HISTORY_CACHE_TTL) {
+        renderChatMessages(cached.data);
+        return Promise.resolve();
+    }
 
+    return fetch(BACKEND + '/api/conversations/' + encodeURIComponent(leadId), {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
@@ -494,70 +515,53 @@ async function loadChatHistory(leadId) {
                 return;
             }
             if (res.status === 404) {
-                messagesContainer.innerHTML = `
-                    <div class="empty-chat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
-                        <h3>Conversation not found</h3>
-                        <p>This conversation may have been deleted.</p>
-                    </div>
-                `;
+                messagesContainer.innerHTML = '<div class="empty-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3>Conversation not found</h3><p>This conversation may have been deleted.</p></div>';
                 return;
             }
-            throw new Error(`HTTP ${res.status}`);
+            throw new Error('HTTP ' + res.status);
         }
-
-        const data = await res.json();
-        
-        // ✅ Check if response has success flag
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
         if (data.success === false) {
             throw new Error(data.message || 'Failed to load conversation');
         }
         
-        const messages = data.messages || [];
-
-        messagesContainer.innerHTML = '';
-
-        if (messages.length === 0) {
-            messagesContainer.innerHTML = `
-                <div class="empty-chat">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <h3>No messages yet</h3>
-                    <p>Send a message to start the conversation.</p>
-                </div>
-            `;
-            return;
-        }
-
-        messages.forEach(msg => {
-            appendMessage(msg.from, msg.content, msg.date); // ✅ Pass raw 'lead' or 'ai'
-        });
-
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-    } catch (err) {
+        var messages = data.messages || [];
+        _cachedChatHistory[leadId] = { data: messages, time: Date.now() };
+        renderChatMessages(messages);
+    })
+    .catch(function(err) {
         console.error('Load chat history error:', err);
-        messagesContainer.innerHTML = `
-            <div style="text-align:center; padding:20px; color:#505050; font-size:12px;">
-                Failed to load messages. Please try again.
-            </div>
-        `;
-    }
+        messagesContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#505050; font-size:12px;">Failed to load messages. Please try again.</div>';
+    });
 }
 
-// ── ✅ OPEN CHAT (FIXED - loads status properly) ───
+function renderChatMessages(messages) {
+    messagesContainer.innerHTML = '';
+
+    if (messages.length === 0) {
+        messagesContainer.innerHTML = '<div class="empty-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3>No messages yet</h3><p>Send a message to start the conversation.</p></div>';
+        return;
+    }
+
+    for (var i = 0; i < messages.length; i++) {
+        appendMessage(messages[i].from, messages[i].content, messages[i].date);
+    }
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// ── ✅ OPEN CHAT — loads status in parallel
 function openChat(leadId, name, email) {
-    console.log('📂 [FE-OPEN] Opening chat...');
-    console.log(' [FE-OPEN] Target Lead ID:', leadId);
-    
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
-        console.log(' [FE-OPEN] Chat already active. Reloading history and status.');
-        loadChatHistory(leadId);
-        loadFollowUpStatus();
-        loadAutoReplyStatus(); // ✅ Load auto-reply status too
+        // ✅ PERF: Load all 3 in parallel instead of sequential
+        Promise.all([
+            loadChatHistory(leadId),
+            loadFollowUpStatus(),
+            loadAutoReplyStatus()
+        ]).catch(function() {});
         return;
     }
 
@@ -566,57 +570,75 @@ function openChat(leadId, name, email) {
     currentLeadEmail = email || '';
 
     chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
-    chatName.textContent = DOMPurify.sanitize(currentLeadName); // ✅ SANITIZE
-    chatEmail.textContent = DOMPurify.sanitize(currentLeadEmail || 'No email provided'); // ✅ SANITIZE
+    chatName.textContent = currentLeadName;
+    chatEmail.textContent = currentLeadEmail || 'No email provided';
     
     chatView.classList.add('active');
     document.body.style.overflow = 'hidden';
     menuDropdown.classList.remove('show');
-    followupDropdown?.classList.remove('show');
+    if (followupDropdown) followupDropdown.classList.remove('show');
     
     chatInput.value = '';
     chatInput.style.height = 'auto';
     chatSendBtn.disabled = true;
 
-    // ✅ Load both chat history AND follow-up status
-    loadFollowUpStatus();
-    loadChatHistory(leadId);
-    loadAutoReplyStatus(); // ✅ Load auto-reply status
+    // ✅ PERF #2: Fire all 3 API calls in PARALLEL instead of one-by-one
+    // Old: loadFollowUpStatus() → wait → loadChatHistory() → wait → loadAutoReplyStatus() = 3x slower
+    // New: all 3 fire at the same time = 1x speed
+    Promise.all([
+        loadFollowUpStatus(),
+        loadChatHistory(leadId),
+        loadAutoReplyStatus()
+    ]).catch(function() {});
 }
 
 // ============================================================
 // FOLLOW-UP FUNCTIONS
 // ============================================================
 
-// ─── ✅ LOAD FOLLOW-UP STATUS (FIXED - persists after refresh) ───
-async function loadFollowUpStatus() {
+// ─── ✅ LOAD FOLLOW-UP STATUS — with caching
+function loadFollowUpStatus() {
     if (!currentLeadId) {
-        console.log('📊 [FOLLOW-UP] No current lead ID, skipping status load');
-        return;
+        return Promise.resolve();
     }
 
-    console.log(' [FOLLOW-UP] Loading status for lead:', currentLeadId);
+    // ✅ PERF: Use cached status if fresh
+    var cached = _cachedFollowUpStatus[currentLeadId];
+    if (cached && (Date.now() - cached.time) < FOLLOWUP_CACHE_TTL) {
+        var data = cached.data;
+        if (followupStatus) {
+            if (data.autoFollowUpEnabled) {
+                followupStatus.textContent = 'ON';
+                followupStatus.className = 'followup-status on';
+            } else {
+                followupStatus.textContent = 'OFF';
+                followupStatus.className = 'followup-status';
+            }
+        }
+        afCurrentEnabledState = data.autoFollowUpEnabled || false;
+        updateModalStatus(afCurrentEnabledState);
+        return Promise.resolve();
+    }
 
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
+    return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/follow-up-status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
-                console.log('️ [FOLLOW-UP] Session expired, redirecting...');
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
-            console.log('️ [FOLLOW-UP] Status check failed:', res.status);
             return;
         }
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
 
-        const data = await res.json();
-        console.log(' [FOLLOW-UP] Status data:', data);
+        _cachedFollowUpStatus[currentLeadId] = { data: data, time: Date.now() };
 
-        // ✅ Update the followupStatus in the chat header
         if (followupStatus) {
             if (data.autoFollowUpEnabled) {
                 followupStatus.textContent = 'ON';
@@ -627,19 +649,16 @@ async function loadFollowUpStatus() {
             }
         }
 
-        // ✅ Also update the modal status
         afCurrentEnabledState = data.autoFollowUpEnabled || false;
         updateModalStatus(afCurrentEnabledState);
-
-        console.log('✅ [FOLLOW-UP] Status loaded successfully:', afCurrentEnabledState ? 'ON' : 'OFF');
-
-    } catch (err) {
-        console.error('❌ Failed to load follow-up status:', err);
-    }
+    })
+    .catch(function(err) {
+        console.error('Failed to load follow-up status:', err);
+    });
 }
 
 // ── SUGGEST FOLLOW-UP ──
-async function suggestFollowUp() {
+function suggestFollowUp() {
     if (!currentLeadId) {
         showToast('Open a chat first to get a follow-up suggestion.');
         return;
@@ -647,60 +666,59 @@ async function suggestFollowUp() {
 
     showToast('Generating follow-up suggestion...');
 
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/suggest-follow-up`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
+    fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/suggest-follow-up', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
-            const err = await res.json();
-            showToast('Failed: ' + (err.message || 'Unknown error'));
-            return;
+            return res.json().then(function(err) {
+                showToast('Failed: ' + (err.message || 'Unknown error'));
+            });
         }
-
-        const data = await res.json();
-
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
         if (data.success && data.suggestion) {
             chatInput.value = data.suggestion;
             chatInput.style.height = 'auto';
             chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
             chatSendBtn.disabled = false;
             chatInput.focus();
-            showToast(' Follow-up suggestion ready!');
+            showToast('Follow-up suggestion ready!');
         } else {
             showToast(data.message || 'No suggestion generated.');
         }
-
-    } catch (err) {
+    })
+    .catch(function(err) {
         console.error('Suggest follow-up error:', err);
         showToast('Connection error. Please try again.');
-    }
+    });
 }
 
-// ─── ✅ GENERATE AI HINT ───
-async function generateHint() {
+// ─── ✅ GENERATE AI HINT — parallel fetches
+function generateHint() {
     if (!currentLeadId) {
         showToast('Open a chat first to get a hint.');
         return;
     }
 
-    showToast(' Generating AI hint...');
+    showToast('Generating AI hint...');
 
-    try {
-        // First, get the conversation history
-        const convRes = await fetch(`${BACKEND}/api/conversations/${currentLeadId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
+    // ✅ PERF: Fetch conversation history first, then suggestion
+    fetch(BACKEND + '/api/conversations/' + encodeURIComponent(currentLeadId), {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(convRes) {
         if (!convRes.ok) {
             if (convRes.status === 401 || convRes.status === 403) {
                 localStorage.removeItem('token');
@@ -710,321 +728,270 @@ async function generateHint() {
             showToast('Failed to load conversation.');
             return;
         }
-
-        const convData = await convRes.json();
-        const messages = convData.messages || [];
+        return convRes.json();
+    })
+    .then(function(convData) {
+        if (!convData) return;
+        var messages = convData.messages || [];
 
         if (messages.length === 0) {
             showToast('No messages to generate a hint from.');
             return;
         }
 
-        // Get AI suggestion using the /api/ai/suggest endpoint
-        const suggestRes = await fetch(`${BACKEND}/api/ai/suggest`, {
+        return fetch(BACKEND + '/api/ai/suggest', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 
-                messages: messages.slice(-5) // Send last 5 messages for context
+                messages: messages.slice(-5)
             })
         });
-
+    })
+    .then(function(suggestRes) {
+        if (!suggestRes) return;
         if (!suggestRes.ok) {
             if (suggestRes.status === 401 || suggestRes.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
-            const err = await suggestRes.json();
-            showToast('Failed: ' + (err.message || 'Unknown error'));
-            return;
+            return suggestRes.json().then(function(err) {
+                showToast('Failed: ' + (err.message || 'Unknown error'));
+            });
         }
-
-        const data = await suggestRes.json();
-        console.log(' [HINT] Response:', data);
-
+        return suggestRes.json();
+    })
+    .then(function(data) {
+        if (!data) return;
         if (data.suggestion) {
             chatInput.value = data.suggestion;
             chatInput.style.height = 'auto';
             chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
             chatSendBtn.disabled = false;
             chatInput.focus();
-            showToast('💡 AI hint ready!');
+            showToast('AI hint ready!');
         } else {
             showToast(data.message || 'No hint generated.');
         }
-
-    } catch (err) {
-        console.error('❌ Generate hint error:', err);
+    })
+    .catch(function(err) {
+        console.error('Generate hint error:', err);
         showToast('Connection error. Please try again.');
-    }
+    });
 }
 
-// ─── ✅ TOGGLE AUTO FOLLOW-UP (FIXED - NO REDIRECT) ───
-async function toggleAutoFollowUp(days, forceState) {
-    console.log('🔄 [AUTO-FOLLOWUP] toggleAutoFollowUp called with days:', days, 'forceState:', forceState);
-    
+// ─── ✅ TOGGLE AUTO FOLLOW-UP
+function toggleAutoFollowUp(days, forceState) {
     if (!currentLeadId) {
         showToast('Open a chat first to manage auto follow-up.');
         return;
     }
 
-    const delayDays = days || afSelectedDays || 3;
+    var delayDays = days || afSelectedDays || 3;
     
-    let currentStatus = afCurrentEnabledState;
-    if (typeof forceState === 'undefined') {
-        try {
-            const statusRes = await fetch(`${BACKEND}/api/leads/${currentLeadId}/follow-up-status`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (statusRes.ok) {
-                const statusData = await statusRes.json();
-                currentStatus = statusData.autoFollowUpEnabled || false;
-            }
-        } catch (err) {
-            console.error('Failed to get follow-up status:', err);
-        }
-    } else {
-        currentStatus = forceState;
-    }
-
-    const newStatus = typeof forceState !== 'undefined' ? forceState : !currentStatus;
-    console.log(' [AUTO-FOLLOWUP] New status:', newStatus);
+    var currentStatus = afCurrentEnabledState;
+    var newStatus = typeof forceState !== 'undefined' ? forceState : !currentStatus;
 
     // Update UI instantly (optimistic update)
     afCurrentEnabledState = newStatus;
     updateModalStatus(afCurrentEnabledState);
 
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-follow-up`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ enabled: newStatus, delayDays: delayDays })
-        });
-
-        console.log(' [AUTO-FOLLOWUP] Response status:', res.status);
-
+    fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-follow-up', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ enabled: newStatus, delayDays: delayDays })
+    })
+    .then(function(res) {
         if (!res.ok) {
-            // ✅ ONLY redirect on 401 - token expired
             if (res.status === 401) {
-                console.log(' [AUTO-FOLLOWUP] Token expired, redirecting to login...');
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
             
-            // ✅ For all other errors - show message, revert UI, DON'T redirect
-            let errorMessage = 'Failed to toggle auto follow-up.';
-            try {
-                const err = await res.json();
+            var errorMessage = 'Failed to toggle auto follow-up.';
+            return res.json().then(function(err) {
                 errorMessage = err.message || err.error || errorMessage;
-            } catch (e) {
-                // If response is not JSON
-            }
-            
-            // Revert UI
-            afCurrentEnabledState = !newStatus;
-            updateModalStatus(afCurrentEnabledState);
-            showToast(errorMessage);
-            return;
+                // Revert UI
+                afCurrentEnabledState = !newStatus;
+                updateModalStatus(afCurrentEnabledState);
+                showToast(errorMessage);
+            }).catch(function() {
+                afCurrentEnabledState = !newStatus;
+                updateModalStatus(afCurrentEnabledState);
+                showToast(errorMessage);
+            });
         }
-
-        const data = await res.json();
-        console.log(' [AUTO-FOLLOWUP] Response data:', data);
-
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
         if (data.success) {
             afCurrentEnabledState = data.autoFollowUpEnabled;
+            // ✅ PERF: Invalidate follow-up cache after toggle
+            delete _cachedFollowUpStatus[currentLeadId];
             updateModalStatus(afCurrentEnabledState);
             
             if (data.autoFollowUpEnabled) {
-                showToast(`✅ Auto follow-up enabled. First follow-up in ${delayDays} day(s).`);
-                console.log('✅ [AUTO-FOLLOWUP] Enabled successfully');
+                showToast('Auto follow-up enabled. First follow-up in ' + delayDays + ' day(s).');
             } else {
-                showToast(' Auto follow-up disabled.');
-                console.log(' [AUTO-FOLLOWUP] Disabled successfully');
+                showToast('Auto follow-up disabled.');
             }
         } else {
-            // Revert UI on failure
             afCurrentEnabledState = !newStatus;
             updateModalStatus(afCurrentEnabledState);
             showToast(data.message || 'Failed to toggle auto follow-up.');
         }
-
-    } catch (err) {
-        console.error('💥 [AUTO-FOLLOWUP] Error:', err);
-        // Revert UI on error
+    })
+    .catch(function(err) {
+        console.error('AUTO-FOLLOWUP Error:', err);
         afCurrentEnabledState = !newStatus;
         updateModalStatus(afCurrentEnabledState);
         showToast('Connection error. Please try again.');
-    }
+    });
 }
 
 // ─── CATEGORY CONFIG ───
-const CATEGORY_CONFIG = {
-    contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
-    replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
-    interested: { label: 'Interested', icon: '', color: '#ffbb44' },
-    ongoing: { label: 'Ongoing', icon: '', color: '#bb88ff' },
-    win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
+var CATEGORY_CONFIG = {
+    contacted: { label: 'Contacted', icon: '\ud83d\udd35', color: '#66ddff' },
+    replied: { label: 'Replied', icon: '\ud83d\udfe2', color: '#66dd99' },
+    interested: { label: 'Interested', icon: '\ud83d\udfe1', color: '#ffbb44' },
+    ongoing: { label: 'Ongoing', icon: '\ud83d\udfea', color: '#bb88ff' },
+    win: { label: 'Win', icon: '\ud83d\udd34', color: '#ff6b6b' }
 };
 
 // ─── FETCH REVENUE DATA ───
-async function fetchRevenueData() {
+function fetchRevenueData() {
     revenueModal.classList.add('active');
     revenueBody.innerHTML = '<div class="modal-loading">Loading revenue data...</div>';
     tierBadge.textContent = 'Loading...';
 
-    try {
-        const res = await fetch(`${BACKEND}/api/revenue/tracking`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
+    fetch(BACKEND + '/api/revenue/tracking', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
-            throw new Error(`HTTP ${res.status}`);
+            throw new Error('HTTP ' + res.status);
         }
-
-        const data = await res.json();
-        renderRevenueData(data);
-
-    } catch (err) {
-        console.error(' Failed to fetch revenue:', err);
-        revenueBody.innerHTML = `
-            <div class="modal-error">
-                <p>Failed to load revenue data.</p>
-                <p style="font-size:12px; color:#707070; margin-top:8px;">${err.message}</p>
-            </div>
-        `;
+        return res.json();
+    })
+    .then(function(data) {
+        if (data) renderRevenueData(data);
+    })
+    .catch(function(err) {
+        console.error('Failed to fetch revenue:', err);
+        revenueBody.innerHTML = '<div class="modal-error"><p>Failed to load revenue data.</p><p style="font-size:12px; color:#707070; margin-top:8px;">' + escapeHtml(err.message) + '</p></div>';
         tierBadge.textContent = 'Error';
-    }
+    });
 }
 
-// ── RENDER REVENUE DATA ───
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ── RENDER REVENUE DATA ──
 function renderRevenueData(data) {
-    const tier = data.tier || 'free';
+    var tier = data.tier || 'free';
     tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
 
-    const categories = data.categories || {};
-    let html = '';
+    var categories = data.categories || {};
+    var html = '';
 
-    html += `<div style="margin-bottom:12px;"><strong style="color:#f5f5f5; font-size:13px;">📊 Categories</strong></div>`;
+    html += '<div style="margin-bottom:12px;"><strong style="color:#f5f5f5; font-size:13px;">\ud83d\udcca Categories</strong></div>';
 
-    let hasCategories = false;
-    for (const [key, leads] of Object.entries(categories)) {
-        const config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '•', color: '#707070' };
-        const count = Array.isArray(leads) ? leads.length : 0;
+    var hasCategories = false;
+    var catKeys = Object.keys(categories);
+    for (var ci = 0; ci < catKeys.length; ci++) {
+        var key = catKeys[ci];
+        var leads = categories[key];
+        var config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '\u2022', color: '#707070' };
+        var count = Array.isArray(leads) ? leads.length : 0;
 
         if (count > 0) hasCategories = true;
 
-        html += `
-            <div class="category-section cat-${key}">
-                <div class="category-header">
-                    <span class="category-name">
-                        <span class="category-icon"></span>
-                        ${config.icon} ${config.label}
-                    </span>
-                    <span class="category-count">${count}</span>
-                </div>
-        `;
+        html += '<div class="category-section cat-' + key + '"><div class="category-header"><span class="category-name"><span class="category-icon"></span>' + config.icon + ' ' + config.label + '</span><span class="category-count">' + count + '</span></div>';
 
         if (count === 0) {
-            html += `<div class="empty-category">No leads in this category</div>`;
+            html += '<div class="empty-category">No leads in this category</div>';
         } else {
-            const displayLeads = leads.slice(0, 10);
-            const remaining = leads.length - 10;
+            var displayLeads = leads.slice(0, 10);
+            var remaining = leads.length - 10;
 
-            displayLeads.forEach(lead => {
-                const name = lead.name || 'Unknown';
-                const company = lead.company || '';
-                const leadId = lead.id || '';
-                // ✅ SANITIZE ALL DYNAMIC DATA IN REVENUE MODAL
-                html += `
-                    <div class="lead-item" data-id="${leadId}" data-name="${DOMPurify.sanitize(name)}" data-email="${DOMPurify.sanitize(lead.email || '')}" onclick="openChatFromRevenue('${leadId}', '${DOMPurify.sanitize(name)}', '${DOMPurify.sanitize(lead.email || '')}')">
-                        <span class="lead-name">${DOMPurify.sanitize(name)}</span>
-                        ${company ? `<span class="lead-company">· ${DOMPurify.sanitize(company)}</span>` : ''}
-                    </div>
-                `;
-            });
+            for (var li = 0; li < displayLeads.length; li++) {
+                var lead = displayLeads[li];
+                var lname = lead.name || 'Unknown';
+                var company = lead.company || '';
+                var leadId = lead.id || '';
+                html += '<div class="lead-item" data-id="' + leadId + '" onclick="openChatFromRevenue(\'' + leadId + '\', \'' + safeSanitize(lname).replace(/'/g, "\\'") + '\', \'' + safeSanitize(lead.email || '').replace(/'/g, "\\'") + '\')"><span class="lead-name">' + safeSanitize(lname) + '</span>' + (company ? '<span class="lead-company">\u00b7 ' + safeSanitize(company) + '</span>' : '') + '</div>';
+            }
 
             if (remaining > 0) {
-                html += `
-                    <div class="lead-item" style="color:#505050; font-style:italic; border-left-color:transparent; cursor:default;">
-                        + ${remaining} more
-                    </div>
-                `;
+                html += '<div class="lead-item" style="color:#505050; font-style:italic; border-left-color:transparent; cursor:default;">+ ' + remaining + ' more</div>';
             }
         }
 
-        html += `</div>`;
+        html += '</div>';
     }
 
     if (!hasCategories) {
-        html += `<div class="no-data">No leads found.</div>`;
+        html += '<div class="no-data">No leads found.</div>';
     }
 
-    const advice = data.advice || {};
-    const adviceKeys = Object.keys(advice);
+    var advice = data.advice || {};
+    var adviceKeys = Object.keys(advice);
     if (adviceKeys.length > 0) {
-        html += `<div class="section-divider"></div>`;
-        html += `<div class="advice-section">`;
-        html += `<div class="advice-title">💡 Strategic Advice</div>`;
+        html += '<div class="section-divider"></div>';
+        html += '<div class="advice-section">';
+        html += '<div class="advice-title">\ud83d\udca1 Strategic Advice</div>';
 
-        adviceKeys.forEach(key => {
-            const label = key.replace('Advice', '').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-            const value = advice[key];
+        for (var ai = 0; ai < adviceKeys.length; ai++) {
+            var akey = adviceKeys[ai];
+            var label = akey.replace('Advice', '').replace(/([A-Z])/g, ' $1').replace(/^./, function(str) { return str.toUpperCase(); });
+            var value = advice[akey];
             if (value && value.trim()) {
-                html += `
-                    <div class="advice-item">
-                        <strong>${label}:</strong> ${DOMPurify.sanitize(value)}
-                    </div>
-                `;
+                html += '<div class="advice-item"><strong>' + label + ':</strong> ' + safeSanitize(value) + '</div>';
             }
-        });
-
-        html += `</div>`;
-    }
-
-    const actions = data.actions || [];
-    if (actions.length > 0) {
-        html += `<div class="section-divider"></div>`;
-        html += `<div class="actions-section">`;
-        html += `<div class="actions-title"> Recommended Actions</div>`;
-
-        actions.slice(0, 10).forEach((action, index) => {
-            html += `
-                <div class="action-item">
-                    <span style="color:#505050; font-size:10px;">${index + 1}.</span>
-                    <span class="action-lead">${DOMPurify.sanitize(action.leadName || 'Lead')}</span>
-                    <span class="action-text">— ${DOMPurify.sanitize(action.action || 'Follow up')}</span>
-                </div>
-            `;
-        });
-
-        if (actions.length > 10) {
-            html += `<div class="no-data" style="padding-top:4px;">+ ${actions.length - 10} more actions</div>`;
         }
 
-        html += `</div>`;
+        html += '</div>';
+    }
+
+    var actions = data.actions || [];
+    if (actions.length > 0) {
+        html += '<div class="section-divider"></div>';
+        html += '<div class="actions-section">';
+        html += '<div class="actions-title">Recommended Actions</div>';
+
+        var maxActions = Math.min(actions.length, 10);
+        for (var aci = 0; aci < maxActions; aci++) {
+            var action = actions[aci];
+            html += '<div class="action-item"><span style="color:#505050; font-size:10px;">' + (aci + 1) + '.</span><span class="action-lead">' + safeSanitize(action.leadName || 'Lead') + '</span><span class="action-text">\u2014 ' + safeSanitize(action.action || 'Follow up') + '</span></div>';
+        }
+
+        if (actions.length > 10) {
+            html += '<div class="no-data" style="padding-top:4px;">+ ' + (actions.length - 10) + ' more actions</div>';
+        }
+
+        html += '</div>';
     }
 
     if (tierBadge.textContent === 'Free') {
-        html += `<div class="section-divider"></div>`;
-        html += `
-            <div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;">
-                <p style="color:#ffbb44; font-size:12px; margin:0;">
-                     Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.
-                </p>
-            </div>
-        `;
+        html += '<div class="section-divider"></div>';
+        html += '<div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;"><p style="color:#ffbb44; font-size:12px; margin:0;">Upgrade to <strong>Go</strong> for AI\u2011powered advice, or <strong>Pro</strong> for personalised actions on your top leads.</p></div>';
     }
 
     revenueBody.innerHTML = html;
@@ -1036,33 +1003,50 @@ function openChatFromRevenue(leadId, name, email) {
     openChat(leadId, name, email);
 }
 
-// ── LOAD CONTACTS ───
-async function loadContacts() {
-    try {
-        const res = await fetch(`${BACKEND}/api/conversations`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+// ── ✅ LOAD CONTACTS — with caching
+function loadContacts(forceRefresh) {
+    var now_ts = Date.now();
 
+    // ✅ PERF: Use cached contacts if fresh
+    if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
+        allContacts = _cachedContacts;
+        renderContacts(allContacts);
+        setTimeout(function() {
+            loadingScreen.classList.add('hidden');
+        }, 300);
+        return Promise.resolve();
+    }
+
+    return fetch(BACKEND + '/api/conversations', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
                 window.location.href = 'login.html';
                 return;
             }
-            throw new Error(`HTTP ${res.status}`);
+            throw new Error('HTTP ' + res.status);
         }
-
-        allContacts = await res.json();
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
+        allContacts = data;
+        _cachedContacts = data;
+        _cachedContactsTime = Date.now();
         renderContacts(allContacts);
-
-    } catch (err) {
-        console.error('❌ Failed to load contacts:', err);
+    })
+    .catch(function(err) {
+        console.error('Failed to load contacts:', err);
         showEmptyState();
-    } finally {
-        setTimeout(() => {
+    })
+    .finally(function() {
+        setTimeout(function() {
             loadingScreen.classList.add('hidden');
-        }, 1500);
-    }
+        }, 300);
+    });
 }
 
 function renderContacts(contacts) {
@@ -1081,39 +1065,33 @@ function renderContacts(contacts) {
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
 
-    contactList.innerHTML = contacts.map(c => {
-        const initials = (c.name || '?').charAt(0).toUpperCase();
-        const preview = c.lastMessage || 'No messages yet';
-        const time = c.lastDate ? new Date(c.lastDate).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        }) : '';
+    var html = '';
+    for (var i = 0; i < contacts.length; i++) {
+        var c = contacts[i];
+        var initials = (c.name || '?').charAt(0).toUpperCase();
+        var preview = c.lastMessage || 'No messages yet';
+        var time = c.lastDate ? new Date(c.lastDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-        // ✅ SANITIZE ALL CONTACT DATA
-        return `
-            <div class="contact-item" data-id="${c.id}" onclick="openChat('${c.id}', '${DOMPurify.sanitize(c.name || 'Unknown')}', '${DOMPurify.sanitize(c.email || '')}')">
-                <div class="contact-avatar">${initials}</div>
-                <div class="contact-info">
-                    <div class="contact-name">${DOMPurify.sanitize(c.name || 'Unknown')}</div>
-                    <div class="contact-preview">${DOMPurify.sanitize(preview)}</div>
-                </div>
-                ${time ? `<div class="contact-time">${time}</div>` : ''}
-            </div>
-        `;
-    }).join('');
+        html += '<div class="contact-item" data-id="' + c.id + '" onclick="openChat(\'' + c.id + '\', \'' + safeSanitize(c.name || 'Unknown').replace(/'/g, "\\'") + '\', \'' + safeSanitize(c.email || '').replace(/'/g, "\\'") + '\')"><div class="contact-avatar">' + initials + '</div><div class="contact-info"><div class="contact-name">' + safeSanitize(c.name || 'Unknown') + '</div><div class="contact-preview">' + safeSanitize(preview) + '</div></div>' + (time ? '<div class="contact-time">' + time + '</div>' : '') + '</div>';
+    }
+    contactList.innerHTML = html;
 }
 
 searchInput.addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
+    var query = this.value.toLowerCase().trim();
     if (!query) {
         renderContacts(allContacts);
         return;
     }
-    const filtered = allContacts.filter(c =>
-        (c.name || '').toLowerCase().includes(query) ||
-        (c.company || '').toLowerCase().includes(query) ||
-        (c.email || '').toLowerCase().includes(query)
-    );
+    var filtered = [];
+    for (var i = 0; i < allContacts.length; i++) {
+        var c = allContacts[i];
+        if ((c.name || '').toLowerCase().indexOf(query) !== -1 ||
+            (c.company || '').toLowerCase().indexOf(query) !== -1 ||
+            (c.email || '').toLowerCase().indexOf(query) !== -1) {
+            filtered.push(c);
+        }
+    }
     renderContacts(filtered);
 });
 
@@ -1124,28 +1102,36 @@ function showEmptyState() {
 }
 
 // ─── AI HINT FROM DROPDOWN ───
-document.querySelector('.chat-followup-option[data-action="hint"]')?.addEventListener('click', function() {
-    followupDropdown.classList.remove('show');
-    generateHint();
-});
+var hintOption = document.querySelector('.chat-followup-option[data-action="hint"]');
+if (hintOption) {
+    hintOption.addEventListener('click', function() {
+        followupDropdown.classList.remove('show');
+        generateHint();
+    });
+}
 
 // ============================================================
 // ✅ NEW: AI AUTO-REPLY FUNCTIONALITY
 // ============================================================
 
-async function loadAutoReplyStatus() {
-    if (!currentLeadId) return;
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            const data = await res.json();
+function loadAutoReplyStatus() {
+    if (!currentLeadId) return Promise.resolve();
+
+    return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
+        if (res.ok) return res.json();
+        return null;
+    })
+    .then(function(data) {
+        if (data) {
             isAutoReplyActive = data.enabled || false;
             autoReplyInstructions.value = data.instructions || '';
             updateAutoReplyButtonUI();
         }
-    } catch (err) { console.error('Failed to load auto-reply status:', err); }
+    })
+    .catch(function(err) { console.error('Failed to load auto-reply status:', err); });
 }
 
 function updateAutoReplyButtonUI() {
@@ -1159,62 +1145,62 @@ function updateAutoReplyButtonUI() {
 }
 
 // Toggle: If active → turn off immediately. If inactive → open modal.
-chatAutoReplyBtn.addEventListener('click', async () => {
+chatAutoReplyBtn.addEventListener('click', function() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
     
     if (isAutoReplyActive) {
-        // Turn OFF immediately
-        try {
-            await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled: false, instructions: autoReplyInstructions.value })
-            });
-            isAutoReplyActive = false;
-            updateAutoReplyButtonUI();
-            showToast('️ AI Auto-Reply disabled');
-        } catch (err) { showToast('Failed to disable auto-reply'); }
+        fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: false, instructions: autoReplyInstructions.value })
+        })
+        .then(function(res) {
+            if (res.ok) {
+                isAutoReplyActive = false;
+                updateAutoReplyButtonUI();
+                showToast('AI Auto-Reply disabled');
+            }
+        })
+        .catch(function() { showToast('Failed to disable auto-reply'); });
     } else {
-        // Open modal to configure/edit
         autoReplyModalOverlay.classList.add('show');
         autoReplyInstructions.focus();
     }
 });
 
 // Close modal
-closeAutoReplyModal.addEventListener('click', () => autoReplyModalOverlay.classList.remove('show'));
-autoReplyModalOverlay.addEventListener('click', (e) => {
+closeAutoReplyModal.addEventListener('click', function() { autoReplyModalOverlay.classList.remove('show'); });
+autoReplyModalOverlay.addEventListener('click', function(e) {
     if (e.target === autoReplyModalOverlay) autoReplyModalOverlay.classList.remove('show');
 });
 
 // Save instructions & activate
-saveAutoReplyBtn.addEventListener('click', async () => {
-    const instructions = autoReplyInstructions.value.trim();
+saveAutoReplyBtn.addEventListener('click', function() {
+    var instructions = autoReplyInstructions.value.trim();
     if (!instructions) { showToast('Please enter instructions first.'); return; }
     
-    try {
-        const res = await fetch(`${BACKEND}/api/leads/${currentLeadId}/auto-reply`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: true, instructions })
-        });
-        
+    fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: true, instructions: instructions })
+    })
+    .then(function(res) {
         if (res.ok) {
             isAutoReplyActive = true;
             updateAutoReplyButtonUI();
             autoReplyModalOverlay.classList.remove('show');
-            showToast('✅ AI Auto-Reply activated!');
+            showToast('AI Auto-Reply activated!');
         } else {
             showToast('Failed to save auto-reply settings');
         }
-    } catch (err) { showToast('Connection error while saving'); }
+    })
+    .catch(function() { showToast('Connection error while saving'); });
 });
 
-// Legacy menu item handler for auto-reply (opens modal if inactive)
+// Legacy menu item handler for auto-reply
 function openAutoReplyModal() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
     if (isAutoReplyActive) {
-        // If already active, clicking menu item also turns it off
         chatAutoReplyBtn.click();
     } else {
         autoReplyModalOverlay.classList.add('show');
@@ -1222,5 +1208,6 @@ function openAutoReplyModal() {
     }
 }
 
-// ── START ───
+// ── ✅ PERF #3: START — load contacts immediately
+// Benefits from server-side cache + gzip + keep-alive already configured in server.js
 loadContacts();
