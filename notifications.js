@@ -78,6 +78,10 @@ var CHAT_HISTORY_CACHE_TTL = 30000; // 30 seconds
 var _cachedFollowUpStatus = {};
 var FOLLOWUP_CACHE_TTL = 30000; // 30 seconds
 
+// ✅ BACKGROUND POLLING STATE
+var _pollInterval = null;
+var _currentMessageCount = 0;
+
 // ✅ PERF: Safe DOMPurify wrapper — works even if DOMPurify hasn't loaded yet (deferred)
 function safeSanitize(str) {
     if (!str) return '';
@@ -325,8 +329,7 @@ function closeChatAndGoBack() {
     document.body.classList.remove('chat-active');
     document.body.style.overflow = '';
     currentLeadId = null;
-    disconnectSSE();
-    connectSSE();
+    stopPolling();
 }
 
 // ── CHAT BACK ──
@@ -422,6 +425,7 @@ function sendMessage() {
 
     // ✅ STEP 1: Show message INSTANTLY before server responds (optimistic UI)
     appendMessage('lead', originalText, new Date().toISOString());
+    _currentMessageCount++;
 
     var payload = {
         leads: [{
@@ -450,7 +454,6 @@ function sendMessage() {
     .then(function(data) {
         if (data.success) {
             // ✅ STEP 3: Silent background sync — NO loading spinner
-            // Just invalidate cache so next manual refresh gets fresh data
             delete _cachedChatHistory[currentLeadId];
             
             // Refresh contact list preview silently
@@ -460,13 +463,11 @@ function sendMessage() {
                 loadContacts(true); 
             }, 800);
         } else {
-            // Server rejected — message stays visible but show error toast
             showToast('Failed to send: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(function(err) {
         console.error('Network Error:', err);
-        // Network failed — message stays visible but show error toast
         showToast('Connection error. Message may not have been sent.');
     })
     .finally(function() {
@@ -540,6 +541,7 @@ function loadChatHistory(leadId) {
         
         var messages = data.messages || [];
         _cachedChatHistory[leadId] = { data: messages, time: Date.now() };
+        _currentMessageCount = messages.length;
         renderChatMessages(messages);
     })
     .catch(function(err) {
@@ -553,6 +555,7 @@ function renderChatMessages(messages) {
 
     if (messages.length === 0) {
         messagesContainer.innerHTML = '<div class="empty-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3>No messages yet</h3><p>Send a message to start the conversation.</p></div>';
+        _currentMessageCount = 0;
         return;
     }
 
@@ -560,10 +563,11 @@ function renderChatMessages(messages) {
         appendMessage(messages[i].from, messages[i].content, messages[i].date);
     }
 
+    _currentMessageCount = messages.length;
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ── ✅ OPEN CHAT — loads status in parallel + hides logo
+// ── ✅ OPEN CHAT — loads status in parallel + hides logo + starts polling
 function openChat(leadId, name, email) {
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         Promise.all([
@@ -598,7 +602,75 @@ function openChat(leadId, name, email) {
         loadFollowUpStatus(),
         loadChatHistory(leadId),
         loadAutoReplyStatus()
-    ]).catch(function() {});
+    ]).then(function() {
+        // ✅ Start background polling after initial load completes
+        startPolling(leadId);
+    }).catch(function() {
+        startPolling(leadId);
+    });
+}
+
+// ============================================================
+// ✅ BACKGROUND POLLING — Check for new messages every 10 seconds
+// ============================================================
+
+function startPolling(leadId) {
+    stopPolling();
+    
+    _pollInterval = setInterval(function() {
+        if (!currentLeadId || currentLeadId !== leadId || !chatView.classList.contains('active')) {
+            stopPolling();
+            return;
+        }
+        
+        // Silent fetch — no loading spinner, no UI disruption
+        fetch(BACKEND + '/api/conversations/' + encodeURIComponent(leadId), {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(res) {
+            if (!res.ok) return null;
+            return res.json();
+        })
+        .then(function(data) {
+            if (!data || !data.messages) return;
+            
+            var newMessages = data.messages;
+            
+            // If more messages than we currently have, append only the new ones
+            if (newMessages.length > _currentMessageCount) {
+                // Update cache
+                _cachedChatHistory[leadId] = { data: newMessages, time: Date.now() };
+                
+                // Append only new messages (don't re-render everything)
+                for (var i = _currentMessageCount; i < newMessages.length; i++) {
+                    appendMessage(newMessages[i].from, newMessages[i].content, newMessages[i].date);
+                }
+                
+                _currentMessageCount = newMessages.length;
+                
+                // Show toast for incoming customer messages
+                var lastMsg = newMessages[newMessages.length - 1];
+                if (lastMsg.from !== 'lead') {
+                    showToast('\ud83d\udcac New reply from ' + (currentLeadName || 'customer') + '!');
+                }
+                
+                // Refresh contact list preview
+                _cachedContacts = null;
+                _cachedContactsTime = 0;
+                loadContacts(true);
+            }
+        })
+        .catch(function() {
+            // Silently ignore polling errors
+        });
+    }, 10000); // Every 10 seconds
+}
+
+function stopPolling() {
+    if (_pollInterval) {
+        clearInterval(_pollInterval);
+        _pollInterval = null;
+    }
 }
 
 // ============================================================
@@ -1197,128 +1269,6 @@ function openAutoReplyModal() {
     }
 }
 
-// ============================================================
-// ✅ SSE: REAL-TIME MESSAGE DELIVERY — Instant (< 1 second)
-// ============================================================
-
-var _eventSource = null;
-var _sseReconnectTimer = null;
-var _sseConnected = false;
-var _sseLastMessageId = '';
-
-function connectSSE() {
-    if (_eventSource) {
-        try { _eventSource.close(); } catch (e) {}
-        _eventSource = null;
-    }
-
-    if (!token) return;
-
-    console.log('\ud83d\udce1 [SSE] Connecting to real-time stream...');
-
-    _eventSource = new EventSource(BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
-
-    _eventSource.onopen = function() {
-        console.log('\ud83d\udce1 [SSE] Connected! Real-time messages enabled.');
-        _sseConnected = true;
-        if (_sseReconnectTimer) {
-            clearTimeout(_sseReconnectTimer);
-            _sseReconnectTimer = null;
-        }
-    };
-
-    _eventSource.onmessage = function(e) {
-        try {
-            var data = JSON.parse(e.data);
-            handleSSEEvent(data);
-        } catch (err) {
-            console.error('\ud83d\udce1 [SSE] Parse error:', err);
-        }
-    };
-
-    _eventSource.onerror = function() {
-        console.warn('\ud83d\udce1 [SSE] Connection lost, reconnecting in 5 seconds...');
-        _sseConnected = false;
-        try { _eventSource.close(); } catch (ex) {}
-        _eventSource = null;
-
-        if (_sseReconnectTimer) clearTimeout(_sseReconnectTimer);
-        _sseReconnectTimer = setTimeout(function() {
-            connectSSE();
-        }, 5000);
-    };
-}
-
-function handleSSEEvent(data) {
-    if (!data || !data.type) return;
-
-    switch (data.type) {
-        case 'connected':
-            console.log('\ud83d\udce1 [SSE] Server confirmed connection at:', new Date(data.time).toLocaleTimeString());
-            break;
-
-        case 'new_message':
-            console.log('\ud83d\udce1 [SSE] New message received for lead:', data.leadId);
-
-            if (data.messageId && data.messageId === _sseLastMessageId) {
-                console.log('\ud83d\udce1 [SSE] Duplicate message skipped:', data.messageId);
-                return;
-            }
-            if (data.messageId) _sseLastMessageId = data.messageId;
-
-            if (currentLeadId && data.leadId === currentLeadId) {
-                delete _cachedChatHistory[currentLeadId];
-
-                var senderRole = 'customer';
-                if (data.sent || data.fromEmail === '') {
-                    senderRole = 'lead';
-                }
-
-                appendMessage(senderRole, data.content, data.date);
-
-                if (data.autoReply) {
-                    showToast('\ud83e\udd16 AI Auto-Reply sent to ' + (data.leadName || 'customer') + '!');
-                } else if (data.sent) {
-                    showToast('\u2709\ufe0f Email sent to ' + (data.leadName || 'customer') + '!');
-                } else {
-                    showToast('\ud83d\udcac New reply from ' + (data.leadName || 'customer') + '!');
-                }
-
-                // ✅ Silent sync — just invalidate cache, no reload flash
-                delete _cachedChatHistory[currentLeadId];
-            }
-
-            _cachedContacts = null;
-            _cachedContactsTime = 0;
-            loadContacts(true);
-            break;
-
-        case 'connection_expired':
-            showToast('\u26a0\ufe0f ' + (data.message || 'Email connection expired. Please reconnect.'));
-            _cachedContacts = null;
-            _cachedContactsTime = 0;
-            loadContacts(true);
-            break;
-
-        default:
-            console.log('\ud83d\udce1 [SSE] Unknown event type:', data.type);
-    }
-}
-
-function disconnectSSE() {
-    if (_eventSource) {
-        try { _eventSource.close(); } catch (e) {}
-        _eventSource = null;
-    }
-    if (_sseReconnectTimer) {
-        clearTimeout(_sseReconnectTimer);
-        _sseReconnectTimer = null;
-    }
-    _sseConnected = false;
-}
-
-window.addEventListener('beforeunload', disconnectSSE);
-
 // ✅ PHONE BACK BUTTON: If chat is open, go back to contact list instead of page.html
 window.addEventListener('popstate', function(e) {
     if (chatView.classList.contains('active')) {
@@ -1327,7 +1277,9 @@ window.addEventListener('popstate', function(e) {
     }
 });
 
+// Clean up polling when user leaves the page
+window.addEventListener('beforeunload', stopPolling);
+
 // ── START EVERYTHING ───
 loadContacts();
-connectSSE();
 history.pushState(null, '', window.location.href);
