@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In — Skyline AA-1</title>
-  <!-- ✅ XSS PROTECTION LIBRARY -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -18,8 +17,6 @@
       --success: #66dd99;
       --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
       --font-mono: 'Monaco', 'Menlo', monospace;
-      --nav-h: 68px; --top-h: 54px; --bar-h: 30px;
-      --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
     }
     html, body { height: 100%; background: var(--void); color: var(--text-1); overflow: hidden; font-family: var(--font-display); }
     body::before {
@@ -123,9 +120,7 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
       transition: 0.5s;
     }
-    .submit-btn:hover:not(:disabled)::before {
-      left: 100%;
-    }
+    .submit-btn:hover:not(:disabled)::before { left: 100%; }
     .submit-btn:hover:not(:disabled) { background: var(--accent-lt); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,0.15); }
     .submit-btn:active:not(:disabled) { transform: translateY(0); }
     .submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
@@ -151,137 +146,9 @@
     @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); } 70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
     @media (max-width: 768px) { .panel-left { display: none; } .panel-right { padding: 32px 24px; } .form-card { max-width: 420px; } }
-    
-    /* ─── LOGIN SPECIFIC STYLES ─── */
-    .container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow-y: auto;
-      padding-bottom: calc(var(--nav-h) + 20px); /* Space for fixed nav */
-    }
-    
-    /* ─── BOTTOM NAVIGATION ─── */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: var(--nav-h);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      background: var(--base);
-      border-top: 1px solid var(--border);
-      z-index: 40;
-      padding: 0 8px;
-    }
-    .bottom-nav::before { 
-      content: ''; 
-      position: absolute; 
-      top: 0; 
-      left: 20%; 
-      right: 20%; 
-      height: 1px; 
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); 
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      flex: 1;
-      cursor: pointer;
-      padding: 7px 0;
-      text-decoration: none;
-      color: var(--text-3);
-      transition: color 0.25s;
-      position: relative;
-      border: none;
-      background: none;
-    }
-    .nav-item svg { 
-      transition: transform 0.2s; 
-    }
-    .nav-item:hover { 
-      color: var(--accent); 
-    }
-    .nav-item:hover svg { 
-      transform: scale(1.1) translateY(-1px); 
-    }
-    .nav-item.active { 
-      color: var(--accent); 
-    }
-    .nav-item.active::after {
-      content: ''; 
-      position: absolute; 
-      bottom: -1px; 
-      left: 50%; 
-      transform: translateX(-50%);
-      width: 20px; 
-      height: 2px; 
-      background: linear-gradient(90deg, transparent, var(--accent), transparent); 
-      border-radius: 2px 2px 0 0;
-    }
-    .nav-item.nav-home .home-wrap {
-      width: 44px; 
-      height: 44px; 
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-lt) 50%, var(--accent) 100%);
-      border-radius: var(--r-md); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center;
-      transition: transform 0.2s, box-shadow 0.2s; 
-      box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
-      position: relative; 
-      overflow: hidden;
-    }
-    .nav-item.nav-home .home-wrap::before { 
-      content: ''; 
-      position: absolute; 
-      inset: 0; 
-      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); 
-    }
-    .nav-item.nav-home:hover .home-wrap { 
-      transform: scale(1.07) translateY(-2px); 
-      box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); 
-    }
-    .nav-item.nav-home svg { 
-      color: #0d0a04; 
-      position: relative; 
-      z-index: 1; 
-    }
-    .nav-item.nav-home::after { 
-      display: none; 
-    }
-    .nav-badge {
-      position: absolute; 
-      top: 2px; 
-      right: calc(50% - 20px); 
-      min-width: 14px; 
-      height: 14px; 
-      background: var(--error);
-      border-radius: 10px; 
-      border: 1.5px solid var(--base); 
-      display: none; 
-      color: white; 
-      font-family: var(--font-mono);
-      font-size: 7px; 
-      font-weight: 600; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 0 3px; 
-      z-index: 2; 
-      box-shadow: 0 2px 6px rgba(184,92,92,0.4);
-    }
-    .nav-item.has-notifs .nav-badge { 
-      display: flex; 
-    }
   </style>
 </head>
 <body>
-<div class="container">
   <div class="page">
     <aside class="panel-left">
       <div class="brand">
@@ -383,50 +250,10 @@
       </div>
     </main>
   </div>
-</div>
-
-<!-- ─── BOTTOM NAVIGATION ─── -->
-<nav class="bottom-nav">
-  <a href="page.html" class="nav-item nav-home">
-    <div class="home-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    </div>
-  </a>
-  <a href="history.html" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="9"/>
-      <polyline points="12 7 12 12 15 15"/>
-      <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-      <polyline points="3 4 3 11 10 11"/>
-    </svg>
-    History
-  </a>
-  <a href="notifications.html" class="nav-item">
-    <div class="nav-badge"></div>
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-    </svg>
-    Inbox
-  </a>
-  <a href="dashboard.html" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
-    Dashboard
-  </a>
-</nav>
 
 <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 
-    // ✅ Helper for Logout
     async function handleLogout() {
         try {
             const token = localStorage.getItem('token');
@@ -468,14 +295,12 @@
     }
 
     function showError(msg) {
-        // ✅ SANITIZE ERROR MESSAGE
         document.getElementById('errorText').textContent = DOMPurify.sanitize(msg);
         document.getElementById('errorMessage').classList.add('visible');
         document.getElementById('successMessage').classList.remove('visible');
     }
 
     function showSuccess(msg) {
-        // ✅ SANITIZE SUCCESS MESSAGE
         document.getElementById('successText').textContent = DOMPurify.sanitize(msg);
         document.getElementById('successMessage').classList.add('visible');
         document.getElementById('errorMessage').classList.remove('visible');
@@ -536,13 +361,11 @@
             if (response.ok) {
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    // ✅ Store CSRF Token
                     if (data.csrfToken) {
                         localStorage.setItem('csrfToken', data.csrfToken);
                     }
                     showSuccess("Login successful! Redirecting...");
 
-                    // ✅ CHECK FOR ADMIN LAYER REDIRECTION
                     if (data.nextStep) {
                         setTimeout(() => {
                             window.location.href = data.nextStep;
@@ -552,7 +375,6 @@
                         return;
                     }
 
-                    // Normal user flow: check admin status
                     try {
                         const userRes = await fetch(`${BACKEND}/api/users/me`, {
                             headers: { 'Authorization': `Bearer ${data.token}` }
@@ -603,7 +425,6 @@
         }
     });
     
-    // Social login handlers
     document.querySelectorAll('.social-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             showError("Social login is not available in this demo. Use email/password instead.");
@@ -611,4 +432,4 @@
     });
 </script>
 </body>
-                                                                                                                                                                               </html>
+  </html>
