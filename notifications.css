@@ -28,6 +28,14 @@ body {
     align-items: flex-start;
     gap: 2px;
     z-index: 10;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* ✅ Hide logo when chat view is active — back button takes its place */
+body.chat-active .brand {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .brand-mark {
@@ -80,7 +88,15 @@ body {
     z-index: 20;
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between auto-reply btn and menu btn */
+    gap: 8px;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* ✅ Hide menu buttons when chat view is active */
+body.chat-active .menu-container {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* ✅ NEW: LARGE AI AUTO-REPLY BUTTON STYLES (Top Right Corner) */
@@ -1269,7 +1285,7 @@ body {
     padding: 8px 0;
 }
 
-/* ─── BOTTOM NAVIGATION (Updated to match history.html) ─── */
+/* ─── BOTTOM NAVIGATION ─── */
 .bottom-nav {
     position: fixed;
     bottom: 0;
