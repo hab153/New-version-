@@ -840,6 +840,9 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
+// ✅ Unread badge polling state
+var _unreadPollInterval = null;
+
 // ✅ PERF #4: Cache API responses — skip slow DB hits if data is fresh
 var _cachedPlan = null;
 var _cachedPlanTime = 0;
@@ -1240,35 +1243,38 @@ function applyStatus(data) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  NOTIFICATIONS
+//  ✅ UNREAD BADGE POLLING — Every 3 seconds
+//  Polls /api/conversations and sums all unreadCount values
 // ──────────────────────────────────────────────────────────────
 
-async function loadNotifCount() {
-try {
-const res = await fetch(`${BACKEND}/api/notifications/count`, {
-headers: { 'Authorization': `Bearer ${token}` }
-});
-if (res.ok) {
-const data = await res.json();
-const count = data.count || 0;
-localStorage.setItem('lastKnownNotifCount', count);
-const seen = parseInt(localStorage.getItem('lastSeenNotifCount') || '0');
-updateBadge(count > seen ? count : 0);
-}
-} catch {}
+function checkUnreadBadge() {
+    if (!token) return;
+    fetch(BACKEND + '/api/conversations', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { if (!res.ok) return null; return res.json(); })
+    .then(function(data) {
+        if (!data || !Array.isArray(data)) return;
+        var totalUnread = 0;
+        for (var i = 0; i < data.length; i++) {
+            totalUnread += (data[i].unreadCount || 0);
+        }
+        updateBadge(totalUnread);
+    })
+    .catch(function() {});
 }
 
 function updateBadge(count) {
-const item = document.getElementById('navNotifBtn');
-const badge = item?.querySelector('.nav-badge');
-if (!item || !badge) return;
-if (count > 0) {
-item.classList.add('has-notifs');
-badge.textContent = count > 9 ? '9+' : count;
-} else {
-item.classList.remove('has-notifs');
-badge.textContent = '';
-}
+    var item = document.getElementById('navNotifBtn');
+    var badge = item ? item.querySelector('.nav-badge') : null;
+    if (!item || !badge) return;
+    if (count > 0) {
+        item.classList.add('has-notifs');
+        badge.textContent = count > 9 ? '9+' : count;
+    } else {
+        item.classList.remove('has-notifs');
+        badge.textContent = '';
+    }
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -1307,26 +1313,28 @@ window.history.pushState({}, '', url);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ PERF #5: INIT — parallel API calls + reduced polling
+//  ✅ INIT — parallel API calls + unread badge polling every 3s
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
 document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
 
+// ✅ Clear badge when user clicks notification nav button
 const navNotifBtn = document.getElementById('navNotifBtn');
 if (navNotifBtn) {
 navNotifBtn.addEventListener('click', () => {
-localStorage.setItem('lastSeenNotifCount', localStorage.getItem('lastKnownNotifCount') || '0');
 updateBadge(0);
 });
 }
 
-// ✅ PERF #5: Fire all 3 API calls at the SAME TIME (was sequential = 3x slower)
-Promise.all([checkPlan(), updateStatus(), loadNotifCount()]).catch(function() {});
+// ✅ Fire initial API calls in parallel
+Promise.all([checkPlan(), updateStatus(), checkUnreadBadge()]).catch(function() {});
 
-// ✅ PERF #5: Reduced polling — was 15s/30s, now 60s/120s (4x fewer requests)
-notifInterval = setInterval(loadNotifCount, 60000);
+// ✅ Unread badge polling every 3 seconds
+_unreadPollInterval = setInterval(checkUnreadBadge, 3000);
+
+// ✅ Status polling every 120 seconds
 statusInterval = setInterval(updateStatus, 120000);
 
 // ─── LEAD MODE FORM ───
