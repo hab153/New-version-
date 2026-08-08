@@ -75,9 +75,9 @@ var FOLLOWUP_CACHE_TTL = 30000;
 var _pollInterval = null;
 var _currentMessageCount = 0;
 
-// ✅ NEW: Global contact list poller
+// ✅ Global contact list poller — runs every 2 seconds
 var _contactPollInterval = null;
-var CONTACT_POLL_MS = 15000; // Every 15 seconds
+var CONTACT_POLL_MS = 2000; // Every 2 seconds — real-time updates
 
 function safeSanitize(str) {
     if (!str) return '';
@@ -421,7 +421,7 @@ function openChat(leadId, name, email) {
 }
 
 // ============================================================
-// ✅ CHAT POLLING — Check for new messages every 10 seconds while in chat
+// ✅ CHAT POLLING — Check for new messages every 2 seconds while in chat
 // ============================================================
 function startPolling(leadId) {
     stopPolling();
@@ -445,7 +445,7 @@ function startPolling(leadId) {
             }
         })
         .catch(function() {});
-    }, 10000);
+    }, 2000); // Every 2 seconds — real-time chat updates
 }
 
 function stopPolling() {
@@ -453,8 +453,8 @@ function stopPolling() {
 }
 
 // ============================================================
-// ✅ GLOBAL CONTACT LIST POLLING — Runs every 15 seconds ALWAYS
-// Updates badges and previews without user needing to refresh
+// ✅ GLOBAL CONTACT LIST POLLING — Runs every 2 seconds ALWAYS
+// Updates badges and previews in real-time without refresh
 // ============================================================
 function startContactPolling() {
     if (_contactPollInterval) clearInterval(_contactPollInterval);
