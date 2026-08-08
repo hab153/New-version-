@@ -31,7 +31,6 @@ body {
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-/* ✅ Hide logo when chat view is active — back button takes its place */
 body.chat-active .brand {
     opacity: 0;
     visibility: hidden;
@@ -92,14 +91,12 @@ body.chat-active .brand {
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-/* ✅ Hide menu buttons when chat view is active */
 body.chat-active .menu-container {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
 }
 
-/* ✅ NEW: LARGE AI AUTO-REPLY BUTTON STYLES (Top Right Corner) */
 .chat-autoreply-btn-large {
     width: 32px; height: 32px; background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px;
@@ -270,7 +267,6 @@ body.chat-active .menu-container {
     pointer-events: none;
 }
 
-/* ─── SPINNER (reused in chat loading) ─── */
 .spinner {
     width: 48px;
     height: 48px;
@@ -300,8 +296,7 @@ body.chat-active .menu-container {
 }
 
 @keyframes pulse-text {
-    0%,
-    100% { opacity: 0.4; }
+    0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
 }
 
@@ -371,6 +366,42 @@ body.chat-active .menu-container {
     font-size: 10px;
     color: #505050;
     flex-shrink: 0;
+}
+
+/* ✅ UNREAD BADGE */
+.contact-unread-badge {
+    display: none;
+    min-width: 18px;
+    height: 18px;
+    background: #ff5555;
+    border-radius: 9px;
+    color: #ffffff;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(255, 85, 85, 0.4);
+}
+
+.contact-item.has-unread .contact-unread-badge {
+    display: flex;
+}
+
+.contact-item.has-unread .contact-name {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.contact-item.has-unread .contact-preview {
+    color: #b0b0b0;
+}
+
+.contact-item.has-unread {
+    background: rgba(255, 85, 85, 0.04);
+    border-left: 3px solid #ff5555;
 }
 
 /* ─── CHAT VIEW ─── */
@@ -490,7 +521,6 @@ body.chat-active .menu-container {
     fill: none;
 }
 
-/* ─── FOLLOW-UP BUTTON & DROPDOWN (TOP RIGHT CORNER) ─── */
 .chat-followup-wrap {
     position: relative;
     flex-shrink: 0;
@@ -582,7 +612,6 @@ body.chat-active .menu-container {
     color: #66dd99;
 }
 
-/* ✅ NEW: AI AUTO-REPLY MINI MODAL STYLES */
 .autoreply-modal-overlay {
     display: none; position: fixed; inset: 0; z-index: 100;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
@@ -613,7 +642,6 @@ body.chat-active .menu-container {
 }
 .autoreply-save-btn:hover { background: #55cc88; transform: scale(1.02); }
 
-/* ─── AUTO FOLLOW-UP MODAL ─── */
 #autoFollowupModal .modal-content {
     max-width: 420px;
     padding: 28px 32px 32px;
@@ -727,7 +755,6 @@ body.chat-active .menu-container {
     border-color: rgba(255,255,255,0.15);
 }
 
-/* ─── MESSAGES CONTAINER ── */
 .messages-container {
     flex: 1;
     overflow-y: auto;
@@ -835,7 +862,6 @@ body.chat-active .menu-container {
     color: #505050;
 }
 
-/* ── INPUT AREA ─── */
 .chat-input-area {
     padding: 10px 12px 12px;
     background: #121212;
@@ -977,7 +1003,6 @@ body.chat-active .menu-container {
     color: #505050;
 }
 
-/* ─── REVENUE MODAL ─── */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -1148,7 +1173,6 @@ body.chat-active .menu-container {
     font-style: italic;
 }
 
-/* Category Colors */
 .cat-contacted .category-icon { background: #66ddff; }
 .cat-replied .category-icon { background: #66dd99; }
 .cat-interested .category-icon { background: #ffbb44; }
@@ -1285,7 +1309,6 @@ body.chat-active .menu-container {
     padding: 8px 0;
 }
 
-/* ─── BOTTOM NAVIGATION ─── */
 .bottom-nav {
     position: fixed;
     bottom: 0;
