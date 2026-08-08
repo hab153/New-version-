@@ -70,7 +70,7 @@ var isAutoReplyActive = false;
 // ✅ PERF #1: Client-side cache — skip API calls if data is fresh
 var _cachedContacts = null;
 var _cachedContactsTime = 0;
-var CONTACTS_CACHE_TTL = 60000; // 60 seconds
+var CONTACTS_CACHE_TTL = 5000; // ✅ FIX: 5 seconds instead of 60 so refresh always gets fresh data
 
 var _cachedChatHistory = {};
 var CHAT_HISTORY_CACHE_TTL = 30000; // 30 seconds
@@ -606,12 +606,22 @@ function openChat(leadId, name, email) {
 
     history.pushState({ chatOpen: true }, '', window.location.href);
 
+    // ✅ FIX: IMMEDIATELY clear unread badge locally before API returns
+    for (var ci = 0; ci < allContacts.length; ci++) {
+        if (allContacts[ci].id === leadId) {
+            allContacts[ci].unreadCount = 0;
+            allContacts[ci].unread = false;
+            break;
+        }
+    }
+    renderContacts(allContacts);
+
     Promise.all([
         loadFollowUpStatus(),
         loadChatHistory(leadId),
         loadAutoReplyStatus()
     ]).then(function() {
-        // ✅ Refresh contact list to clear unread badge (backend marked messages as read)
+        // ✅ Force fresh contact list from server
         _cachedContacts = null;
         _cachedContactsTime = 0;
         loadContacts(true);
