@@ -567,7 +567,7 @@ function renderChatMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ── ✅ OPEN CHAT — loads status in parallel + hides logo + starts polling
+// ── ✅ OPEN CHAT — loads status in parallel + hides logo + clears unread badge + starts polling
 function openChat(leadId, name, email) {
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         Promise.all([
@@ -603,9 +603,16 @@ function openChat(leadId, name, email) {
         loadChatHistory(leadId),
         loadAutoReplyStatus()
     ]).then(function() {
+        // ✅ Refresh contact list to clear unread badge (backend marked messages as read)
+        _cachedContacts = null;
+        _cachedContactsTime = 0;
+        loadContacts(true);
         // ✅ Start background polling after initial load completes
         startPolling(leadId);
     }).catch(function() {
+        _cachedContacts = null;
+        _cachedContactsTime = 0;
+        loadContacts(true);
         startPolling(leadId);
     });
 }
@@ -1115,7 +1122,7 @@ function loadContacts(forceRefresh) {
     });
 }
 
-// ✅ UPDATED: renderContacts now shows unread badge
+// ✅ renderContacts shows unread badge
 function renderContacts(contacts) {
     if (!contacts || contacts.length === 0) {
         if (searchInput.value.trim() !== '') {
