@@ -334,6 +334,8 @@ function closeChatAndGoBack() {
     document.body.style.overflow = '';
     currentLeadId = null;
     stopPolling();
+    // ✅ Refresh contacts when closing chat
+    loadContacts(true);
 }
 
 // ── CHAT BACK ──
@@ -575,6 +577,41 @@ function renderChatMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+// ─── ✅ CLEAR UNREAD BADGE HELPER ───
+function clearUnreadBadge(leadId) {
+    if (!leadId) return;
+    
+    console.log('🔔 [CLEAR] Clearing unread badge for:', leadId);
+    
+    // Clear in-memory contacts
+    for (var i = 0; i < allContacts.length; i++) {
+        if (allContacts[i].id === leadId) {
+            allContacts[i].unreadCount = 0;
+            allContacts[i].unread = false;
+            break;
+        }
+    }
+    
+    // Clear cached contacts
+    if (_cachedContacts) {
+        for (var j = 0; j < _cachedContacts.length; j++) {
+            if (_cachedContacts[j].id === leadId) {
+                _cachedContacts[j].unreadCount = 0;
+                _cachedContacts[j].unread = false;
+                break;
+            }
+        }
+    }
+    
+    // Re-render contacts to remove badge immediately
+    renderContacts(allContacts);
+    
+    // ✅ Also update the global notification badge
+    if (typeof fetchGlobalUnreadCount === 'function') {
+        fetchGlobalUnreadCount();
+    }
+}
+
 // ── ✅ OPEN CHAT — loads status in parallel + hides logo + clears unread badge + starts polling
 function openChat(leadId, name, email) {
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
@@ -606,31 +643,20 @@ function openChat(leadId, name, email) {
 
     history.pushState({ chatOpen: true }, '', window.location.href);
 
-    // ✅ FIX: IMMEDIATELY clear unread badge locally before API returns
-    for (var ci = 0; ci < allContacts.length; ci++) {
-        if (allContacts[ci].id === leadId) {
-            allContacts[ci].unreadCount = 0;
-            allContacts[ci].unread = false;
-            break;
-        }
-    }
-    renderContacts(allContacts);
+    // ✅ FIX: IMMEDIATELY clear unread badge before anything else
+    clearUnreadBadge(leadId);
 
     Promise.all([
         loadFollowUpStatus(),
         loadChatHistory(leadId),
         loadAutoReplyStatus()
     ]).then(function() {
-        // ✅ Force fresh contact list from server
-        _cachedContacts = null;
-        _cachedContactsTime = 0;
-        loadContacts(true);
+        // ✅ Clear badge again after loading (in case API updated it)
+        clearUnreadBadge(leadId);
         // ✅ Start background polling after initial load completes
         startPolling(leadId);
     }).catch(function() {
-        _cachedContacts = null;
-        _cachedContactsTime = 0;
-        loadContacts(true);
+        clearUnreadBadge(leadId);
         startPolling(leadId);
     });
 }
