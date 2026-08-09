@@ -768,11 +768,37 @@ function startContactPolling() {
         })
         .then(function(res) { if (!res.ok) return null; return res.json(); })
         .then(function(data) {
-            if (!data || !Array.isArray(data)) return;
-            allContacts = data;
-            _cachedContacts = data;
+            if (!data) return;
+            
+            // ✅ FIX: Handle both old and new response formats
+            var contacts = data;
+            
+            // If response has "data" field (new paginated format)
+            if (data.data && Array.isArray(data.data)) {
+                contacts = data.data;
+                // Store pagination info if needed
+                if (data.pagination) {
+                    console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+                    console.log('📄 [PAGINATION] Total:', data.pagination.total, 'leads');
+                }
+            }
+            // If response is already an array (old format)
+            else if (Array.isArray(data)) {
+                contacts = data;
+            }
+            
+            // If contacts is null or undefined, use empty array
+            if (!contacts || !Array.isArray(contacts)) {
+                contacts = [];
+            }
+            
+            allContacts = contacts;
+            _cachedContacts = contacts;
             _cachedContactsTime = Date.now();
             renderContacts(allContacts);
+            
+            // ✅ Log for debugging
+            console.log('✅ [CONTACT POLLING] Loaded', contacts.length, 'contacts');
         })
         .catch(function() {});
     }, CONTACT_POLL_MS);
@@ -1118,7 +1144,9 @@ function openChatFromRevenue(leadId, name, email) {
     openChat(leadId, name, email);
 }
 
-// ─── LOAD CONTACTS ───
+// ============================================================
+// ✅ LOAD CONTACTS - FIXED FOR PAGINATED RESPONSE
+// ============================================================
 function loadContacts(forceRefresh) {
     var now_ts = Date.now();
     if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
@@ -1127,6 +1155,7 @@ function loadContacts(forceRefresh) {
         setTimeout(function() { loadingScreen.classList.add('hidden'); }, 300);
         return Promise.resolve();
     }
+    
     return fetch(BACKEND + '/api/conversations', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
@@ -1143,10 +1172,36 @@ function loadContacts(forceRefresh) {
     })
     .then(function(data) {
         if (!data) return;
-        allContacts = data;
-        _cachedContacts = data;
+        
+        // ✅ FIX: Handle both old and new response formats
+        var contacts = data;
+        
+        // If response has "data" field (new paginated format)
+        if (data.data && Array.isArray(data.data)) {
+            contacts = data.data;
+            // Store pagination info if needed
+            if (data.pagination) {
+                console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+                console.log('📄 [PAGINATION] Total:', data.pagination.total, 'leads');
+            }
+        }
+        // If response is already an array (old format)
+        else if (Array.isArray(data)) {
+            contacts = data;
+        }
+        
+        // If contacts is null or undefined, use empty array
+        if (!contacts || !Array.isArray(contacts)) {
+            contacts = [];
+        }
+        
+        allContacts = contacts;
+        _cachedContacts = contacts;
         _cachedContactsTime = Date.now();
         renderContacts(allContacts);
+        
+        // ✅ Log for debugging
+        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts');
     })
     .catch(function(err) {
         console.error('Failed to load contacts:', err);
