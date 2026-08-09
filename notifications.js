@@ -1,7 +1,7 @@
 // ============================================================
 // notifications.js
 // Skyline AA-1 Inbox / Notifications Logic
-// WITH REAL-TIME SSE UPDATES
+// WITH SKELETON LOADERS (instead of spinner)
 // ============================================================
 
 // ── CONFIG ───
@@ -80,6 +80,85 @@ var _pollInterval = null;
 var _currentMessageCount = 0;
 var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
+
+// ============================================================
+// ✅ SKELETON LOADER FUNCTIONS
+// ============================================================
+
+function showSkeletonLoader() {
+    var skeletonHTML = '';
+    for (var i = 0; i < 8; i++) {
+        skeletonHTML += `
+            <div class="skeleton-item">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line skeleton-line-title"></div>
+                    <div class="skeleton-line skeleton-line-subtitle"></div>
+                </div>
+            </div>
+        `;
+    }
+    contactList.innerHTML = skeletonHTML;
+    contactList.classList.add('active');
+    emptyState.classList.remove('active');
+    noResults.classList.remove('active');
+    loadingScreen.classList.add('hidden');
+}
+
+function hideSkeletonLoader() {
+    // Skeleton is removed when contacts are rendered
+}
+
+// ─── SKELETON CSS (add to your CSS file or inline) ───
+function injectSkeletonStyles() {
+    if (document.getElementById('skeleton-styles')) return;
+    
+    var style = document.createElement('style');
+    style.id = 'skeleton-styles';
+    style.textContent = `
+        .skeleton-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--card);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-md);
+            margin-bottom: 10px;
+            animation: skelPulse 1.6s ease-in-out infinite;
+        }
+        .skeleton-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--raised);
+            flex-shrink: 0;
+        }
+        .skeleton-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .skeleton-line {
+            height: 12px;
+            border-radius: 4px;
+            background: var(--raised);
+        }
+        .skeleton-line-title {
+            width: 65%;
+        }
+        .skeleton-line-subtitle {
+            width: 40%;
+            height: 10px;
+        }
+        @keyframes skelPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    `;
+    document.head.appendChild(style);
+}
 
 // ============================================================
 // ✅ SSE: REAL-TIME CONNECTION
@@ -587,9 +666,32 @@ function loadChatHistory(leadId) {
         return Promise.resolve();
     }
 
-    if (!messagesContainer.children.length || messagesContainer.querySelector('.empty-chat')) {
-        messagesContainer.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;"><div class="spinner" style="width:28px; height:28px; border-width:2px;"></div><div style="color:#505050; font-size:11px; letter-spacing:0.05em;">Loading messages...</div></div>';
-    }
+    // ✅ SKELETON LOADER for messages
+    messagesContainer.innerHTML = `
+        <div class="skeleton-message">
+            <div class="skeleton-message-avatar"></div>
+            <div class="skeleton-message-content">
+                <div class="skeleton-line skeleton-line-title" style="width:60%;"></div>
+                <div class="skeleton-line skeleton-line-subtitle" style="width:80%;"></div>
+                <div class="skeleton-line skeleton-line-subtitle" style="width:50%;"></div>
+            </div>
+        </div>
+        <div class="skeleton-message" style="align-self:flex-end;">
+            <div class="skeleton-message-content" style="align-items:flex-end;">
+                <div class="skeleton-line skeleton-line-title" style="width:40%;"></div>
+                <div class="skeleton-line skeleton-line-subtitle" style="width:60%;"></div>
+            </div>
+            <div class="skeleton-message-avatar"></div>
+        </div>
+        <div class="skeleton-message">
+            <div class="skeleton-message-avatar"></div>
+            <div class="skeleton-message-content">
+                <div class="skeleton-line skeleton-line-title" style="width:50%;"></div>
+                <div class="skeleton-line skeleton-line-subtitle" style="width:70%;"></div>
+                <div class="skeleton-line skeleton-line-subtitle" style="width:30%;"></div>
+            </div>
+        </div>
+    `;
 
     return fetch(BACKEND + '/api/conversations/' + encodeURIComponent(leadId), {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -776,10 +878,8 @@ function startContactPolling() {
             // If response has "data" field (new paginated format)
             if (data.data && Array.isArray(data.data)) {
                 contacts = data.data;
-                // Store pagination info if needed
                 if (data.pagination) {
                     console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
-                    console.log('📄 [PAGINATION] Total:', data.pagination.total, 'leads');
                 }
             }
             // If response is already an array (old format)
@@ -787,7 +887,6 @@ function startContactPolling() {
                 contacts = data;
             }
             
-            // If contacts is null or undefined, use empty array
             if (!contacts || !Array.isArray(contacts)) {
                 contacts = [];
             }
@@ -796,8 +895,6 @@ function startContactPolling() {
             _cachedContacts = contacts;
             _cachedContactsTime = Date.now();
             renderContacts(allContacts);
-            
-            // ✅ Log for debugging
             console.log('✅ [CONTACT POLLING] Loaded', contacts.length, 'contacts');
         })
         .catch(function() {});
@@ -1145,16 +1242,20 @@ function openChatFromRevenue(leadId, name, email) {
 }
 
 // ============================================================
-// ✅ LOAD CONTACTS - FIXED FOR PAGINATED RESPONSE
+// ✅ LOAD CONTACTS - WITH SKELETON LOADER
 // ============================================================
 function loadContacts(forceRefresh) {
     var now_ts = Date.now();
+    
+    // ✅ If cache exists and not forced, use it
     if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
         allContacts = _cachedContacts;
         renderContacts(allContacts);
-        setTimeout(function() { loadingScreen.classList.add('hidden'); }, 300);
         return Promise.resolve();
     }
+    
+    // ✅ Show skeleton loader immediately
+    showSkeletonLoader();
     
     return fetch(BACKEND + '/api/conversations', {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -1173,24 +1274,18 @@ function loadContacts(forceRefresh) {
     .then(function(data) {
         if (!data) return;
         
-        // ✅ FIX: Handle both old and new response formats
+        // ✅ Handle both old and new response formats
         var contacts = data;
         
-        // If response has "data" field (new paginated format)
         if (data.data && Array.isArray(data.data)) {
             contacts = data.data;
-            // Store pagination info if needed
             if (data.pagination) {
                 console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
-                console.log('📄 [PAGINATION] Total:', data.pagination.total, 'leads');
             }
-        }
-        // If response is already an array (old format)
-        else if (Array.isArray(data)) {
+        } else if (Array.isArray(data)) {
             contacts = data;
         }
         
-        // If contacts is null or undefined, use empty array
         if (!contacts || !Array.isArray(contacts)) {
             contacts = [];
         }
@@ -1199,16 +1294,12 @@ function loadContacts(forceRefresh) {
         _cachedContacts = contacts;
         _cachedContactsTime = Date.now();
         renderContacts(allContacts);
-        
-        // ✅ Log for debugging
         console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts');
     })
     .catch(function(err) {
         console.error('Failed to load contacts:', err);
+        // Show empty state if no contacts
         showEmptyState();
-    })
-    .finally(function() {
-        setTimeout(function() { loadingScreen.classList.add('hidden'); }, 300);
     });
 }
 
@@ -1381,9 +1472,18 @@ window.addEventListener('beforeunload', function() {
 });
 
 // ─── START EVERYTHING ───
+// ✅ Inject skeleton styles
+injectSkeletonStyles();
+
+// ✅ Show skeleton immediately
+showSkeletonLoader();
+
+// ✅ Load contacts
 loadContacts();
+
+// ✅ Start polling and SSE
 startContactPolling();
-connectSSE(); // ✅ START SSE CONNECTION
+connectSSE();
 history.pushState(null, '', window.location.href);
 
-console.log('✅ [NOTIFICATIONS] Loaded with SSE real-time updates');
+console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
