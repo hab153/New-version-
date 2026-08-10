@@ -824,9 +824,225 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 </nav>
 
 <!-- ════════════════════════════════════════════ -->
-<!-- ✅ SHARED NOTIFICATION SYSTEM - 100% SAME AS notifications.html -->
+<!-- ✅ DIRECT BACKEND CONNECTION FOR NOTIFICATION BADGE -->
 <!-- ════════════════════════════════════════════ -->
-<script src="notifications.js"></script>
+<script>
+// ============================================================
+// DIRECT BACKEND CONNECTION - Notification Badge (RED DOT)
+// (Same as notifications.js but lightweight)
+// ============================================================
+
+var BADGE_BACKEND = 'https://skylineapp-backend-file.onrender.com';
+var BADGE_KEY = 'globalUnreadCount';
+var SEEN_KEY = 'lastSeenNotifCount';
+
+// ─── Get token ───
+function getToken() {
+    return localStorage.getItem('token');
+}
+
+// ─── Badge state ───
+function getStoredBadge() {
+    var count = localStorage.getItem(BADGE_KEY);
+    return count ? parseInt(count) : 0;
+}
+
+function setStoredBadge(count) {
+    localStorage.setItem(BADGE_KEY, String(count || 0));
+}
+
+function getLastSeen() {
+    var count = localStorage.getItem(SEEN_KEY);
+    return count ? parseInt(count) : 0;
+}
+
+function setLastSeen(count) {
+    localStorage.setItem(SEEN_KEY, String(count || 0));
+}
+
+// ─── Update badge UI (RED DOT - no number) ───
+function updateBadgeUI(hasUnread) {
+    var badges = document.querySelectorAll('.nav-badge');
+    if (badges.length === 0) return;
+
+    badges.forEach(function(badge) {
+        if (hasUnread) {
+            // ✅ RED DOT only - no number
+            badge.textContent = '';
+            badge.style.display = 'flex';
+            badge.style.background = '#ff5555';
+            badge.style.width = '10px';
+            badge.style.height = '10px';
+            badge.style.minWidth = '10px';
+            badge.style.borderRadius = '50%';
+            badge.style.padding = '0';
+            badge.style.fontSize = '0';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.add('has-notifs');
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
+            badge.style.width = '';
+            badge.style.height = '';
+            badge.style.minWidth = '';
+            badge.style.borderRadius = '';
+            badge.style.padding = '';
+            badge.style.fontSize = '';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.remove('has-notifs');
+        }
+    });
+}
+
+// ─── FETCH UNREAD COUNT FROM BACKEND ───
+function fetchBadgeCount() {
+    var token = getToken();
+    if (!token) {
+        updateBadgeUI(false);
+        return;
+    }
+
+    fetch(BADGE_BACKEND + '/api/notifications/count', {
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                updateBadgeUI(false);
+                return;
+            }
+            updateBadgeUI(getStoredBadge() > 0);
+            return;
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
+        var count = data.count || 0;
+        setStoredBadge(count);
+        var seen = getLastSeen();
+        var displayCount = count > seen ? count - seen : 0;
+        updateBadgeUI(displayCount > 0);
+    })
+    .catch(function() {
+        updateBadgeUI(getStoredBadge() > 0);
+    });
+}
+
+// ─── SSE Real-time ───
+var sseConnection = null;
+var reconnectAttempts = 0;
+
+function connectBadgeSSE() {
+    var token = getToken();
+    if (!token) return;
+
+    if (sseConnection) {
+        sseConnection.close();
+        sseConnection = null;
+    }
+
+    try {
+        sseConnection = new EventSource(BADGE_BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
+
+        sseConnection.addEventListener('open', function() {
+            console.log('✅ [BADGE SSE] Connected');
+            reconnectAttempts = 0;
+        });
+
+        sseConnection.addEventListener('message', function(event) {
+            try {
+                var data = JSON.parse(event.data);
+                if (data.type === 'new_message' || data.type === 'lead_updated') {
+                    fetchBadgeCount();
+                }
+            } catch (err) { /* ignore */ }
+        });
+
+        sseConnection.addEventListener('error', function() {
+            if (sseConnection) {
+                sseConnection.close();
+                sseConnection = null;
+            }
+            reconnectAttempts++;
+            var delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+            if (reconnectAttempts <= 5) {
+                setTimeout(connectBadgeSSE, delay);
+            }
+        });
+
+    } catch (err) {
+        console.error('[BADGE SSE] Error:', err.message);
+    }
+}
+
+// ─── Storage listener ───
+function setupStorageListener() {
+    window.addEventListener('storage', function(e) {
+        if (e.key === BADGE_KEY || e.key === SEEN_KEY) {
+            var stored = getStoredBadge();
+            var seen = getLastSeen();
+            var displayCount = stored > seen ? stored - seen : 0;
+            updateBadgeUI(displayCount > 0);
+        }
+    });
+}
+
+// ─── Clean up ───
+function cleanupBadge() {
+    if (sseConnection) {
+        sseConnection.close();
+        sseConnection = null;
+    }
+}
+
+// ─── Notification click handler ───
+function setupNotifClick() {
+    var btn = document.getElementById('navNotifBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+        var href = this.getAttribute('href');
+        if (href && href.includes('notifications.html')) {
+            var current = getStoredBadge();
+            setLastSeen(current);
+            setStoredBadge(0);
+            updateBadgeUI(false);
+        }
+    });
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', function() {
+    // Show stored state immediately
+    var stored = getStoredBadge();
+    var seen = getLastSeen();
+    updateBadgeUI((stored > seen ? stored - seen : 0) > 0);
+
+    // Fetch from backend
+    fetchBadgeCount();
+
+    // Connect SSE
+    connectBadgeSSE();
+
+    // Storage listener
+    setupStorageListener();
+
+    // Notification click
+    setupNotifClick();
+
+    // Periodic refresh (every 30 seconds)
+    setInterval(fetchBadgeCount, 30000);
+
+    // Cleanup
+    window.addEventListener('beforeunload', cleanupBadge);
+});
+
+console.log('✅ [BADGE] Direct backend connection established (RED DOT)');
+</script>
 
 <!-- ════════════════════════════════════════════ -->
 <!-- ✅ PAGE-SPECIFIC SCRIPT -->
@@ -1325,7 +1541,7 @@ window.switchMode = switchMode;
 window.clearChat = clearChat;
 window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-console.log('✅ [PAGE] Loaded with shared notification system');
+console.log('✅ [PAGE] Loaded with direct backend connection for badge');
 });
 </script>
 </body>
