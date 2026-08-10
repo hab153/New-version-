@@ -823,8 +823,8 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 </a>
 </nav>
 
-<!-- ─── ✅ NOTIFICATION BADGE SYSTEM ─── -->
-<script src="notif-badge.js"></script>
+<!-- ─── ✅ SHARED NOTIFICATION SYSTEM ─── -->
+<script src="notifications.js"></script>
 
 <script>
 // ── CONFIG ─
@@ -842,9 +842,6 @@ let notifInterval = null;
 let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
-
-// ✅ Unread badge polling state
-var _unreadPollInterval = null;
 
 // ✅ PERF #4: Cache API responses — skip slow DB hits if data is fresh
 var _cachedPlan = null;
@@ -1246,41 +1243,6 @@ function applyStatus(data) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ UNREAD BADGE POLLING — Every 3 seconds
-//  Polls /api/conversations and sums all unreadCount values
-// ──────────────────────────────────────────────────────────────
-
-function checkUnreadBadge() {
-    if (!token) return;
-    fetch(BACKEND + '/api/conversations', {
-        headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(function(res) { if (!res.ok) return null; return res.json(); })
-    .then(function(data) {
-        if (!data || !Array.isArray(data)) return;
-        var totalUnread = 0;
-        for (var i = 0; i < data.length; i++) {
-            totalUnread += (data[i].unreadCount || 0);
-        }
-        updateBadge(totalUnread);
-    })
-    .catch(function() {});
-}
-
-function updateBadge(count) {
-    var item = document.getElementById('navNotifBtn');
-    var badge = item ? item.querySelector('.nav-badge') : null;
-    if (!item || !badge) return;
-    if (count > 0) {
-        item.classList.add('has-notifs');
-        badge.textContent = count > 9 ? '9+' : count;
-    } else {
-        item.classList.remove('has-notifs');
-        badge.textContent = '';
-    }
-}
-
-// ──────────────────────────────────────────────────────────────
 //  CLEAR CHAT
 // ──────────────────────────────────────────────────────────────
 
@@ -1316,26 +1278,15 @@ window.history.pushState({}, '', url);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ INIT — parallel API calls + unread badge polling every 3s
+//  ✅ INIT — parallel API calls
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
 document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
 
-// ✅ Clear badge when user clicks notification nav button
-const navNotifBtn = document.getElementById('navNotifBtn');
-if (navNotifBtn) {
-navNotifBtn.addEventListener('click', () => {
-updateBadge(0);
-});
-}
-
 // ✅ Fire initial API calls in parallel
-Promise.all([checkPlan(), updateStatus(), checkUnreadBadge()]).catch(function() {});
-
-// ✅ Unread badge polling every 3 seconds
-_unreadPollInterval = setInterval(checkUnreadBadge, 3000);
+Promise.all([checkPlan(), updateStatus()]).catch(function() {});
 
 // ✅ Status polling every 120 seconds
 statusInterval = setInterval(updateStatus, 120000);
