@@ -823,9 +823,14 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 </a>
 </nav>
 
-<!-- ─── ✅ SHARED NOTIFICATION SYSTEM ─── -->
+<!-- ════════════════════════════════════════════ -->
+<!-- ✅ SHARED NOTIFICATION SYSTEM - 100% SAME AS notifications.html -->
+<!-- ════════════════════════════════════════════ -->
 <script src="notifications.js"></script>
 
+<!-- ════════════════════════════════════════════ -->
+<!-- ✅ PAGE-SPECIFIC SCRIPT -->
+<!-- ════════════════════════════════════════════ -->
 <script>
 // ── CONFIG ─
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -838,12 +843,11 @@ let currentSessionId = new URLSearchParams(window.location.search).get('session'
 let conversationHistory = [];
 let isTyping = false;
 let currentGeneratedLeads = [];
-let notifInterval = null;
 let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ PERF #4: Cache API responses — skip slow DB hits if data is fresh
+// ✅ PERF: Cache API responses — skip slow DB hits if data is fresh
 var _cachedPlan = null;
 var _cachedPlanTime = 0;
 var _cachedStatus = null;
@@ -1320,6 +1324,8 @@ switchMode('lead');
 window.switchMode = switchMode;
 window.clearChat = clearChat;
 window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
+
+console.log('✅ [PAGE] Loaded with shared notification system');
 });
 </script>
 </body>
