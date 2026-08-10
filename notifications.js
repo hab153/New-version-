@@ -1,12 +1,183 @@
 // ============================================================
 // notifications.js
 // Skyline AA-1 Inbox / Notifications Logic
+// SHARED BADGE SYSTEM - Works on ALL pages
 // WITH SKELETON LOADERS + HTML STRIPPING
 // ============================================================
 
 // ── CONFIG ───
 var BACKEND = 'https://skylineapp-backend-file.onrender.com';
 var token = localStorage.getItem('token');
+
+// ════════════════════════════════════════════
+// ✅ SHARED BADGE SYSTEM (Works across ALL pages)
+// ════════════════════════════════════════════
+
+// ─── BADGE STATE KEYS ───
+var BADGE_KEY = 'globalUnreadCount';
+var SEEN_KEY = 'lastSeenNotifCount';
+
+// ─── Get stored badge count ───
+function getStoredBadge() {
+    var count = localStorage.getItem(BADGE_KEY);
+    if (count === null || count === undefined) return 0;
+    return parseInt(count) || 0;
+}
+
+// ─── Set stored badge count ───
+function setStoredBadge(count) {
+    localStorage.setItem(BADGE_KEY, String(count || 0));
+}
+
+// ─── Get last seen count ───
+function getLastSeenCount() {
+    var count = localStorage.getItem(SEEN_KEY);
+    return count ? parseInt(count) : 0;
+}
+
+// ─── Set last seen count ───
+function setLastSeenCount(count) {
+    localStorage.setItem(SEEN_KEY, String(count || 0));
+}
+
+// ─── UPDATE ALL BADGES ON CURRENT PAGE ───
+function updateAllBadges(count) {
+    var badges = document.querySelectorAll('.nav-badge');
+    if (badges.length === 0) return;
+
+    badges.forEach(function(badge) {
+        if (count > 0) {
+            badge.textContent = count > 9 ? '9+' : count;
+            badge.style.display = 'flex';
+            badge.style.background = '#ff5555';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.add('has-notifs');
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.remove('has-notifs');
+        }
+    });
+}
+
+// ─── FETCH UNREAD COUNT FROM SERVER ───
+function fetchGlobalUnreadCount() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        updateAllBadges(0);
+        return;
+    }
+
+    fetch(BACKEND + '/api/notifications/count', {
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                updateAllBadges(0);
+                return;
+            }
+            var stored = getStoredBadge();
+            updateAllBadges(stored);
+            return;
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (!data) return;
+        var count = data.count || 0;
+        setStoredBadge(count);
+        var seen = getLastSeenCount();
+        var displayCount = count > seen ? count - seen : 0;
+        updateAllBadges(displayCount);
+        console.log('🔔 [BADGE] Updated badge:', displayCount, '(total:', count, ')');
+    })
+    .catch(function(error) {
+        console.error('[NOTIFICATIONS] Fetch error:', error);
+        var stored = getStoredBadge();
+        updateAllBadges(stored);
+    });
+}
+
+// ─── MARK NOTIFICATIONS AS READ ───
+function markNotificationsRead() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+
+    var currentCount = getStoredBadge();
+    setLastSeenCount(currentCount);
+    setStoredBadge(0);
+    updateAllBadges(0);
+    console.log('🔔 [BADGE] Marked all as read');
+}
+
+// ─── INIT BADGE ON PAGE LOAD ───
+function initBadge() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        updateAllBadges(0);
+        return;
+    }
+
+    // Show stored count immediately
+    var stored = getStoredBadge();
+    var seen = getLastSeenCount();
+    var displayCount = stored > seen ? stored - seen : 0;
+    updateAllBadges(displayCount);
+
+    // Fetch fresh count
+    fetchGlobalUnreadCount();
+
+    // Periodic refresh (every 15 seconds)
+    if (window._badgeInterval) {
+        clearInterval(window._badgeInterval);
+    }
+    window._badgeInterval = setInterval(fetchGlobalUnreadCount, 15000);
+}
+
+// ─── STORAGE LISTENER (sync across tabs/pages) ───
+function setupStorageListener() {
+    window.addEventListener('storage', function(e) {
+        if (e.key === BADGE_KEY || e.key === SEEN_KEY) {
+            var stored = getStoredBadge();
+            var seen = getLastSeenCount();
+            var displayCount = stored > seen ? stored - seen : 0;
+            updateAllBadges(displayCount);
+        }
+    });
+}
+
+// ─── CLEAN UP ───
+function cleanupBadge() {
+    if (window._badgeInterval) {
+        clearInterval(window._badgeInterval);
+        window._badgeInterval = null;
+    }
+}
+
+// ─── RUN BADGE INIT ───
+document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize badge if this page has a notification button
+    var notifBtn = document.getElementById('navNotifBtn');
+    if (notifBtn) {
+        initBadge();
+        setupStorageListener();
+    }
+});
+
+// ─── CLEAN UP ON PAGE UNLOAD ───
+window.addEventListener('beforeunload', cleanupBadge);
+
+console.log('✅ [NOTIFICATIONS] Shared badge system loaded');
+
+// ════════════════════════════════════════════
+//  REST OF YOUR notifications.js CODE
+// ════════════════════════════════════════════
 
 // ── DOM ELEMENTS ──
 var loadingScreen = document.getElementById('loadingScreen');
@@ -329,7 +500,6 @@ function handleNewMessageEvent(data) {
     // ✅ 3. If chat is open and it's the same lead, append message
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         var messageFrom = from === 'lead' ? 'lead' : 'customer';
-        // ✅ Strip HTML from incoming message
         var cleanMessage = stripHtml(message);
         appendMessage(messageFrom, cleanMessage, new Date().toISOString());
         _currentMessageCount++;
@@ -343,10 +513,8 @@ function handleNewMessageEvent(data) {
         }
     }
 
-    // ✅ 4. Update global notification badge
-    if (typeof fetchGlobalUnreadCount === 'function') {
-        fetchGlobalUnreadCount();
-    }
+    // ✅ 4. Update global notification badge (CRITICAL!)
+    fetchGlobalUnreadCount();
 
     // ✅ 5. Play notification sound
     playNotificationSound();
@@ -356,6 +524,7 @@ function handleNewMessageEvent(data) {
 function handleLeadUpdatedEvent(data) {
     console.log('📨 [SSE] Lead updated:', data.leadId);
     loadContacts(true);
+    fetchGlobalUnreadCount(); // Update badge too
 }
 
 // ─── PLAY NOTIFICATION SOUND ───
@@ -385,7 +554,7 @@ function safeSanitize(str) {
 }
 
 // ─── AUTH CHECK ───
-if (!token) {
+if (!token && window.location.pathname.includes('notifications.html')) {
     window.location.href = 'login.html';
 }
 
@@ -401,20 +570,22 @@ function showToast(message, duration) {
 }
 
 // ─── MENU TOGGLE ───
-menuBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    menuDropdown.classList.toggle('show');
-});
+if (menuBtn) {
+    menuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menuDropdown.classList.toggle('show');
+    });
+}
 
 document.addEventListener('click', function() {
-    menuDropdown.classList.remove('show');
+    if (menuDropdown) menuDropdown.classList.remove('show');
 });
 
 document.querySelectorAll('.menu-item').forEach(function(item) {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
         var action = this.dataset.action;
-        menuDropdown.classList.remove('show');
+        if (menuDropdown) menuDropdown.classList.remove('show');
         if (action === 'revenue') { fetchRevenueData(); return; }
         if (action === 'followup') {
             if (!currentLeadId) { showToast('Open a chat first.'); return; }
@@ -432,10 +603,15 @@ document.querySelectorAll('.menu-item').forEach(function(item) {
     });
 });
 
-closeRevenueModal.addEventListener('click', function() { revenueModal.classList.remove('active'); });
-revenueModal.addEventListener('click', function(e) {
-    if (e.target === this) { revenueModal.classList.remove('active'); }
-});
+if (closeRevenueModal) {
+    closeRevenueModal.addEventListener('click', function() { revenueModal.classList.remove('active'); });
+}
+
+if (revenueModal) {
+    revenueModal.addEventListener('click', function(e) {
+        if (e.target === this) { revenueModal.classList.remove('active'); }
+    });
+}
 
 // ── FOLLOW-UP DROPDOWN ──
 if (followupBtn && followupDropdown) {
@@ -443,6 +619,7 @@ if (followupBtn && followupDropdown) {
         e.stopPropagation();
         followupDropdown.classList.toggle('show');
     });
+
     document.addEventListener('click', function(e) {
         if (!followupBtn.contains(e.target) && !followupDropdown.contains(e.target)) {
             followupDropdown.classList.remove('show');
@@ -579,31 +756,39 @@ function closeChatAndGoBack() {
     loadContacts(true);
 }
 
-chatBack.addEventListener('click', function() { closeChatAndGoBack(); });
+if (chatBack) {
+    chatBack.addEventListener('click', function() { closeChatAndGoBack(); });
+}
 
 // ─── CHAT INPUT ───
-chatInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 80) + 'px';
-    chatSendBtn.disabled = !this.value.trim();
-});
+if (chatInput) {
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+        chatSendBtn.disabled = !this.value.trim();
+    });
 
-chatInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        if (!chatSendBtn.disabled) { sendMessage(); }
-    }
-});
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!chatSendBtn.disabled) { sendMessage(); }
+        }
+    });
+}
 
-chatSendBtn.addEventListener('click', sendMessage);
+if (chatSendBtn) {
+    chatSendBtn.addEventListener('click', sendMessage);
+}
 
 // ─── RENAME ───
-chatRenameBtn.addEventListener('click', function() {
-    if (!currentLeadId) { showToast('No lead selected.'); return; }
-    var newName = prompt('Enter new name for this contact:', currentLeadName || '');
-    if (newName === null || newName.trim() === '') return;
-    renameLead(currentLeadId, newName.trim());
-});
+if (chatRenameBtn) {
+    chatRenameBtn.addEventListener('click', function() {
+        if (!currentLeadId) { showToast('No lead selected.'); return; }
+        var newName = prompt('Enter new name for this contact:', currentLeadName || '');
+        if (newName === null || newName.trim() === '') return;
+        renameLead(currentLeadId, newName.trim());
+    });
+}
 
 function renameLead(leadId, newName) {
     fetch(BACKEND + '/api/leads/' + encodeURIComponent(leadId) + '/rename', {
@@ -827,9 +1012,7 @@ function clearUnreadBadge(leadId) {
     }
 
     renderContacts(allContacts);
-    if (typeof fetchGlobalUnreadCount === 'function') {
-        fetchGlobalUnreadCount();
-    }
+    fetchGlobalUnreadCount(); // ✅ Update global badge
 }
 
 // ─── OPEN CHAT ───
@@ -854,7 +1037,7 @@ function openChat(leadId, name, email) {
     chatView.classList.add('active');
     document.body.classList.add('chat-active');
     document.body.style.overflow = 'hidden';
-    menuDropdown.classList.remove('show');
+    if (menuDropdown) menuDropdown.classList.remove('show');
     if (followupDropdown) followupDropdown.classList.remove('show');
 
     chatInput.value = '';
@@ -910,6 +1093,7 @@ function startPolling(leadId) {
                 _cachedContacts = null;
                 _cachedContactsTime = 0;
                 loadContacts(true);
+                fetchGlobalUnreadCount(); // ✅ Update badge
             }
         })
         .catch(function() {});
@@ -956,6 +1140,19 @@ function startContactPolling() {
             _cachedContactsTime = Date.now();
             renderContacts(allContacts);
             console.log('✅ [CONTACT POLLING] Loaded', contacts.length, 'contacts');
+            
+            // ✅ Update badge from contact list
+            var totalUnread = 0;
+            for (var j = 0; j < contacts.length; j++) {
+                totalUnread += (contacts[j].unreadCount || 0);
+            }
+            // Only update if we have a count
+            if (totalUnread > 0) {
+                setStoredBadge(totalUnread);
+                var seen = getLastSeenCount();
+                var displayCount = totalUnread > seen ? totalUnread - seen : 0;
+                updateAllBadges(displayCount);
+            }
         })
         .catch(function() {});
     }, CONTACT_POLL_MS);
@@ -1355,10 +1552,21 @@ function loadContacts(forceRefresh) {
         _cachedContactsTime = Date.now();
         renderContacts(allContacts);
         console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts');
+        
+        // ✅ Update badge from loaded contacts
+        var totalUnread = 0;
+        for (var j = 0; j < contacts.length; j++) {
+            totalUnread += (contacts[j].unreadCount || 0);
+        }
+        if (totalUnread > 0) {
+            setStoredBadge(totalUnread);
+            var seen = getLastSeenCount();
+            var displayCount = totalUnread > seen ? totalUnread - seen : 0;
+            updateAllBadges(displayCount);
+        }
     })
     .catch(function(err) {
         console.error('Failed to load contacts:', err);
-        // Show empty state if no contacts
         showEmptyState();
     });
 }
@@ -1529,6 +1737,7 @@ window.addEventListener('beforeunload', function() {
         sseConnection.close();
         sseConnection = null;
     }
+    cleanupBadge();
 });
 
 // ─── START EVERYTHING ───
@@ -1546,4 +1755,4 @@ startContactPolling();
 connectSSE();
 history.pushState(null, '', window.location.href);
 
-console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders + HTML stripping');
+console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders + HTML stripping + Shared Badge');
