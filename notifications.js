@@ -1,7 +1,7 @@
 // ============================================================
 // notifications.js
 // Skyline AA-1 Inbox / Notifications Logic
-// WITH SKELETON LOADERS (instead of spinner)
+// WITH SKELETON LOADERS + HTML STRIPPING
 // ============================================================
 
 // ── CONFIG ───
@@ -82,6 +82,16 @@ var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
 
 // ============================================================
+// ✅ STRIP HTML TAGS
+// ============================================================
+function stripHtml(html) {
+    if (!html) return '';
+    var temp = document.createElement('div');
+    temp.innerHTML = html;
+    return temp.textContent || temp.innerText || '';
+}
+
+// ============================================================
 // ✅ SKELETON LOADER FUNCTIONS
 // ============================================================
 
@@ -109,7 +119,7 @@ function hideSkeletonLoader() {
     // Skeleton is removed when contacts are rendered
 }
 
-// ─── SKELETON CSS (add to your CSS file or inline) ───
+// ─── SKELETON CSS ───
 function injectSkeletonStyles() {
     if (document.getElementById('skeleton-styles')) return;
     
@@ -319,13 +329,15 @@ function handleNewMessageEvent(data) {
     // ✅ 3. If chat is open and it's the same lead, append message
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         var messageFrom = from === 'lead' ? 'lead' : 'customer';
-        appendMessage(messageFrom, message, new Date().toISOString());
+        // ✅ Strip HTML from incoming message
+        var cleanMessage = stripHtml(message);
+        appendMessage(messageFrom, cleanMessage, new Date().toISOString());
         _currentMessageCount++;
 
         if (_cachedChatHistory[leadId]) {
             _cachedChatHistory[leadId].data.push({
                 from: messageFrom,
-                content: message,
+                content: cleanMessage,
                 date: new Date().toISOString()
             });
         }
@@ -686,7 +698,7 @@ function sendMessage() {
     });
 }
 
-// ─── APPEND MESSAGE ───
+// ─── APPEND MESSAGE - WITH HTML STRIPPING ───
 function appendMessage(from, content, date) {
     var div = document.createElement('div');
     var cssClass = from === 'lead' ? 'from-lead' : 'from-ai';
@@ -696,7 +708,11 @@ function appendMessage(from, content, date) {
 
     div.className = 'msg-group ' + cssClass;
     div.style.alignSelf = alignItems;
-    div.innerHTML = '<div class="msg-sender">' + senderLabel + '</div><div class="message-bubble">' + safeSanitize(content) + '</div><div class="message-time">' + time + '</div>';
+    
+    // ✅ Strip HTML tags from content
+    var cleanContent = stripHtml(content);
+    
+    div.innerHTML = '<div class="msg-sender">' + senderLabel + '</div><div class="message-bubble">' + safeSanitize(cleanContent) + '</div><div class="message-time">' + time + '</div>';
 
     messagesContainer.appendChild(div);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -779,7 +795,9 @@ function renderChatMessages(messages) {
         return;
     }
     for (var i = 0; i < messages.length; i++) {
-        appendMessage(messages[i].from, messages[i].content, messages[i].date);
+        // ✅ Strip HTML from messages
+        var cleanContent = stripHtml(messages[i].content || '');
+        appendMessage(messages[i].from, cleanContent, messages[i].date);
     }
     _currentMessageCount = messages.length;
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -881,7 +899,8 @@ function startPolling(leadId) {
             if (newMessages.length > _currentMessageCount) {
                 _cachedChatHistory[leadId] = { data: newMessages, time: Date.now() };
                 for (var i = _currentMessageCount; i < newMessages.length; i++) {
-                    appendMessage(newMessages[i].from, newMessages[i].content, newMessages[i].date);
+                    var cleanContent = stripHtml(newMessages[i].content || '');
+                    appendMessage(newMessages[i].from, cleanContent, newMessages[i].date);
                 }
                 _currentMessageCount = newMessages.length;
                 var lastMsg = newMessages[newMessages.length - 1];
@@ -916,18 +935,15 @@ function startContactPolling() {
         .then(function(data) {
             if (!data) return;
             
-            // ✅ FIX: Handle both old and new response formats
+            // ✅ Handle both old and new response formats
             var contacts = data;
             
-            // If response has "data" field (new paginated format)
             if (data.data && Array.isArray(data.data)) {
                 contacts = data.data;
                 if (data.pagination) {
                     console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
                 }
-            }
-            // If response is already an array (old format)
-            else if (Array.isArray(data)) {
+            } else if (Array.isArray(data)) {
                 contacts = data;
             }
             
@@ -1530,4 +1546,4 @@ startContactPolling();
 connectSSE();
 history.pushState(null, '', window.location.href);
 
-console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
+console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders + HTML stripping');
