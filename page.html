@@ -824,40 +824,57 @@ font-size: 7px; font-weight: 600; align-items: center; justify-content: center; 
 </nav>
 
 <!-- ════════════════════════════════════════════ -->
-<!-- ✅ DIRECT BACKEND CONNECTION FOR NOTIFICATION BADGE -->
+<!-- ✅ DIRECT BACKEND CONNECTION - RED DOT BADGE -->
+<!-- ✅ 1 MINUTE LOCALSTORAGE CACHE              -->
+<!-- ✅ AUTO-FETCH EVERY 50 SECONDS             -->
 <!-- ════════════════════════════════════════════ -->
 <script>
 // ============================================================
 // DIRECT BACKEND CONNECTION - Notification Badge (RED DOT)
-// (Same as notifications.js but lightweight)
+// 1 MINUTE localStorage CACHE - Auto-fetch every 50 seconds
 // ============================================================
 
 var BADGE_BACKEND = 'https://skylineapp-backend-file.onrender.com';
-var BADGE_KEY = 'globalUnreadCount';
-var SEEN_KEY = 'lastSeenNotifCount';
+var BADGE_KEY = 'notif_has_unread';
+var BADGE_TIME_KEY = 'notif_last_check';
+var CACHE_DURATION = 60000; // 1 minute (60,000 ms)
+var FETCH_INTERVAL = 50000; // 50 seconds (fetch before cache expires)
+var BADGE_FETCH_INTERVAL = null;
 
 // ─── Get token ───
 function getToken() {
     return localStorage.getItem('token');
 }
 
-// ─── Badge state ───
-function getStoredBadge() {
-    var count = localStorage.getItem(BADGE_KEY);
-    return count ? parseInt(count) : 0;
+// ─── Get stored badge state from localStorage ───
+function getStoredBadgeState() {
+    var hasUnread = localStorage.getItem(BADGE_KEY);
+    var lastCheck = localStorage.getItem(BADGE_TIME_KEY);
+    
+    if (hasUnread === null || lastCheck === null) return null;
+    
+    // Check if cache is still valid (less than 1 minute old)
+    var age = Date.now() - parseInt(lastCheck);
+    if (age > CACHE_DURATION) {
+        // Cache expired - clear it
+        localStorage.removeItem(BADGE_KEY);
+        localStorage.removeItem(BADGE_TIME_KEY);
+        return null;
+    }
+    
+    return hasUnread === 'true';
 }
 
-function setStoredBadge(count) {
-    localStorage.setItem(BADGE_KEY, String(count || 0));
+// ─── Save badge state to localStorage ───
+function saveBadgeState(hasUnread) {
+    localStorage.setItem(BADGE_KEY, hasUnread ? 'true' : 'false');
+    localStorage.setItem(BADGE_TIME_KEY, String(Date.now()));
 }
 
-function getLastSeen() {
-    var count = localStorage.getItem(SEEN_KEY);
-    return count ? parseInt(count) : 0;
-}
-
-function setLastSeen(count) {
-    localStorage.setItem(SEEN_KEY, String(count || 0));
+// ─── Clear badge state ───
+function clearBadgeState() {
+    localStorage.removeItem(BADGE_KEY);
+    localStorage.removeItem(BADGE_TIME_KEY);
 }
 
 // ─── Update badge UI (RED DOT - no number) ───
@@ -877,6 +894,7 @@ function updateBadgeUI(hasUnread) {
             badge.style.borderRadius = '50%';
             badge.style.padding = '0';
             badge.style.fontSize = '0';
+            badge.style.lineHeight = '0';
             var parent = badge.closest('.nav-item');
             if (parent) parent.classList.add('has-notifs');
         } else {
@@ -888,6 +906,7 @@ function updateBadgeUI(hasUnread) {
             badge.style.borderRadius = '';
             badge.style.padding = '';
             badge.style.fontSize = '';
+            badge.style.lineHeight = '';
             var parent = badge.closest('.nav-item');
             if (parent) parent.classList.remove('has-notifs');
         }
@@ -898,6 +917,7 @@ function updateBadgeUI(hasUnread) {
 function fetchBadgeCount() {
     var token = getToken();
     if (!token) {
+        clearBadgeState();
         updateBadgeUI(false);
         return;
     }
@@ -912,10 +932,15 @@ function fetchBadgeCount() {
         if (!res.ok) {
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('token');
+                clearBadgeState();
                 updateBadgeUI(false);
                 return;
             }
-            updateBadgeUI(getStoredBadge() > 0);
+            // Use stored state if available
+            var stored = getStoredBadgeState();
+            if (stored !== null) {
+                updateBadgeUI(stored);
+            }
             return;
         }
         return res.json();
@@ -923,17 +948,28 @@ function fetchBadgeCount() {
     .then(function(data) {
         if (!data) return;
         var count = data.count || 0;
-        setStoredBadge(count);
-        var seen = getLastSeen();
-        var displayCount = count > seen ? count - seen : 0;
-        updateBadgeUI(displayCount > 0);
+        var hasUnread = count > 0;
+        
+        // ✅ Save to localStorage with timestamp
+        saveBadgeState(hasUnread);
+        
+        // ✅ Update UI
+        updateBadgeUI(hasUnread);
+        
+        console.log('🔔 [BADGE] Unread:', count, '→', hasUnread ? '🔴 RED DOT' : '⚪ No dot');
     })
     .catch(function() {
-        updateBadgeUI(getStoredBadge() > 0);
+        // On error, use stored state if available
+        var stored = getStoredBadgeState();
+        if (stored !== null) {
+            updateBadgeUI(stored);
+        } else {
+            updateBadgeUI(false);
+        }
     });
 }
 
-// ─── SSE Real-time ───
+// ─── SSE Real-time (instant updates) ───
 var sseConnection = null;
 var reconnectAttempts = 0;
 
@@ -958,6 +994,7 @@ function connectBadgeSSE() {
             try {
                 var data = JSON.parse(event.data);
                 if (data.type === 'new_message' || data.type === 'lead_updated') {
+                    // ✅ Instant update from SSE
                     fetchBadgeCount();
                 }
             } catch (err) { /* ignore */ }
@@ -980,20 +1017,24 @@ function connectBadgeSSE() {
     }
 }
 
-// ─── Storage listener ───
+// ─── Storage listener (sync across tabs) ───
 function setupStorageListener() {
     window.addEventListener('storage', function(e) {
-        if (e.key === BADGE_KEY || e.key === SEEN_KEY) {
-            var stored = getStoredBadge();
-            var seen = getLastSeen();
-            var displayCount = stored > seen ? stored - seen : 0;
-            updateBadgeUI(displayCount > 0);
+        if (e.key === BADGE_KEY || e.key === BADGE_TIME_KEY) {
+            var stored = getStoredBadgeState();
+            if (stored !== null) {
+                updateBadgeUI(stored);
+            }
         }
     });
 }
 
 // ─── Clean up ───
 function cleanupBadge() {
+    if (BADGE_FETCH_INTERVAL) {
+        clearInterval(BADGE_FETCH_INTERVAL);
+        BADGE_FETCH_INTERVAL = null;
+    }
     if (sseConnection) {
         sseConnection.close();
         sseConnection = null;
@@ -1007,41 +1048,58 @@ function setupNotifClick() {
     btn.addEventListener('click', function() {
         var href = this.getAttribute('href');
         if (href && href.includes('notifications.html')) {
-            var current = getStoredBadge();
-            setLastSeen(current);
-            setStoredBadge(0);
+            // ✅ Clear badge state when user clicks to view notifications
+            clearBadgeState();
             updateBadgeUI(false);
         }
     });
 }
 
-// ─── INIT ───
-document.addEventListener('DOMContentLoaded', function() {
-    // Show stored state immediately
-    var stored = getStoredBadge();
-    var seen = getLastSeen();
-    updateBadgeUI((stored > seen ? stored - seen : 0) > 0);
+// ─── ✅ START AUTO-FETCH ───
+function startAutoFetch() {
+    // Clear any existing interval
+    if (BADGE_FETCH_INTERVAL) {
+        clearInterval(BADGE_FETCH_INTERVAL);
+        BADGE_FETCH_INTERVAL = null;
+    }
 
-    // Fetch from backend
+    // ✅ Check cache first
+    var cached = getStoredBadgeState();
+    if (cached !== null) {
+        updateBadgeUI(cached);
+        console.log('🔔 [BADGE] Loaded from cache:', cached ? '🔴 RED DOT' : '⚪ No dot');
+    }
+
+    // ✅ Fetch immediately on start
     fetchBadgeCount();
 
-    // Connect SSE
+    // ✅ Then fetch every 50 seconds (before cache expires at 60s)
+    BADGE_FETCH_INTERVAL = setInterval(function() {
+        fetchBadgeCount();
+    }, FETCH_INTERVAL);
+
+    console.log('✅ [BADGE] Auto-fetch started (every 50 seconds, cache 1 minute)');
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', function() {
+    // ✅ Start auto-fetch with cache
+    startAutoFetch();
+
+    // ✅ Connect SSE for instant updates (bonus)
     connectBadgeSSE();
 
-    // Storage listener
+    // Storage listener for cross-tab sync
     setupStorageListener();
 
-    // Notification click
+    // Notification click handler
     setupNotifClick();
 
-    // Periodic refresh (every 30 seconds)
-    setInterval(fetchBadgeCount, 30000);
-
-    // Cleanup
+    // Cleanup on page unload
     window.addEventListener('beforeunload', cleanupBadge);
 });
 
-console.log('✅ [BADGE] Direct backend connection established (RED DOT)');
+console.log('✅ [BADGE] Direct backend connection - Cache 1 min, Fetch every 50 sec');
 </script>
 
 <!-- ════════════════════════════════════════════ -->
