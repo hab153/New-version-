@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skyline AA-1</title>
+    <title>Skyline AA-1 · Inbox</title>
 
     <!-- ✅ PERF #1: Preconnect to backend — warms up TLS+TCP before first API call -->
     <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
@@ -524,5 +524,24 @@
 
     <!-- ✅ PERF #5: Defer notifications.js — doesn't block page render -->
     <script defer src="notifications.js"></script>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- ✅ UNIVERSAL BADGE SYSTEM -->
+    <!-- ════════════════════════════════════════════ -->
+    <script src="badge.js"></script>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- ✅ CLEAR BADGE ON NOTIFICATIONS PAGE -->
+    <!-- ════════════════════════════════════════════ -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clear the badge when user is on notifications page
+        if (typeof clearBadge === 'function') {
+            clearBadge();
+            console.log('🧹 [NOTIFICATIONS] Badge cleared on page load');
+        }
+    });
+    </script>
+
 </body>
-                </html>
+    </html>
