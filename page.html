@@ -222,5 +222,106 @@
 
 <!-- External Script -->
 <script src="page.js"></script>
+
+<!-- ─── ✅ UNREAD BADGE SYSTEM ─── -->
+<script>
+(function() {
+    var BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    var token = localStorage.getItem('token');
+    if (!token) return;
+
+    function updateBadge(hasUnread) {
+        var badges = document.querySelectorAll('.nav-badge');
+        badges.forEach(function(badge) {
+            if (hasUnread) {
+                badge.style.display = 'flex';
+                badge.style.background = '#ff5555';
+                badge.style.width = '10px';
+                badge.style.height = '10px';
+                badge.style.borderRadius = '50%';
+                badge.style.padding = '0';
+                badge.style.fontSize = '0';
+                badge.style.lineHeight = '0';
+                var parent = badge.closest('.nav-item');
+                if (parent) parent.classList.add('has-notifs');
+            } else {
+                badge.style.display = 'none';
+                badge.style.width = '';
+                badge.style.height = '';
+                badge.style.borderRadius = '';
+                badge.style.padding = '';
+                badge.style.fontSize = '';
+                badge.style.lineHeight = '';
+                var parent = badge.closest('.nav-item');
+                if (parent) parent.classList.remove('has-notifs');
+            }
+        });
+    }
+
+    function checkUnread() {
+        fetch(BACKEND + '/api/unread/status', {
+            headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(res) { 
+            if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                    localStorage.removeItem('token');
+                }
+                return null;
+            }
+            return res.json(); 
+        })
+        .then(function(data) {
+            if (data && data.success) {
+                updateBadge(data.hasUnread);
+                console.log('🔔 [PAGE] Unread:', data.count, data.hasUnread ? '🔴 RED DOT' : '⚪ No dot');
+            }
+        })
+        .catch(function(err) {
+            console.error('❌ [PAGE] Badge check failed:', err.message);
+        });
+    }
+
+    // Check on load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkUnread);
+    } else {
+        checkUnread();
+    }
+
+    // Check every 5 seconds
+    setInterval(checkUnread, 5000);
+
+    // When notification button is clicked, clear the badge
+    var notifBtn = document.getElementById('navNotifBtn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', function() {
+            var href = this.getAttribute('href');
+            if (href && href.includes('notifications.html')) {
+                // Clear badge immediately (optimistic)
+                updateBadge(false);
+                // Also clear on server
+                fetch(BACKEND + '/api/unread/clear', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        console.log('🧹 [PAGE] Badge cleared');
+                    }
+                })
+                .catch(function() {});
+            }
+        });
+    }
+
+    console.log('✅ [PAGE] Unread badge system initialized');
+})();
+</script>
+
 </body>
-                                    </html>
+                                                                   </html>
