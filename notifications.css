@@ -368,7 +368,7 @@ body.chat-active .menu-container {
     flex-shrink: 0;
 }
 
-/* ✅ UNREAD BADGE */
+/* ✅ UNREAD BADGE (Contact List) */
 .contact-unread-badge {
     display: none;
     min-width: 18px;
@@ -1337,6 +1337,7 @@ body.chat-active .menu-container {
     transition: color 0.2s;
     cursor: pointer;
     padding: 4px 16px;
+    position: relative;
 }
 
 .nav-item:hover {
@@ -1352,4 +1353,40 @@ body.chat-active .menu-container {
     height: 20px;
     stroke: currentColor;
     fill: none;
-   }
+}
+
+/* ════════════════════════════════════════════
+   ✅ UNREAD NOTIFICATION BADGE (CSS-FIRST)
+   Badge is VISIBLE by default on first paint.
+   JavaScript adds .badge-read to hide when
+   server confirms no unread notifications.
+   ════════════════════════════════════════════ */
+
+.nav-badge {
+    position: absolute;
+    top: 2px;
+    right: calc(50% - 20px);
+    min-width: 10px;
+    width: 10px;
+    height: 10px;
+    background: #ff5555;
+    border-radius: 50%;
+    border: 1.5px solid #121212;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(255, 85, 85, 0.4);
+    pointer-events: none;
+}
+
+.nav-item.has-notifs .nav-badge {
+    display: flex !important;
+}
+
+.nav-badge.badge-read {
+    display: none !important;
+                                }
