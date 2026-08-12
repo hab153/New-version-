@@ -94,62 +94,24 @@ body::after {
 .reply-notif:hover { background: linear-gradient(90deg, rgba(201,168,76,0.06), rgba(201,168,76,0.12), rgba(201,168,76,0.06)); }
 .reply-notif.active { display: block; }
 @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-/* ─── MODE SELECTOR ─── */
 .mode-selector {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    padding: 12px 20px 8px 20px;
-    flex-shrink: 0;
-    z-index: 20;
-    position: relative;
-    background: var(--base);
-    border-bottom: 1px solid var(--br-dim);
+    display: flex; gap: 12px; justify-content: center; padding: 12px 20px 8px 20px;
+    flex-shrink: 0; z-index: 20; position: relative; background: var(--base); border-bottom: 1px solid var(--br-dim);
 }
 .mode-btn {
-    padding: 8px 24px;
-    border-radius: var(--r-lg);
-    border: 1px solid var(--br-dim);
-    background: rgba(26,26,26,0.85);
-    backdrop-filter: blur(12px);
-    color: var(--t2);
-    font-family: var(--ui);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-    letter-spacing: 0.02em;
+    padding: 8px 24px; border-radius: var(--r-lg); border: 1px solid var(--br-dim);
+    background: rgba(26,26,26,0.85); backdrop-filter: blur(12px); color: var(--t2);
+    font-family: var(--ui); font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1); display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4); letter-spacing: 0.02em;
 }
 .mode-btn .mode-icon { font-size: 16px; line-height: 1; }
 .mode-btn .mode-label { font-size: 13px; color: var(--t1); }
-.mode-btn:hover {
-    border-color: var(--br-hi);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-}
-.mode-btn.lead-mode.active {
-    border-color: rgba(201,168,76,0.5);
-    box-shadow: 0 4px 16px rgba(201,168,76,0.08);
-    background: rgba(201,168,76,0.06);
-    color: var(--gold);
-}
-.mode-btn.assistant-mode.active {
-    border-color: rgba(102,221,255,0.4);
-    box-shadow: 0 4px 16px rgba(102,221,255,0.06);
-    background: rgba(102,221,255,0.06);
-    color: var(--sky);
-}
-
-/* ─── MODE CONTAINERS ─── */
+.mode-btn:hover { border-color: var(--br-hi); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+.mode-btn.lead-mode.active { border-color: rgba(201,168,76,0.5); box-shadow: 0 4px 16px rgba(201,168,76,0.08); background: rgba(201,168,76,0.06); color: var(--gold); }
+.mode-btn.assistant-mode.active { border-color: rgba(102,221,255,0.4); box-shadow: 0 4px 16px rgba(102,221,255,0.06); background: rgba(102,221,255,0.06); color: var(--sky); }
 .mode-container { display: none; flex: 1; flex-direction: column; height: 100%; overflow: hidden; }
 .mode-container.active { display: flex; }
-
-/* ─── SETUP WIZARD ─── */
 #setupWizard {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 24px 16px; overflow-y: auto; position: relative; z-index: 1;
@@ -202,8 +164,6 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .launch-btn:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,76,0.35), 0 0 0 1px rgba(201,168,76,0.4); }
 .launch-btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(201,168,76,0.2); }
 .launch-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
-
-/* ─── CHAT AREA ─── */
 .chat-area {
     flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 0 10px; display: none; flex-direction: column;
     scroll-behavior: smooth; position: relative; z-index: 1;
@@ -250,8 +210,6 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .t-dot:nth-child(2) { animation-delay: 0.16s; }
 .t-dot:nth-child(3) { animation-delay: 0.32s; }
 @keyframes tdot { 0%, 60%, 100% { transform: translateY(0) scale(1); background: var(--t3); } 30% { transform: translateY(-6px) scale(1.2); background: var(--gold); } }
-
-/* ─── REVIEW PANEL ─── */
 #reviewPanel {
     display: none; background: var(--base); border-top: 1px solid var(--br-md); padding: 18px 16px; max-height: 48vh;
     overflow-y: auto; flex-shrink: 0; position: relative; z-index: 6;
@@ -266,8 +224,6 @@ select.field-input option { background: var(--raised); color: var(--t1); }
     border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 .rv-close:hover { color: var(--t1); background: var(--hover); border-color: var(--br-md); }
-
-/* ─── INPUT BAR ─── */
 .input-bar { padding: 12px 16px 14px; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; display: none; position: relative; z-index: 5; }
 .input-bar.active { display: block; }
 .input-shell {
@@ -295,258 +251,75 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .input-foot { display: flex; justify-content: space-between; margin-top: 7px; padding: 0 4px; }
 .input-tag { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--t3); }
 .char-ct { font-family: var(--mono); font-size: 7.5px; color: var(--t3); }
-
-/* ─── LEADS CONTAINER ─── */
 .leads-container {
-    width: 100%;
-    background: var(--base);
-    border-top: 1px solid var(--br-md);
-    padding: 0;
-    margin: 0;
-    flex-shrink: 0;
-    height: 50dvh;
-    min-height: 50dvh;
-    max-height: 50dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    z-index: 5;
-    box-sizing: border-box;
+    width: 100%; background: var(--base); border-top: 1px solid var(--br-md); padding: 0; margin: 0;
+    flex-shrink: 0; height: 50dvh; min-height: 50dvh; max-height: 50dvh;
+    display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 5; box-sizing: border-box;
 }
 .leads-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px 8px 16px;
-    border-bottom: 1px solid var(--br-dim);
-    flex-shrink: 0;
-    background: var(--base);
-    z-index: 2;
+    display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 8px 16px;
+    border-bottom: 1px solid var(--br-dim); flex-shrink: 0; background: var(--base); z-index: 2;
 }
-.leads-count {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--t2);
-    font-weight: 500;
-    letter-spacing: 0.02em;
-}
+.leads-count { font-family: var(--mono); font-size: 13px; color: var(--t2); font-weight: 500; letter-spacing: 0.02em; }
 .leads-grid {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 6px 10px 10px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--base);
-    min-height: 0;
+    flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px 10px 10px 10px;
+    display: flex; flex-direction: column; gap: 8px; background: var(--base); min-height: 0;
 }
 .leads-grid::-webkit-scrollbar { width: 3px; }
 .leads-grid::-webkit-scrollbar-thumb { background: var(--br-md); border-radius: 3px; }
 .email-box {
-    background: var(--surface);
-    border: 1px solid var(--br-dim);
-    border-radius: 12px;
-    padding: 14px 16px;
-    transition: all 0.2s ease;
-    aspect-ratio: 1 / 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    background: var(--surface); border: 1px solid var(--br-dim); border-radius: 12px; padding: 14px 16px;
+    transition: all 0.2s ease; aspect-ratio: 1 / 1; width: 100%; display: flex; flex-direction: column;
+    justify-content: space-between; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-.email-box:hover {
-    border-color: var(--br-md);
-    background: var(--raised);
-    transform: scale(1.01);
-}
+.email-box:hover { border-color: var(--br-md); background: var(--raised); transform: scale(1.01); }
 .email-box .box-field {
-    width: 100%;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    color: var(--t1);
-    font-family: var(--ui);
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
-    padding: 2px 4px;
-    margin: 0 -4px;
+    width: 100%; background: transparent; border: 1px solid transparent; border-radius: 4px; color: var(--t1);
+    font-family: var(--ui); outline: none; transition: border-color 0.2s, background 0.2s; padding: 2px 4px; margin: 0 -4px;
 }
-.email-box .box-field:hover {
-    border-color: var(--br-dim);
-    background: rgba(255,255,255,0.02);
-}
-.email-box .box-field:focus {
-    border-color: rgba(201,168,76,0.35);
-    background: var(--hover);
-    box-shadow: 0 0 0 2px rgba(201,168,76,0.06);
-}
-.email-box .box-company-field {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--t1);
-    letter-spacing: 0.01em;
-    width: 70%;
-}
-.email-box .box-rank {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--t3);
-    background: var(--hover);
-    padding: 2px 10px;
-    border-radius: 12px;
-    border: 1px solid var(--br-dim);
-    flex-shrink: 0;
-}
-.email-box .box-email-field {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--t2);
-    margin-bottom: 2px;
-}
-.email-box .box-subject-field {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--gold-pale);
-    margin-bottom: 2px;
-}
+.email-box .box-field:hover { border-color: var(--br-dim); background: rgba(255,255,255,0.02); }
+.email-box .box-field:focus { border-color: rgba(201,168,76,0.35); background: var(--hover); box-shadow: 0 0 0 2px rgba(201,168,76,0.06); }
+.email-box .box-company-field { font-size: 15px; font-weight: 600; color: var(--t1); letter-spacing: 0.01em; width: 70%; }
+.email-box .box-rank { font-family: var(--mono); font-size: 10px; color: var(--t3); background: var(--hover); padding: 2px 10px; border-radius: 12px; border: 1px solid var(--br-dim); flex-shrink: 0; }
+.email-box .box-email-field { font-family: var(--mono); font-size: 11px; color: var(--t2); margin-bottom: 2px; }
+.email-box .box-subject-field { font-size: 13px; font-weight: 500; color: var(--gold-pale); margin-bottom: 2px; }
 .email-box .box-body-field {
-    font-size: 11px;
-    color: var(--t3);
-    line-height: 1.6;
-    font-family: var(--mono);
-    resize: none;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin: 0 -4px;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
+    font-size: 11px; color: var(--t3); line-height: 1.6; font-family: var(--mono); resize: none; flex: 1; min-height: 0;
+    overflow-y: auto; background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 2px 4px; margin: 0 -4px;
+    outline: none; transition: border-color 0.2s, background 0.2s;
 }
-.email-box .box-body-field:hover {
-    border-color: var(--br-dim);
-    background: rgba(255,255,255,0.02);
-}
-.email-box .box-body-field:focus {
-    border-color: rgba(201,168,76,0.35);
-    background: var(--hover);
-    box-shadow: 0 0 0 2px rgba(201,168,76,0.06);
-}
+.email-box .box-body-field:hover { border-color: var(--br-dim); background: rgba(255,255,255,0.02); }
+.email-box .box-body-field:focus { border-color: rgba(201,168,76,0.35); background: var(--hover); box-shadow: 0 0 0 2px rgba(201,168,76,0.06); }
 .email-box .box-body-field::-webkit-scrollbar { width: 2px; }
 .email-box .box-body-field::-webkit-scrollbar-thumb { background: var(--br-dim); border-radius: 2px; }
 .send-all-emails-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 0;
-    border: none;
-    border-top: 1px solid var(--br-md);
-    background: var(--gold);
-    color: #0d0a04;
-    font-family: var(--ui);
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    flex-shrink: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: auto;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+    width: 100%; padding: 14px; border-radius: 0; border: none; border-top: 1px solid var(--br-md);
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0d0a04;
+    font-family: var(--ui); font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.25s ease;
+    flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.08em; margin-top: auto;
 }
-.send-all-emails-btn:hover:not(:disabled) {
-    transform: scale(1.01);
-    box-shadow: 0 -4px 20px rgba(255,255,255,0.08);
-}
-.send-all-emails-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-.send-all-emails-btn .btn-count {
-    font-weight: 400;
-    opacity: 0.7;
-}
-.no-leads { 
-    text-align: center; 
-    color: var(--t3); 
-    padding: 40px 20px; 
-    font-family: var(--mono);
-    font-size: 14px;
-}
-
-/* ─── TOAST ─── */
+.send-all-emails-btn:hover:not(:disabled) { transform: scale(1.01); box-shadow: 0 -4px 20px rgba(255,255,255,0.08); }
+.send-all-emails-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.send-all-emails-btn .btn-count { font-weight: 400; opacity: 0.7; }
+.no-leads { text-align: center; color: var(--t3); padding: 40px 20px; font-family: var(--mono); font-size: 14px; }
 .toast-msg {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 9999;
-    max-width: 90%;
-    text-align: center;
-    animation: slideDown 0.3s ease;
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; z-index: 9999;
+    max-width: 90%; text-align: center; animation: slideDown 0.3s ease;
 }
 .pending-emails-notif {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-surface);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    z-index: 1000;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    animation: slideUp 0.3s ease;
-    max-width: 90%;
-    flex-wrap: wrap;
-    justify-content: center;
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--bg-surface);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex;
+    align-items: center; gap: 16px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    animation: slideUp 0.3s ease; max-width: 90%; flex-wrap: wrap; justify-content: center;
 }
-@keyframes slideUp {
-    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 .pending-emails-notif span { color: var(--t1); font-size: 13px; }
-.pending-emails-notif button {
-    padding: 6px 16px;
-    border-radius: 6px;
-    border: none;
-    font-family: var(--ui);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.pending-emails-notif button:first-of-type {
-    background: var(--gold);
-    color: #060608;
-}
-.pending-emails-notif button:first-of-type:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 16px rgba(255,255,255,0.2);
-}
-.pending-emails-notif button:last-of-type {
-    background: transparent;
-    color: var(--t3);
-}
+.pending-emails-notif button { padding: 6px 16px; border-radius: 6px; border: none; font-family: var(--ui); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.pending-emails-notif button:first-of-type { background: var(--gold); color: #060608; }
+.pending-emails-notif button:first-of-type:hover { transform: scale(1.05); box-shadow: 0 0 16px rgba(255,255,255,0.2); }
+.pending-emails-notif button:last-of-type { background: transparent; color: var(--t3); }
 .pending-emails-notif button:last-of-type:hover { color: var(--t1); }
-
-/* ─── BOTTOM NAV ─── */
 .bottom-nav {
     height: var(--nav-h); display: flex; align-items: center; justify-content: space-around; background: var(--base);
     border-top: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; padding: 0 8px;
@@ -574,14 +347,31 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); }
 .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
 .nav-item.nav-home::after { display: none; }
-.nav-badge {
-    position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: var(--rose);
-    border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono);
-    font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(184,92,92,0.4);
-}
-.nav-item.has-notifs .nav-badge { display: flex; }
 
-/* ─── RESPONSIVE ─── */
+/* ✅ CSS-FIRST BADGE: Visible by default on first paint, hidden only when confirmed read */
+.nav-badge {
+    position: absolute;
+    top: 2px;
+    right: calc(50% - 20px);
+    width: 10px;
+    height: 10px;
+    min-width: 10px;
+    background: var(--rose);
+    border-radius: 50%;
+    border: 1.5px solid var(--base);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+    pointer-events: none;
+}
+.nav-item.has-notifs .nav-badge { display: flex !important; }
+.nav-badge.badge-read { display: none !important; }
+
 @media (min-width: 1024px) {
     .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
     .msg-row.ai .bubble { font-size: 12px; } .topbar { padding: 0 32px; } .input-bar { padding: 14px 12% 16px; }
