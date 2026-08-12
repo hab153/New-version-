@@ -4,287 +4,61 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Skyline · Business Agent</title>
-
 <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
 <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
-
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
-
 <link rel="stylesheet" href="page.css" />
 </head>
 <body>
-
 <header class="topbar">
     <div class="brand">
-        <div class="brand-mark">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-        </div>
-        <div class="brand-text">
-            <span class="brand-name">Sky<em>line</em></span>
-            <span class="brand-sub">AA-1 · Agent</span>
-        </div>
+        <div class="brand-mark"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="brand-text"><span class="brand-name">Sky<em>line</em></span><span class="brand-sub">AA-1 · Agent</span></div>
         <div id="planChip" class="plan-chip free">FREE</div>
     </div>
-    <div class="topbar-center">
-        <div class="pulse-ring"></div>
-        <span class="topbar-label">Business Agent</span>
-    </div>
+    <div class="topbar-center"><div class="pulse-ring"></div><span class="topbar-label">Business Agent</span></div>
     <div class="topbar-right">
-        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </button>
-        <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
-        </button>
+        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
     </div>
 </header>
-
-<div id="statusBar" class="status-bar">
-    <span class="status-pip"></span>
-    <span id="statusText">Checking email connection…</span>
-</div>
-
-<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
-    ↑ New reply detected — tap to open Dashboard
-</div>
-
+<div id="statusBar" class="status-bar"><span class="status-pip"></span><span id="statusText">Checking email connection…</span></div>
+<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">↑ New reply detected — tap to open Dashboard</div>
 <div class="mode-selector">
-    <button class="mode-btn lead-mode active" id="leadModeBtn" onclick="switchMode('lead')">
-        <span class="mode-icon">⚡</span>
-        <span class="mode-label">Lead</span>
-    </button>
-    <button class="mode-btn assistant-mode" id="assistantModeBtn" onclick="switchMode('assistant')">
-        <span class="mode-icon">🤖</span>
-        <span class="mode-label">Assistant</span>
-    </button>
+    <button class="mode-btn lead-mode active" id="leadModeBtn" onclick="switchMode('lead')"><span class="mode-icon">⚡</span><span class="mode-label">Lead</span></button>
+    <button class="mode-btn assistant-mode" id="assistantModeBtn" onclick="switchMode('assistant')"><span class="mode-icon">🤖</span><span class="mode-label">Assistant</span></button>
 </div>
-
 <div class="mode-container active" id="leadModeContainer">
     <div id="setupWizard">
-        <div class="wizard-eyebrow">
-            <div class="eyebrow-line"></div>
-            <span class="eyebrow-text">Prospecting Engine · v2</span>
-            <div class="eyebrow-line right"></div>
-        </div>
-        <div class="wizard-card">
-            <div class="wizard-card-bar"></div>
-            <div class="wizard-body">
-                <h2 class="wizard-heading">Define your <em>target.</em></h2>
-                <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
-                <div class="wizard-divider">
-                    <div class="wizard-divider-line"></div>
-                    <span class="wizard-divider-text">Search Parameters</span>
-                    <div class="wizard-divider-line"></div>
-                </div>
-                <form id="targetForm" autocomplete="off">
-                    <div class="form-stack">
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label class="field-label" for="industry">Industry</label>
-                                <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
-                            </div>
-                            <div class="form-field">
-                                <label class="field-label" for="region">Region</label>
-                                <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label class="field-label" for="companySize">Company size</label>
-                                <select id="companySize" class="field-input">
-                                    <option value="Any">Any size</option>
-                                    <option value="1-10">1–10</option>
-                                    <option value="11-50">11–50</option>
-                                    <option value="51-200">51–200</option>
-                                    <option value="201-500">201–500</option>
-                                    <option value="500+">500+</option>
-                                </select>
-                            </div>
-                            <div class="form-field">
-                                <label class="field-label" for="jobTitle">Job title</label>
-                                <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="launch-btn" id="launchBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                        Start Search
-                    </button>
-                </form>
+        <div class="wizard-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Prospecting Engine · v2</span><div class="eyebrow-line right"></div></div>
+        <div class="wizard-card"><div class="wizard-card-bar"></div><div class="wizard-body">
+            <h2 class="wizard-heading">Define your <em>target.</em></h2>
+            <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
+            <div class="wizard-divider"><div class="wizard-divider-line"></div><span class="wizard-divider-text">Search Parameters</span><div class="wizard-divider-line"></div></div>
+            <form id="targetForm" autocomplete="off"><div class="form-stack">
+                <div class="form-row"><div class="form-field"><label class="field-label" for="industry">Industry</label><input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off"></div><div class="form-field"><label class="field-label" for="region">Region</label><input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off"></div></div>
+                <div class="form-row"><div class="form-field"><label class="field-label" for="companySize">Company size</label><select id="companySize" class="field-input"><option value="Any">Any size</option><option value="1-10">1–10</option><option value="11-50">11–50</option><option value="51-200">51–200</option><option value="201-500">201–500</option><option value="500+">500+</option></select></div><div class="form-field"><label class="field-label" for="jobTitle">Job title</label><input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off"></div></div>
             </div>
-        </div>
-    </div>
-    <div class="chat-area" id="leadChatArea">
-        <div id="leadMsgContainer"></div>
-    </div>
+            <button type="submit" class="launch-btn" id="launchBtn"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Start Search</button>
+        </form></div></div></div>
+    <div class="chat-area" id="leadChatArea"><div id="leadMsgContainer"></div></div>
     <div id="reviewPanel" style="display:none;"></div>
-    <div class="input-bar" id="leadInputBar">
-        <div class="input-shell">
-            <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
-            <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            </button>
-        </div>
-        <div class="input-foot">
-            <span class="input-tag">Lead Search</span>
-            <span class="char-ct" id="leadCharCount"></span>
-        </div>
-    </div>
+    <div class="input-bar" id="leadInputBar"><div class="input-shell"><textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea><button class="send-btn" id="leadSendBtn" disabled aria-label="Send"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div><div class="input-foot"><span class="input-tag">Lead Search</span><span class="char-ct" id="leadCharCount"></span></div></div>
 </div>
-
 <div class="mode-container" id="assistantModeContainer">
-    <div class="chat-area active" id="assistantChatArea">
-        <div id="assistantMsgContainer">
-            <div class="msg-row ai">
-                <div class="av">AI</div>
-                <div class="bubble-wrap">
-                    <div class="bubble">👋 Hello! I'm your business assistant. Ask me anything about your business, leads, or strategy!</div>
-                    <div class="msg-time">Just now</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="input-bar active" id="assistantInputBar">
-        <div class="input-shell">
-            <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
-            <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            </button>
-        </div>
-        <div class="input-foot">
-            <span class="input-tag">Assistant</span>
-            <span class="char-ct" id="assistantCharCount"></span>
-        </div>
-    </div>
+    <div class="chat-area active" id="assistantChatArea"><div id="assistantMsgContainer"><div class="msg-row ai"><div class="av">AI</div><div class="bubble-wrap"><div class="bubble">👋 Hello! I'm your business assistant. Ask me anything about your business, leads, or strategy!</div><div class="msg-time">Just now</div></div></div></div>
+    <div class="input-bar active" id="assistantInputBar"><div class="input-shell"><textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea><button class="send-btn" id="assistantSendBtn" disabled aria-label="Send"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div><div class="input-foot"><span class="input-tag">Assistant</span><span class="char-ct" id="assistantCharCount"></span></div></div>
 </div>
-
 <nav class="bottom-nav" aria-label="Main navigation">
-    <a href="page.html" class="nav-item nav-home active" aria-label="Home">
-        <div class="home-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </div>
-    </a>
-    <a href="history.html" class="nav-item" aria-label="History">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <polyline points="12 7 12 12 15 15"/>
-            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-            <polyline points="3 4 3 11 10 11"/>
-        </svg>
-    </a>
-    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
-        <div class="nav-badge"></div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-    </a>
-    <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-    </a>
+    <a href="page.html" class="nav-item nav-home active" aria-label="Home"><div class="home-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></a>
+    <a href="history.html" class="nav-item" aria-label="History"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg></a>
+    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications"><div class="nav-badge"></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
+    <a href="dashboard.html" class="nav-item" aria-label="Dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
 </nav>
-
 <script src="page.js"></script>
-
-<!-- ─── ✅ UNREAD BADGE SYSTEM (CSS-FIRST) ─── -->
-<script>
-(function() {
-    var BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    var token = localStorage.getItem('token');
-    if (!token) return;
-
-    // Badge is ALREADY visible via CSS on first paint.
-    // JavaScript only hides it when server confirms no unread.
-
-    function setBadgeRead(isRead) {
-        var badges = document.querySelectorAll('.nav-badge');
-        badges.forEach(function(badge) {
-            if (isRead) {
-                badge.classList.add('badge-read');
-                var parent = badge.closest('.nav-item');
-                if (parent) parent.classList.remove('has-notifs');
-            } else {
-                badge.classList.remove('badge-read');
-                var parent = badge.closest('.nav-item');
-                if (parent) parent.classList.add('has-notifs');
-            }
-        });
-    }
-
-    function checkUnread(isInitial) {
-        var fetchOptions = {
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
-        };
-        if (isInitial && typeof Request !== 'undefined') {
-            try { fetchOptions.priority = 'high'; } catch(e) {}
-        }
-
-        fetch(BACKEND + '/api/unread/status', fetchOptions)
-        .then(function(res) {
-            if (!res.ok) {
-                if (res.status === 401 || res.status === 403) localStorage.removeItem('token');
-                return null;
-            }
-            return res.json();
-        })
-        .then(function(data) {
-            if (data && data.success) {
-                if (!data.hasUnread) {
-                    setBadgeRead(true);
-                    console.log('⚪ [PAGE] No unread — badge hidden');
-                } else {
-                    console.log('🔴 [PAGE] Unread:', data.count, '— badge visible via CSS');
-                }
-            }
-        })
-        .catch(function(err) {
-            console.error('❌ [PAGE] Badge check failed:', err.message);
-        });
-    }
-
-    checkUnread(true);
-    setInterval(function() { checkUnread(false); }, 5000);
-
-    var notifBtn = document.getElementById('navNotifBtn');
-    if (notifBtn) {
-        notifBtn.addEventListener('click', function() {
-            var href = this.getAttribute('href');
-            if (href && href.includes('notifications.html')) {
-                setBadgeRead(true);
-                fetch(BACKEND + '/api/unread/clear', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.success) console.log('🧹 [PAGE] Badge cleared');
-                })
-                .catch(function() {});
-            }
-        });
-    }
-
-    console.log('✅ [PAGE] CSS-first badge system initialized');
-})();
-</script>
-
 </body>
-        </html>
+                                                                                                                                                                                                                                                       </html>
