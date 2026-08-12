@@ -1,257 +1,5 @@
 // ============================================================
-// DIRECT BACKEND CONNECTION - Notification Badge (RED DOT)
-// 1 MINUTE localStorage CACHE - Auto-fetch every 50 seconds
-// ============================================================
-
-var BADGE_BACKEND = 'https://skylineapp-backend-file.onrender.com';
-var BADGE_KEY = 'notif_has_unread';
-var BADGE_TIME_KEY = 'notif_last_check';
-var CACHE_DURATION = 60000; // 1 minute (60,000 ms)
-var FETCH_INTERVAL = 50000; // 50 seconds (fetch before cache expires)
-var BADGE_FETCH_INTERVAL = null;
-
-// ─── Get token ───
-function getToken() {
-    return localStorage.getItem('token');
-}
-
-// ─── Get stored badge state from localStorage ───
-function getStoredBadgeState() {
-    var hasUnread = localStorage.getItem(BADGE_KEY);
-    var lastCheck = localStorage.getItem(BADGE_TIME_KEY);
-    
-    if (hasUnread === null || lastCheck === null) return null;
-    
-    // Check if cache is still valid (less than 1 minute old)
-    var age = Date.now() - parseInt(lastCheck);
-    if (age > CACHE_DURATION) {
-        // Cache expired - clear it
-        localStorage.removeItem(BADGE_KEY);
-        localStorage.removeItem(BADGE_TIME_KEY);
-        return null;
-    }
-    
-    return hasUnread === 'true';
-}
-
-// ─── Save badge state to localStorage ───
-function saveBadgeState(hasUnread) {
-    localStorage.setItem(BADGE_KEY, hasUnread ? 'true' : 'false');
-    localStorage.setItem(BADGE_TIME_KEY, String(Date.now()));
-}
-
-// ─── Clear badge state ───
-function clearBadgeState() {
-    localStorage.removeItem(BADGE_KEY);
-    localStorage.removeItem(BADGE_TIME_KEY);
-}
-
-// ─── Update badge UI (RED DOT - no number) ───
-function updateBadgeUI(hasUnread) {
-    var badges = document.querySelectorAll('.nav-badge');
-    if (badges.length === 0) return;
-
-    badges.forEach(function(badge) {
-        if (hasUnread) {
-            // ✅ RED DOT only - no number
-            badge.textContent = '';
-            badge.style.display = 'flex';
-            badge.style.background = '#ff5555';
-            badge.style.width = '10px';
-            badge.style.height = '10px';
-            badge.style.minWidth = '10px';
-            badge.style.borderRadius = '50%';
-            badge.style.padding = '0';
-            badge.style.fontSize = '0';
-            badge.style.lineHeight = '0';
-            var parent = badge.closest('.nav-item');
-            if (parent) parent.classList.add('has-notifs');
-        } else {
-            badge.textContent = '';
-            badge.style.display = 'none';
-            badge.style.width = '';
-            badge.style.height = '';
-            badge.style.minWidth = '';
-            badge.style.borderRadius = '';
-            badge.style.padding = '';
-            badge.style.fontSize = '';
-            badge.style.lineHeight = '';
-            var parent = badge.closest('.nav-item');
-            if (parent) parent.classList.remove('has-notifs');
-        }
-    });
-}
-
-// ─── FETCH UNREAD COUNT FROM BACKEND ───
-function fetchBadgeCount() {
-    var token = getToken();
-    if (!token) {
-        clearBadgeState();
-        updateBadgeUI(false);
-        return;
-    }
-
-    fetch(BADGE_BACKEND + '/api/notifications/count', {
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(function(res) {
-        if (!res.ok) {
-            if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                clearBadgeState();
-                updateBadgeUI(false);
-                return;
-            }
-            // Use stored state if available
-            var stored = getStoredBadgeState();
-            if (stored !== null) {
-                updateBadgeUI(stored);
-            }
-            return;
-        }
-        return res.json();
-    })
-    .then(function(data) {
-        if (!data) return;
-        var count = data.count || 0;
-        var hasUnread = count > 0;
-        
-        // ✅ Save to localStorage with timestamp
-        saveBadgeState(hasUnread);
-        
-        // ✅ Update UI
-        updateBadgeUI(hasUnread);
-        
-        console.log('🔔 [BADGE] Unread:', count, '→', hasUnread ? '🔴 RED DOT' : '⚪ No dot');
-    })
-    .catch(function() {
-        // On error, use stored state if available
-        var stored = getStoredBadgeState();
-        if (stored !== null) {
-            updateBadgeUI(stored);
-        } else {
-            updateBadgeUI(false);
-        }
-    });
-}
-
-// ─── SSE Real-time (instant updates) ───
-var sseConnection = null;
-var reconnectAttempts = 0;
-
-function connectBadgeSSE() {
-    var token = getToken();
-    if (!token) return;
-
-    if (sseConnection) {
-        sseConnection.close();
-        sseConnection = null;
-    }
-
-    try {
-        sseConnection = new EventSource(BADGE_BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
-
-        sseConnection.addEventListener('open', function() {
-            console.log('✅ [BADGE SSE] Connected');
-            reconnectAttempts = 0;
-        });
-
-        sseConnection.addEventListener('message', function(event) {
-            try {
-                var data = JSON.parse(event.data);
-                if (data.type === 'new_message' || data.type === 'lead_updated') {
-                    // ✅ Instant update from SSE
-                    fetchBadgeCount();
-                }
-            } catch (err) { /* ignore */ }
-        });
-
-        sseConnection.addEventListener('error', function() {
-            if (sseConnection) {
-                sseConnection.close();
-                sseConnection = null;
-            }
-            reconnectAttempts++;
-            var delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-            if (reconnectAttempts <= 5) {
-                setTimeout(connectBadgeSSE, delay);
-            }
-        });
-
-    } catch (err) {
-        console.error('[BADGE SSE] Error:', err.message);
-    }
-}
-
-// ─── Storage listener (sync across tabs) ───
-function setupStorageListener() {
-    window.addEventListener('storage', function(e) {
-        if (e.key === BADGE_KEY || e.key === BADGE_TIME_KEY) {
-            var stored = getStoredBadgeState();
-            if (stored !== null) {
-                updateBadgeUI(stored);
-            }
-        }
-    });
-}
-
-// ─── Clean up ───
-function cleanupBadge() {
-    if (BADGE_FETCH_INTERVAL) {
-        clearInterval(BADGE_FETCH_INTERVAL);
-        BADGE_FETCH_INTERVAL = null;
-    }
-    if (sseConnection) {
-        sseConnection.close();
-        sseConnection = null;
-    }
-}
-
-// ─── Notification click handler ───
-function setupNotifClick() {
-    var btn = document.getElementById('navNotifBtn');
-    if (!btn) return;
-    btn.addEventListener('click', function() {
-        var href = this.getAttribute('href');
-        if (href && href.includes('notifications.html')) {
-            // ✅ Clear badge state when user clicks to view notifications
-            clearBadgeState();
-            updateBadgeUI(false);
-        }
-    });
-}
-
-// ─── ✅ START AUTO-FETCH ───
-function startAutoFetch() {
-    // Clear any existing interval
-    if (BADGE_FETCH_INTERVAL) {
-        clearInterval(BADGE_FETCH_INTERVAL);
-        BADGE_FETCH_INTERVAL = null;
-    }
-
-    // ✅ Check cache first
-    var cached = getStoredBadgeState();
-    if (cached !== null) {
-        updateBadgeUI(cached);
-        console.log('🔔 [BADGE] Loaded from cache:', cached ? '🔴 RED DOT' : '⚪ No dot');
-    }
-
-    // ✅ Fetch immediately on start
-    fetchBadgeCount();
-
-    // ✅ Then fetch every 50 seconds (before cache expires at 60s)
-    BADGE_FETCH_INTERVAL = setInterval(function() {
-        fetchBadgeCount();
-    }, FETCH_INTERVAL);
-
-    console.log('✅ [BADGE] Auto-fetch started (every 50 seconds, cache 1 minute)');
-}
-
-// ============================================================
-// PAGE-SPECIFIC SCRIPT
+// page.js - Skyline AA-1 Business Agent
 // ============================================================
 
 // ── CONFIG ─
@@ -276,9 +24,133 @@ var _cachedStatus = null;
 var _cachedStatusTime = 0;
 var CACHE_TTL = 60000; // 60 seconds
 
-// ──────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// ✅ UNREAD BADGE SYSTEM (Uses /api/unread/status)
+// ════════════════════════════════════════════
+
+var UNREAD_BACKEND = 'https://skylineapp-backend-file.onrender.com';
+var UNREAD_INTERVAL = null;
+
+function updateBadge(hasUnread) {
+    var badges = document.querySelectorAll('.nav-badge');
+    badges.forEach(function(badge) {
+        if (hasUnread) {
+            badge.style.display = 'flex';
+            badge.style.background = '#ff5555';
+            badge.style.width = '10px';
+            badge.style.height = '10px';
+            badge.style.borderRadius = '50%';
+            badge.style.padding = '0';
+            badge.style.fontSize = '0';
+            badge.style.lineHeight = '0';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.add('has-notifs');
+        } else {
+            badge.style.display = 'none';
+            badge.style.width = '';
+            badge.style.height = '';
+            badge.style.borderRadius = '';
+            badge.style.padding = '';
+            badge.style.fontSize = '';
+            badge.style.lineHeight = '';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.remove('has-notifs');
+        }
+    });
+}
+
+function checkUnread() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        updateBadge(false);
+        return;
+    }
+
+    fetch(UNREAD_BACKEND + '/api/unread/status', {
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                updateBadge(false);
+                return;
+            }
+            return null;
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data && data.success) {
+            updateBadge(data.hasUnread);
+            console.log('🔔 [PAGE] Unread:', data.count, data.hasUnread ? '🔴 RED DOT' : '⚪ No dot');
+        }
+    })
+    .catch(function(err) {
+        console.error('❌ [PAGE] Badge check failed:', err.message);
+    });
+}
+
+function clearUnread() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Clear badge immediately (optimistic)
+    updateBadge(false);
+
+    fetch(UNREAD_BACKEND + '/api/unread/clear', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            console.log('🧹 [PAGE] Badge cleared');
+        }
+    })
+    .catch(function() {});
+}
+
+function startUnreadPolling() {
+    // Check on load
+    checkUnread();
+
+    // Check every 5 seconds
+    if (UNREAD_INTERVAL) {
+        clearInterval(UNREAD_INTERVAL);
+    }
+    UNREAD_INTERVAL = setInterval(checkUnread, 5000);
+    console.log('⏰ [PAGE] Unread polling started (every 5 seconds)');
+}
+
+function cleanupUnread() {
+    if (UNREAD_INTERVAL) {
+        clearInterval(UNREAD_INTERVAL);
+        UNREAD_INTERVAL = null;
+    }
+}
+
+// ─── Notification click handler ───
+function setupNotifClick() {
+    var btn = document.getElementById('navNotifBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+        var href = this.getAttribute('href');
+        if (href && href.includes('notifications.html')) {
+            clearUnread();
+        }
+    });
+}
+
+// ════════════════════════════════════════════
 //  UTILITY FUNCTIONS
-// ──────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
 
 function esc(s) {
     if (!s) return '';
@@ -704,24 +576,18 @@ function clearChat() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ INIT — parallel API calls
+//  ✅ INIT — parallel API calls + unread badge
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // ✅ Start badge auto-fetch with cache
-    startAutoFetch();
+    // ✅ Start unread badge polling
+    startUnreadPolling();
 
-    // ✅ Connect SSE for instant updates (bonus)
-    connectBadgeSSE();
-
-    // Storage listener for cross-tab sync
-    setupStorageListener();
-
-    // Notification click handler
+    // ✅ Setup notification click handler
     setupNotifClick();
 
     // Cleanup on page unload
-    window.addEventListener('beforeunload', cleanupBadge);
+    window.addEventListener('beforeunload', cleanupUnread);
 
     document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
     document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
@@ -762,5 +628,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Loaded with direct backend connection for badge');
+    console.log('✅ [PAGE] Loaded with /api/unread/status endpoint');
 });
