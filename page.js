@@ -25,128 +25,10 @@ var _cachedStatusTime = 0;
 var CACHE_TTL = 60000; // 60 seconds
 
 // ════════════════════════════════════════════
-// ✅ UNREAD BADGE SYSTEM (Uses /api/unread/status)
+// ⚠️ UNREAD BADGE SYSTEM REMOVED FROM HERE
+// Now handled by optimized inline script in page.html
+// to prevent race conditions and ensure instant rendering
 // ════════════════════════════════════════════
-
-var UNREAD_BACKEND = 'https://skylineapp-backend-file.onrender.com';
-var UNREAD_INTERVAL = null;
-
-function updateBadge(hasUnread) {
-    var badges = document.querySelectorAll('.nav-badge');
-    badges.forEach(function(badge) {
-        if (hasUnread) {
-            badge.style.display = 'flex';
-            badge.style.background = '#ff5555';
-            badge.style.width = '10px';
-            badge.style.height = '10px';
-            badge.style.borderRadius = '50%';
-            badge.style.padding = '0';
-            badge.style.fontSize = '0';
-            badge.style.lineHeight = '0';
-            var parent = badge.closest('.nav-item');
-            if (parent) parent.classList.add('has-notifs');
-        } else {
-            badge.style.display = 'none';
-            badge.style.width = '';
-            badge.style.height = '';
-            badge.style.borderRadius = '';
-            badge.style.padding = '';
-            badge.style.fontSize = '';
-            badge.style.lineHeight = '';
-            var parent = badge.closest('.nav-item');
-            if (parent) parent.classList.remove('has-notifs');
-        }
-    });
-}
-
-function checkUnread() {
-    var token = localStorage.getItem('token');
-    if (!token) {
-        updateBadge(false);
-        return;
-    }
-
-    fetch(UNREAD_BACKEND + '/api/unread/status', {
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(function(res) {
-        if (!res.ok) {
-            if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                updateBadge(false);
-                return;
-            }
-            return null;
-        }
-        return res.json();
-    })
-    .then(function(data) {
-        if (data && data.success) {
-            updateBadge(data.hasUnread);
-            console.log('🔔 [PAGE] Unread:', data.count, data.hasUnread ? '🔴 RED DOT' : '⚪ No dot');
-        }
-    })
-    .catch(function(err) {
-        console.error('❌ [PAGE] Badge check failed:', err.message);
-    });
-}
-
-function clearUnread() {
-    var token = localStorage.getItem('token');
-    if (!token) return;
-
-    // Clear badge immediately (optimistic)
-    updateBadge(false);
-
-    fetch(UNREAD_BACKEND + '/api/unread/clear', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if (data.success) {
-            console.log('🧹 [PAGE] Badge cleared');
-        }
-    })
-    .catch(function() {});
-}
-
-function startUnreadPolling() {
-    // Check on load
-    checkUnread();
-
-    // Check every 5 seconds
-    if (UNREAD_INTERVAL) {
-        clearInterval(UNREAD_INTERVAL);
-    }
-    UNREAD_INTERVAL = setInterval(checkUnread, 5000);
-    console.log('⏰ [PAGE] Unread polling started (every 5 seconds)');
-}
-
-function cleanupUnread() {
-    if (UNREAD_INTERVAL) {
-        clearInterval(UNREAD_INTERVAL);
-        UNREAD_INTERVAL = null;
-    }
-}
-
-// ─── Notification click handler ───
-function setupNotifClick() {
-    var btn = document.getElementById('navNotifBtn');
-    if (!btn) return;
-    btn.addEventListener('click', function() {
-        var href = this.getAttribute('href');
-        if (href && href.includes('notifications.html')) {
-            clearUnread();
-        }
-    });
-}
 
 // ════════════════════════════════════════════
 //  UTILITY FUNCTIONS
@@ -576,18 +458,11 @@ function clearChat() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ INIT — parallel API calls + unread badge
+//  ✅ INIT — parallel API calls (badge handled in page.html)
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // ✅ Start unread badge polling
-    startUnreadPolling();
-
-    // ✅ Setup notification click handler
-    setupNotifClick();
-
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', cleanupUnread);
+    // ⚠️ Badge polling removed — now handled by optimized inline script in page.html
 
     document.getElementById('clearSessionBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
     document.getElementById('newChatBtn').addEventListener('click', e => { e.preventDefault(); clearChat(); });
@@ -628,5 +503,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Loaded with /api/unread/status endpoint');
+    console.log('✅ [PAGE] Loaded — badge system managed by page.html inline script');
 });
