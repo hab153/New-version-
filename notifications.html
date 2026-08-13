@@ -4,84 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Skyline AA-1 · Inbox</title>
-
-    <!-- ✅ PERF #1: Preconnect to backend — warms up TLS+TCP before first API call -->
     <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
     <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
-
-    <!-- ✅ PERF #2: DOMPurify deferred — doesn't block page render -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
-
-    <!-- ✅ PERF #3: Non-blocking CSS — load notifications.css without blocking render -->
     <link rel="preload" href="notifications.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="notifications.css" /></noscript>
-
-    <!-- ✅ PERF #4: Inline critical CSS — shows loading screen instantly while notifications.css loads -->
     <style>
-        /* Critical CSS — only what's needed for first paint */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; background: #0a0a0a; color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        
-        /* ─── LOADING CONTAINER ─── */
         .loading-container { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; background: #0a0a0a; }
         .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text { margin-top: 16px; font-size: 13px; color: #707070; font-family: 'Monaco', 'Menlo', monospace; }
         .loading-container.hidden { display: none; }
-
-        /* ─── SKELETON LOADER ─── */
-        .skeleton-loader {
-            display: none;
-            padding: 0 16px;
-            animation: skeletonFadeIn 0.3s ease;
-            margin-top: 12px;
-        }
+        .skeleton-loader { display: none; padding: 0 16px; animation: skeletonFadeIn 0.3s ease; margin-top: 12px; }
         .skeleton-loader.active { display: block; }
         @keyframes skeletonFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .skeleton-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-
-        .skeleton-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-            background-size: 200% 100%;
-            animation: skeletonShimmer 1.5s ease-in-out infinite;
-        }
-
-        .skeleton-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .skeleton-line {
-            height: 12px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-            background-size: 200% 100%;
-            animation: skeletonShimmer 1.5s ease-in-out infinite;
-        }
-
-        .skeleton-line-title {
-            width: 65%;
-            height: 14px;
-        }
-        .skeleton-line-sub {
-            width: 40%;
-            height: 10px;
-        }
-
-        /* ✅ Wave effect delays */
+        .skeleton-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .skeleton-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+        .skeleton-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .skeleton-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+        .skeleton-line-title { width: 65%; height: 14px; }
+        .skeleton-line-sub { width: 40%; height: 10px; }
         .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
         .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
         .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
@@ -90,21 +34,13 @@
         .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
         .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
         .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
-
-        @keyframes skeletonShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* ─── BRAND ─── */
+        @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         .brand { position: fixed; top: 14px; left: 16px; display: flex; align-items: center; gap: 8px; z-index: 100; }
         .brand-mark { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 50%, #fff 100%); display: flex; align-items: center; justify-content: center; }
         .brand-mark svg { width: 14px; height: 14px; color: #0d0a04; }
         .brand-name { font-size: 16px; font-weight: 500; color: #f5f5f5; }
         .brand-name span { color: #ffffff; font-weight: 400; }
         .brand-sub { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #707070; font-family: 'Monaco', 'Menlo', monospace; }
-
-        /* ─── MENU ─── */
         .menu-container { position: fixed; top: 14px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 100; }
         .menu-btn { background: none; border: none; color: #b0b0b0; cursor: pointer; padding: 4px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s, color 0.2s; }
         .menu-btn:hover { background: rgba(255,255,255,0.06); color: #ffffff; }
@@ -115,15 +51,11 @@
         .menu-item:hover { background: rgba(255,255,255,0.06); color: #ffffff; }
         .menu-item svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; flex-shrink: 0; }
         .menu-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 12px; }
-
-        /* ─── CHAT AUTO-REPLY LARGE BUTTON ─── */
         .chat-autoreply-btn-large { background: none; border: none; color: #707070; cursor: pointer; padding: 4px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s, color 0.2s; position: relative; }
         .chat-autoreply-btn-large:hover { background: rgba(255,255,255,0.06); color: #ffffff; }
         .chat-autoreply-btn-large svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; }
         .chat-autoreply-btn-large.active { color: #66dd99; }
         .chat-autoreply-btn-large.active svg { fill: rgba(102,221,153,0.1); stroke: #66dd99; }
-
-        /* ─── SEARCH ─── */
         .search-container { padding: 76px 16px 12px; }
         .search-wrap { display: flex; align-items: center; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; padding: 0 16px; transition: border-color 0.25s, box-shadow 0.25s; }
         .search-wrap:focus-within { border-color: rgba(255,255,255,0.2); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); }
@@ -131,417 +63,110 @@
         .search-icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; }
         .search-input { flex: 1; background: transparent; border: none; color: #f5f5f5; padding: 12px 0; font-size: 14px; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
         .search-input::placeholder { color: #707070; }
-
-        /* ─── CONTACT LIST ─── */
         .contact-list { padding: 0 16px 80px; overflow-y: auto; max-height: calc(100vh - 170px); }
         .contact-list::-webkit-scrollbar { width: 2px; }
         .contact-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-
-        /* ─── EMPTY STATE ─── */
         .empty-state, .no-results { display: none; text-align: center; padding: 60px 24px; color: #707070; }
         .empty-state.active, .no-results.active { display: block; }
         .empty-state svg, .no-results svg { width: 48px; height: 48px; stroke: #707070; stroke-width: 1.5; margin-bottom: 16px; }
         .empty-state h3 { font-size: 18px; font-weight: 400; color: #b0b0b0; margin-bottom: 6px; }
         .empty-state p, .no-results p { font-size: 12px; color: #707070; }
-
-        /* ─── BOTTOM NAV ─── */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 68px; display: flex; align-items: center; justify-content: space-around; background: #121212; border-top: 1px solid rgba(255,255,255,0.06); z-index: 10; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; text-decoration: none; color: #707070; font-size: 9px; font-family: 'Monaco', 'Menlo', monospace; padding: 6px 0; border: none; background: none; cursor: pointer; position: relative; }
         .nav-item.active { color: #ffffff; }
         .nav-item.nav-home .home-wrap { width: 44px; height: 44px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 50%, #fff 100%); border-radius: 14px; display: flex; align-items: center; justify-content: center; }
         .nav-item.nav-home svg { color: #0d0a04; }
         .nav-badge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: #ff5555; border-radius: 10px; border: 1.5px solid #121212; display: none; color: white; font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; }
-
-        /* ─── TOAST ─── */
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; font-weight: 600; z-index: 9999; display: none; background: rgba(0,210,255,0.15); border: 1px solid #00d2ff; color: #00d2ff; max-width: 90%; text-align: center; }
-
-        /* ─── HIDE LOADING SCREEN ─── */
         .loading-container.hidden { display: none; }
     </style>
 </head>
 <body>
-
-    <!-- ─── TOP LEFT LOGO ─── -->
     <div class="brand">
-        <div class="brand-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-        </div>
+        <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <span class="brand-name">Sky<span>line</span></span>
         <span class="brand-sub">AA-1</span>
     </div>
-
-    <!-- ─── TOP RIGHT SLIDER MENU ─── -->
     <div class="menu-container">
         <button class="chat-autoreply-btn-large" id="chatAutoReplyBtn" title="AI Auto-Reply OFF">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                <circle cx="12" cy="12" r="3"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-
         <button class="menu-btn" id="menuBtn" aria-label="Menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <div class="menu-dropdown" id="menuDropdown">
-            <button class="menu-item" data-action="followup">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-                </svg>
-                Follow-up
-            </button>
-            <button class="menu-item" data-action="revenue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="1" x2="12" y2="23"/>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-                Revenue Tracker
-            </button>
+            <button class="menu-item" data-action="followup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Follow-up</button>
+            <button class="menu-item" data-action="revenue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Revenue Tracker</button>
             <div class="menu-divider"></div>
-            <button class="menu-item" data-action="hint">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                </svg>
-                AI Hint
-            </button>
-            <button class="menu-item" data-action="autoreply">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="4" y="5" width="16" height="14" rx="2"/>
-                    <polyline points="8 10 12 14 16 10"/>
-                </svg>
-                Auto Reply
-            </button>
+            <button class="menu-item" data-action="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI Hint</button>
+            <button class="menu-item" data-action="autoreply"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><polyline points="8 10 12 14 16 10"/></svg>Auto Reply</button>
         </div>
     </div>
-
-    <!-- ─── LOADING SCREEN ─── -->
-    <div class="loading-container" id="loadingScreen">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading conversations...</div>
-    </div>
-
-    <!-- ─── SKELETON LOADER ─── -->
+    <div class="loading-container" id="loadingScreen"><div class="spinner"></div><div class="loading-text">Loading conversations...</div></div>
     <div class="skeleton-loader" id="skeletonLoader">
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
-        <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
-        </div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+        <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
     </div>
-
-    <!-- ─── SEARCH BAR ─── -->
-    <div class="search-container">
-        <div class="search-wrap">
-            <div class="search-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="M21 21l-4.35-4.35"/>
-                </svg>
-            </div>
-            <input class="search-input" type="text" placeholder="Search conversations..." id="searchInput" />
-        </div>
-    </div>
-
-    <!-- ─── CONTACT LIST ─── -->
+    <div class="search-container"><div class="search-wrap"><div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div><input class="search-input" type="text" placeholder="Search conversations..." id="searchInput" /></div></div>
     <div class="contact-list" id="contactList"></div>
-
-    <!-- ─── EMPTY STATE ─── -->
-    <div class="empty-state" id="emptyState">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        <h3>No conversations yet</h3>
-        <p>Send your first message to get started.</p>
-    </div>
-
-    <!-- ─── NO RESULTS ─── -->
-    <div class="no-results" id="noResults">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="M21 21l-4.35-4.35"/>
-        </svg>
-        <p>No contacts found</p>
-    </div>
-
-    <!-- ─── REVENUE MODAL ─── -->
-    <div class="modal-overlay" id="revenueModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
-                    Revenue Tracker
-                    <span class="tier-badge" id="tierBadge">Free</span>
-                </div>
-                <button class="modal-close" id="closeRevenueModal">✕</button>
-            </div>
-            <div class="modal-body" id="revenueBody">
-                <div class="modal-loading">Loading revenue data...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── CHAT VIEW ─── -->
+    <div class="empty-state" id="emptyState"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3>No conversations yet</h3><p>Send your first message to get started.</p></div>
+    <div class="no-results" id="noResults"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><p>No contacts found</p></div>
+    <div class="modal-overlay" id="revenueModal"><div class="modal-content"><div class="modal-header"><div class="modal-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Revenue Tracker<span class="tier-badge" id="tierBadge">Free</span></div><button class="modal-close" id="closeRevenueModal">✕</button></div><div class="modal-body" id="revenueBody"><div class="modal-loading">Loading revenue data...</div></div></div></div>
     <div class="chat-view" id="chatView">
         <div class="chat-header">
-            <button class="chat-back" id="chatBack">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
-                </svg>
-            </button>
+            <button class="chat-back" id="chatBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg></button>
             <div class="chat-avatar" id="chatAvatar">?</div>
             <div class="chat-info">
                 <span class="chat-name" id="chatName">Contact</span>
                 <span class="chat-email" id="chatEmail">email@example.com</span>
-                
-                <button class="chat-rename-btn" id="chatRenameBtn" title="Rename">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                    </svg>
-                </button>
-                
+                <button class="chat-rename-btn" id="chatRenameBtn" title="Rename"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
                 <div class="chat-followup-wrap">
-                    <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="4" y1="6" x2="20" y2="6"/>
-                            <line x1="4" y1="12" x2="20" y2="12"/>
-                            <line x1="4" y1="18" x2="20" y2="18"/>
-                        </svg>
-                    </button>
+                    <button class="chat-followup-btn" id="chatFollowupBtn" title="Follow-up options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
                     <div class="chat-followup-dropdown" id="chatFollowupDropdown">
-                        <button class="chat-followup-option" data-action="suggest">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                            </svg>
-                            Suggest Follow‑up
-                        </button>
-                        <button class="chat-followup-option" data-action="auto">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                            Auto Follow‑up
-                            <span class="followup-status" id="followupStatus">OFF</span>
-                        </button>
-                        <button class="chat-followup-option" data-action="hint">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                            </svg>
-                            AI Hint
-                        </button>
+                        <button class="chat-followup-option" data-action="suggest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Suggest Follow‑up</button>
+                        <button class="chat-followup-option" data-action="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Auto Follow‑up<span class="followup-status" id="followupStatus">OFF</span></button>
+                        <button class="chat-followup-option" data-action="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>AI Hint</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="messages-container" id="messagesContainer">
-            <div class="empty-chat">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <h3>No messages yet</h3>
-                <p>Send a message to start the conversation.</p>
-            </div>
-        </div>
-
-        <div class="chat-input-area">
-            <div class="chat-input-wrap">
-                <textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message..." aria-label="Message"></textarea>
-            </div>
-            <button class="chat-send-btn" id="chatSendBtn" aria-label="Send" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                </svg>
-            </button>
-        </div>
+        <div class="messages-container" id="messagesContainer"><div class="empty-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3>No messages yet</h3><p>Send a message to start the conversation.</p></div></div>
+        <div class="chat-input-area"><div class="chat-input-wrap"><textarea class="chat-input" id="chatInput" rows="1" placeholder="Type a message..." aria-label="Message"></textarea></div><button class="chat-send-btn" id="chatSendBtn" aria-label="Send" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button></div>
     </div>
-
-    <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
     <div class="modal-overlay" id="autoFollowupModal">
         <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
             <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
-                <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    Auto Follow-up
-                    <span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span>
-                </div>
+                <div class="modal-title" style="font-size:18px; font-weight:600; gap:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; stroke:var(--green);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Auto Follow-up<span id="afStatusBadge" style="font-size:11px; background:rgba(255,85,85,0.12); color:#ff5555; padding:2px 10px; border-radius:12px; font-weight:400; margin-left:4px;">OFF</span></div>
                 <button class="modal-close" id="closeAutoFollowupModal" style="width:32px; height:32px; font-size:18px; border-radius:8px;">✕</button>
             </div>
             <div class="modal-body">
                 <p style="font-size:13px; color:#b0b0b0; margin-bottom:20px; line-height:1.5;">Choose how many days to wait before sending the first follow-up email.</p>
-                
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-                    <button class="af-day-btn" data-days="1">1</button>
-                    <button class="af-day-btn" data-days="2">2</button>
-                    <button class="af-day-btn active" data-days="3">3</button>
-                    <button class="af-day-btn" data-days="4">4</button>
-                    <button class="af-day-btn" data-days="5">5</button>
-                    <button class="af-day-btn" data-days="6">6</button>
-                    <button class="af-day-btn" data-days="7">7</button>
+                    <button class="af-day-btn" data-days="1">1</button><button class="af-day-btn" data-days="2">2</button><button class="af-day-btn active" data-days="3">3</button><button class="af-day-btn" data-days="4">4</button><button class="af-day-btn" data-days="5">5</button><button class="af-day-btn" data-days="6">6</button><button class="af-day-btn" data-days="7">7</button>
                 </div>
-                
-                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
-                    <span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span>
-                    <input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;">
-                    <span style="font-size:11px; color:#505050;">days</span>
-                    <span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span>
-                </div>
-
-                <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:11px; color:#707070;">Current status:</span>
-                    <span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span>
-                    <span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span>
-                </div>
+                <div style="display:flex; align-items:center; gap:10px; background:var(--bg-raised); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);"><span style="font-size:11px; color:#707070; font-weight:500;">Custom:</span><input type="number" class="af-custom-input" id="afCustomInput" min="1" max="7" value="3" style="width:60px; background:#141414; border:1px solid rgba(255,255,255,0.06); border-radius:6px; color:#f5f5f5; padding:6px 8px; font-size:14px; outline:none; text-align:center; font-weight:500;"><span style="font-size:11px; color:#505050;">days</span><span style="margin-left:auto; font-size:10px; color:#505050;">(1-7 days)</span></div>
+                <div style="margin-top:16px; padding:10px 14px; background:rgba(102,221,153,0.04); border-radius:6px; border:1px solid rgba(102,221,153,0.08); display:flex; align-items:center; gap:10px;"><span style="font-size:11px; color:#707070;">Current status:</span><span id="afCurrentStatus" style="font-size:12px; font-weight:600; color:#ff5555;">OFF</span><span style="font-size:10px; color:#505050; margin-left:auto;">Toggle will change this instantly</span></div>
             </div>
             <div class="modal-footer" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); gap:10px;">
                 <button class="btn-ghost" id="cancelAutoFollowup" style="padding:10px 20px; font-size:12px;">Cancel</button>
-                <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">
-                    ✅ Enable Auto Follow-up
-                </button>
+                <button class="btn-primary" id="confirmAutoFollowup" style="padding:10px 24px; font-size:12px; background:var(--green); color:#000; font-weight:700;">✅ Enable Auto Follow-up</button>
             </div>
         </div>
     </div>
-
-    <!-- ─── AI AUTO-REPLY MINI MODAL ─── -->
-    <div class="autoreply-modal-overlay" id="autoReplyModalOverlay">
-        <div class="autoreply-modal">
-            <div class="autoreply-modal-header">
-                <span class="autoreply-modal-title">🤖 AI Auto-Reply Instructions</span>
-                <button class="autoreply-modal-close" id="closeAutoReplyModal">&times;</button>
-            </div>
-            <textarea 
-                class="autoreply-instructions" 
-                id="autoReplyInstructions" 
-                placeholder="e.g., Keep replies professional. Always ask how I can help. Max 2 sentences."
-            ></textarea>
-            <div class="autoreply-modal-footer">
-                <button class="autoreply-save-btn" id="saveAutoReplyBtn">Save & Activate</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── TOAST ─── -->
+    <div class="autoreply-modal-overlay" id="autoReplyModalOverlay"><div class="autoreply-modal"><div class="autoreply-modal-header"><span class="autoreply-modal-title">🤖 AI Auto-Reply Instructions</span><button class="autoreply-modal-close" id="closeAutoReplyModal">&times;</button></div><textarea class="autoreply-instructions" id="autoReplyInstructions" placeholder="e.g., Keep replies professional. Always ask how I can help. Max 2 sentences."></textarea><div class="autoreply-modal-footer"><button class="autoreply-save-btn" id="saveAutoReplyBtn">Save & Activate</button></div></div></div>
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
-
-    <!-- ─── BOTTOM NAVIGATION ─── -->
     <nav class="bottom-nav">
-        <a href="page.html" class="nav-item nav-home">
-            <div class="home-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-            </div>
-        </a>
-        <a href="history.html" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <polyline points="12 7 12 12 15 15"/>
-                <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-                <polyline points="3 4 3 11 10 11"/>
-            </svg>
-            History
-        </a>
-        <a href="notifications.html" class="nav-item active">
-            <div class="nav-badge"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            Inbox
-        </a>
-        <a href="dashboard.html" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            Dashboard
-        </a>
+        <a href="page.html" class="nav-item nav-home"><div class="home-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></a>
+        <a href="history.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg>History</a>
+        <a href="notifications.html" class="nav-item active"><div class="nav-badge"></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Inbox</a>
+        <a href="dashboard.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
     </nav>
-
-    <!-- ✅ PERF #5: Defer notifications.js — doesn't block page render -->
     <script defer src="notifications.js"></script>
-
-    <!-- ════════════════════════════════════════════ -->
-    <!-- ✅ UNIVERSAL BADGE SYSTEM -->
-    <!-- ════════════════════════════════════════════ -->
-    <script src="badge.js"></script>
-
-    <!-- ════════════════════════════════════════════ -->
-    <!-- ✅ CLEAR BADGE ON NOTIFICATIONS PAGE -->
-    <!-- ════════════════════════════════════════════ -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Clear the badge when user is on notifications page
-        if (typeof clearBadge === 'function') {
-            clearBadge();
-            console.log('🧹 [NOTIFICATIONS] Badge cleared on page load');
-        }
-    });
-    </script>
-
 </body>
     </html>
