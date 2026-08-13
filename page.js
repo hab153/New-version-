@@ -1,6 +1,7 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
 // WITH UNREAD BADGE SYSTEM (Backend as Source of Truth)
+// WITH CACHED UNREAD COUNT FOR FAST FIRST LOAD
 // ============================================================
 
 // ── CONFIG ─
@@ -27,13 +28,46 @@ var CACHE_TTL = 60000; // 60 seconds
 
 // ──────────────────────────────────────────────────────────────
 //  ✅ UNREAD BADGE SYSTEM (Backend as Source of Truth)
+//  ✅ WITH CACHED COUNT FOR FAST FIRST LOAD
 // ──────────────────────────────────────────────────────────────
+
+// ─── GET CACHED UNREAD COUNT ───
+function getCachedUnreadCount() {
+    try {
+        var cached = localStorage.getItem('cachedUnreadCount');
+        if (cached) {
+            var data = JSON.parse(cached);
+            // Only use if less than 5 minutes old
+            if (Date.now() - data.time < 300000) {
+                return data.count;
+            }
+        }
+    } catch (e) {}
+    return null;
+}
+
+// ─── SET CACHED UNREAD COUNT ───
+function setCachedUnreadCount(count) {
+    try {
+        localStorage.setItem('cachedUnreadCount', JSON.stringify({
+            count: count,
+            time: Date.now()
+        }));
+    } catch (e) {}
+}
 
 // ─── UPDATE BADGE UI ───
 function updateBadgeUI(count) {
     var item = document.getElementById('navNotifBtn');
     var badge = item?.querySelector('.nav-badge');
-    if (!item || !badge) return;
+    
+    // ✅ If badge not ready, retry in 100ms
+    if (!item || !badge) {
+        setTimeout(function() {
+            updateBadgeUI(count);
+        }, 100);
+        return;
+    }
 
     if (count > 0) {
         item.classList.add('has-notifs');
@@ -49,10 +83,12 @@ function updateBadgeUI(count) {
         badge.style.alignItems = 'center';
         badge.style.justifyContent = 'center';
         badge.style.padding = '0 4px';
+        console.log('🔔 [BADGE] Showing:', count);
     } else {
         item.classList.remove('has-notifs');
         badge.textContent = '';
         badge.style.display = 'none';
+        console.log('🔔 [BADGE] Hidden');
     }
 }
 
@@ -77,7 +113,13 @@ function fetchUnreadCount() {
                 window.location.href = 'login.html';
                 return;
             }
-            updateBadgeUI(0);
+            // Use cached value if available
+            var cached = getCachedUnreadCount();
+            if (cached !== null) {
+                updateBadgeUI(cached);
+            } else {
+                updateBadgeUI(0);
+            }
             return;
         }
         return res.json();
@@ -85,12 +127,24 @@ function fetchUnreadCount() {
     .then(function(data) {
         if (!data) return;
         var count = data.count || 0;
+        
+        // ✅ Save to cache
+        setCachedUnreadCount(count);
+        
+        // ✅ Update badge
         updateBadgeUI(count);
-        console.log('🔔 [BADGE] Unread count from DB:', count);
+        console.log('🔔 [BADGE] Fetched from DB:', count);
     })
     .catch(function(err) {
         console.error('[BADGE] Error fetching:', err);
-        updateBadgeUI(0);
+        // ✅ Use cached value if available
+        var cached = getCachedUnreadCount();
+        if (cached !== null) {
+            updateBadgeUI(cached);
+            console.log('🔔 [BADGE] Using cached on error:', cached);
+        } else {
+            updateBadgeUI(0);
+        }
     });
 }
 
@@ -153,14 +207,19 @@ function connectBadgeSSE() {
 function setupStorageListener() {
     window.addEventListener('storage', function(e) {
         // Only listen for changes from other tabs
-        if (e.key === 'globalUnreadCount') {
-            var count = parseInt(e.newValue) || 0;
-            updateBadgeUI(count);
+        if (e.key === 'cachedUnreadCount') {
+            try {
+                var data = JSON.parse(e.newValue);
+                if (data && data.count !== undefined) {
+                    updateBadgeUI(data.count);
+                    console.log('🔔 [BADGE] Updated from storage:', data.count);
+                }
+            } catch (err) {}
         }
     });
 }
 
-// ─── INIT UNREAD BADGE ───
+// ─── INIT UNREAD BADGE - FIXED FOR FIRST LOAD ───
 function initUnreadBadge() {
     var token = localStorage.getItem('token');
     if (!token) {
@@ -168,16 +227,29 @@ function initUnreadBadge() {
         return;
     }
 
-    // ✅ Fetch REAL count from database
-    fetchUnreadCount();
+    // ✅ STEP 1: Show CACHED count IMMEDIATELY (0ms delay)
+    var cached = getCachedUnreadCount();
+    if (cached !== null) {
+        updateBadgeUI(cached);
+        console.log('🔔 [BADGE] Initial from cache:', cached);
+    } else {
+        // ✅ If no cache, set to 0 (will update when API returns)
+        updateBadgeUI(0);
+        console.log('🔔 [BADGE] No cache, showing 0');
+    }
 
-    // ✅ Connect to SSE for real-time updates
+    // ✅ STEP 2: Fetch REAL count from database (updates badge when returns)
+    setTimeout(function() {
+        fetchUnreadCount();
+    }, 50);
+
+    // ✅ STEP 3: Connect to SSE for real-time updates
     connectBadgeSSE();
 
-    // ✅ Set up storage listener
+    // ✅ STEP 4: Set up storage listener (sync across tabs)
     setupStorageListener();
 
-    // ✅ Periodic refresh fallback (every 15 seconds)
+    // ✅ STEP 5: Periodic refresh fallback (every 15 seconds)
     if (window._badgeInterval) {
         clearInterval(window._badgeInterval);
     }
@@ -458,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ✅ Status polling every 120 seconds
     statusInterval = setInterval(updateStatus, 120000);
 
-    // ✅ INIT UNREAD BADGE
+    // ✅ INIT UNREAD BADGE (with cached count)
     initUnreadBadge();
 
     // ─── LEAD MODE FORM ───
