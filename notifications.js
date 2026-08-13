@@ -121,17 +121,18 @@ function injectSkeletonStyles() {
             align-items: center;
             gap: 14px;
             padding: 14px 16px;
-            background: var(--card);
-            border: 1px solid var(--br-dim);
-            border-radius: var(--r-md);
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
             margin-bottom: 10px;
-            animation: skelPulse 1.6s ease-in-out infinite;
         }
         .skeleton-avatar {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: var(--raised);
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
             flex-shrink: 0;
         }
         .skeleton-content {
@@ -143,18 +144,61 @@ function injectSkeletonStyles() {
         .skeleton-line {
             height: 12px;
             border-radius: 4px;
-            background: var(--raised);
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
         }
         .skeleton-line-title {
             width: 65%;
+            height: 14px;
         }
         .skeleton-line-subtitle {
             width: 40%;
             height: 10px;
         }
-        @keyframes skelPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+        .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
+        .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
+        .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
+        .skeleton-item:nth-child(4) .skeleton-line { animation-delay: 0.20s; }
+        .skeleton-item:nth-child(5) .skeleton-line { animation-delay: 0.25s; }
+        .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
+        .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
+        .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
+        
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ─── SKELETON FOR MESSAGES ─── */
+        .skeleton-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 16px;
+            max-width: 80%;
+        }
+        .skeleton-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .skeleton-message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+        .skeleton-message .skeleton-line {
+            height: 10px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
         }
     `;
     document.head.appendChild(style);
