@@ -785,33 +785,56 @@ function renderChatMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── CLEAR UNREAD BADGE ───
+// ─── CLEAR UNREAD BADGE - WITH DATABASE RESET ───
 function clearUnreadBadge(leadId) {
     if (!leadId) return;
     console.log('🔔 [CLEAR] Clearing unread badge for:', leadId);
 
-    for (var i = 0; i < allContacts.length; i++) {
-        if (allContacts[i].id === leadId) {
-            allContacts[i].unreadCount = 0;
-            allContacts[i].unread = false;
-            break;
+    // ✅ STEP 1: Reset unread in database
+    fetch(BACKEND + '/api/unread/reset/' + leadId, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
         }
-    }
-
-    if (_cachedContacts) {
-        for (var j = 0; j < _cachedContacts.length; j++) {
-            if (_cachedContacts[j].id === leadId) {
-                _cachedContacts[j].unreadCount = 0;
-                _cachedContacts[j].unread = false;
-                break;
+    })
+    .then(function(res) {
+        if (res.ok) {
+            console.log('✅ [CLEAR] Unread reset in database for:', leadId);
+            
+            // ✅ STEP 2: Update local state
+            for (var i = 0; i < allContacts.length; i++) {
+                if (allContacts[i].id === leadId) {
+                    allContacts[i].unreadCount = 0;
+                    allContacts[i].unread = false;
+                    break;
+                }
             }
-        }
-    }
 
-    renderContacts(allContacts);
-    if (typeof fetchGlobalUnreadCount === 'function') {
-        fetchGlobalUnreadCount();
-    }
+            if (_cachedContacts) {
+                for (var j = 0; j < _cachedContacts.length; j++) {
+                    if (_cachedContacts[j].id === leadId) {
+                        _cachedContacts[j].unreadCount = 0;
+                        _cachedContacts[j].unread = false;
+                        break;
+                    }
+                }
+            }
+
+            // ✅ STEP 3: Re-render contacts
+            renderContacts(allContacts);
+            
+            // ✅ STEP 4: Update global badge
+            if (typeof fetchGlobalUnreadCount === 'function') {
+                fetchGlobalUnreadCount();
+            }
+        } else {
+            console.error('❌ [CLEAR] Failed to reset unread in database');
+        }
+    })
+    .catch(function(err) {
+        console.error('❌ [CLEAR] Error:', err);
+    });
 }
 
 // ─── OPEN CHAT ───
