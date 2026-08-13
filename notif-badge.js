@@ -1,14 +1,11 @@
 // ============================================================
 // notif-badge.js
 // SHARED Notification Badge - Works across ALL pages
-// WITH SSE REAL-TIME UPDATES
+// Uses /api/unread/status as source of truth
 // Skyline AA-1
 // ============================================================
 
 var NOTIF_BACKEND = 'https://skylineapp-backend-file.onrender.com';
-var badgeSSEConnection = null;
-var badgeSSEReconnectAttempts = 0;
-var MAX_BADGE_SSE_RECONNECT_ATTEMPTS = 5;
 
 // ─── Get token ───
 function getNotifToken() {
@@ -27,27 +24,28 @@ function setStoredBadge(count) {
     localStorage.setItem('globalUnreadCount', String(count || 0));
 }
 
-// ─── Get last seen count ───
-function getLastSeenCount() {
-    var count = localStorage.getItem('lastSeenNotifCount');
-    return count ? parseInt(count) : 0;
-}
-
-// ─── Set last seen count ───
-function setLastSeenCount(count) {
-    localStorage.setItem('lastSeenNotifCount', String(count || 0));
-}
-
 // ─── Update ALL badges on the current page ───
 function updateAllBadges(count) {
     var badges = document.querySelectorAll('.nav-badge');
+    var navItems = document.querySelectorAll('.nav-item');
+    
     if (badges.length === 0) return;
-
+    
     badges.forEach(function(badge) {
         if (count > 0) {
             badge.textContent = count > 9 ? '9+' : count;
             badge.style.display = 'flex';
             badge.style.background = '#ff5555';
+            badge.style.color = '#ffffff';
+            badge.style.borderRadius = '50%';
+            badge.style.minWidth = '18px';
+            badge.style.height = '18px';
+            badge.style.fontSize = '10px';
+            badge.style.fontWeight = '600';
+            badge.style.alignItems = 'center';
+            badge.style.justifyContent = 'center';
+            badge.style.padding = '0 4px';
+            
             var parent = badge.closest('.nav-item');
             if (parent) parent.classList.add('has-notifs');
         } else {
@@ -68,7 +66,8 @@ async function fetchGlobalUnreadCount() {
     }
 
     try {
-        var res = await fetch(NOTIF_BACKEND + '/api/notifications/count', {
+        // ✅ Use the unread status endpoint
+        var res = await fetch(NOTIF_BACKEND + '/api/unread/status', {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
@@ -88,11 +87,14 @@ async function fetchGlobalUnreadCount() {
 
         var data = await res.json();
         var count = data.count || 0;
+        
+        // ✅ Store in localStorage for other pages
         setStoredBadge(count);
-        var seen = getLastSeenCount();
-        var displayCount = count > seen ? count - seen : 0;
-        updateAllBadges(displayCount);
-        return displayCount;
+        
+        // ✅ Update ALL badges on current page
+        updateAllBadges(count);
+        
+        return count;
 
     } catch (error) {
         console.error('[NOTIF BADGE] Fetch error:', error);
@@ -102,40 +104,39 @@ async function fetchGlobalUnreadCount() {
     }
 }
 
-// ─── Mark notifications as read ───
-async function markNotificationsRead() {
+// ─── Clear unread messages ───
+async function clearUnreadMessages() {
     var token = getNotifToken();
     if (!token) return false;
 
     try {
-        var currentCount = getStoredBadge();
-        setLastSeenCount(currentCount);
-        setStoredBadge(0);
-        updateAllBadges(0);
-
-        try {
-            var res = await fetch(NOTIF_BACKEND + '/api/notifications/mark-read', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (res.ok) {
-                console.log('[NOTIF BADGE] Marked all as read on server');
+        var res = await fetch(NOTIF_BACKEND + '/api/unread/clear', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
             }
-        } catch (serverErr) {
-            console.log('[NOTIF BADGE] Server mark-read not available');
-        }
+        });
 
-        return true;
+        if (res.ok) {
+            setStoredBadge(0);
+            updateAllBadges(0);
+            console.log('[NOTIF BADGE] Cleared all unread messages');
+            return true;
+        }
+        return false;
+
     } catch (error) {
-        console.error('[NOTIF BADGE] Error marking read:', error);
+        console.error('[NOTIF BADGE] Error clearing unread:', error);
         return false;
     }
 }
 
 // ─── SSE: Connect for real-time badge updates ───
+var badgeSSEConnection = null;
+var badgeSSEReconnectAttempts = 0;
+var MAX_BADGE_SSE_RECONNECT_ATTEMPTS = 5;
+
 function connectBadgeSSE() {
     var token = getNotifToken();
     if (!token) return;
@@ -194,19 +195,17 @@ function initNotifBadge() {
         return;
     }
 
-    // Show stored count immediately
+    // ✅ First: Show stored count immediately (no delay)
     var stored = getStoredBadge();
-    var seen = getLastSeenCount();
-    var displayCount = stored > seen ? stored - seen : 0;
-    updateAllBadges(displayCount);
+    updateAllBadges(stored);
 
-    // Fetch fresh count
+    // ✅ Then: Fetch fresh count from server
     fetchGlobalUnreadCount();
 
     // ✅ Connect to SSE for real-time updates
     connectBadgeSSE();
 
-    // Periodic refresh fallback (every 15 seconds)
+    // ✅ Set up periodic refresh (every 15 seconds) - FALLBACK
     if (window._notifInterval) {
         clearInterval(window._notifInterval);
     }
@@ -220,11 +219,11 @@ function setupNotifButton() {
 
     notifBtn.addEventListener('click', function(e) {
         var href = this.getAttribute('href');
+        
+        // If clicking notification button, clear unread
         if (href && href.includes('notifications.html')) {
-            var currentCount = getStoredBadge();
-            setLastSeenCount(currentCount);
-            updateAllBadges(0);
-            setStoredBadge(0);
+            // ✅ Clear unread immediately for better UX
+            clearUnreadMessages();
         }
     });
 }
@@ -232,11 +231,9 @@ function setupNotifButton() {
 // ─── Listen for storage changes from other tabs/pages ───
 function setupStorageListener() {
     window.addEventListener('storage', function(e) {
-        if (e.key === 'globalUnreadCount' || e.key === 'lastSeenNotifCount') {
-            var stored = getStoredBadge();
-            var seen = getLastSeenCount();
-            var displayCount = stored > seen ? stored - seen : 0;
-            updateAllBadges(displayCount);
+        if (e.key === 'globalUnreadCount') {
+            var count = parseInt(e.newValue) || 0;
+            updateAllBadges(count);
         }
     });
 }
@@ -260,4 +257,4 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-console.log('✅ [NOTIF BADGE] Shared badge system loaded with SSE');
+console.log('✅ [NOTIF BADGE] Shared badge system loaded with /api/unread');
