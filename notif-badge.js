@@ -247,4 +247,36 @@ window.addEventListener('beforeunload', function() {
     cleanupNotifBadge();
 });
 
-console.log('✅ [BADGE] notif-badge.js loaded');
+// ============================================================
+// ✅ FIX: RE-INIT BADGE ON PAGE NAVIGATION
+// ============================================================
+
+// ─── On visibility change (user comes back to tab) ───
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        console.log('🔔 [BADGE] Tab visible, refreshing...');
+        fetchUnreadCount();
+    }
+});
+
+// ─── On page show (user navigates back/forward) ───
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        console.log('🔔 [BADGE] Page restored from bfcache, refreshing...');
+        fetchUnreadCount();
+    }
+});
+
+// ─── On hash change ───
+window.addEventListener('hashchange', function() {
+    console.log('🔔 [BADGE] Hash changed, refreshing...');
+    fetchUnreadCount();
+});
+
+// ─── On popstate (browser back/forward) ───
+window.addEventListener('popstate', function() {
+    console.log('🔔 [BADGE] Popstate, refreshing...');
+    fetchUnreadCount();
+});
+
+console.log('✅ [BADGE] notif-badge.js loaded with navigation fix');
