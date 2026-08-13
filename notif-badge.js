@@ -1,13 +1,47 @@
 // ============================================================
 // notif-badge.js
 // SINGLE SOURCE OF TRUTH = BACKEND ONLY
-// No localStorage tricks - only fetches from backend
+// NO localStorage - always fetches from database
+// Works across ALL 4 pages
+// Skyline AA-1
 // ============================================================
 
 var NOTIF_BACKEND = 'https://skylineapp-backend-file.onrender.com';
 
+// ─── Get token ───
 function getNotifToken() {
     return localStorage.getItem('token');
+}
+
+// ─── UPDATE BADGE UI ───
+function updateAllBadges(count) {
+    var badges = document.querySelectorAll('.nav-badge');
+    if (badges.length === 0) return;
+
+    badges.forEach(function(badge) {
+        if (count > 0) {
+            badge.textContent = count > 9 ? '9+' : count;
+            badge.style.display = 'flex';
+            badge.style.background = '#ff5555';
+            badge.style.color = '#ffffff';
+            badge.style.borderRadius = '50%';
+            badge.style.minWidth = '18px';
+            badge.style.height = '18px';
+            badge.style.fontSize = '10px';
+            badge.style.fontWeight = '600';
+            badge.style.alignItems = 'center';
+            badge.style.justifyContent = 'center';
+            badge.style.padding = '0 4px';
+            
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.add('has-notifs');
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
+            var parent = badge.closest('.nav-item');
+            if (parent) parent.classList.remove('has-notifs');
+        }
+    });
 }
 
 // ─── FETCH REAL UNREAD COUNT FROM BACKEND ───
@@ -19,7 +53,10 @@ function fetchUnreadCount() {
     }
 
     fetch(NOTIF_BACKEND + '/api/unread/status', {
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
     })
     .then(function(res) {
         if (!res.ok) {
@@ -28,6 +65,7 @@ function fetchUnreadCount() {
                 window.location.href = 'login.html';
                 return;
             }
+            updateAllBadges(0);
             return;
         }
         return res.json();
@@ -44,31 +82,12 @@ function fetchUnreadCount() {
     });
 }
 
-// ─── UPDATE BADGE UI ───
-function updateAllBadges(count) {
-    var badges = document.querySelectorAll('.nav-badge');
-    if (badges.length === 0) return;
-
-    badges.forEach(function(badge) {
-        if (count > 0) {
-            badge.textContent = count > 9 ? '9+' : count;
-            badge.style.display = 'flex';
-            badge.style.background = '#ff5555';
-            var parent = badge.closest('.nav-item');
-            if (parent) parent.classList.add('has-notifs');
-        } else {
-            badge.textContent = '';
-            badge.style.display = 'none';
-            var parent = badge.closest('.nav-item');
-            if (parent) parent.classList.remove('has-notifs');
-        }
-    });
-}
-
 // ─── SSE: REAL-TIME UPDATES ───
 var sseConnection = null;
+var sseReconnectAttempts = 0;
+var MAX_SSE_RECONNECT_ATTEMPTS = 5;
 
-function connectSSE() {
+function connectBadgeSSE() {
     var token = getNotifToken();
     if (!token) return;
 
@@ -80,6 +99,11 @@ function connectSSE() {
     try {
         sseConnection = new EventSource(NOTIF_BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
 
+        sseConnection.addEventListener('open', function() {
+            console.log('✅ [BADGE SSE] Connection established');
+            sseReconnectAttempts = 0;
+        });
+
         sseConnection.addEventListener('message', function(event) {
             try {
                 var data = JSON.parse(event.data);
@@ -87,24 +111,33 @@ function connectSSE() {
                     // ✅ Fetch fresh count from database
                     fetchUnreadCount();
                 }
-            } catch (err) { /* ignore */ }
+            } catch (err) {
+                // Ignore parse errors
+            }
         });
 
         sseConnection.addEventListener('error', function() {
+            console.warn('⚠️ [BADGE SSE] Connection error');
             if (sseConnection) {
                 sseConnection.close();
                 sseConnection = null;
             }
-            // Reconnect after 5 seconds
-            setTimeout(connectSSE, 5000);
+
+            sseReconnectAttempts++;
+            var delay = Math.min(1000 * Math.pow(2, sseReconnectAttempts), 30000);
+
+            if (sseReconnectAttempts <= MAX_SSE_RECONNECT_ATTEMPTS) {
+                console.log('🔄 [BADGE SSE] Reconnecting in ' + delay + 'ms...');
+                setTimeout(connectBadgeSSE, delay);
+            }
         });
 
     } catch (err) {
-        console.error('[SSE] Error:', err.message);
+        console.error('[BADGE SSE] Failed to connect:', err.message);
     }
 }
 
-// ─── INIT ───
+// ─── INIT BADGE ───
 function initNotifBadge() {
     var token = getNotifToken();
     if (!token) {
@@ -116,7 +149,7 @@ function initNotifBadge() {
     fetchUnreadCount();
 
     // ✅ Connect to SSE for real-time updates
-    connectSSE();
+    connectBadgeSSE();
 
     // ✅ Periodic refresh fallback (every 15 seconds)
     if (window._badgeInterval) {
@@ -125,12 +158,8 @@ function initNotifBadge() {
     window._badgeInterval = setInterval(fetchUnreadCount, 15000);
 }
 
-// ─── RUN ───
-document.addEventListener('DOMContentLoaded', function() {
-    initNotifBadge();
-});
-
-window.addEventListener('beforeunload', function() {
+// ─── CLEAN UP ───
+function cleanupBadge() {
     if (window._badgeInterval) {
         clearInterval(window._badgeInterval);
         window._badgeInterval = null;
@@ -139,6 +168,15 @@ window.addEventListener('beforeunload', function() {
         sseConnection.close();
         sseConnection = null;
     }
+}
+
+// ─── RUN ON PAGE LOAD ───
+document.addEventListener('DOMContentLoaded', function() {
+    initNotifBadge();
 });
 
-console.log('✅ [BADGE] Using backend as source of truth');
+window.addEventListener('beforeunload', function() {
+    cleanupBadge();
+});
+
+console.log('✅ [BADGE] Loaded - Backend as source of truth');
