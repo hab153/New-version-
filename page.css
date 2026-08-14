@@ -348,29 +348,21 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
 .nav-item.nav-home::after { display: none; }
 
-/* ✅ CSS-FIRST BADGE: Visible by default on first paint, hidden only when confirmed read */
+/* ✅ PERMANENT NOTIFICATION DOT — Always visible, no JS dependency */
 .nav-badge {
     position: absolute;
-    top: 2px;
-    right: calc(50% - 20px);
-    width: 10px;
-    height: 10px;
-    min-width: 10px;
+    top: 4px;
+    right: calc(50% - 22px);
+    width: 9px;
+    height: 9px;
+    min-width: 9px;
     background: var(--rose);
     border-radius: 50%;
     border: 1.5px solid var(--base);
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    font-size: 0;
-    line-height: 0;
     z-index: 2;
-    box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+    box-shadow: 0 0 0 1px rgba(255, 85, 85, 0.3), 0 2px 6px rgba(184, 92, 92, 0.5);
     pointer-events: none;
 }
-.nav-item.has-notifs .nav-badge { display: flex !important; }
-.nav-badge.badge-read { display: none !important; }
 
 @media (min-width: 1024px) {
     .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
