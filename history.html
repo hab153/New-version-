@@ -514,12 +514,31 @@
         .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); }
         .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
         .nav-item.nav-home::after { display: none; }
+
+        /* ✅ NAV BADGE (Red Dot) */
         .nav-badge {
-            position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: var(--rose);
-            border-radius: 10px; border: 1.5px solid var(--base); display: none; color: white; font-family: var(--mono);
-            font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; z-index: 2; box-shadow: 0 2px 6px rgba(184,92,92,0.4);
+            position: absolute;
+            top: 2px;
+            right: calc(50% - 20px);
+            min-width: 18px;
+            height: 18px;
+            background: #ff5555;
+            border-radius: 50%;
+            border: 1.5px solid var(--base);
+            display: none;
+            color: #ffffff;
+            font-family: var(--mono);
+            font-size: 9px;
+            font-weight: 600;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(255,85,85,0.3);
         }
-        .nav-item.has-notifs .nav-badge { display: flex; }
+        .nav-item.has-notifs .nav-badge {
+            display: flex;
+        }
 
         @media (max-width: 600px) {
             .bottom-nav { padding: 0 6%; }
@@ -640,6 +659,7 @@
             <polyline points="3 4 3 11 10 11"/>
         </svg>
     </a>
+    <!-- ✅ NOTIFICATION BUTTON WITH BADGE -->
     <a href="notifications.html" class="nav-item" id="navNotifBtn">
         <div class="nav-badge"></div>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -656,6 +676,9 @@
         </svg>
     </a>
 </nav>
+
+<!-- ✅ SHARED NOTIFICATION BADGE SCRIPT -->
+<script src="notif-badge.js"></script>
 
 <script>
     // ──────────────────────────────────────────────────────────────
@@ -1274,107 +1297,7 @@
         loadSessions();
     });
 
-    // ════════════════════════════════════════════
-    //  ✅ UNREAD BADGE SYSTEM (DIRECT ENDPOINT)
-    // ════════════════════════════════════════════
-
-    (function() {
-        var BACKEND = 'https://skylineapp-backend-file.onrender.com';
-        var token = localStorage.getItem('token');
-        if (!token) return;
-
-        function updateBadge(hasUnread) {
-            var badges = document.querySelectorAll('.nav-badge');
-            badges.forEach(function(badge) {
-                if (hasUnread) {
-                    badge.style.display = 'flex';
-                    badge.style.background = '#ff5555';
-                    badge.style.width = '10px';
-                    badge.style.height = '10px';
-                    badge.style.borderRadius = '50%';
-                    badge.style.padding = '0';
-                    badge.style.fontSize = '0';
-                    badge.style.lineHeight = '0';
-                    var parent = badge.closest('.nav-item');
-                    if (parent) parent.classList.add('has-notifs');
-                } else {
-                    badge.style.display = 'none';
-                    badge.style.width = '';
-                    badge.style.height = '';
-                    badge.style.borderRadius = '';
-                    badge.style.padding = '';
-                    badge.style.fontSize = '';
-                    badge.style.lineHeight = '';
-                    var parent = badge.closest('.nav-item');
-                    if (parent) parent.classList.remove('has-notifs');
-                }
-            });
-        }
-
-        function checkUnread() {
-            fetch(BACKEND + '/api/unread/status', {
-                headers: { 
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(function(res) {
-                if (!res.ok) {
-                    if (res.status === 401 || res.status === 403) {
-                        localStorage.removeItem('token');
-                    }
-                    return null;
-                }
-                return res.json();
-            })
-            .then(function(data) {
-                if (data && data.success) {
-                    updateBadge(data.hasUnread);
-                    console.log('🔔 [HISTORY] Unread:', data.count, data.hasUnread ? '🔴 RED DOT' : '⚪ No dot');
-                }
-            })
-            .catch(function(err) {
-                console.error('❌ [HISTORY] Badge check failed:', err.message);
-            });
-        }
-
-        // Check on load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', checkUnread);
-        } else {
-            checkUnread();
-        }
-
-        // Check every 5 seconds
-        setInterval(checkUnread, 5000);
-
-        // When notification button is clicked, clear badge
-        var notifBtn = document.getElementById('navNotifBtn');
-        if (notifBtn) {
-            notifBtn.addEventListener('click', function() {
-                var href = this.getAttribute('href');
-                if (href && href.includes('notifications.html')) {
-                    // Clear badge immediately (optimistic)
-                    updateBadge(false);
-                    // Also clear on server
-                    fetch(BACKEND + '/api/unread/clear', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        if (data.success) {
-                            console.log('🧹 [HISTORY] Badge cleared');
-                        }
-                    })
-                    .catch(function() {});
-                }
-            });
-        }
-
-        console.log('✅ [HISTORY] Unread badge system initialized');
-    })();
 </script>
 
 </body>
-    </html>
+                    </html>
