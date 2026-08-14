@@ -37,23 +37,43 @@ function initNotifBadge() {
     var token = localStorage.getItem('token');
     if (!token) return;
 
-    // ✅ Check if notif-badge.js is loaded
-    if (typeof initNotifBadge === 'function' && window.initNotifBadge !== initNotifBadge) {
-        // notif-badge.js is loaded, it will handle everything
-        console.log('🔔 [PAGE] Using shared notif-badge.js');
-        return;
-    }
+    console.log('🔔 [PAGE] Initializing badge...');
 
-    // ✅ Fallback: If notif-badge.js not loaded, set badge to 0
-    var item = document.getElementById('navNotifBtn');
-    var badge = item?.querySelector('.nav-badge');
-    if (badge) {
-        badge.textContent = '';
-        badge.style.display = 'none';
-        item.classList.remove('has-notifs');
+    // ✅ Check if notif-badge.js is loaded
+    if (typeof window.NotifBadge !== 'undefined') {
+        if (window.NotifBadge.fetch) {
+            window.NotifBadge.fetch();
+            console.log('🔔 [PAGE] Badge fetched');
+        }
+        if (window.NotifBadge.init) {
+            window.NotifBadge.init();
+            console.log('🔔 [PAGE] Badge initialized');
+        }
+    } else {
+        console.warn('🔔 [PAGE] notif-badge.js not loaded');
+        // Fallback: hide badge
+        var badge = document.querySelector('.nav-badge');
+        if (badge) {
+            badge.textContent = '';
+            badge.style.display = 'none';
+        }
     }
-    console.log('🔔 [PAGE] Badge hidden (notif-badge.js will handle updates)');
 }
+
+// ─── RE-INIT ON VISIBILITY CHANGE ───
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        console.log('🔔 [PAGE] Tab visible, refreshing badge...');
+        if (typeof window.NotifBadge !== 'undefined' && window.NotifBadge.fetch) {
+            window.NotifBadge.fetch();
+        }
+    }
+});
+
+// ─── CALL INIT ───
+initNotifBadge();
+
+console.log('✅ [PAGE] Badge system initialized');
 
 // ──────────────────────────────────────────────────────────────
 //  UTILITY FUNCTIONS
@@ -350,99 +370,3 @@ document.addEventListener('DOMContentLoaded', function() {
         // Badge cleanup is handled by notif-badge.js
     });
 });
-
-// ============================================================
-//  ✅ EXTRA: ENSURE BADGE WORKS ON NAVIGATION
-//  ✅ Run on every page load, not just DOMContentLoaded
-// ============================================================
-
-(function ensureBadgeOnNavigation() {
-    console.log('🔔 [PAGE] Ensuring badge works on navigation...');
-
-    // ─── Helper: Refresh badge ───
-    function refreshBadge() {
-        if (typeof window.NotifBadge !== 'undefined') {
-            if (window.NotifBadge.fetch) {
-                window.NotifBadge.fetch();
-                console.log('🔔 [PAGE] Badge refreshed');
-                return true;
-            }
-            if (window.NotifBadge.init) {
-                window.NotifBadge.init();
-                console.log('🔔 [PAGE] Badge re-initialized');
-                return true;
-            }
-        }
-        console.warn('🔔 [PAGE] NotifBadge not available');
-        return false;
-    }
-
-    // ─── 1. On visibility change ───
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            console.log('🔔 [PAGE] Tab visible');
-            refreshBadge();
-        }
-    });
-
-    // ─── 2. On pageshow (back/forward) ───
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-            console.log('🔔 [PAGE] Page restored from cache');
-            refreshBadge();
-        }
-    });
-
-    // ─── 3. On popstate ───
-    window.addEventListener('popstate', function() {
-        console.log('🔔 [PAGE] Popstate detected');
-        refreshBadge();
-    });
-
-    // ─── 4. On hash change ───
-    window.addEventListener('hashchange', function() {
-        console.log('🔔 [PAGE] Hash changed');
-        refreshBadge();
-    });
-
-    // ─── 5. On bottom nav clicks ───
-    document.addEventListener('DOMContentLoaded', function() {
-        var navLinks = document.querySelectorAll('.bottom-nav a');
-        navLinks.forEach(function(link) {
-            link.addEventListener('click', function() {
-                // Refresh after navigation completes
-                setTimeout(function() {
-                    console.log('🔔 [PAGE] Nav click, refreshing...');
-                    refreshBadge();
-                }, 800);
-            });
-        });
-    });
-
-    // ─── 6. On load (ensures badge after full page load) ───
-    window.addEventListener('load', function() {
-        console.log('🔔 [PAGE] Window loaded');
-        refreshBadge();
-    });
-
-    // ─── 7. Check every 5 seconds for badge presence (fallback) ───
-    var checkInterval = setInterval(function() {
-        var hasBadge = document.querySelector('.nav-badge');
-        if (hasBadge) {
-            // Check if badge is visible but hidden (has-unread class missing)
-            var parent = hasBadge.closest('.nav-item');
-            if (parent && !parent.classList.contains('has-notifs')) {
-                // Badge exists but not showing - refresh
-                console.log('🔔 [PAGE] Badge found but not active, refreshing...');
-                refreshBadge();
-            }
-        }
-    }, 30000); // Every 30 seconds
-
-    // Clean up interval on page unload
-    window.addEventListener('beforeunload', function() {
-        clearInterval(checkInterval);
-    });
-
-    console.log('✅ [PAGE] Navigation badge handlers added');
-})();
