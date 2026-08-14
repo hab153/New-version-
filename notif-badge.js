@@ -2,6 +2,8 @@
 // notif-badge.js
 // SHARED NOTIFICATION BADGE SYSTEM
 // Single source of truth = BACKEND
+// PRIMARY: Polling every 4 seconds
+// BONUS: SSE for real-time updates
 // Works across ALL 4 pages (page, dashboard, history, notifications)
 // Skyline AA-1
 // ============================================================
@@ -12,7 +14,7 @@ var NOTIF_BACKEND = 'https://skylineapp-backend-file.onrender.com';
 //  CONFIGURATION
 // ──────────────────────────────────────────────────────────────
 
-var BADGE_REFRESH_INTERVAL = 15000; // 15 seconds fallback
+var BADGE_REFRESH_INTERVAL = 4000; // ✅ 4 seconds (primary)
 var SSE_RECONNECT_DELAY = 5000; // 5 seconds
 
 // ──────────────────────────────────────────────────────────────
@@ -101,12 +103,12 @@ function fetchUnreadCount() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  SSE: REAL-TIME UPDATES
+//  SSE: REAL-TIME UPDATES (BONUS - not critical)
 // ──────────────────────────────────────────────────────────────
 
 var sseConnection = null;
 var sseReconnectAttempts = 0;
-var MAX_SSE_RECONNECT_ATTEMPTS = 10;
+var MAX_SSE_RECONNECT_ATTEMPTS = 3; // ✅ Fewer attempts, polling is primary
 
 function connectBadgeSSE() {
     var token = getNotifToken();
@@ -121,7 +123,7 @@ function connectBadgeSSE() {
         sseConnection = new EventSource(NOTIF_BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
 
         sseConnection.addEventListener('open', function() {
-            console.log('✅ [BADGE SSE] Connection established');
+            console.log('✅ [BADGE SSE] Connection established (bonus)');
             sseReconnectAttempts = 0;
         });
 
@@ -133,7 +135,7 @@ function connectBadgeSSE() {
                 if (data.type === 'unread_update') {
                     var count = data.count || 0;
                     updateAllBadges(count);
-                    console.log('🔔 [BADGE] SSE update:', count);
+                    console.log('🔔 [BADGE SSE] Update:', count);
                     return;
                 }
                 
@@ -148,30 +150,21 @@ function connectBadgeSSE() {
         });
 
         sseConnection.addEventListener('error', function() {
-            console.warn('⚠️ [BADGE SSE] Connection error');
+            console.warn('⚠️ [BADGE SSE] Connection error (using polling)');
             if (sseConnection) {
                 sseConnection.close();
                 sseConnection = null;
             }
-
-            sseReconnectAttempts++;
-            var delay = Math.min(1000 * Math.pow(2, sseReconnectAttempts), 30000);
-
-            if (sseReconnectAttempts <= MAX_SSE_RECONNECT_ATTEMPTS) {
-                console.log('🔄 [BADGE SSE] Reconnecting in ' + delay + 'ms... (attempt ' + sseReconnectAttempts + '/' + MAX_SSE_RECONNECT_ATTEMPTS + ')');
-                setTimeout(connectBadgeSSE, delay);
-            } else {
-                console.error('❌ [BADGE SSE] Max reconnect attempts reached. Using polling fallback.');
-            }
+            // Don't reconnect aggressively - polling is primary
         });
 
     } catch (err) {
-        console.error('[BADGE SSE] Failed to connect:', err.message);
+        console.warn('[BADGE SSE] Failed to connect (using polling):', err.message);
     }
 }
 
 // ──────────────────────────────────────────────────────────────
-//  INIT BADGE
+//  INIT BADGE - POLLING AS PRIMARY
 // ──────────────────────────────────────────────────────────────
 
 var badgeInterval = null;
@@ -188,14 +181,19 @@ function initNotifBadge() {
     // ✅ Step 1: Fetch immediately
     fetchUnreadCount();
 
-    // ✅ Step 2: Connect to SSE for real-time updates
-    connectBadgeSSE();
-
-    // ✅ Step 3: Fallback polling (every 15 seconds)
+    // ✅ Step 2: Start POLLING every 4 seconds (PRIMARY)
     if (badgeInterval) {
         clearInterval(badgeInterval);
     }
     badgeInterval = setInterval(fetchUnreadCount, BADGE_REFRESH_INTERVAL);
+    console.log('✅ [BADGE] Polling started (every 4 seconds)');
+
+    // ✅ Step 3: Try SSE as BONUS (if available)
+    try {
+        connectBadgeSSE();
+    } catch (err) {
+        // Ignore - polling works
+    }
 
     console.log('✅ [BADGE] Shared badge system initialized');
 }
@@ -279,4 +277,4 @@ window.addEventListener('popstate', function() {
     fetchUnreadCount();
 });
 
-console.log('✅ [BADGE] notif-badge.js loaded with navigation fix');
+console.log('✅ [BADGE] notif-badge.js loaded (polling every 4s)');
