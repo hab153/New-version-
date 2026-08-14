@@ -1554,3 +1554,48 @@ connectSSE();
 history.pushState(null, '', window.location.href);
 
 console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
+
+// ============================================================
+// ✅ INIT SHARED BADGE
+// ============================================================
+function initNotifBadge() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+
+    console.log('🔔 [NOTIFICATIONS] Initializing badge...');
+
+    // Check if notif-badge.js is loaded
+    if (typeof window.NotifBadge !== 'undefined') {
+        if (window.NotifBadge.fetch) {
+            window.NotifBadge.fetch();
+            console.log('🔔 [NOTIFICATIONS] Badge fetched');
+        }
+        if (window.NotifBadge.init) {
+            window.NotifBadge.init();
+            console.log('🔔 [NOTIFICATIONS] Badge initialized');
+        }
+    } else {
+        console.warn('🔔 [NOTIFICATIONS] notif-badge.js not loaded');
+        // Fallback: hide badge
+        var badge = document.querySelector('.nav-badge');
+        if (badge) {
+            badge.textContent = '';
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// ─── RE-INIT ON VISIBILITY CHANGE ───
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        console.log('🔔 [NOTIFICATIONS] Tab visible, refreshing badge...');
+        if (typeof window.NotifBadge !== 'undefined' && window.NotifBadge.fetch) {
+            window.NotifBadge.fetch();
+        }
+    }
+});
+
+// ─── CALL INIT ───
+initNotifBadge();
+
+console.log('✅ [NOTIFICATIONS] Badge system initialized');
