@@ -5,25 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Skyline · Business Agent</title>
 
-<!-- ✅ PERF #1: Preconnect to backend — warms up TLS+TCP before first API call -->
+<!-- ✅ PERF #1: Preconnect to backend -->
 <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
 <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
 
-<!-- ✅ PERF #2: DOMPurify deferred — doesn't block page render -->
+<!-- ✅ PERF #2: DOMPurify deferred -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
 
-<!-- ✅ PERF #3: Non-blocking Google Fonts — page shows instantly with system fonts, swaps when Inter loads -->
+<!-- ✅ PERF #3: Non-blocking Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
 
-<!-- External Stylesheet (Retained for base styles) -->
+<!-- External Stylesheet -->
 <link rel="stylesheet" href="page.css" />
 
-<!-- EMBEDDED CSS UPDATE: Notification Badge Styling -->
+<!-- EMBEDDED CSS: Notification Badge Styling -->
 <style>
-    /* Ensure the nav item acts as a positioning anchor for the badge */
     .nav-item {
         position: relative;
         display: flex;
@@ -31,22 +30,20 @@
         justify-content: center;
     }
 
-    /* Red Notification Sign */
     .nav-badge {
         position: absolute;
         top: 6px;
         right: 6px;
         width: 10px;
         height: 10px;
-        background-color: #ef4444; /* Vibrant alert red */
+        background-color: #ef4444;
         border-radius: 50%;
-        border: 2px solid #ffffff; /* White ring for contrast against any background */
+        border: 2px solid #ffffff;
         box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
         z-index: 10;
-        pointer-events: none; /* Prevents badge from interfering with click/tap */
+        pointer-events: none;
     }
 
-    /* Optional: Subtle pulse animation to draw attention formally */
     @keyframes badge-pulse {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
         70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
@@ -113,7 +110,6 @@
 
 <!-- ─── LEAD MODE CONTAINER ─── -->
 <div class="mode-container active" id="leadModeContainer">
-    <!-- Setup Wizard -->
     <div id="setupWizard">
         <div class="wizard-eyebrow">
             <div class="eyebrow-line"></div>
@@ -169,15 +165,12 @@
         </div>
     </div>
 
-    <!-- Chat Area -->
     <div class="chat-area" id="leadChatArea">
         <div id="leadMsgContainer"></div>
     </div>
 
-    <!-- Review Panel -->
     <div id="reviewPanel" style="display:none;"></div>
 
-    <!-- Input Bar -->
     <div class="input-bar" id="leadInputBar">
         <div class="input-shell">
             <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
@@ -194,7 +187,6 @@
 
 <!-- ─── ASSISTANT MODE CONTAINER ─── -->
 <div class="mode-container" id="assistantModeContainer">
-    <!-- Chat Area -->
     <div class="chat-area active" id="assistantChatArea">
         <div id="assistantMsgContainer">
             <div class="msg-row ai">
@@ -207,7 +199,6 @@
         </div>
     </div>
 
-    <!-- Input Bar -->
     <div class="input-bar active" id="assistantInputBar">
         <div class="input-shell">
             <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
@@ -259,6 +250,5 @@
 </nav>
 
 <script src="page.js"></script>
-
 </body>
-    </html>
+                    </html>
