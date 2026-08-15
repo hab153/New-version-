@@ -348,7 +348,7 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
 .nav-item.nav-home::after { display: none; }
 
-/* NOTE: .nav-badge styles completely removed */
+/* NOTE: Specific .nav-badge styles are in the <style> block in page.html */
 
 @media (min-width: 1024px) {
     .chat-area { padding: 30px 0 12px; } .msg-row { padding: 4px 12%; } .bubble { max-width: 58%; font-size: 14px; }
