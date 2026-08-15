@@ -2,14 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Sign In — Skyline AA-1</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ============================================================
+       ✅ RESPONSIVE FIXES - Dynamic Scaling
+       ============================================================ */
+
     :root {
+      /* ─── Base colors ─── */
       --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
       --border: rgba(255,255,255,0.08); --border-md: rgba(255,255,255,0.12); --border-hi: rgba(255,255,255,0.18);
       --accent: #ffffff; --accent-lt: #f0f0f0; --accent-dim: rgba(255,255,255,0.06); --accent-glow: rgba(255,255,255,0.1);
@@ -17,99 +23,523 @@
       --success: #66dd99;
       --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
       --font-mono: 'Monaco', 'Menlo', monospace;
+
+      /* ─── Responsive scaling variables ─── */
+      --scale-factor: clamp(0.85, 1.5vw, 1.15);
+
+      /* ─── Font sizes (scalable) ─── */
+      --text-xs: clamp(0.5rem, 0.8vw, 0.7rem);
+      --text-sm: clamp(0.6rem, 1vw, 0.8rem);
+      --text-base: clamp(0.7rem, 1.2vw, 0.95rem);
+      --text-lg: clamp(0.8rem, 1.5vw, 1.1rem);
+      --text-xl: clamp(0.9rem, 2vw, 1.3rem);
+      --text-2xl: clamp(1rem, 2.5vw, 1.6rem);
+      --text-3xl: clamp(1.2rem, 3vw, 2rem);
+
+      /* ─── Spacing sizes (scalable) ─── */
+      --space-xs: clamp(0.2rem, 0.4vw, 0.35rem);
+      --space-sm: clamp(0.3rem, 0.6vw, 0.5rem);
+      --space-md: clamp(0.4rem, 1vw, 0.75rem);
+      --space-lg: clamp(0.6rem, 1.5vw, 1rem);
+      --space-xl: clamp(0.8rem, 2vw, 1.5rem);
+      --space-2xl: clamp(1.2rem, 3vw, 2.5rem);
+      --space-3xl: clamp(1.8rem, 4vw, 3.5rem);
+
+      /* ─── Component sizes ─── */
+      --icon-size: clamp(28px, 4vw, 40px);
     }
-    html, body { height: 100%; background: var(--void); color: var(--text-1); overflow: hidden; font-family: var(--font-display); }
+
+    html { font-size: 16px; }
+
+    html, body { 
+      height: 100%; 
+      background: var(--void); 
+      color: var(--text-1); 
+      overflow: hidden; 
+      font-family: var(--font-display); 
+    }
+
     body::before {
       content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(201,168,76,0.055) 0%, transparent 60%),
       radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%),
       radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%);
     }
+
     body::after {
       content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
       background-size: 180px;
     }
-    .page { display: flex; height: 100vh; width: 100vw; animation: pageIn 0.6s ease-out both; }
-    @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .page { 
+      display: flex; 
+      height: 100vh; 
+      width: 100vw; 
+      animation: pageIn 0.6s ease-out both; 
+    }
+
+    @keyframes pageIn { 
+      from { opacity: 0; } 
+      to { opacity: 1; } 
+    }
+
+    /* ─── Left Panel ─── */
     .panel-left {
-      width: 45%; flex-shrink: 0; background: var(--base); border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; justify-content: space-between; padding: 48px 56px; position: relative; overflow: hidden;
+      width: 45%; 
+      flex-shrink: 0; 
+      background: var(--base); 
+      border-right: 1px solid var(--border);
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+      padding: var(--space-2xl) var(--space-2xl); 
+      position: relative; 
+      overflow: hidden;
     }
+
     .panel-left::before {
-      content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%;
+      content: ''; 
+      position: absolute; 
+      width: 600px; 
+      height: 600px; 
+      border-radius: 50%;
       background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
-      top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      pointer-events: none;
     }
-    .brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; animation: fadeUp 0.6s 0.1s both; }
+
+    .brand { 
+      display: flex; 
+      align-items: center; 
+      gap: var(--space-md); 
+      position: relative; 
+      z-index: 1; 
+      animation: fadeUp 0.6s 0.1s both; 
+    }
+
     .brand-icon {
-      width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: var(--icon-size); 
+      height: var(--icon-size); 
+      border-radius: var(--r-sm); 
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      flex-shrink: 0;
       animation: pulse 2s infinite;
     }
-    .brand-icon svg { width: 18px; height: 18px; color: #fff; }
-    .brand-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-1); }
-    .art-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1; }
-    .art-svg { width: 400px; height: 400px; opacity: 0.08; animation: artSpin 80s linear infinite; }
-    @keyframes artSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .panel-quote { position: relative; z-index: 1; animation: fadeUp 0.6s 0.2s both; }
-    .quote-line { display: block; width: 40px; height: 1px; background: var(--accent); margin-bottom: 20px; opacity: 0.4; }
-    .quote-text { font-family: var(--font-display); font-size: 24px; font-weight: 400; line-height: 1.5; color: var(--text-1); letter-spacing: -0.01em; max-width: 340px; }
-    .quote-text em { font-weight: 600; color: var(--accent); font-style: normal; }
-    .quote-attr { margin-top: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
-    .panel-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 64px; background: var(--void); position: relative; }
-    .panel-right::before { content: ''; position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle at top right, rgba(255,255,255,0.02), transparent 70%); pointer-events: none; }
-    .form-card { width: 100%; max-width: 400px; position: relative; z-index: 1; background: var(--surface); border-radius: 16px; padding: 40px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-    .form-header { margin-bottom: 40px; animation: fadeUp 0.6s 0.15s both; }
-    .form-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
-    .form-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--accent); opacity: 0.4; }
-    .form-title { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.2; color: var(--text-1); letter-spacing: -0.02em; }
-    .form-title strong { font-weight: 700; color: #fff; }
-    .form-sub { margin-top: 12px; font-family: var(--font-display); font-size: 14px; color: var(--text-3); line-height: 1.6; }
-    .social-login { display: flex; gap: 12px; margin-bottom: 20px; }
+
+    .brand-icon svg { 
+      width: clamp(14px, 2vw, 20px); 
+      height: clamp(14px, 2vw, 20px); 
+      color: #fff; 
+    }
+
+    .brand-name { 
+      font-family: var(--font-display); 
+      font-size: var(--text-base); 
+      font-weight: 600; 
+      letter-spacing: -0.02em; 
+      color: var(--text-1); 
+    }
+
+    .art-wrap { 
+      position: absolute; 
+      inset: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      pointer-events: none; 
+      z-index: 1; 
+    }
+
+    .art-svg { 
+      width: clamp(200px, 40vw, 400px); 
+      height: clamp(200px, 40vw, 400px); 
+      opacity: 0.08; 
+      animation: artSpin 80s linear infinite; 
+    }
+
+    @keyframes artSpin { 
+      from { transform: rotate(0deg); } 
+      to { transform: rotate(360deg); } 
+    }
+
+    .panel-quote { 
+      position: relative; 
+      z-index: 1; 
+      animation: fadeUp 0.6s 0.2s both; 
+    }
+
+    .quote-line { 
+      display: block; 
+      width: 40px; 
+      height: 1px; 
+      background: var(--accent); 
+      margin-bottom: var(--space-lg); 
+      opacity: 0.4; 
+    }
+
+    .quote-text { 
+      font-family: var(--font-display); 
+      font-size: clamp(16px, 2.5vw, 24px); 
+      font-weight: 400; 
+      line-height: 1.5; 
+      color: var(--text-1); 
+      letter-spacing: -0.01em; 
+      max-width: 340px; 
+    }
+
+    .quote-text em { 
+      font-weight: 600; 
+      color: var(--accent); 
+      font-style: normal; 
+    }
+
+    .quote-attr { 
+      margin-top: var(--space-md); 
+      font-family: var(--font-mono); 
+      font-size: var(--text-xs); 
+      letter-spacing: 0.12em; 
+      text-transform: uppercase; 
+      color: var(--text-3); 
+    }
+
+    /* ─── Right Panel ─── */
+    .panel-right { 
+      flex: 1; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: var(--space-xl) var(--space-2xl); 
+      background: var(--void); 
+      position: relative; 
+    }
+
+    .panel-right::before { 
+      content: ''; 
+      position: absolute; 
+      top: 0; 
+      right: 0; 
+      width: 300px; 
+      height: 300px; 
+      background: radial-gradient(circle at top right, rgba(255,255,255,0.02), transparent 70%); 
+      pointer-events: none; 
+    }
+
+    .form-card { 
+      width: 100%; 
+      max-width: 400px; 
+      position: relative; 
+      z-index: 1; 
+      background: var(--surface); 
+      border-radius: var(--r-lg); 
+      padding: var(--space-2xl); 
+      border: 1px solid var(--border); 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+    }
+
+    .form-header { 
+      margin-bottom: var(--space-2xl); 
+      animation: fadeUp 0.6s 0.15s both; 
+    }
+
+    .form-eyebrow { 
+      font-family: var(--font-mono); 
+      font-size: var(--text-xs); 
+      letter-spacing: 0.16em; 
+      text-transform: uppercase; 
+      color: var(--text-3); 
+      margin-bottom: var(--space-md); 
+      display: flex; 
+      align-items: center; 
+      gap: var(--space-sm); 
+    }
+
+    .form-eyebrow::before { 
+      content: ''; 
+      display: block; 
+      width: 20px; 
+      height: 1px; 
+      background: var(--accent); 
+      opacity: 0.4; 
+    }
+
+    .form-title { 
+      font-family: var(--font-display); 
+      font-size: clamp(24px, 3.5vw, 32px); 
+      font-weight: 700; 
+      line-height: 1.2; 
+      color: var(--text-1); 
+      letter-spacing: -0.02em; 
+    }
+
+    .form-title strong { 
+      font-weight: 700; 
+      color: #fff; 
+    }
+
+    .form-sub { 
+      margin-top: var(--space-md); 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      color: var(--text-3); 
+      line-height: 1.6; 
+    }
+
+    /* ─── Social Login ─── */
+    .social-login { 
+      display: flex; 
+      gap: var(--space-md); 
+      margin-bottom: var(--space-lg); 
+    }
+
     .social-btn {
-      flex: 1; padding: 10px; border: 1px solid var(--border-md); border-radius: 8px;
-      background: var(--raised); display: flex; align-items: center; justify-content: center; gap: 8px;
-      color: var(--text-2); font-family: var(--font-display); font-size: 13px; font-weight: 500;
-      transition: all 0.2s; cursor: pointer;
+      flex: 1; 
+      padding: var(--space-sm) var(--space-md); 
+      border: 1px solid var(--border-md); 
+      border-radius: var(--r-sm);
+      background: var(--raised); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: var(--space-sm);
+      color: var(--text-2); 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      font-weight: 500;
+      transition: all 0.2s; 
+      cursor: pointer;
     }
-    .social-btn:hover { border-color: var(--border-hi); background: var(--hover); color: var(--text-1); }
-    .fields { display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.6s 0.25s both; }
-    .field { display: flex; flex-direction: column; gap: 8px; }
-    .field-label { font-family: var(--font-display); font-size: 13px; font-weight: 500; text-transform: capitalize; color: var(--text-2); padding-left: 2px; transition: color 0.2s; }
-    .field:focus-within .field-label { color: var(--accent); }
-    .input-wrap { position: relative; display: flex; align-items: center; }
-    .input-icon { position: absolute; left: 14px; pointer-events: none; color: var(--text-3); transition: color 0.2s; display: flex; align-items: center; }
-    .field:focus-within .input-icon { color: var(--accent); }
-    input[type="text"], input[type="password"], input[type="email"] {
-      width: 100%; padding: 12px 14px 12px 42px; background: var(--raised); border: 1px solid var(--border-md); border-radius: 8px;
-      color: var(--text-1); font-family: var(--font-display); font-size: 14px; outline: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      caret-color: var(--accent); letter-spacing: -0.01em;
+
+    .social-btn:hover { 
+      border-color: var(--border-hi); 
+      background: var(--hover); 
+      color: var(--text-1); 
     }
-    input::placeholder { color: var(--text-3); }
-    input:focus { border-color: rgba(255,255,255,0.25); background: var(--hover); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); }
-    input.error-field { border-color: rgba(255,85,85,0.35); background: var(--error-dim); }
-    .pw-toggle { position: absolute; right: 13px; background: none; border: none; cursor: pointer; color: var(--text-3); display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: color 0.2s; outline: none; }
-    .pw-toggle:hover { color: var(--text-1); }
-    .options-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 8px; animation: fadeUp 0.6s 0.3s both; }
-    .remember-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: var(--font-display); font-size: 13px; color: var(--text-3); user-select: none; transition: color 0.2s; }
-    .remember-label:hover { color: var(--text-2); }
-    .remember-label input[type="checkbox"] { display: none; }
+
+    .social-btn svg {
+      width: clamp(14px, 1.5vw, 18px);
+      height: clamp(14px, 1.5vw, 18px);
+    }
+
+    /* ─── Form Fields ─── */
+    .fields { 
+      display: flex; 
+      flex-direction: column; 
+      gap: var(--space-md); 
+      animation: fadeUp 0.6s 0.25s both; 
+    }
+
+    .field { 
+      display: flex; 
+      flex-direction: column; 
+      gap: var(--space-sm); 
+    }
+
+    .field-label { 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      font-weight: 500; 
+      text-transform: capitalize; 
+      color: var(--text-2); 
+      padding-left: 2px; 
+      transition: color 0.2s; 
+    }
+
+    .field:focus-within .field-label { 
+      color: var(--accent); 
+    }
+
+    .input-wrap { 
+      position: relative; 
+      display: flex; 
+      align-items: center; 
+    }
+
+    .input-icon { 
+      position: absolute; 
+      left: var(--space-md); 
+      pointer-events: none; 
+      color: var(--text-3); 
+      transition: color 0.2s; 
+      display: flex; 
+      align-items: center; 
+    }
+
+    .input-icon svg {
+      width: clamp(13px, 1.5vw, 17px);
+      height: clamp(13px, 1.5vw, 17px);
+    }
+
+    .field:focus-within .input-icon { 
+      color: var(--accent); 
+    }
+
+    input[type="text"], 
+    input[type="password"], 
+    input[type="email"] {
+      width: 100%; 
+      padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-xl) + var(--space-md)); 
+      background: var(--raised); 
+      border: 1px solid var(--border-md); 
+      border-radius: var(--r-sm);
+      color: var(--text-1); 
+      font-family: var(--font-display); 
+      font-size: var(--text-base); 
+      outline: none; 
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      caret-color: var(--accent); 
+      letter-spacing: -0.01em;
+    }
+
+    input::placeholder { 
+      color: var(--text-3); 
+    }
+
+    input:focus { 
+      border-color: rgba(255,255,255,0.25); 
+      background: var(--hover); 
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.05); 
+    }
+
+    input.error-field { 
+      border-color: rgba(255,85,85,0.35); 
+      background: var(--error-dim); 
+    }
+
+    .pw-toggle { 
+      position: absolute; 
+      right: var(--space-md); 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      color: var(--text-3); 
+      display: flex; 
+      align-items: center; 
+      padding: var(--space-xs); 
+      border-radius: var(--r-xs); 
+      transition: color 0.2s; 
+      outline: none; 
+    }
+
+    .pw-toggle:hover { 
+      color: var(--text-1); 
+    }
+
+    .pw-toggle svg {
+      width: clamp(13px, 1.5vw, 17px);
+      height: clamp(13px, 1.5vw, 17px);
+    }
+
+    /* ─── Options Row ─── */
+    .options-row { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      margin: var(--space-md) 0 var(--space-sm); 
+      animation: fadeUp 0.6s 0.3s both; 
+    }
+
+    .remember-label { 
+      display: flex; 
+      align-items: center; 
+      gap: var(--space-sm); 
+      cursor: pointer; 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      color: var(--text-3); 
+      user-select: none; 
+      transition: color 0.2s; 
+    }
+
+    .remember-label:hover { 
+      color: var(--text-2); 
+    }
+
+    .remember-label input[type="checkbox"] { 
+      display: none; 
+    }
+
     .checkbox-box {
-      width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.2); background: var(--raised);
-      display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; padding: 0; pointer-events: none;
+      width: clamp(14px, 1.5vw, 18px); 
+      height: clamp(14px, 1.5vw, 18px); 
+      border-radius: var(--r-xs); 
+      border: 1.5px solid rgba(255,255,255,0.2); 
+      background: var(--raised);
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      transition: all 0.15s; 
+      flex-shrink: 0; 
+      padding: 0; 
+      pointer-events: none;
     }
-    .remember-label input:checked ~ .checkbox-box { background: var(--accent); border-color: var(--accent); }
-    .checkbox-check { opacity: 0; transition: opacity 0.15s; font-size: 12px; font-weight: bold; color: #000; }
-    .remember-label input:checked ~ .checkbox-box .checkbox-check { opacity: 1; }
-    .forgot-link { font-family: var(--font-display); font-size: 13px; color: var(--text-3); text-decoration: none; border-bottom: 1px solid transparent; transition: all 0.2s; }
-    .forgot-link:hover { color: var(--accent); border-bottom-color: var(--accent); }
-    .submit-wrap { margin-top: 24px; animation: fadeUp 0.6s 0.35s both; }
+
+    .remember-label input:checked ~ .checkbox-box { 
+      background: var(--accent); 
+      border-color: var(--accent); 
+    }
+
+    .checkbox-check { 
+      opacity: 0; 
+      transition: opacity 0.15s; 
+      font-size: var(--text-xs); 
+      font-weight: bold; 
+      color: #000; 
+    }
+
+    .remember-label input:checked ~ .checkbox-box .checkbox-check { 
+      opacity: 1; 
+    }
+
+    .forgot-link { 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      color: var(--text-3); 
+      text-decoration: none; 
+      border-bottom: 1px solid transparent; 
+      transition: all 0.2s; 
+    }
+
+    .forgot-link:hover { 
+      color: var(--accent); 
+      border-bottom-color: var(--accent); 
+    }
+
+    /* ─── Submit Button ─── */
+    .submit-wrap { 
+      margin-top: var(--space-xl); 
+      animation: fadeUp 0.6s 0.35s both; 
+    }
+
     .submit-btn {
-      width: 100%; padding: 13px 24px; background: var(--accent); border: none; border-radius: 8px; color: #000;
-      font-family: var(--font-display); font-size: 14px; font-weight: 600; letter-spacing: -0.01em; text-transform: capitalize; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s ease; outline: none; position: relative; overflow: hidden;
+      width: 100%; 
+      padding: var(--space-md) var(--space-xl); 
+      background: var(--accent); 
+      border: none; 
+      border-radius: var(--r-sm); 
+      color: #000;
+      font-family: var(--font-display); 
+      font-size: var(--text-base); 
+      font-weight: 600; 
+      letter-spacing: -0.01em; 
+      text-transform: capitalize; 
+      cursor: pointer;
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: var(--space-sm); 
+      transition: all 0.2s ease; 
+      outline: none; 
+      position: relative; 
+      overflow: hidden;
     }
+
     .submit-btn::before {
       content: '';
       position: absolute;
@@ -120,32 +550,279 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
       transition: 0.5s;
     }
-    .submit-btn:hover:not(:disabled)::before { left: 100%; }
-    .submit-btn:hover:not(:disabled) { background: var(--accent-lt); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,0.15); }
-    .submit-btn:active:not(:disabled) { transform: translateY(0); }
-    .submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
-    .spinner { width: 14px; height: 14px; border: 1.5px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .submit-btn.loading .spinner { display: block; }
-    .submit-btn.loading .btn-text { opacity: 0.7; }
-    .msg-box { display: none; align-items: flex-start; gap: 9px; padding: 12px 14px; border-radius: 8px; font-family: var(--font-display); font-size: 13px; line-height: 1.6; margin-top: 16px; animation: fadeUp 0.25s ease both; }
-    .msg-box.error { background: var(--error-dim); border: 1px solid rgba(255,85,85,0.2); color: var(--error); }
-    .msg-box.success { background: rgba(102, 221, 153, 0.08); border: 1px solid rgba(102, 221, 153, 0.2); color: var(--success); }
-    .msg-box.visible { display: flex; }
-    .attempt-bar-wrap { margin-top: 8px; display: none; }
-    .attempt-bar-wrap.visible { display: block; }
-    .attempt-label { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--text-3); margin-bottom: 5px; }
-    .attempt-bar { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
-    .attempt-fill { height: 100%; background: var(--error); border-radius: 2px; transition: width 0.4s ease; }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; animation: fadeUp 0.6s 0.4s both; }
-    .divider span { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--text-3); text-transform: uppercase; flex-shrink: 0; }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .form-footer { text-align: center; font-family: var(--font-display); font-size: 13px; color: var(--text-3); animation: fadeUp 0.6s 0.45s both; margin-top: 24px; }
-    .form-footer a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s, color 0.2s; }
-    .form-footer a:hover { color: var(--accent-lt); border-color: var(--accent-lt); }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); } 70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
-    @media (max-width: 768px) { .panel-left { display: none; } .panel-right { padding: 32px 24px; } .form-card { max-width: 420px; } }
+
+    .submit-btn:hover:not(:disabled)::before { 
+      left: 100%; 
+    }
+
+    .submit-btn:hover:not(:disabled) { 
+      background: var(--accent-lt); 
+      transform: translateY(-1px); 
+      box-shadow: 0 8px 24px rgba(255,255,255,0.15); 
+    }
+
+    .submit-btn:active:not(:disabled) { 
+      transform: translateY(0); 
+    }
+
+    .submit-btn:disabled { 
+      opacity: 0.5; 
+      cursor: default; 
+      transform: none; 
+      box-shadow: none; 
+    }
+
+    .spinner { 
+      width: clamp(12px, 1.5vw, 16px); 
+      height: clamp(12px, 1.5vw, 16px); 
+      border: 1.5px solid rgba(0,0,0,0.2); 
+      border-top-color: #000; 
+      border-radius: 50%; 
+      animation: spin 0.7s linear infinite; 
+      display: none; 
+    }
+
+    @keyframes spin { 
+      to { transform: rotate(360deg); } 
+    }
+
+    .submit-btn.loading .spinner { 
+      display: block; 
+    }
+
+    .submit-btn.loading .btn-text { 
+      opacity: 0.7; 
+    }
+
+    /* ─── Messages ─── */
+    .msg-box { 
+      display: none; 
+      align-items: flex-start; 
+      gap: var(--space-sm); 
+      padding: var(--space-md) var(--space-md); 
+      border-radius: var(--r-sm); 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      line-height: 1.6; 
+      margin-top: var(--space-md); 
+      animation: fadeUp 0.25s ease both; 
+    }
+
+    .msg-box.error { 
+      background: var(--error-dim); 
+      border: 1px solid rgba(255,85,85,0.2); 
+      color: var(--error); 
+    }
+
+    .msg-box.success { 
+      background: rgba(102, 221, 153, 0.08); 
+      border: 1px solid rgba(102, 221, 153, 0.2); 
+      color: var(--success); 
+    }
+
+    .msg-box.visible { 
+      display: flex; 
+    }
+
+    .msg-box svg {
+      width: clamp(14px, 1.5vw, 18px);
+      height: clamp(14px, 1.5vw, 18px);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ─── Attempt Bar ─── */
+    .attempt-bar-wrap { 
+      margin-top: var(--space-sm); 
+      display: none; 
+    }
+
+    .attempt-bar-wrap.visible { 
+      display: block; 
+    }
+
+    .attempt-label { 
+      display: flex; 
+      justify-content: space-between; 
+      font-family: var(--font-mono); 
+      font-size: var(--text-xs); 
+      color: var(--text-3); 
+      margin-bottom: var(--space-xs); 
+    }
+
+    .attempt-bar { 
+      height: 2px; 
+      background: var(--border); 
+      border-radius: 2px; 
+      overflow: hidden; 
+    }
+
+    .attempt-fill { 
+      height: 100%; 
+      background: var(--error); 
+      border-radius: 2px; 
+      transition: width 0.4s ease; 
+    }
+
+    /* ─── Divider ─── */
+    .divider { 
+      display: flex; 
+      align-items: center; 
+      gap: var(--space-md); 
+      margin: var(--space-xl) 0 var(--space-lg); 
+      animation: fadeUp 0.6s 0.4s both; 
+    }
+
+    .divider span { 
+      font-family: var(--font-mono); 
+      font-size: var(--text-xs); 
+      letter-spacing: 0.1em; 
+      color: var(--text-3); 
+      text-transform: uppercase; 
+      flex-shrink: 0; 
+    }
+
+    .divider::before, 
+    .divider::after { 
+      content: ''; 
+      flex: 1; 
+      height: 1px; 
+      background: var(--border); 
+    }
+
+    /* ─── Footer ─── */
+    .form-footer { 
+      text-align: center; 
+      font-family: var(--font-display); 
+      font-size: var(--text-sm); 
+      color: var(--text-3); 
+      animation: fadeUp 0.6s 0.45s both; 
+      margin-top: var(--space-xl); 
+    }
+
+    .form-footer a { 
+      color: var(--accent); 
+      text-decoration: none; 
+      border-bottom: 1px solid transparent; 
+      transition: border-color 0.2s, color 0.2s; 
+    }
+
+    .form-footer a:hover { 
+      color: var(--accent-lt); 
+      border-color: var(--accent-lt); 
+    }
+
+    /* ─── Toast ─── */
+    .toast-msg {
+      position: fixed;
+      bottom: var(--space-xl);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      color: #f5f5f5;
+      padding: var(--space-md) var(--space-xl);
+      border-radius: var(--r-md);
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      z-index: 9999;
+      max-width: 90%;
+      text-align: center;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    /* ─── Animations ─── */
+    @keyframes fadeUp { 
+      from { opacity: 0; transform: translateY(14px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+
+    @keyframes pulse { 
+      0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); } 
+      70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 
+      100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } 
+    }
+
+    /* ============================================================
+       ✅ RESPONSIVE BREAKPOINTS
+       ============================================================ */
+
+    /* ─── Tablets ─── */
+    @media (max-width: 768px) { 
+      .panel-left { display: none; } 
+      .panel-right { padding: var(--space-xl) var(--space-lg); } 
+      .form-card { max-width: 420px; padding: var(--space-xl); }
+      .form-title { font-size: clamp(20px, 4vw, 28px); }
+    }
+
+    /* ─── Large Phones (Pro Max, 6.7"+) ─── */
+    @media (min-width: 430px) and (max-width: 599px) {
+      html { font-size: 17px; }
+      .panel-right { padding: var(--space-lg) var(--space-md); }
+      .form-card { padding: var(--space-lg); max-width: 380px; }
+      .social-login { flex-direction: column; }
+    }
+
+    /* ─── Standard Phones (6.1") ─── */
+    @media (min-width: 375px) and (max-width: 429px) {
+      html { font-size: 16px; }
+      .panel-right { padding: var(--space-md); }
+      .form-card { padding: var(--space-md); max-width: 100%; margin: 0 var(--space-sm); }
+      .form-title { font-size: clamp(18px, 5vw, 24px); }
+      .form-header { margin-bottom: var(--space-lg); }
+      .social-login { flex-direction: column; }
+      .fields { gap: var(--space-sm); }
+      .options-row { flex-wrap: wrap; gap: var(--space-sm); }
+      .submit-btn { padding: var(--space-sm) var(--space-lg); font-size: var(--text-sm); }
+      .divider { margin: var(--space-lg) 0 var(--space-md); }
+      .form-footer { margin-top: var(--space-lg); }
+    }
+
+    /* ─── Small Phones (iPhone SE, 4.7") ─── */
+    @media (max-width: 374px) {
+      html { font-size: 14px; }
+      .panel-right { padding: var(--space-sm); }
+      .form-card { padding: var(--space-sm); max-width: 100%; }
+      .form-title { font-size: clamp(16px, 4.5vw, 20px); }
+      .form-eyebrow { font-size: var(--text-xs); }
+      .form-sub { font-size: var(--text-xs); }
+      .social-login { flex-direction: column; gap: var(--space-sm); }
+      .social-btn { font-size: var(--text-xs); padding: var(--space-xs) var(--space-sm); }
+      .fields { gap: var(--space-sm); }
+      input[type="text"], input[type="password"], input[type="email"] { 
+        padding: var(--space-sm) var(--space-sm) var(--space-sm) calc(var(--space-lg) + var(--space-sm));
+        font-size: var(--text-sm);
+      }
+      .options-row { flex-wrap: wrap; gap: var(--space-xs); }
+      .remember-label { font-size: var(--text-xs); }
+      .forgot-link { font-size: var(--text-xs); }
+      .submit-btn { padding: var(--space-sm) var(--space-md); font-size: var(--text-sm); }
+      .divider { margin: var(--space-md) 0 var(--space-sm); }
+      .divider span { font-size: var(--text-xs); }
+      .form-footer { font-size: var(--text-xs); margin-top: var(--space-md); }
+      .msg-box { font-size: var(--text-xs); padding: var(--space-sm) var(--space-sm); }
+      .brand-icon { width: 28px; height: 28px; }
+      .brand-name { font-size: var(--text-sm); }
+      .panel-left { padding: var(--space-md); }
+      .quote-text { font-size: 14px; }
+    }
+
+    /* ─── Landscape Mode ─── */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .panel-left { padding: var(--space-md) var(--space-lg); }
+      .panel-right { padding: var(--space-sm) var(--space-lg); }
+      .form-card { padding: var(--space-md); max-width: 360px; }
+      .form-header { margin-bottom: var(--space-md); }
+      .form-title { font-size: clamp(16px, 2.5vw, 22px); }
+      .fields { gap: var(--space-sm); }
+      .social-login { margin-bottom: var(--space-sm); }
+      .divider { margin: var(--space-sm) 0; }
+      .submit-wrap { margin-top: var(--space-md); }
+      .quote-text { font-size: 14px; }
+      .panel-quote { margin-bottom: var(--space-sm); }
+      .art-svg { width: 150px; height: 150px; }
+    }
   </style>
 </head>
 <body>
@@ -204,7 +881,7 @@
               <label class="field-label" for="identifier">Email or Username</label>
               <div class="input-wrap">
                 <span class="input-icon">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 13.5c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 13.5c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
                 </span>
                 <input type="text" id="identifier" placeholder="you@example.com" required autocomplete="username" spellcheck="false" />
               </div>
@@ -213,11 +890,11 @@
               <label class="field-label" for="password">Password</label>
               <div class="input-wrap">
                 <span class="input-icon">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="7.5" cy="10" r="1" fill="currentColor"/></svg>
+                  <svg viewBox="0 0 15 15" fill="none"><rect x="2.5" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="7.5" cy="10" r="1" fill="currentColor"/></svg>
                 </span>
                 <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
                 <button type="button" class="pw-toggle" id="pwToggle" title="Show/hide password" tabindex="-1">
-                  <svg id="eyeIcon" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+                  <svg id="eyeIcon" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3s6.5 4.5 6.5 4.5S13 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
                 </button>
               </div>
             </div>
@@ -234,11 +911,11 @@
             <button type="submit" class="submit-btn"><span class="btn-text">Sign In</span><span class="spinner"></span></button>
           </div>
           <div id="errorMessage" class="msg-box error">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span id="errorText"></span>
           </div>
           <div id="successMessage" class="msg-box success">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; margin-top: 2px;"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span id="successText"></span>
           </div>
           <div class="attempt-bar-wrap" id="attemptBar">
@@ -258,7 +935,6 @@
     (function() {
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('expired') === 'true') {
-            // Show expiry message after page loads
             setTimeout(function() {
                 showToast('🔒 Session expired. Please log in again.', 4000);
             }, 500);
@@ -274,24 +950,6 @@
         var toast = document.createElement('div');
         toast.className = 'toast-msg';
         toast.textContent = message;
-        Object.assign(toast.style, {
-            position: 'fixed',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#1a1a1a',
-            color: '#f5f5f5',
-            padding: '14px 24px',
-            borderRadius: '10px',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif',
-            fontSize: '13px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-            zIndex: '9999',
-            maxWidth: '90%',
-            textAlign: 'center',
-            animation: 'fadeUp 0.3s ease both'
-        });
         document.body.appendChild(toast);
         
         setTimeout(function() {
@@ -412,13 +1070,11 @@
 
             if (response.ok) {
                 if (data.token) {
-                    // ✅ SAVE TOKEN AND LOGIN TIME
                     localStorage.setItem('token', data.token);
                     if (data.csrfToken) {
                         localStorage.setItem('csrfToken', data.csrfToken);
                     }
                     
-                    // ✅ SAVE LOGIN TIME FOR SESSION EXPIRY (3 DAYS)
                     localStorage.setItem('loginTime', String(Date.now()));
                     
                     showSuccess("Login successful! Redirecting...");
@@ -489,4 +1145,4 @@
     });
 </script>
 </body>
-                    </html>
+  </html>
