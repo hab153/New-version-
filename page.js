@@ -1,10 +1,9 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
-// UNREAD TOGGLE LOGIC COMPLETELY REMOVED
-// Badge is now permanently visible via CSS
+// NOTIFICATION BUTTON & BADGE LOGIC COMPLETELY REMOVED
 // ============================================================
 
-// ── CONFIG ─
+// ── CONFIG 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 if (!token) window.location.href = 'login.html';
@@ -27,23 +26,14 @@ var _cachedStatusTime = 0;
 var CACHE_TTL = 60000; // 60 seconds
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ NOTIFICATION BADGE - PERMANENT VISUAL ONLY
-//  Logic removed. Badge is always shown via CSS.
+//  ✅ NOTIFICATION BADGE - REMOVED
+//  No initialization or fetching required.
 // ──────────────────────────────────────────────────────────────
 
-function initNotifBadge() {
-    // No JS logic needed for permanent badge.
-    // Keeping function for compatibility with existing calls.
-    console.log('🔔 [PAGE] Badge is permanently enabled via CSS.');
-}
+// Removed initNotifBadge function entirely
+// Removed visibilitychange listener for badge refreshing
 
-document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-        console.log('🔔 [PAGE] Tab visible.');
-    }
-});
-
-initNotifBadge();
+console.log('✅ [PAGE] Notification system disabled.');
 
 // ──────────────────────────────────────────────────────────────
 //  UTILITY FUNCTIONS
@@ -305,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     statusInterval = setInterval(updateStatus, 120000);
 
-    initNotifBadge();
+    // ✅ Notification badge init removed
 
     document.getElementById('targetForm').addEventListener('submit', function(e) {
         e.preventDefault();
