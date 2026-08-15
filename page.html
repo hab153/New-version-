@@ -18,8 +18,45 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
 
-<!-- External Stylesheet -->
+<!-- External Stylesheet (Retained for base styles) -->
 <link rel="stylesheet" href="page.css" />
+
+<!-- EMBEDDED CSS UPDATE: Notification Badge Styling -->
+<style>
+    /* Ensure the nav item acts as a positioning anchor for the badge */
+    .nav-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Red Notification Sign */
+    .nav-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 10px;
+        height: 10px;
+        background-color: #ef4444; /* Vibrant alert red */
+        border-radius: 50%;
+        border: 2px solid #ffffff; /* White ring for contrast against any background */
+        box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+        z-index: 10;
+        pointer-events: none; /* Prevents badge from interfering with click/tap */
+    }
+
+    /* Optional: Subtle pulse animation to draw attention formally */
+    @keyframes badge-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .nav-badge {
+        animation: badge-pulse 2s infinite;
+    }
+</style>
 </head>
 <body>
 
@@ -203,7 +240,7 @@
             <polyline points="3 4 3 11 10 11"/>
         </svg>
     </a>
-    <!-- ✅ PERMANENT NOTIFICATION BADGE -->
+    <!-- ✅ NOTIFICATION BUTTON WITH RED SIGN -->
     <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
         <div class="nav-badge"></div>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -221,10 +258,7 @@
     </a>
 </nav>
 
-<!-- ✅ SHARED NOTIFICATION BADGE -->
-
-
 <script src="page.js"></script>
 
 </body>
-        </html>
+    </html>
