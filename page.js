@@ -1,6 +1,6 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
-// NOTIFICATION BUTTON & BADGE LOGIC COMPLETELY REMOVED
+// NOTIFICATION BUTTON RESTORED (Visual Only)
 // ============================================================
 
 // ── CONFIG 
@@ -26,14 +26,11 @@ var _cachedStatusTime = 0;
 var CACHE_TTL = 60000; // 60 seconds
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ NOTIFICATION BADGE - REMOVED
-//  No initialization or fetching required.
+//  ✅ NOTIFICATION BADGE - PERMANENT VISUAL ONLY
+//  No JS logic required. The dot is hardcoded in HTML/CSS.
 // ──────────────────────────────────────────────────────────────
 
-// Removed initNotifBadge function entirely
-// Removed visibilitychange listener for badge refreshing
-
-console.log('✅ [PAGE] Notification system disabled.');
+console.log('✅ [PAGE] Notification button restored with permanent red dot.');
 
 // ──────────────────────────────────────────────────────────────
 //  UTILITY FUNCTIONS
@@ -294,8 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
     Promise.all([checkPlan(), updateStatus()]).catch(function() {});
 
     statusInterval = setInterval(updateStatus, 120000);
-
-    // ✅ Notification badge init removed
 
     document.getElementById('targetForm').addEventListener('submit', function(e) {
         e.preventDefault();
