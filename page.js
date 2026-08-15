@@ -1,7 +1,7 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
-// WITH SHARED NOTIFICATION BADGE SYSTEM
-// Backend is the source of truth (notif-badge.js handles everything)
+// UNREAD TOGGLE LOGIC COMPLETELY REMOVED
+// Backend is the source of truth (notif-badge.js handles badge)
 // ============================================================
 
 // ── CONFIG ─
@@ -19,7 +19,7 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ PERF: Cache API responses — skip slow DB hits if data is fresh
+// ✅ PERF: Cache API responses
 var _cachedPlan = null;
 var _cachedPlanTime = 0;
 var _cachedStatus = null;
@@ -28,18 +28,14 @@ var CACHE_TTL = 60000; // 60 seconds
 
 // ──────────────────────────────────────────────────────────────
 //  ✅ NOTIFICATION BADGE - USES SHARED notif-badge.js
-//  ✅ All badge logic is handled by notif-badge.js
-//  ✅ Page.js only initializes the badge
 // ──────────────────────────────────────────────────────────────
 
-// ─── INIT SHARED NOTIFICATION BADGE ───
 function initNotifBadge() {
     var token = localStorage.getItem('token');
     if (!token) return;
 
     console.log('🔔 [PAGE] Initializing badge...');
 
-    // ✅ Check if notif-badge.js is loaded
     if (typeof window.NotifBadge !== 'undefined') {
         if (window.NotifBadge.fetch) {
             window.NotifBadge.fetch();
@@ -51,7 +47,6 @@ function initNotifBadge() {
         }
     } else {
         console.warn('🔔 [PAGE] notif-badge.js not loaded');
-        // Fallback: hide badge
         var badge = document.querySelector('.nav-badge');
         if (badge) {
             badge.textContent = '';
@@ -60,7 +55,6 @@ function initNotifBadge() {
     }
 }
 
-// ─── RE-INIT ON VISIBILITY CHANGE ───
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
         console.log('🔔 [PAGE] Tab visible, refreshing badge...');
@@ -70,9 +64,7 @@ document.addEventListener('visibilitychange', function() {
     }
 });
 
-// ─── CALL INIT ───
 initNotifBadge();
-
 console.log('✅ [PAGE] Badge system initialized');
 
 // ──────────────────────────────────────────────────────────────
@@ -278,7 +270,7 @@ function loadLeadSession() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  CHECK PLAN — cached, skips API if data < 60s old
+//  CHECK PLAN — cached
 // ──────────────────────────────────────────────────────────────
 
 function checkPlan() {
@@ -291,7 +283,7 @@ function checkPlan() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  UPDATE STATUS — cached, skips API if data < 60s old
+//  UPDATE STATUS — cached
 // ──────────────────────────────────────────────────────────────
 
 function updateStatus() {
@@ -331,16 +323,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('clearSessionBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
     document.getElementById('newChatBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
 
-    // ✅ Fire initial API calls in parallel
     Promise.all([checkPlan(), updateStatus()]).catch(function() {});
 
-    // ✅ Status polling every 120 seconds
     statusInterval = setInterval(updateStatus, 120000);
 
-    // ✅ INIT NOTIFICATION BADGE (uses shared notif-badge.js)
     initNotifBadge();
 
-    // ─── LEAD MODE FORM ───
     document.getElementById('targetForm').addEventListener('submit', function(e) {
         e.preventDefault();
         var industry = document.getElementById('industry').value.trim();
@@ -352,10 +340,8 @@ document.addEventListener('DOMContentLoaded', function() {
         appendLeadMsg('user', msg); fetchLeadResponse(msg);
     });
 
-    // ─── LOAD SESSION ───
     if (currentSessionId) { document.getElementById('setupWizard').style.display = 'none'; leadChatArea.classList.add('active'); leadInputBar.classList.add('active'); loadLeadSession(); }
 
-    // ─── INITIAL STATE ───
     switchMode('lead');
 
     window.switchMode = switchMode;
@@ -364,9 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('✅ [PAGE] Loaded');
 
-    // ─── CLEAN UP ON PAGE UNLOAD ───
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
-        // Badge cleanup is handled by notif-badge.js
     });
 });
