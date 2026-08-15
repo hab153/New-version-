@@ -1,7 +1,7 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
 // UNREAD TOGGLE LOGIC COMPLETELY REMOVED
-// Backend is the source of truth (notif-badge.js handles badge)
+// Badge is now permanently visible via CSS
 // ============================================================
 
 // ── CONFIG ─
@@ -27,45 +27,23 @@ var _cachedStatusTime = 0;
 var CACHE_TTL = 60000; // 60 seconds
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ NOTIFICATION BADGE - USES SHARED notif-badge.js
+//  ✅ NOTIFICATION BADGE - PERMANENT VISUAL ONLY
+//  Logic removed. Badge is always shown via CSS.
 // ──────────────────────────────────────────────────────────────
 
 function initNotifBadge() {
-    var token = localStorage.getItem('token');
-    if (!token) return;
-
-    console.log('🔔 [PAGE] Initializing badge...');
-
-    if (typeof window.NotifBadge !== 'undefined') {
-        if (window.NotifBadge.fetch) {
-            window.NotifBadge.fetch();
-            console.log('🔔 [PAGE] Badge fetched');
-        }
-        if (window.NotifBadge.init) {
-            window.NotifBadge.init();
-            console.log('🔔 [PAGE] Badge initialized');
-        }
-    } else {
-        console.warn('🔔 [PAGE] notif-badge.js not loaded');
-        var badge = document.querySelector('.nav-badge');
-        if (badge) {
-            badge.textContent = '';
-            badge.style.display = 'none';
-        }
-    }
+    // No JS logic needed for permanent badge.
+    // Keeping function for compatibility with existing calls.
+    console.log('🔔 [PAGE] Badge is permanently enabled via CSS.');
 }
 
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
-        console.log('🔔 [PAGE] Tab visible, refreshing badge...');
-        if (typeof window.NotifBadge !== 'undefined' && window.NotifBadge.fetch) {
-            window.NotifBadge.fetch();
-        }
+        console.log('🔔 [PAGE] Tab visible.');
     }
 });
 
 initNotifBadge();
-console.log('✅ [PAGE] Badge system initialized');
 
 // ──────────────────────────────────────────────────────────────
 //  UTILITY FUNCTIONS
