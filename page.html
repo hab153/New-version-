@@ -21,61 +21,16 @@
 <!-- External Stylesheet -->
 <link rel="stylesheet" href="page.css" />
 
-<!-- EMBEDDED CSS: Integrated Notification Badge -->
+<!-- EMBEDDED CSS: Cleaned up (Notification styles removed) -->
 <style>
-    /* Wrapper to anchor the badge to the icon specifically */
-    .nav-item .icon-wrap {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-    }
-
-    /* The Red Dot - Positioned relative to the icon wrapper */
-    .nav-badge {
-        position: absolute;
-        top: -2px;
-        right: -2px;
-        width: 8px;
-        height: 8px;
-        background-color: #ff4d4d; /* Bright red matching screenshot */
-        border-radius: 50%;
-        border: 1.5px solid #121212; /* Matches --base background to create cutout effect */
-        z-index: 10;
-        pointer-events: none;
-        box-shadow: 0 0 4px rgba(255, 77, 77, 0.6); /* Subtle glow */
-    }
-
-    /* Optional: Very subtle pulse if desired, otherwise remove for static look */
-    @keyframes subtle-pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-        100% { transform: scale(1); opacity: 1; }
-    }
+    /* No notification badge styles needed anymore */
     
-    .nav-badge {
-        animation: subtle-pulse 2s infinite ease-in-out;
-    }
-
-    /* Ensure nav-item layout supports the label below if needed */
+    /* Ensure nav-item layout remains consistent */
     .nav-item {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
-    }
-    
-    .nav-label {
-        font-size: 10px;
-        font-family: var(--mono);
-        color: var(--t3);
-        letter-spacing: 0.05em;
-    }
-    
-    .nav-item.active .nav-label {
-        color: var(--gold);
     }
 </style>
 </head>
@@ -256,18 +211,7 @@
         </svg>
     </a>
     
-    <!-- ✅ UPDATED NOTIFICATION BUTTON WITH INTEGRATED RED DOT -->
-    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
-        <div class="icon-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            <div class="nav-badge"></div>
-        </div>
-        <!-- Optional: Add label if you want it to look exactly like the screenshot -->
-        <!-- <span class="nav-label">Inbox</span> -->
-    </a>
+    <!-- ✅ NOTIFICATION BUTTON REMOVED COMPLETELY -->
 
     <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
