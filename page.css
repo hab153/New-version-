@@ -348,7 +348,7 @@ select.field-input option { background: var(--raised); color: var(--t1); }
 .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; }
 .nav-item.nav-home::after { display: none; }
 
-/* ✅ PERMANENT NOTIFICATION DOT — Always visible, no JS dependency */
+/* ✅ PERMANENT NOTIFICATION DOT */
 .nav-badge {
     position: absolute;
     top: 4px;
