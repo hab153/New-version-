@@ -1,6 +1,7 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent (FAST)
-// Simplified - No cache layer, just localStorage
+// Dashboard data always fresh - No caching for status
+// Only session messages are cached
 // ============================================================
 
 // ── CONFIG 
@@ -18,17 +19,16 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ SIMPLE localStorage CACHING (no memory cache)
+// ✅ SIMPLE localStorage CACHING - ONLY FOR SESSION MESSAGES
+// Dashboard data is ALWAYS fetched fresh (no caching)
 const CACHE_KEYS = {
-    DASHBOARD: 'page_cached_dashboard',
-    DASHBOARD_TIME: 'page_cached_dashboard_time',
     SESSION: (id) => `page_session_${id}`,
     SESSION_TIME: (id) => `page_session_time_${id}`,
 };
 const CACHE_TTL = 300000; // 5 minutes
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ SIMPLE CACHED HELPERS
+//  ✅ SIMPLE CACHED HELPERS (Only for session messages)
 // ──────────────────────────────────────────────────────────────
 
 function getCached(key) {
@@ -60,7 +60,7 @@ function setCachedWithTTL(key, timeKey, data) {
 
 function clearCache() {
     Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('page_cached_') || key.startsWith('page_session_')) {
+        if (key.startsWith('page_session_')) {
             localStorage.removeItem(key);
         }
     });
@@ -360,12 +360,14 @@ function fetchAssistantResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ FETCH DASHBOARD DATA (NO CACHE)
+//  ✅ FETCH DASHBOARD DATA (ALWAYS FRESH - NO CACHE)
 // ──────────────────────────────────────────────────────────────
 
 function fetchDashboardData() {
+    // ✅ ALWAYS fetch fresh - no cache for dashboard
     return fetch(BACKEND + '/api/user/dashboard-data', {
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { 'Authorization': 'Bearer ' + token },
+        cache: 'no-store' // ✅ Prevent browser cache
     })
     .then(function(res) {
         if (!res.ok) {
@@ -426,13 +428,13 @@ function applyStatus(data) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ LOAD SESSION (SIMPLE CACHE)
+//  ✅ LOAD SESSION (CACHED - only session messages)
 // ──────────────────────────────────────────────────────────────
 
 function loadLeadSession() {
     if (!currentSessionId) return Promise.resolve();
     
-    // ✅ Check cache first
+    // ✅ Check cache first (only for session messages)
     var cached = getCachedWithTTL(
         CACHE_KEYS.SESSION(currentSessionId),
         CACHE_KEYS.SESSION_TIME(currentSessionId)
@@ -487,7 +489,7 @@ function clearChat() {
     assistantSessionId = null;
     assistantConversationHistory = [];
     
-    // Clear cache
+    // Clear session cache only
     clearCache();
     
     var setup = document.getElementById('setupWizard');
@@ -559,8 +561,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ STEP 5: Load ALL data in PARALLEL (fastest)
     Promise.all([
-        fetchDashboardData(),
-        loadLeadSession()
+        fetchDashboardData(),  // ✅ Always fresh
+        loadLeadSession()      // ✅ Cached
     ]).then(function() {
         console.log('✅ [PAGE] All data loaded');
         hideSkeleton();
@@ -571,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ STEP 6: Periodic refresh (every 2 minutes)
     setInterval(function() {
-        fetchDashboardData();
+        fetchDashboardData(); // ✅ Always fresh
     }, 120000);
     
     // ✅ STEP 7: Set initial mode
