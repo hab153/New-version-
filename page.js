@@ -1,7 +1,6 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent (FAST)
-// Optimized with aggressive caching & parallel loading
-// Uses aggregated /api/user/dashboard-data endpoint
+// Simplified - No cache layer, just localStorage
 // ============================================================
 
 // ── CONFIG 
@@ -19,7 +18,7 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ AGGRESSIVE CACHING - localStorage
+// ✅ SIMPLE localStorage CACHING (no memory cache)
 const CACHE_KEYS = {
     DASHBOARD: 'page_cached_dashboard',
     DASHBOARD_TIME: 'page_cached_dashboard_time',
@@ -28,14 +27,8 @@ const CACHE_KEYS = {
 };
 const CACHE_TTL = 300000; // 5 minutes
 
-// ✅ In-memory cache (fastest)
-let _memoryCache = {
-    dashboard: null,
-    session: null,
-};
-
 // ──────────────────────────────────────────────────────────────
-//  ✅ CACHED HELPERS
+//  ✅ SIMPLE CACHED HELPERS
 // ──────────────────────────────────────────────────────────────
 
 function getCached(key) {
@@ -52,29 +45,20 @@ function setCached(key, data) {
 }
 
 function getCachedWithTTL(key, timeKey) {
-    // Check memory cache first (fastest)
-    if (_memoryCache[key]) {
-        return _memoryCache[key];
-    }
-    
     const data = getCached(key);
     const time = getCached(timeKey);
     if (data && time && (Date.now() - time) < CACHE_TTL) {
-        // Store in memory for faster access next time
-        _memoryCache[key] = data;
         return data;
     }
     return null;
 }
 
 function setCachedWithTTL(key, timeKey, data) {
-    _memoryCache[key] = data; // Store in memory
     setCached(key, data);
     setCached(timeKey, Date.now());
 }
 
 function clearCache() {
-    _memoryCache = {};
     Object.keys(localStorage).forEach(key => {
         if (key.startsWith('page_cached_') || key.startsWith('page_session_')) {
             localStorage.removeItem(key);
@@ -376,18 +360,10 @@ function fetchAssistantResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ FAST: FETCH DASHBOARD DATA (AGGREGATED)
-//  Combines: subscription plan + email status + user info
+//  ✅ FETCH DASHBOARD DATA (NO CACHE)
 // ──────────────────────────────────────────────────────────────
 
 function fetchDashboardData() {
-    // ✅ Check cache first
-    var cached = getCachedWithTTL(CACHE_KEYS.DASHBOARD, CACHE_KEYS.DASHBOARD_TIME);
-    if (cached) {
-        applyDashboardData(cached);
-        return Promise.resolve(cached);
-    }
-    
     return fetch(BACKEND + '/api/user/dashboard-data', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
@@ -399,19 +375,12 @@ function fetchDashboardData() {
     })
     .then(function(data) {
         if (data) {
-            setCachedWithTTL(CACHE_KEYS.DASHBOARD, CACHE_KEYS.DASHBOARD_TIME, data);
             applyDashboardData(data);
             return data;
         }
     })
     .catch(function(err) {
         console.warn('⚠️ [DASHBOARD] Failed to fetch:', err.message);
-        // Try to use cached data even if expired
-        var fallback = getCached(CACHE_KEYS.DASHBOARD);
-        if (fallback) {
-            applyDashboardData(fallback);
-            return fallback;
-        }
         return null;
     });
 }
@@ -425,7 +394,6 @@ function applyDashboardData(data) {
     // ✅ Apply email status
     applyStatus(data.email);
     
-    // ✅ Log for debugging
     console.log('📊 [DASHBOARD] Data applied:', {
         tier: data.subscription.tier,
         emailConnected: data.email.connected,
@@ -458,7 +426,7 @@ function applyStatus(data) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ FAST: LOAD SESSION (CACHED)
+//  ✅ LOAD SESSION (SIMPLE CACHE)
 // ──────────────────────────────────────────────────────────────
 
 function loadLeadSession() {
@@ -591,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ STEP 5: Load ALL data in PARALLEL (fastest)
     Promise.all([
-        fetchDashboardData(),  // ✅ NEW: 1 call instead of 2!
+        fetchDashboardData(),
         loadLeadSession()
     ]).then(function() {
         console.log('✅ [PAGE] All data loaded');
