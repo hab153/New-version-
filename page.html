@@ -21,7 +21,7 @@
 <!-- External Stylesheet -->
 <link rel="stylesheet" href="page.css" />
 
-<!-- EMBEDDED CSS: Integrated Notification Badge -->
+<!-- EMBEDDED CSS: Integrated Notification Badge + Skeleton -->
 <style>
     /* Wrapper to anchor the badge to the icon specifically */
     .nav-item .icon-wrap {
@@ -40,15 +40,14 @@
         right: -2px;
         width: 8px;
         height: 8px;
-        background-color: #ff4d4d; /* Bright red matching screenshot */
+        background-color: #ff4d4d;
         border-radius: 50%;
-        border: 1.5px solid #121212; /* Matches --base background to create cutout effect */
+        border: 1.5px solid #121212;
         z-index: 10;
         pointer-events: none;
-        box-shadow: 0 0 4px rgba(255, 77, 77, 0.6); /* Subtle glow */
+        box-shadow: 0 0 4px rgba(255, 77, 77, 0.6);
     }
 
-    /* Optional: Very subtle pulse if desired */
     @keyframes subtle-pulse {
         0% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.1); opacity: 0.8; }
@@ -59,16 +58,132 @@
         animation: subtle-pulse 2s infinite ease-in-out;
     }
 
-    /* Ensure nav-item layout supports the label below if needed */
     .nav-item {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
     }
+
+    /* ✅ SKELETON LOADER */
+    .skeleton-loader {
+        display: none;
+        padding: 16px;
+        animation: skeletonFadeIn 0.3s ease;
+    }
+    .skeleton-loader.active { display: block; }
+    @keyframes skeletonFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .skeleton-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .skeleton-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .skeleton-line {
+        height: 12px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-line-title { width: 65%; height: 14px; }
+    .skeleton-line-sub { width: 40%; height: 10px; }
+
+    /* Wave effect delays */
+    .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
+    .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
+    .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
+    .skeleton-item:nth-child(4) .skeleton-line { animation-delay: 0.20s; }
+    .skeleton-item:nth-child(5) .skeleton-line { animation-delay: 0.25s; }
+    .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
+    .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
+    .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
+
+    @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Hide content until loaded */
+    #main-content {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    body.content-loaded #main-content {
+        opacity: 1;
+    }
+    body:not(.content-loaded) .skeleton-loader {
+        display: block;
+    }
+    body.content-loaded .skeleton-loader {
+        display: none;
+    }
 </style>
 </head>
 <body>
+
+<!-- ─── SKELETON LOADER ─── -->
+<div class="skeleton-loader active" id="skeletonLoader">
+    <div class="skeleton-item">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
+        </div>
+    </div>
+    <div class="skeleton-item">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
+        </div>
+    </div>
+    <div class="skeleton-item">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
+        </div>
+    </div>
+    <div class="skeleton-item">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
+        </div>
+    </div>
+    <div class="skeleton-item">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── MAIN CONTENT ─── -->
+<div id="main-content">
 
 <!-- ─── TOP BAR ─── -->
 <header class="topbar">
@@ -265,6 +380,8 @@
         </svg>
     </a>
 </nav>
+
+</div> <!-- End #main-content -->
 
 <!-- ✅ SESSION CHECK - Auto-logout after 3 days -->
 <script src="session-check.js"></script>
