@@ -1,6 +1,7 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent (FAST)
 // Optimized with aggressive caching & parallel loading
+// Uses aggregated /api/user/dashboard-data endpoint
 // ============================================================
 
 // ── CONFIG 
@@ -20,10 +21,8 @@ let assistantConversationHistory = [];
 
 // ✅ AGGRESSIVE CACHING - localStorage
 const CACHE_KEYS = {
-    PLAN: 'page_cached_plan',
-    PLAN_TIME: 'page_cached_plan_time',
-    STATUS: 'page_cached_status',
-    STATUS_TIME: 'page_cached_status_time',
+    DASHBOARD: 'page_cached_dashboard',
+    DASHBOARD_TIME: 'page_cached_dashboard_time',
     SESSION: (id) => `page_session_${id}`,
     SESSION_TIME: (id) => `page_session_time_${id}`,
 };
@@ -31,8 +30,7 @@ const CACHE_TTL = 300000; // 5 minutes
 
 // ✅ In-memory cache (fastest)
 let _memoryCache = {
-    plan: null,
-    status: null,
+    dashboard: null,
     session: null,
 };
 
@@ -89,12 +87,10 @@ function clearCache() {
 // ──────────────────────────────────────────────────────────────
 
 function showSkeleton() {
-    // Show UI immediately - skeleton is already in HTML
     document.body.classList.add('loaded');
 }
 
 function hideSkeleton() {
-    // Content is now loaded
     document.body.classList.add('content-loaded');
 }
 
@@ -380,32 +376,61 @@ function fetchAssistantResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ FAST: CHECK PLAN (CACHED)
+//  ✅ FAST: FETCH DASHBOARD DATA (AGGREGATED)
+//  Combines: subscription plan + email status + user info
 // ──────────────────────────────────────────────────────────────
 
-function checkPlan() {
-    var planChip = document.getElementById('planChip');
-    if (!planChip) return Promise.resolve();
-    
+function fetchDashboardData() {
     // ✅ Check cache first
-    var cached = getCachedWithTTL(CACHE_KEYS.PLAN, CACHE_KEYS.PLAN_TIME);
+    var cached = getCachedWithTTL(CACHE_KEYS.DASHBOARD, CACHE_KEYS.DASHBOARD_TIME);
     if (cached) {
-        applyPlan(cached);
-        return Promise.resolve();
+        applyDashboardData(cached);
+        return Promise.resolve(cached);
     }
     
-    return fetch(BACKEND + '/api/users/me', {
+    return fetch(BACKEND + '/api/user/dashboard-data', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) {
-        if (user) {
-            var p = user.subscriptionTier || 'free';
-            setCachedWithTTL(CACHE_KEYS.PLAN, CACHE_KEYS.PLAN_TIME, p);
-            applyPlan(p);
+    .then(function(res) {
+        if (!res.ok) {
+            throw new Error('Failed to fetch dashboard data');
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data) {
+            setCachedWithTTL(CACHE_KEYS.DASHBOARD, CACHE_KEYS.DASHBOARD_TIME, data);
+            applyDashboardData(data);
+            return data;
         }
     })
-    .catch(function() { /* ignore */ });
+    .catch(function(err) {
+        console.warn('⚠️ [DASHBOARD] Failed to fetch:', err.message);
+        // Try to use cached data even if expired
+        var fallback = getCached(CACHE_KEYS.DASHBOARD);
+        if (fallback) {
+            applyDashboardData(fallback);
+            return fallback;
+        }
+        return null;
+    });
+}
+
+function applyDashboardData(data) {
+    if (!data) return;
+    
+    // ✅ Apply plan
+    applyPlan(data.subscription.tier);
+    
+    // ✅ Apply email status
+    applyStatus(data.email);
+    
+    // ✅ Log for debugging
+    console.log('📊 [DASHBOARD] Data applied:', {
+        tier: data.subscription.tier,
+        emailConnected: data.email.connected,
+        user: data.user.fullName
+    });
 }
 
 function applyPlan(plan) {
@@ -413,34 +438,6 @@ function applyPlan(plan) {
     if (!chip) return;
     chip.className = 'plan-chip ' + plan;
     chip.textContent = plan === 'go' ? 'GO' : plan === 'pro' ? 'PRO' : 'FREE';
-}
-
-// ──────────────────────────────────────────────────────────────
-//  ✅ FAST: CHECK STATUS (CACHED)
-// ──────────────────────────────────────────────────────────────
-
-function updateStatus() {
-    // ✅ Check cache first
-    var cached = getCachedWithTTL(CACHE_KEYS.STATUS, CACHE_KEYS.STATUS_TIME);
-    if (cached) {
-        applyStatus(cached);
-        return Promise.resolve();
-    }
-    
-    return fetch(BACKEND + '/api/auth/nylas/status', {
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-    })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(data) {
-        if (data) {
-            setCachedWithTTL(CACHE_KEYS.STATUS, CACHE_KEYS.STATUS_TIME, data);
-            applyStatus(data);
-        }
-    })
-    .catch(function() {
-        var txt = document.getElementById('statusText');
-        if (txt) txt.textContent = '⚠️ Status unknown';
-    });
 }
 
 function applyStatus(data) {
@@ -594,8 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ STEP 5: Load ALL data in PARALLEL (fastest)
     Promise.all([
-        checkPlan(),
-        updateStatus(),
+        fetchDashboardData(),  // ✅ NEW: 1 call instead of 2!
         loadLeadSession()
     ]).then(function() {
         console.log('✅ [PAGE] All data loaded');
@@ -605,8 +601,10 @@ document.addEventListener('DOMContentLoaded', function() {
         hideSkeleton();
     });
     
-    // ✅ STEP 6: Periodic refresh
-    setInterval(updateStatus, 120000); // Every 2 minutes
+    // ✅ STEP 6: Periodic refresh (every 2 minutes)
+    setInterval(function() {
+        fetchDashboardData();
+    }, 120000);
     
     // ✅ STEP 7: Set initial mode
     switchMode('lead');
