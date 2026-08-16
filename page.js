@@ -1,6 +1,6 @@
 // ============================================================
-// page.js - Skyline AA-1 Business Agent
-// NOTIFICATION BUTTON RESTORED (Visual Only)
+// page.js - Skyline AA-1 Business Agent (FAST)
+// Optimized with aggressive caching & parallel loading
 // ============================================================
 
 // ── CONFIG 
@@ -18,19 +18,85 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ PERF: Cache API responses
-var _cachedPlan = null;
-var _cachedPlanTime = 0;
-var _cachedStatus = null;
-var _cachedStatusTime = 0;
-var CACHE_TTL = 60000; // 60 seconds
+// ✅ AGGRESSIVE CACHING - localStorage
+const CACHE_KEYS = {
+    PLAN: 'page_cached_plan',
+    PLAN_TIME: 'page_cached_plan_time',
+    STATUS: 'page_cached_status',
+    STATUS_TIME: 'page_cached_status_time',
+    SESSION: (id) => `page_session_${id}`,
+    SESSION_TIME: (id) => `page_session_time_${id}`,
+};
+const CACHE_TTL = 300000; // 5 minutes
+
+// ✅ In-memory cache (fastest)
+let _memoryCache = {
+    plan: null,
+    status: null,
+    session: null,
+};
 
 // ──────────────────────────────────────────────────────────────
-//  ✅ NOTIFICATION BADGE - PERMANENT VISUAL ONLY
-//  No JS logic required. The dot is hardcoded in HTML/CSS.
+//  ✅ CACHED HELPERS
 // ──────────────────────────────────────────────────────────────
 
-console.log('✅ [PAGE] Notification button restored with permanent red dot.');
+function getCached(key) {
+    try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    } catch { return null; }
+}
+
+function setCached(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch { /* ignore */ }
+}
+
+function getCachedWithTTL(key, timeKey) {
+    // Check memory cache first (fastest)
+    if (_memoryCache[key]) {
+        return _memoryCache[key];
+    }
+    
+    const data = getCached(key);
+    const time = getCached(timeKey);
+    if (data && time && (Date.now() - time) < CACHE_TTL) {
+        // Store in memory for faster access next time
+        _memoryCache[key] = data;
+        return data;
+    }
+    return null;
+}
+
+function setCachedWithTTL(key, timeKey, data) {
+    _memoryCache[key] = data; // Store in memory
+    setCached(key, data);
+    setCached(timeKey, Date.now());
+}
+
+function clearCache() {
+    _memoryCache = {};
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('page_cached_') || key.startsWith('page_session_')) {
+            localStorage.removeItem(key);
+        }
+    });
+}
+
+// ──────────────────────────────────────────────────────────────
+//  ✅ SKELETON LOADER
+// ──────────────────────────────────────────────────────────────
+
+function showSkeleton() {
+    // Show UI immediately - skeleton is already in HTML
+    document.body.classList.add('loaded');
+}
+
+function hideSkeleton() {
+    // Content is now loaded
+    document.body.classList.add('content-loaded');
+}
 
 // ──────────────────────────────────────────────────────────────
 //  UTILITY FUNCTIONS
@@ -92,11 +158,16 @@ function formatAI(text) {
 function switchMode(mode) {
     if (mode === currentMode) return;
     currentMode = mode;
-    document.getElementById('leadModeBtn').classList.toggle('active', mode === 'lead');
-    document.getElementById('assistantModeBtn').classList.toggle('active', mode === 'assistant');
-    document.getElementById('leadModeContainer').classList.toggle('active', mode === 'lead');
-    document.getElementById('assistantModeContainer').classList.toggle('active', mode === 'assistant');
-    document.querySelector('.topbar-label').textContent = mode === 'lead' ? 'Lead Search' : 'Assistant Chat';
+    var leadBtn = document.getElementById('leadModeBtn');
+    var assistantBtn = document.getElementById('assistantModeBtn');
+    var leadContainer = document.getElementById('leadModeContainer');
+    var assistantContainer = document.getElementById('assistantModeContainer');
+    if (leadBtn) leadBtn.classList.toggle('active', mode === 'lead');
+    if (assistantBtn) assistantBtn.classList.toggle('active', mode === 'assistant');
+    if (leadContainer) leadContainer.classList.toggle('active', mode === 'lead');
+    if (assistantContainer) assistantContainer.classList.toggle('active', mode === 'assistant');
+    var label = document.querySelector('.topbar-label');
+    if (label) label.textContent = mode === 'lead' ? 'Lead Search' : 'Assistant Chat';
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -111,6 +182,7 @@ var leadSendBtn = document.getElementById('leadSendBtn');
 var leadCharCount = document.getElementById('leadCharCount');
 
 function appendLeadMsg(role, content) {
+    if (!leadMsgContainer) return;
     var row = document.createElement('div');
     row.className = 'msg-row ' + role;
     var displayContent = role === 'ai' ? formatAI(content) : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content));
@@ -121,43 +193,91 @@ function appendLeadMsg(role, content) {
 
 function showLeadTyping(label) {
     label = label || 'Thinking…';
+    if (!leadMsgContainer) return;
     var row = document.getElementById('leadTypingRow');
-    if (row) { var lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(label) : esc(label); scrollDown(leadChatArea); return; }
-    row = document.createElement('div'); row.className = 'typing-row'; row.id = 'leadTypingRow';
+    if (row) { 
+        var lbl = row.querySelector('.t-label'); 
+        if (lbl) lbl.textContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(label) : esc(label); 
+        scrollDown(leadChatArea); 
+        return; 
+    }
+    row = document.createElement('div'); 
+    row.className = 'typing-row'; 
+    row.id = 'leadTypingRow';
     row.innerHTML = '<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">' + esc(label) + '</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>';
     leadMsgContainer.appendChild(row);
     scrollDown(leadChatArea);
 }
 
-function hideLeadTyping() { var r = document.getElementById('leadTypingRow'); if (r) r.remove(); }
-function updateLeadSend() { leadSendBtn.disabled = !leadMsgInput.value.trim() || isTyping; }
+function hideLeadTyping() { 
+    var r = document.getElementById('leadTypingRow'); 
+    if (r) r.remove(); 
+}
 
-leadMsgInput.addEventListener('input', function() { leadMsgInput.style.height = 'auto'; leadMsgInput.style.height = Math.min(leadMsgInput.scrollHeight, 130) + 'px'; updateLeadSend(); leadCharCount.textContent = leadMsgInput.value.length || ''; });
-leadMsgInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!leadSendBtn.disabled) sendLeadMessage(); } });
-leadSendBtn.addEventListener('click', sendLeadMessage);
+function updateLeadSend() { 
+    if (leadSendBtn) leadSendBtn.disabled = !leadMsgInput.value.trim() || isTyping; 
+}
+
+if (leadMsgInput) {
+    leadMsgInput.addEventListener('input', function() { 
+        leadMsgInput.style.height = 'auto'; 
+        leadMsgInput.style.height = Math.min(leadMsgInput.scrollHeight, 130) + 'px'; 
+        updateLeadSend(); 
+        if (leadCharCount) leadCharCount.textContent = leadMsgInput.value.length || ''; 
+    });
+    leadMsgInput.addEventListener('keydown', function(e) { 
+        if (e.key === 'Enter' && !e.shiftKey) { 
+            e.preventDefault(); 
+            if (!leadSendBtn.disabled) sendLeadMessage(); 
+        } 
+    });
+}
+if (leadSendBtn) leadSendBtn.addEventListener('click', sendLeadMessage);
 
 function sendLeadMessage() {
     var text = leadMsgInput.value.trim();
     if (!text || isTyping) return;
-    appendLeadMsg('user', text); leadMsgInput.value = ''; leadMsgInput.style.height = 'auto'; updateLeadSend();
+    appendLeadMsg('user', text); 
+    leadMsgInput.value = ''; 
+    leadMsgInput.style.height = 'auto'; 
+    updateLeadSend();
     fetchLeadResponse(text);
 }
 
 function fetchLeadResponse(message) {
-    isTyping = true; updateLeadSend();
+    isTyping = true; 
+    updateLeadSend();
     var steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
-    var si = 0; showLeadTyping(steps[0]);
+    var si = 0; 
+    showLeadTyping(steps[0]);
     statusInterval = setInterval(function() { si++; if (si < steps.length) showLeadTyping(steps[si]); }, 2500);
-    fetch(BACKEND + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ message: message, history: conversationHistory, sessionId: currentSessionId }) })
+    fetch(BACKEND + '/api/chat', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, 
+        body: JSON.stringify({ message: message, history: conversationHistory, sessionId: currentSessionId }) 
+    })
     .then(function(res) { return res.json(); })
     .then(function(data) {
-        clearInterval(statusInterval); hideLeadTyping();
-        if (data.sessionId && !currentSessionId) { currentSessionId = data.sessionId; var url = new URL(window.location); url.searchParams.set('session', data.sessionId); window.history.pushState({}, '', url); }
+        clearInterval(statusInterval); 
+        hideLeadTyping();
+        if (data.sessionId && !currentSessionId) { 
+            currentSessionId = data.sessionId; 
+            var url = new URL(window.location); 
+            url.searchParams.set('session', data.sessionId); 
+            window.history.pushState({}, '', url); 
+        }
         if (data.history) conversationHistory = data.history;
         appendLeadMsg('ai', data.reply || "Request received. How can I help further?");
     })
-    .catch(function() { clearInterval(statusInterval); hideLeadTyping(); appendLeadMsg('ai', '🔌 Connection error — check your network and try again.'); })
-    .finally(function() { isTyping = false; updateLeadSend(); });
+    .catch(function() { 
+        clearInterval(statusInterval); 
+        hideLeadTyping(); 
+        appendLeadMsg('ai', '🔌 Connection error — check your network and try again.'); 
+    })
+    .finally(function() { 
+        isTyping = false; 
+        updateLeadSend(); 
+    });
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -172,6 +292,7 @@ var assistantSendBtn = document.getElementById('assistantSendBtn');
 var assistantCharCount = document.getElementById('assistantCharCount');
 
 function appendAssistantMsg(role, content) {
+    if (!assistantMsgContainer) return;
     var row = document.createElement('div');
     row.className = 'msg-row ' + role;
     var displayContent = role === 'ai' ? formatAI(content) : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content));
@@ -182,89 +303,207 @@ function appendAssistantMsg(role, content) {
 
 function showAssistantTyping(label) {
     label = label || 'Thinking…';
+    if (!assistantMsgContainer) return;
     var row = document.getElementById('assistantTypingRow');
-    if (row) { var lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(label) : esc(label); scrollDown(assistantChatArea); return; }
-    row = document.createElement('div'); row.className = 'typing-row'; row.id = 'assistantTypingRow';
+    if (row) { 
+        var lbl = row.querySelector('.t-label'); 
+        if (lbl) lbl.textContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(label) : esc(label); 
+        scrollDown(assistantChatArea); 
+        return; 
+    }
+    row = document.createElement('div'); 
+    row.className = 'typing-row'; 
+    row.id = 'assistantTypingRow';
     row.innerHTML = '<div class="av" style="background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#0d0a04;">AI</div><div class="typing-bubble"><span class="t-label">' + esc(label) + '</span><div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>';
     assistantMsgContainer.appendChild(row);
     scrollDown(assistantChatArea);
 }
 
-function hideAssistantTyping() { var r = document.getElementById('assistantTypingRow'); if (r) r.remove(); }
-function updateAssistantSend() { assistantSendBtn.disabled = !assistantMsgInput.value.trim() || isTyping; }
+function hideAssistantTyping() { 
+    var r = document.getElementById('assistantTypingRow'); 
+    if (r) r.remove(); 
+}
 
-assistantMsgInput.addEventListener('input', function() { assistantMsgInput.style.height = 'auto'; assistantMsgInput.style.height = Math.min(assistantMsgInput.scrollHeight, 130) + 'px'; updateAssistantSend(); assistantCharCount.textContent = assistantMsgInput.value.length || ''; });
-assistantMsgInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!assistantSendBtn.disabled) sendAssistantMessage(); } });
-assistantSendBtn.addEventListener('click', sendAssistantMessage);
+function updateAssistantSend() { 
+    if (assistantSendBtn) assistantSendBtn.disabled = !assistantMsgInput.value.trim() || isTyping; 
+}
+
+if (assistantMsgInput) {
+    assistantMsgInput.addEventListener('input', function() { 
+        assistantMsgInput.style.height = 'auto'; 
+        assistantMsgInput.style.height = Math.min(assistantMsgInput.scrollHeight, 130) + 'px'; 
+        updateAssistantSend(); 
+        if (assistantCharCount) assistantCharCount.textContent = assistantMsgInput.value.length || ''; 
+    });
+    assistantMsgInput.addEventListener('keydown', function(e) { 
+        if (e.key === 'Enter' && !e.shiftKey) { 
+            e.preventDefault(); 
+            if (!assistantSendBtn.disabled) sendAssistantMessage(); 
+        } 
+    });
+}
+if (assistantSendBtn) assistantSendBtn.addEventListener('click', sendAssistantMessage);
 
 function sendAssistantMessage() {
     var text = assistantMsgInput.value.trim();
     if (!text || isTyping) return;
-    appendAssistantMsg('user', text); assistantMsgInput.value = ''; assistantMsgInput.style.height = 'auto'; updateAssistantSend();
+    appendAssistantMsg('user', text); 
+    assistantMsgInput.value = ''; 
+    assistantMsgInput.style.height = 'auto'; 
+    updateAssistantSend();
     fetchAssistantResponse(text);
 }
 
 function fetchAssistantResponse(message) {
-    isTyping = true; updateAssistantSend(); showAssistantTyping('Thinking…');
-    fetch(BACKEND + '/api/assistant', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ message: message, sessionId: assistantSessionId }) })
+    isTyping = true; 
+    updateAssistantSend(); 
+    showAssistantTyping('Thinking…');
+    fetch(BACKEND + '/api/assistant', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, 
+        body: JSON.stringify({ message: message, sessionId: assistantSessionId }) 
+    })
     .then(function(res) { return res.json(); })
     .then(function(data) {
         hideAssistantTyping();
         if (data.sessionId) assistantSessionId = data.sessionId;
         appendAssistantMsg('ai', data.response || "I couldn't process that. Please try again.");
     })
-    .catch(function() { hideAssistantTyping(); appendAssistantMsg('ai', '🔌 Connection error — check your network and try again.'); })
-    .finally(function() { isTyping = false; updateAssistantSend(); });
+    .catch(function() { 
+        hideAssistantTyping(); 
+        appendAssistantMsg('ai', '🔌 Connection error — check your network and try again.'); 
+    })
+    .finally(function() { 
+        isTyping = false; 
+        updateAssistantSend(); 
+    });
 }
 
 // ──────────────────────────────────────────────────────────────
-//  LOAD SESSION
+//  ✅ FAST: CHECK PLAN (CACHED)
+// ──────────────────────────────────────────────────────────────
+
+function checkPlan() {
+    var planChip = document.getElementById('planChip');
+    if (!planChip) return Promise.resolve();
+    
+    // ✅ Check cache first
+    var cached = getCachedWithTTL(CACHE_KEYS.PLAN, CACHE_KEYS.PLAN_TIME);
+    if (cached) {
+        applyPlan(cached);
+        return Promise.resolve();
+    }
+    
+    return fetch(BACKEND + '/api/users/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(user) {
+        if (user) {
+            var p = user.subscriptionTier || 'free';
+            setCachedWithTTL(CACHE_KEYS.PLAN, CACHE_KEYS.PLAN_TIME, p);
+            applyPlan(p);
+        }
+    })
+    .catch(function() { /* ignore */ });
+}
+
+function applyPlan(plan) {
+    var chip = document.getElementById('planChip');
+    if (!chip) return;
+    chip.className = 'plan-chip ' + plan;
+    chip.textContent = plan === 'go' ? 'GO' : plan === 'pro' ? 'PRO' : 'FREE';
+}
+
+// ──────────────────────────────────────────────────────────────
+//  ✅ FAST: CHECK STATUS (CACHED)
+// ──────────────────────────────────────────────────────────────
+
+function updateStatus() {
+    // ✅ Check cache first
+    var cached = getCachedWithTTL(CACHE_KEYS.STATUS, CACHE_KEYS.STATUS_TIME);
+    if (cached) {
+        applyStatus(cached);
+        return Promise.resolve();
+    }
+    
+    return fetch(BACKEND + '/api/auth/nylas/status', {
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(data) {
+        if (data) {
+            setCachedWithTTL(CACHE_KEYS.STATUS, CACHE_KEYS.STATUS_TIME, data);
+            applyStatus(data);
+        }
+    })
+    .catch(function() {
+        var txt = document.getElementById('statusText');
+        if (txt) txt.textContent = '⚠️ Status unknown';
+    });
+}
+
+function applyStatus(data) {
+    var bar = document.getElementById('statusBar');
+    var txt = document.getElementById('statusText');
+    if (!bar || !txt) return;
+    
+    if (data.connected && !data.isExpired) {
+        bar.className = 'status-bar connected';
+        txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected';
+    } else if (data.connected && data.isExpired) {
+        bar.className = 'status-bar disconnected';
+        txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
+    } else {
+        bar.className = 'status-bar disconnected';
+        txt.textContent = '❌ No email connected — Connect in Dashboard';
+    }
+}
+
+// ──────────────────────────────────────────────────────────────
+//  ✅ FAST: LOAD SESSION (CACHED)
 // ──────────────────────────────────────────────────────────────
 
 function loadLeadSession() {
     if (!currentSessionId) return Promise.resolve();
-    return fetch(BACKEND + '/api/history/' + currentSessionId, { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(function(res) { if (res.ok) return res.json(); return null; })
+    
+    // ✅ Check cache first
+    var cached = getCachedWithTTL(
+        CACHE_KEYS.SESSION(currentSessionId),
+        CACHE_KEYS.SESSION_TIME(currentSessionId)
+    );
+    
+    if (cached && cached.length > 0) {
+        renderMessages(cached);
+        return Promise.resolve();
+    }
+    
+    return fetch(BACKEND + '/api/history/' + currentSessionId, {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) { return res.ok ? res.json() : null; })
     .then(function(msgs) {
         if (msgs && msgs.length) {
-            leadMsgContainer.innerHTML = '';
-            for (var i = 0; i < msgs.length; i++) { var role = msgs[i].role === 'ai' ? 'ai' : 'user'; appendLeadMsg(role, msgs[i].content); conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: msgs[i].content }); }
-            scrollDown(leadChatArea);
+            setCachedWithTTL(
+                CACHE_KEYS.SESSION(currentSessionId),
+                CACHE_KEYS.SESSION_TIME(currentSessionId),
+                msgs
+            );
+            renderMessages(msgs);
         }
-    }).catch(function() {});
-}
-
-// ──────────────────────────────────────────────────────────────
-//  CHECK PLAN — cached
-// ──────────────────────────────────────────────────────────────
-
-function checkPlan() {
-    var now_ts = Date.now();
-    if (_cachedPlan && (now_ts - _cachedPlanTime) < CACHE_TTL) { planChip.className = 'plan-chip ' + _cachedPlan; planChip.textContent = _cachedPlan === 'go' ? 'GO' : _cachedPlan === 'pro' ? 'PRO' : 'FREE'; return Promise.resolve(); }
-    return fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) { if (user) { var p = user.subscriptionTier || 'free'; _cachedPlan = p; _cachedPlanTime = Date.now(); planChip.className = 'plan-chip ' + p; planChip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE'; } })
+    })
     .catch(function() {});
 }
 
-// ──────────────────────────────────────────────────────────────
-//  UPDATE STATUS — cached
-// ──────────────────────────────────────────────────────────────
-
-function updateStatus() {
-    var now_ts = Date.now();
-    if (_cachedStatus && (now_ts - _cachedStatusTime) < CACHE_TTL) { applyStatus(_cachedStatus); return Promise.resolve(); }
-    return fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(data) { if (data) { _cachedStatus = data; _cachedStatusTime = Date.now(); applyStatus(data); } })
-    .catch(function() { var txt = document.getElementById('statusText'); if (txt) txt.textContent = '⚠️ Status unknown'; });
-}
-
-function applyStatus(data) {
-    var bar = document.getElementById('statusBar'); var txt = document.getElementById('statusText');
-    if (data.connected && !data.isExpired) { bar.className = 'status-bar connected'; txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected'; }
-    else if (data.connected && data.isExpired) { bar.className = 'status-bar disconnected'; txt.textContent = '⚠️ Session expired — Reconnect in Dashboard'; }
-    else { bar.className = 'status-bar disconnected'; txt.textContent = '❌ No email connected — Connect in Dashboard'; }
+function renderMessages(msgs) {
+    if (!leadMsgContainer) return;
+    leadMsgContainer.innerHTML = '';
+    for (var i = 0; i < msgs.length; i++) {
+        var role = msgs[i].role === 'ai' ? 'ai' : 'user';
+        appendLeadMsg(role, msgs[i].content);
+        conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: msgs[i].content });
+    }
+    scrollDown(leadChatArea);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -272,48 +511,117 @@ function applyStatus(data) {
 // ──────────────────────────────────────────────────────────────
 
 function clearChat() {
-    leadMsgContainer.innerHTML = ''; conversationHistory = []; currentGeneratedLeads = []; currentSessionId = null;
-    assistantMsgContainer.innerHTML = ''; assistantSessionId = null; assistantConversationHistory = [];
-    _cachedPlan = null; _cachedPlanTime = 0; _cachedStatus = null; _cachedStatusTime = 0;
-    document.getElementById('setupWizard').style.display = 'flex'; leadChatArea.classList.remove('active'); leadInputBar.classList.remove('active');
-    assistantMsgContainer.innerHTML = '<div class="msg-row ai"><div class="av">AI</div><div class="bubble-wrap"><div class="bubble">👋 Hello! I\'m your business assistant. Ask me anything about your business, leads, or strategy!</div><div class="msg-time">Just now</div></div></div>';
-    var url = new URL(window.location); url.searchParams.delete('session'); window.history.pushState({}, '', url);
+    if (leadMsgContainer) leadMsgContainer.innerHTML = '';
+    conversationHistory = [];
+    currentGeneratedLeads = [];
+    currentSessionId = null;
+    
+    if (assistantMsgContainer) {
+        assistantMsgContainer.innerHTML = '<div class="msg-row ai"><div class="av">AI</div><div class="bubble-wrap"><div class="bubble">👋 Hello! I\'m your business assistant. Ask me anything about your business, leads, or strategy!</div><div class="msg-time">Just now</div></div></div>';
+    }
+    assistantSessionId = null;
+    assistantConversationHistory = [];
+    
+    // Clear cache
+    clearCache();
+    
+    var setup = document.getElementById('setupWizard');
+    if (setup) setup.style.display = 'flex';
+    if (leadChatArea) leadChatArea.classList.remove('active');
+    if (leadInputBar) leadInputBar.classList.remove('active');
+    
+    var url = new URL(window.location);
+    url.searchParams.delete('session');
+    window.history.pushState({}, '', url);
 }
 
 // ──────────────────────────────────────────────────────────────
-//  INIT
+//  ✅ FAST INIT - LOAD EVERYTHING IN PARALLEL
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('clearSessionBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
-    document.getElementById('newChatBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
-
-    Promise.all([checkPlan(), updateStatus()]).catch(function() {});
-
-    statusInterval = setInterval(updateStatus, 120000);
-
-    document.getElementById('targetForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var industry = document.getElementById('industry').value.trim();
-        var region = document.getElementById('region').value.trim();
-        var companySize = document.getElementById('companySize').value;
-        var jobTitle = document.getElementById('jobTitle').value.trim();
-        var msg = 'Find me ' + jobTitle + 's in the ' + industry + ' industry, located in ' + region + '. Company size: ' + companySize + '.';
-        document.getElementById('setupWizard').style.display = 'none'; leadChatArea.classList.add('active'); leadInputBar.classList.add('active');
-        appendLeadMsg('user', msg); fetchLeadResponse(msg);
+    console.log('🚀 [PAGE] Starting fast load...');
+    
+    // ✅ STEP 1: Show skeleton immediately
+    showSkeleton();
+    
+    // ✅ STEP 2: Set up event listeners
+    var clearBtn = document.getElementById('clearSessionBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            clearChat();
+        });
+    }
+    
+    var newBtn = document.getElementById('newChatBtn');
+    if (newBtn) {
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            clearChat();
+        });
+    }
+    
+    // ✅ STEP 3: Target form submit
+    var targetForm = document.getElementById('targetForm');
+    if (targetForm) {
+        targetForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var industry = document.getElementById('industry').value.trim();
+            var region = document.getElementById('region').value.trim();
+            var companySize = document.getElementById('companySize').value;
+            var jobTitle = document.getElementById('jobTitle').value.trim();
+            var msg = 'Find me ' + jobTitle + 's in the ' + industry + ' industry, located in ' + region + '. Company size: ' + companySize + '.';
+            var setup = document.getElementById('setupWizard');
+            if (setup) setup.style.display = 'none';
+            if (leadChatArea) leadChatArea.classList.add('active');
+            if (leadInputBar) leadInputBar.classList.add('active');
+            appendLeadMsg('user', msg);
+            fetchLeadResponse(msg);
+        });
+    }
+    
+    // ✅ STEP 4: Set up UI based on session
+    if (currentSessionId) {
+        var setup = document.getElementById('setupWizard');
+        if (setup) setup.style.display = 'none';
+        if (leadChatArea) leadChatArea.classList.add('active');
+        if (leadInputBar) leadInputBar.classList.add('active');
+    } else {
+        var setup = document.getElementById('setupWizard');
+        if (setup) setup.style.display = 'flex';
+    }
+    
+    // ✅ STEP 5: Load ALL data in PARALLEL (fastest)
+    Promise.all([
+        checkPlan(),
+        updateStatus(),
+        loadLeadSession()
+    ]).then(function() {
+        console.log('✅ [PAGE] All data loaded');
+        hideSkeleton();
+    }).catch(function(err) {
+        console.warn('⚠️ [PAGE] Some data failed to load:', err);
+        hideSkeleton();
     });
-
-    if (currentSessionId) { document.getElementById('setupWizard').style.display = 'none'; leadChatArea.classList.add('active'); leadInputBar.classList.add('active'); loadLeadSession(); }
-
+    
+    // ✅ STEP 6: Periodic refresh
+    setInterval(updateStatus, 120000); // Every 2 minutes
+    
+    // ✅ STEP 7: Set initial mode
     switchMode('lead');
-
+    
+    // ✅ STEP 8: Make functions global
     window.switchMode = switchMode;
     window.clearChat = clearChat;
-    window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
+    window.sendAllEmails = function() { 
+        showToast('Send all emails function', 'info', 2000); 
+    };
+    
+    console.log('✅ [PAGE] Ready');
+});
 
-    console.log('✅ [PAGE] Loaded');
-
-    window.addEventListener('beforeunload', function() {
-        if (statusInterval) clearInterval(statusInterval);
-    });
+// ─── Clean up on unload ───
+window.addEventListener('beforeunload', function() {
+    if (statusInterval) clearInterval(statusInterval);
 });
