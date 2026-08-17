@@ -23,7 +23,6 @@
 
 <!-- EMBEDDED CSS: Integrated Notification Badge + Skeleton -->
 <style>
-    /* Wrapper to anchor the badge to the icon specifically */
     .nav-item .icon-wrap {
         position: relative;
         display: inline-flex;
@@ -32,8 +31,6 @@
         width: 24px;
         height: 24px;
     }
-
-    /* The Red Dot - Positioned relative to the icon wrapper */
     .nav-badge {
         position: absolute;
         top: -2px;
@@ -47,70 +44,22 @@
         pointer-events: none;
         box-shadow: 0 0 4px rgba(255, 77, 77, 0.6);
     }
-
     @keyframes subtle-pulse {
         0% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.1); opacity: 0.8; }
         100% { transform: scale(1); opacity: 1; }
     }
-    
-    .nav-badge {
-        animation: subtle-pulse 2s infinite ease-in-out;
-    }
-
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-    }
-
-    /* ✅ SKELETON LOADER */
-    .skeleton-loader {
-        display: none;
-        padding: 16px;
-        animation: skeletonFadeIn 0.3s ease;
-    }
+    .nav-badge { animation: subtle-pulse 2s infinite ease-in-out; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .skeleton-loader { display: none; padding: 16px; animation: skeletonFadeIn 0.3s ease; }
     .skeleton-loader.active { display: block; }
     @keyframes skeletonFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .skeleton-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .skeleton-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-        background-size: 200% 100%;
-        animation: skeletonShimmer 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .skeleton-line {
-        height: 12px;
-        border-radius: 4px;
-        background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-        background-size: 200% 100%;
-        animation: skeletonShimmer 1.5s ease-in-out infinite;
-    }
-
+    .skeleton-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .skeleton-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+    .skeleton-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .skeleton-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
     .skeleton-line-title { width: 65%; height: 14px; }
     .skeleton-line-sub { width: 40%; height: 10px; }
-
-    /* Wave effect delays */
     .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
     .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
     .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
@@ -119,67 +68,22 @@
     .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
     .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
     .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
-
-    @keyframes skeletonShimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-
-    /* Hide content until loaded */
-    #main-content {
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    body.content-loaded #main-content {
-        opacity: 1;
-    }
-    body:not(.content-loaded) .skeleton-loader {
-        display: block;
-    }
-    body.content-loaded .skeleton-loader {
-        display: none;
-    }
+    @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    #main-content { opacity: 0; transition: opacity 0.3s ease; }
+    body.content-loaded #main-content { opacity: 1; }
+    body:not(.content-loaded) .skeleton-loader { display: block; }
+    body.content-loaded .skeleton-loader { display: none; }
 </style>
 </head>
 <body>
 
 <!-- ─── SKELETON LOADER ─── -->
 <div class="skeleton-loader active" id="skeletonLoader">
-    <div class="skeleton-item">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title"></div>
-            <div class="skeleton-line skeleton-line-sub"></div>
-        </div>
-    </div>
-    <div class="skeleton-item">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title"></div>
-            <div class="skeleton-line skeleton-line-sub"></div>
-        </div>
-    </div>
-    <div class="skeleton-item">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title"></div>
-            <div class="skeleton-line skeleton-line-sub"></div>
-        </div>
-    </div>
-    <div class="skeleton-item">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title"></div>
-            <div class="skeleton-line skeleton-line-sub"></div>
-        </div>
-    </div>
-    <div class="skeleton-item">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title"></div>
-            <div class="skeleton-line skeleton-line-sub"></div>
-        </div>
-    </div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
 </div>
 
 <!-- ─── MAIN CONTENT ─── -->
@@ -359,8 +263,6 @@
             <polyline points="3 4 3 11 10 11"/>
         </svg>
     </a>
-    
-    <!-- ✅ NOTIFICATION BUTTON RESTORED WITH RED DOT -->
     <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
         <div class="icon-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -370,7 +272,6 @@
             <div class="nav-badge"></div>
         </div>
     </a>
-
     <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -383,9 +284,107 @@
 
 </div> <!-- End #main-content -->
 
+<!-- ✅ INSTANT CACHE LOADER — Runs before page.js downloads -->
+<script>
+(function() {
+    var BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    var CACHE_TTL = 300000; // 5 minutes
+    var token = localStorage.getItem('token');
+
+    // ── Step 1: Show cached values instantly ──
+    try {
+        var planRaw = localStorage.getItem('skyline_plan');
+        if (planRaw) {
+            var planCache = JSON.parse(planRaw);
+            if (Date.now() - planCache.timestamp < CACHE_TTL) {
+                var chip = document.getElementById('planChip');
+                if (chip) {
+                    var p = planCache.tier || 'free';
+                    chip.className = 'plan-chip ' + p;
+                    chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+                }
+            }
+        }
+    } catch(e) {}
+
+    try {
+        var connRaw = localStorage.getItem('skyline_connection');
+        if (connRaw) {
+            var connCache = JSON.parse(connRaw);
+            if (Date.now() - connCache.timestamp < CACHE_TTL) {
+                var bar = document.getElementById('statusBar');
+                var txt = document.getElementById('statusText');
+                if (bar && txt) {
+                    if (connCache.connected && !connCache.isExpired) {
+                        bar.className = 'status-bar connected';
+                        txt.textContent = connCache.email ? '✅ Connected as ' + connCache.email : '✅ Email connected';
+                    } else if (connCache.connected && connCache.isExpired) {
+                        bar.className = 'status-bar disconnected';
+                        txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
+                    } else {
+                        bar.className = 'status-bar disconnected';
+                        txt.textContent = '❌ No email connected — Connect in Dashboard';
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+
+    // ── Step 2: Hide skeleton, show main content immediately ──
+    document.body.classList.add('content-loaded');
+
+    // ── Step 3: Fetch fresh data in background, update cache ──
+    if (!token) return;
+
+    // Fetch plan
+    fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(user) {
+        if (user) {
+            var p = user.subscriptionTier || 'free';
+            localStorage.setItem('skyline_plan', JSON.stringify({ tier: p, timestamp: Date.now() }));
+            var chip = document.getElementById('planChip');
+            if (chip) {
+                chip.className = 'plan-chip ' + p;
+                chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+            }
+        }
+    }).catch(function() {});
+
+    // Fetch connection status
+    fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(data) {
+        if (data) {
+            localStorage.setItem('skyline_connection', JSON.stringify({
+                connected: data.connected,
+                isExpired: data.isExpired,
+                email: data.email || '',
+                timestamp: Date.now()
+            }));
+            var bar = document.getElementById('statusBar');
+            var txt = document.getElementById('statusText');
+            if (bar && txt) {
+                if (data.connected && !data.isExpired) {
+                    bar.className = 'status-bar connected';
+                    txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected';
+                } else if (data.connected && data.isExpired) {
+                    bar.className = 'status-bar disconnected';
+                    txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
+                } else {
+                    bar.className = 'status-bar disconnected';
+                    txt.textContent = '❌ No email connected — Connect in Dashboard';
+                }
+            }
+        }
+    }).catch(function() {});
+})();
+</script>
+
 <!-- ✅ SESSION CHECK - Auto-logout after 3 days -->
 <script src="session-check.js"></script>
 
 <script src="page.js"></script>
 </body>
-    </html>
+                                                                                                                                                         </html>
+        
