@@ -1,6 +1,7 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
 // NOTIFICATION BUTTON RESTORED (Visual Only)
+// WITH SKELETON LOADER SUPPORT
 // ============================================================
 
 // ── CONFIG 
@@ -18,7 +19,7 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ PERF: Cache API responses
+// ✅ PERF: Cache API responses (simplified - no complex cache)
 var _cachedPlan = null;
 var _cachedPlanTime = 0;
 var _cachedStatus = null;
@@ -26,8 +27,19 @@ var _cachedStatusTime = 0;
 var CACHE_TTL = 60000; // 60 seconds
 
 // ──────────────────────────────────────────────────────────────
+//  ✅ SKELETON LOADER
+// ──────────────────────────────────────────────────────────────
+
+function showSkeleton() {
+    document.body.classList.add('loaded');
+}
+
+function hideSkeleton() {
+    document.body.classList.add('content-loaded');
+}
+
+// ──────────────────────────────────────────────────────────────
 //  ✅ NOTIFICATION BADGE - PERMANENT VISUAL ONLY
-//  No JS logic required. The dot is hardcoded in HTML/CSS.
 // ──────────────────────────────────────────────────────────────
 
 console.log('✅ [PAGE] Notification button restored with permanent red dot.');
@@ -285,10 +297,22 @@ function clearChat() {
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function() {
+    // ✅ Show skeleton immediately
+    showSkeleton();
+    
     document.getElementById('clearSessionBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
     document.getElementById('newChatBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
 
-    Promise.all([checkPlan(), updateStatus()]).catch(function() {});
+    // ✅ Load data in parallel
+    Promise.all([checkPlan(), updateStatus()])
+        .then(function() {
+            // ✅ Hide skeleton when data loads
+            hideSkeleton();
+        })
+        .catch(function() {
+            // ✅ Hide skeleton even if error
+            hideSkeleton();
+        });
 
     statusInterval = setInterval(updateStatus, 120000);
 
