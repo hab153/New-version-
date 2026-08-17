@@ -1,10 +1,8 @@
 // ============================================================
 // page.js - Skyline AA-1 Business Agent
-// NOTIFICATION BUTTON RESTORED (Visual Only)
-// WITH SKELETON LOADER SUPPORT
 // ============================================================
 
-// ── CONFIG 
+// ── CONFIG ─
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 if (!token) window.location.href = 'login.html';
@@ -19,30 +17,11 @@ let statusInterval = null;
 let assistantSessionId = null;
 let assistantConversationHistory = [];
 
-// ✅ PERF: Cache API responses (simplified - no complex cache)
 var _cachedPlan = null;
 var _cachedPlanTime = 0;
 var _cachedStatus = null;
 var _cachedStatusTime = 0;
-var CACHE_TTL = 60000; // 60 seconds
-
-// ──────────────────────────────────────────────────────────────
-//  ✅ SKELETON LOADER
-// ──────────────────────────────────────────────────────────────
-
-function showSkeleton() {
-    document.body.classList.add('loaded');
-}
-
-function hideSkeleton() {
-    document.body.classList.add('content-loaded');
-}
-
-// ──────────────────────────────────────────────────────────────
-//  ✅ NOTIFICATION BADGE - PERMANENT VISUAL ONLY
-// ──────────────────────────────────────────────────────────────
-
-console.log('✅ [PAGE] Notification button restored with permanent red dot.');
+var CACHE_TTL = 60000;
 
 // ──────────────────────────────────────────────────────────────
 //  UTILITY FUNCTIONS
@@ -297,22 +276,10 @@ function clearChat() {
 // ──────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function() {
-    // ✅ Show skeleton immediately
-    showSkeleton();
-    
     document.getElementById('clearSessionBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
     document.getElementById('newChatBtn').addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
 
-    // ✅ Load data in parallel
-    Promise.all([checkPlan(), updateStatus()])
-        .then(function() {
-            // ✅ Hide skeleton when data loads
-            hideSkeleton();
-        })
-        .catch(function() {
-            // ✅ Hide skeleton even if error
-            hideSkeleton();
-        });
+    Promise.all([checkPlan(), updateStatus()]).catch(function() {});
 
     statusInterval = setInterval(updateStatus, 120000);
 
