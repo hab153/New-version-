@@ -65,7 +65,6 @@
             background-size: 180px;
         }
 
-        /* ✅ SKELETON — fixed overlay, not a flex child */
         .skeleton-loader {
             position: fixed; top: 0; left: 0; right: 0; bottom: var(--nav-h);
             z-index: 50; background: var(--void); padding: var(--space-lg);
@@ -95,7 +94,6 @@
         .toast.warning { background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; }
         @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-        /* ✅ CONTAINER — direct flex child of body, scrolls properly */
         .container { max-width: 820px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); width: 100%; flex: 1 1 0; min-height: 0; overflow-y: auto; padding-bottom: var(--space-xl); position: relative; z-index: 1; }
 
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
@@ -170,7 +168,6 @@
         .modal-actions .btn-save { background: var(--gold); color: #0d0a04; }
         .modal-actions .btn-save:hover { background: var(--gold-bright); }
 
-        /* ✅ BOTTOM NAV — normal flex child, NOT position:fixed */
         .bottom-nav { height: var(--nav-h); display: flex !important; align-items: center; justify-content: space-around; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; position: relative; z-index: 10; padding: 0 var(--space-sm); visibility: visible !important; opacity: 1 !important; }
         .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); }
         .nav-item { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-xs); flex: 1; cursor: pointer; padding: var(--space-xs) 0; text-decoration: none; color: var(--t3); transition: color 0.25s; position: relative; border: none; background: none; visibility: visible !important; opacity: 1 !important; }
@@ -197,7 +194,6 @@
 </head>
 <body>
 
-<!-- ✅ SKELETON — fixed overlay -->
 <div class="skeleton-loader" id="skeletonLoader">
     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
     <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
@@ -470,7 +466,11 @@
         renderSessions(filtered);
     });
 
-    document.addEventListener('DOMContentLoaded', function() { loadSessions(); });
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSessions();
+        // Failsafe: remove skeleton after 10s max if API never responds
+        setTimeout(function() { hideSkeleton(); }, 10000);
+    });
 </script>
 
 </body>
