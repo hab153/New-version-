@@ -5,89 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Skyline · Business Agent</title>
 
-<!-- ✅ PERF #1: Preconnect to backend -->
 <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
 <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
 
-<!-- ✅ PERF #2: DOMPurify deferred -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
 
-<!-- ✅ PERF #3: Non-blocking Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
 
-<!-- External Stylesheet -->
 <link rel="stylesheet" href="page.css" />
 
-<!-- EMBEDDED CSS: Integrated Notification Badge + Skeleton -->
 <style>
-    .nav-item .icon-wrap {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-    }
-    .nav-badge {
-        position: absolute;
-        top: -2px;
-        right: -2px;
-        width: 8px;
-        height: 8px;
-        background-color: #ff4d4d;
-        border-radius: 50%;
-        border: 1.5px solid #121212;
-        z-index: 10;
-        pointer-events: none;
-        box-shadow: 0 0 4px rgba(255, 77, 77, 0.6);
-    }
-    @keyframes subtle-pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-    .nav-badge { animation: subtle-pulse 2s infinite ease-in-out; }
+    /* ✅ Nav badge */
+    .nav-item .icon-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
+    .nav-badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background-color: #ff4d4d; border-radius: 50%; border: 1.5px solid #121212; z-index: 10; pointer-events: none; box-shadow: 0 0 4px rgba(255,77,77,0.6); animation: subtle-pulse 2s infinite ease-in-out; }
+    @keyframes subtle-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .skeleton-loader { display: none; padding: 16px; animation: skeletonFadeIn 0.3s ease; }
-    .skeleton-loader.active { display: block; }
-    @keyframes skeletonFadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .skeleton-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-    .skeleton-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
-    .skeleton-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-    .skeleton-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
-    .skeleton-line-title { width: 65%; height: 14px; }
-    .skeleton-line-sub { width: 40%; height: 10px; }
-    .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
-    .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
-    .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
-    .skeleton-item:nth-child(4) .skeleton-line { animation-delay: 0.20s; }
-    .skeleton-item:nth-child(5) .skeleton-line { animation-delay: 0.25s; }
-    .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
-    .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
-    .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
-    @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    #main-content { opacity: 0; transition: opacity 0.3s ease; }
-    body.content-loaded #main-content { opacity: 1; }
-    body:not(.content-loaded) .skeleton-loader { display: block; }
-    body.content-loaded .skeleton-loader { display: none; }
+
+    /* ✅ INLINE SKELETON — plan chip shimmer */
+    .plan-chip.skeleton {
+        background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 75%) !important;
+        background-size: 200% 100% !important;
+        animation: chipShimmer 1.5s ease-in-out infinite !important;
+        color: transparent !important;
+        border-color: transparent !important;
+        min-width: 40px;
+    }
+    @keyframes chipShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ✅ INLINE SKELETON — status bar shimmer */
+    .status-bar.skeleton .status-pip { visibility: hidden; }
+    .status-bar.skeleton #statusText {
+        background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+        background-size: 200% 100%;
+        animation: chipShimmer 1.5s ease-in-out infinite;
+        color: transparent !important;
+        border-radius: 4px;
+        padding: 2px 60px;
+    }
 </style>
 </head>
 <body>
-
-<!-- ─── SKELETON LOADER ─── -->
-<div class="skeleton-loader active" id="skeletonLoader">
-    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
-</div>
-
-<!-- ─── MAIN CONTENT ─── -->
-<div id="main-content">
 
 <!-- ─── TOP BAR ─── -->
 <header class="topbar">
@@ -101,7 +61,7 @@
             <span class="brand-name">Sky<em>line</em></span>
             <span class="brand-sub">AA-1 · Agent</span>
         </div>
-        <div id="planChip" class="plan-chip free">FREE</div>
+        <div id="planChip" class="plan-chip free skeleton">FREE</div>
     </div>
     <div class="topbar-center">
         <div class="pulse-ring"></div>
@@ -118,7 +78,7 @@
 </header>
 
 <!-- ─── STATUS BAR ─── -->
-<div id="statusBar" class="status-bar">
+<div id="statusBar" class="status-bar skeleton">
     <span class="status-pip"></span>
     <span id="statusText">Checking email connection…</span>
 </div>
@@ -282,27 +242,25 @@
     </a>
 </nav>
 
-</div> <!-- End #main-content -->
-
-<!-- ✅ INSTANT CACHE LOADER — Runs before page.js downloads -->
+<!-- ✅ INSTANT CACHE LOADER + SKELETON REMOVAL -->
 <script>
 (function() {
     var BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    var CACHE_TTL = 300000; // 5 minutes
+    var CACHE_TTL = 300000;
     var token = localStorage.getItem('token');
+    var chip = document.getElementById('planChip');
+    var bar = document.getElementById('statusBar');
+    var txt = document.getElementById('statusText');
 
-    // ── Step 1: Show cached values instantly ──
+    // ── Step 1: Show cached values instantly, remove skeleton ──
     try {
         var planRaw = localStorage.getItem('skyline_plan');
         if (planRaw) {
             var planCache = JSON.parse(planRaw);
-            if (Date.now() - planCache.timestamp < CACHE_TTL) {
-                var chip = document.getElementById('planChip');
-                if (chip) {
-                    var p = planCache.tier || 'free';
-                    chip.className = 'plan-chip ' + p;
-                    chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-                }
+            if (Date.now() - planCache.timestamp < CACHE_TTL && chip) {
+                var p = planCache.tier || 'free';
+                chip.className = 'plan-chip ' + p;
+                chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
             }
         }
     } catch(e) {}
@@ -311,64 +269,12 @@
         var connRaw = localStorage.getItem('skyline_connection');
         if (connRaw) {
             var connCache = JSON.parse(connRaw);
-            if (Date.now() - connCache.timestamp < CACHE_TTL) {
-                var bar = document.getElementById('statusBar');
-                var txt = document.getElementById('statusText');
-                if (bar && txt) {
-                    if (connCache.connected && !connCache.isExpired) {
-                        bar.className = 'status-bar connected';
-                        txt.textContent = connCache.email ? '✅ Connected as ' + connCache.email : '✅ Email connected';
-                    } else if (connCache.connected && connCache.isExpired) {
-                        bar.className = 'status-bar disconnected';
-                        txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
-                    } else {
-                        bar.className = 'status-bar disconnected';
-                        txt.textContent = '❌ No email connected — Connect in Dashboard';
-                    }
-                }
-            }
-        }
-    } catch(e) {}
-
-    // ── Step 2: Hide skeleton, show main content immediately ──
-    document.body.classList.add('content-loaded');
-
-    // ── Step 3: Fetch fresh data in background, update cache ──
-    if (!token) return;
-
-    // Fetch plan
-    fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) {
-        if (user) {
-            var p = user.subscriptionTier || 'free';
-            localStorage.setItem('skyline_plan', JSON.stringify({ tier: p, timestamp: Date.now() }));
-            var chip = document.getElementById('planChip');
-            if (chip) {
-                chip.className = 'plan-chip ' + p;
-                chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-            }
-        }
-    }).catch(function() {});
-
-    // Fetch connection status
-    fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(data) {
-        if (data) {
-            localStorage.setItem('skyline_connection', JSON.stringify({
-                connected: data.connected,
-                isExpired: data.isExpired,
-                email: data.email || '',
-                timestamp: Date.now()
-            }));
-            var bar = document.getElementById('statusBar');
-            var txt = document.getElementById('statusText');
-            if (bar && txt) {
-                if (data.connected && !data.isExpired) {
+            if (Date.now() - connCache.timestamp < CACHE_TTL && bar && txt) {
+                bar.classList.remove('skeleton');
+                if (connCache.connected && !connCache.isExpired) {
                     bar.className = 'status-bar connected';
-                    txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected';
-                } else if (data.connected && data.isExpired) {
+                    txt.textContent = connCache.email ? '✅ Connected as ' + connCache.email : '✅ Email connected';
+                } else if (connCache.connected && connCache.isExpired) {
                     bar.className = 'status-bar disconnected';
                     txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
                 } else {
@@ -377,14 +283,57 @@
                 }
             }
         }
-    }).catch(function() {});
+    } catch(e) {}
+
+    // ── Step 2: Fetch fresh data in background ──
+    if (!token) return;
+
+    fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(user) {
+        if (user && chip) {
+            var p = user.subscriptionTier || 'free';
+            localStorage.setItem('skyline_plan', JSON.stringify({ tier: p, timestamp: Date.now() }));
+            chip.className = 'plan-chip ' + p;
+            chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+        }
+    }).catch(function() {
+        if (chip) chip.classList.remove('skeleton');
+    });
+
+    fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(data) {
+        if (data && bar && txt) {
+            localStorage.setItem('skyline_connection', JSON.stringify({
+                connected: data.connected, isExpired: data.isExpired,
+                email: data.email || '', timestamp: Date.now()
+            }));
+            bar.classList.remove('skeleton');
+            if (data.connected && !data.isExpired) {
+                bar.className = 'status-bar connected';
+                txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected';
+            } else if (data.connected && data.isExpired) {
+                bar.className = 'status-bar disconnected';
+                txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
+            } else {
+                bar.className = 'status-bar disconnected';
+                txt.textContent = '❌ No email connected — Connect in Dashboard';
+            }
+        }
+    }).catch(function() {
+        if (bar) bar.classList.remove('skeleton');
+    });
+
+    // ── Failsafe: remove skeleton after 10s max ──
+    setTimeout(function() {
+        if (chip) chip.classList.remove('skeleton');
+        if (bar) bar.classList.remove('skeleton');
+    }, 10000);
 })();
 </script>
 
-<!-- ✅ SESSION CHECK - Auto-logout after 3 days -->
 <script src="session-check.js"></script>
-
 <script src="page.js"></script>
 </body>
-                                                                                                                                                         </html>
-        
+    </html>
