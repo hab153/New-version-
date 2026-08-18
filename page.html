@@ -4,89 +4,387 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Skyline · Business Agent</title>
+
+<!-- ✅ PERF #1: Preconnect to backend -->
 <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
 <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
+
+<!-- ✅ PERF #2: DOMPurify deferred -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
+
+<!-- ✅ PERF #3: Non-blocking Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+
+<!-- External Stylesheet -->
 <link rel="stylesheet" href="page.css" />
+
+<!-- EMBEDDED CSS: Integrated Notification Badge + Skeleton -->
 <style>
-    .nav-item .icon-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
-    .nav-badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background-color: #ff4d4d; border-radius: 50%; border: 1.5px solid #121212; z-index: 10; pointer-events: none; box-shadow: 0 0 4px rgba(255,77,77,0.6); animation: subtle-pulse 2s infinite ease-in-out; }
-    @keyframes subtle-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+    .nav-item .icon-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+    }
+    .nav-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 8px;
+        height: 8px;
+        background-color: #ff4d4d;
+        border-radius: 50%;
+        border: 1.5px solid #121212;
+        z-index: 10;
+        pointer-events: none;
+        box-shadow: 0 0 4px rgba(255, 77, 77, 0.6);
+    }
+    @keyframes subtle-pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .nav-badge { animation: subtle-pulse 2s infinite ease-in-out; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .skeleton-loader { display: none; padding: 16px; animation: skeletonFadeIn 0.3s ease; }
+    .skeleton-loader.active { display: block; }
+    @keyframes skeletonFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .skeleton-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .skeleton-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+    .skeleton-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .skeleton-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+    .skeleton-line-title { width: 65%; height: 14px; }
+    .skeleton-line-sub { width: 40%; height: 10px; }
+    .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
+    .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
+    .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
+    .skeleton-item:nth-child(4) .skeleton-line { animation-delay: 0.20s; }
+    .skeleton-item:nth-child(5) .skeleton-line { animation-delay: 0.25s; }
+    .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
+    .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
+    .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
+    @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    #main-content { opacity: 0; transition: opacity 0.3s ease; }
+    body.content-loaded #main-content { opacity: 1; }
+    body:not(.content-loaded) .skeleton-loader { display: block; }
+    body.content-loaded .skeleton-loader { display: none; }
 </style>
 </head>
 <body>
 
+<!-- ─── SKELETON LOADER ─── -->
+<div class="skeleton-loader active" id="skeletonLoader">
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+</div>
+
+<!-- ─── MAIN CONTENT ─── -->
+<div id="main-content">
+
+<!-- ─── TOP BAR ─── -->
 <header class="topbar">
     <div class="brand">
-        <div class="brand-mark"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-        <div class="brand-text"><span class="brand-name">Sky<em>line</em></span><span class="brand-sub">AA-1 · Agent</span></div>
+        <div class="brand-mark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+        </div>
+        <div class="brand-text">
+            <span class="brand-name">Sky<em>line</em></span>
+            <span class="brand-sub">AA-1 · Agent</span>
+        </div>
         <div id="planChip" class="plan-chip free">FREE</div>
     </div>
-    <div class="topbar-center"><div class="pulse-ring"></div><span class="topbar-label">Business Agent</span></div>
+    <div class="topbar-center">
+        <div class="pulse-ring"></div>
+        <span class="topbar-label">Business Agent</span>
+    </div>
     <div class="topbar-right">
-        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-        <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
+        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button>
     </div>
 </header>
 
-<div id="statusBar" class="status-bar"><span class="status-pip"></span><span id="statusText">Checking email connection…</span></div>
-
-<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">↑ New reply detected — tap to open Dashboard</div>
-
-<div class="mode-selector">
-    <button class="mode-btn lead-mode active" id="leadModeBtn" onclick="switchMode('lead')"><span class="mode-icon">⚡</span><span class="mode-label">Lead</span></button>
-    <button class="mode-btn assistant-mode" id="assistantModeBtn" onclick="switchMode('assistant')"><span class="mode-icon">🤖</span><span class="mode-label">Assistant</span></button>
+<!-- ─── STATUS BAR ─── -->
+<div id="statusBar" class="status-bar">
+    <span class="status-pip"></span>
+    <span id="statusText">Checking email connection…</span>
 </div>
 
+<!-- ─── REPLY NOTIFICATION ─── -->
+<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
+    ↑ New reply detected — tap to open Dashboard
+</div>
+
+<!-- ─── MODE SELECTOR ─── -->
+<div class="mode-selector">
+    <button class="mode-btn lead-mode active" id="leadModeBtn" onclick="switchMode('lead')">
+        <span class="mode-icon">⚡</span>
+        <span class="mode-label">Lead</span>
+    </button>
+    <button class="mode-btn assistant-mode" id="assistantModeBtn" onclick="switchMode('assistant')">
+        <span class="mode-icon">🤖</span>
+        <span class="mode-label">Assistant</span>
+    </button>
+</div>
+
+<!-- ─── LEAD MODE CONTAINER ─── -->
 <div class="mode-container active" id="leadModeContainer">
     <div id="setupWizard">
-        <div class="wizard-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Prospecting Engine · v2</span><div class="eyebrow-line right"></div></div>
-        <div class="wizard-card"><div class="wizard-card-bar"></div><div class="wizard-body">
-            <h2 class="wizard-heading">Define your <em>target.</em></h2>
-            <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
-            <div class="wizard-divider"><div class="wizard-divider-line"></div><span class="wizard-divider-text">Search Parameters</span><div class="wizard-divider-line"></div></div>
-            <form id="targetForm" autocomplete="off"><div class="form-stack">
-                <div class="form-row"><div class="form-field"><label class="field-label" for="industry">Industry</label><input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off"></div><div class="form-field"><label class="field-label" for="region">Region</label><input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off"></div></div>
-                <div class="form-row"><div class="form-field"><label class="field-label" for="companySize">Company size</label><select id="companySize" class="field-input"><option value="Any">Any size</option><option value="1-10">1–10</option><option value="11-50">11–50</option><option value="51-200">51–200</option><option value="201-500">201–500</option><option value="500+">500+</option></select></div><div class="form-field"><label class="field-label" for="jobTitle">Job title</label><input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off"></div></div>
+        <div class="wizard-eyebrow">
+            <div class="eyebrow-line"></div>
+            <span class="eyebrow-text">Prospecting Engine · v2</span>
+            <div class="eyebrow-line right"></div>
+        </div>
+        <div class="wizard-card">
+            <div class="wizard-card-bar"></div>
+            <div class="wizard-body">
+                <h2 class="wizard-heading">Define your <em>target.</em></h2>
+                <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
+                <div class="wizard-divider">
+                    <div class="wizard-divider-line"></div>
+                    <span class="wizard-divider-text">Search Parameters</span>
+                    <div class="wizard-divider-line"></div>
+                </div>
+                <form id="targetForm" autocomplete="off">
+                    <div class="form-stack">
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="field-label" for="industry">Industry</label>
+                                <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label" for="region">Region</label>
+                                <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="field-label" for="companySize">Company size</label>
+                                <select id="companySize" class="field-input">
+                                    <option value="Any">Any size</option>
+                                    <option value="1-10">1–10</option>
+                                    <option value="11-50">11–50</option>
+                                    <option value="51-200">51–200</option>
+                                    <option value="201-500">201–500</option>
+                                    <option value="500+">500+</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label" for="jobTitle">Job title</label>
+                                <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="launch-btn" id="launchBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        Start Search
+                    </button>
+                </form>
             </div>
-            <button type="submit" class="launch-btn" id="launchBtn"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Start Search</button>
-        </form></div></div></div>
-    <div class="chat-area" id="leadChatArea"><div id="leadMsgContainer"></div></div>
+        </div>
+    </div>
+
+    <div class="chat-area" id="leadChatArea">
+        <div id="leadMsgContainer"></div>
+    </div>
+
     <div id="reviewPanel" style="display:none;"></div>
-    <div class="input-bar" id="leadInputBar"><div class="input-shell"><textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea><button class="send-btn" id="leadSendBtn" disabled aria-label="Send"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div><div class="input-foot"><span class="input-tag">Lead Search</span><span class="char-ct" id="leadCharCount"></span></div></div>
+
+    <div class="input-bar" id="leadInputBar">
+        <div class="input-shell">
+            <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
+            <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+        </div>
+        <div class="input-foot">
+            <span class="input-tag">Lead Search</span>
+            <span class="char-ct" id="leadCharCount"></span>
+        </div>
+    </div>
 </div>
 
+<!-- ─── ASSISTANT MODE CONTAINER ─── -->
 <div class="mode-container" id="assistantModeContainer">
-    <div class="chat-area active" id="assistantChatArea"><div id="assistantMsgContainer"><div class="msg-row ai"><div class="av">AI</div><div class="bubble-wrap"><div class="bubble">👋 Hello! I'm your business assistant. Ask me anything about your business, leads, or strategy!</div><div class="msg-time">Just now</div></div></div></div>
-    <div class="input-bar active" id="assistantInputBar"><div class="input-shell"><textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea><button class="send-btn" id="assistantSendBtn" disabled aria-label="Send"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div><div class="input-foot"><span class="input-tag">Assistant</span><span class="char-ct" id="assistantCharCount"></span></div></div>
+    <div class="chat-area active" id="assistantChatArea">
+        <div id="assistantMsgContainer">
+            <div class="msg-row ai">
+                <div class="av">AI</div>
+                <div class="bubble-wrap">
+                    <div class="bubble">👋 Hello! I'm your business assistant. Ask me anything about your business, leads, or strategy!</div>
+                    <div class="msg-time">Just now</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-bar active" id="assistantInputBar">
+        <div class="input-shell">
+            <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
+            <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+        </div>
+        <div class="input-foot">
+            <span class="input-tag">Assistant</span>
+            <span class="char-ct" id="assistantCharCount"></span>
+        </div>
+    </div>
 </div>
 
+<!-- ─── BOTTOM NAV ─── -->
 <nav class="bottom-nav" aria-label="Main navigation">
-    <a href="page.html" class="nav-item nav-home active" aria-label="Home"><div class="home-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></a>
-    <a href="history.html" class="nav-item" aria-label="History"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg></a>
-    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications"><div class="icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="nav-badge"></div></div></a>
-    <a href="dashboard.html" class="nav-item" aria-label="Dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+    <a href="page.html" class="nav-item nav-home active" aria-label="Home">
+        <div class="home-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+    </a>
+    <a href="history.html" class="nav-item" aria-label="History">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 15"/>
+            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
+            <polyline points="3 4 3 11 10 11"/>
+        </svg>
+    </a>
+    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
+        <div class="icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <div class="nav-badge"></div>
+        </div>
+    </a>
+    <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+    </a>
 </nav>
 
-<!-- ✅ INSTANT CACHE LOADER — Shows cached plan + connection before page.js loads -->
+</div> <!-- End #main-content -->
+
+<!-- ✅ INSTANT CACHE LOADER — Runs before page.js downloads -->
 <script>
 (function() {
-    var B = 'https://skylineapp-backend-file.onrender.com';
-    var T = 300000;
-    var t = localStorage.getItem('token');
-    try { var pr = localStorage.getItem('skyline_plan'); if (pr) { var pc = JSON.parse(pr); if (Date.now() - pc.timestamp < T) { var c = document.getElementById('planChip'); if (c) { var p = pc.tier || 'free'; c.className = 'plan-chip ' + p; c.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE'; } } } } catch(e) {}
-    try { var cr = localStorage.getItem('skyline_connection'); if (cr) { var cc = JSON.parse(cr); if (Date.now() - cc.timestamp < T) { var b = document.getElementById('statusBar'); var x = document.getElementById('statusText'); if (b && x) { if (cc.connected && !cc.isExpired) { b.className = 'status-bar connected'; x.textContent = cc.email ? '✅ Connected as ' + cc.email : '✅ Email connected'; } else if (cc.connected && cc.isExpired) { b.className = 'status-bar disconnected'; x.textContent = '⚠️ Session expired — Reconnect in Dashboard'; } else { b.className = 'status-bar disconnected'; x.textContent = '❌ No email connected — Connect in Dashboard'; } } } } } catch(e) {}
-    if (!t) return;
-    fetch(B + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + t } }).then(function(r) { return r.ok ? r.json() : null; }).then(function(u) { if (u) { var p = u.subscriptionTier || 'free'; localStorage.setItem('skyline_plan', JSON.stringify({ tier: p, timestamp: Date.now() })); var c = document.getElementById('planChip'); if (c) { c.className = 'plan-chip ' + p; c.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE'; } } }).catch(function() {});
-    fetch(B + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' } }).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) { if (d) { localStorage.setItem('skyline_connection', JSON.stringify({ connected: d.connected, isExpired: d.isExpired, email: d.email || '', timestamp: Date.now() })); var b = document.getElementById('statusBar'); var x = document.getElementById('statusText'); if (b && x) { if (d.connected && !d.isExpired) { b.className = 'status-bar connected'; x.textContent = d.email ? '✅ Connected as ' + d.email : '✅ Email connected'; } else if (d.connected && d.isExpired) { b.className = 'status-bar disconnected'; x.textContent = '⚠️ Session expired — Reconnect in Dashboard'; } else { b.className = 'status-bar disconnected'; x.textContent = '❌ No email connected — Connect in Dashboard'; } } } }).catch(function() {});
+    var BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    var CACHE_TTL = 300000; // 5 minutes
+    var token = localStorage.getItem('token');
+
+    // ── Step 1: Show cached values instantly ──
+    try {
+        var planRaw = localStorage.getItem('skyline_plan');
+        if (planRaw) {
+            var planCache = JSON.parse(planRaw);
+            if (Date.now() - planCache.timestamp < CACHE_TTL) {
+                var chip = document.getElementById('planChip');
+                if (chip) {
+                    var p = planCache.tier || 'free';
+                    chip.className = 'plan-chip ' + p;
+                    chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+                }
+            }
+        }
+    } catch(e) {}
+
+    try {
+        var connRaw = localStorage.getItem('skyline_connection');
+        if (connRaw) {
+            var connCache = JSON.parse(connRaw);
+            if (Date.now() - connCache.timestamp < CACHE_TTL) {
+                var bar = document.getElementById('statusBar');
+                var txt = document.getElementById('statusText');
+                if (bar && txt) {
+                    if (connCache.connected && !connCache.isExpired) {
+                        bar.className = 'status-bar connected';
+                        txt.textContent = connCache.email ? '✅ Connected as ' + connCache.email : '✅ Email connected';
+                    } else if (connCache.connected && connCache.isExpired) {
+                        bar.className = 'status-bar disconnected';
+                        txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
+                    } else {
+                        bar.className = 'status-bar disconnected';
+                        txt.textContent = '❌ No email connected — Connect in Dashboard';
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+
+    // ── Step 2: Hide skeleton, show main content immediately ──
+    document.body.classList.add('content-loaded');
+
+    // ── Step 3: Fetch fresh data in background, update cache ──
+    if (!token) return;
+
+    // Fetch plan
+    fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(user) {
+        if (user) {
+            var p = user.subscriptionTier || 'free';
+            localStorage.setItem('skyline_plan', JSON.stringify({ tier: p, timestamp: Date.now() }));
+            var chip = document.getElementById('planChip');
+            if (chip) {
+                chip.className = 'plan-chip ' + p;
+                chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
+            }
+        }
+    }).catch(function() {});
+
+    // Fetch connection status
+    fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(data) {
+        if (data) {
+            localStorage.setItem('skyline_connection', JSON.stringify({
+                connected: data.connected,
+                isExpired: data.isExpired,
+                email: data.email || '',
+                timestamp: Date.now()
+            }));
+            var bar = document.getElementById('statusBar');
+            var txt = document.getElementById('statusText');
+            if (bar && txt) {
+                if (data.connected && !data.isExpired) {
+                    bar.className = 'status-bar connected';
+                    txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected';
+                } else if (data.connected && data.isExpired) {
+                    bar.className = 'status-bar disconnected';
+                    txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
+                } else {
+                    bar.className = 'status-bar disconnected';
+                    txt.textContent = '❌ No email connected — Connect in Dashboard';
+                }
+            }
+        }
+    }).catch(function() {});
 })();
 </script>
 
+<!-- ✅ SESSION CHECK - Auto-logout after 3 days -->
 <script src="session-check.js"></script>
+
 <script src="page.js"></script>
 </body>
-                                                                        </html>
+                                                                                                                                                         </html>
+        
