@@ -4,30 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>History | Skyline AA-1</title>
-
-    <!-- ✅ PERF #1: Preconnect to backend — warms up TLS+TCP before first API call -->
     <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
     <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
-
-    <!-- ✅ PERF #2: DOMPurify deferred — doesn't block page render -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
-
-    <!-- ✅ PERF #3: Non-blocking Google Fonts — page shows instantly with system fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
-
     <style>
-        /* ── Reset & Base ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        /* ============================================================
-           ✅ RESPONSIVE FIXES - Dynamic Scaling
-           ============================================================ */
-
         :root {
-            /* ─── Base colors ─── */
             --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
             --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
             --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
@@ -36,11 +22,7 @@
             --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --mono: 'Monaco', 'Menlo', monospace;
-
-            /* ─── Responsive scaling variables ─── */
             --scale-factor: clamp(0.85, 1.5vw, 1.15);
-
-            /* ─── Font sizes (scalable) ─── */
             --text-xs: clamp(0.55rem, 0.8vw, 0.7rem);
             --text-sm: clamp(0.65rem, 1vw, 0.8rem);
             --text-base: clamp(0.75rem, 1.2vw, 0.95rem);
@@ -48,728 +30,176 @@
             --text-xl: clamp(1rem, 2vw, 1.3rem);
             --text-2xl: clamp(1.2rem, 2.5vw, 1.6rem);
             --text-3xl: clamp(1.5rem, 3vw, 2rem);
-
-            /* ─── Spacing sizes (scalable) ─── */
             --space-xs: clamp(0.2rem, 0.4vw, 0.35rem);
             --space-sm: clamp(0.35rem, 0.6vw, 0.5rem);
             --space-md: clamp(0.5rem, 1vw, 0.75rem);
             --space-lg: clamp(0.75rem, 1.5vw, 1rem);
             --space-xl: clamp(1rem, 2vw, 1.5rem);
             --space-2xl: clamp(1.5rem, 3vw, 2.5rem);
-
-            /* ─── Component sizes ─── */
             --nav-h: clamp(56px, 8vw, 72px);
             --top-h: clamp(46px, 6vw, 58px);
             --bar-h: clamp(24px, 3vw, 32px);
-
-            /* ─── Border radius ─── */
             --r-xs: clamp(3px, 0.4vw, 5px);
             --r-sm: clamp(6px, 0.8vw, 10px);
             --r-md: clamp(10px, 1.5vw, 16px);
             --r-lg: clamp(14px, 2vw, 22px);
             --r-xl: clamp(20px, 2.8vw, 30px);
         }
-
-        html {
-            font-size: 16px;
-        }
-
+        html { font-size: 16px; }
         html, body { height: 100%; overflow: hidden; }
-        body {
-            background: var(--void);
-            color: var(--t1);
-            font-family: var(--ui);
-            font-size: var(--text-base);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
-        }
+        body { background: var(--void); color: var(--t1); font-family: var(--ui); font-size: var(--text-base); display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+        body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(201,168,76,0.055) 0%, transparent 60%), radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%), radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%); }
+        body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-size: 180px; }
 
-        body::before {
-            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(201,168,76,0.055) 0%, transparent 60%),
-            radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%),
-            radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%);
-        }
-        body::after {
-            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-            background-size: 180px;
-        }
+        /* ✅ SKELETON LOADER */
+        .skeleton-loader { padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md); }
+        .skeleton-item { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--surface); border: 1px solid var(--br-dim); border-radius: var(--r-lg); }
+        .skeleton-avatar { width: clamp(36px, 4vw, 44px); height: clamp(36px, 4vw, 44px); border-radius: 50%; flex-shrink: 0; background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+        .skeleton-content { flex: 1; display: flex; flex-direction: column; gap: var(--space-xs); }
+        .skeleton-line { height: 12px; border-radius: var(--r-xs); background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); background-size: 200% 100%; animation: skeletonShimmer 1.5s ease-in-out infinite; }
+        .skeleton-line-title { width: 65%; height: 14px; }
+        .skeleton-line-sub { width: 40%; height: 10px; }
+        .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
+        .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
+        .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
+        .skeleton-item:nth-child(4) .skeleton-line { animation-delay: 0.20s; }
+        .skeleton-item:nth-child(5) .skeleton-line { animation-delay: 0.25s; }
+        .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
+        @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        /* ── Circle Loading Spinner ── */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            background: var(--void);
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .loading-overlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .spinner-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-lg);
-        }
-        .circle-spinner {
-            width: clamp(36px, 5vw, 52px);
-            height: clamp(36px, 5vw, 52px);
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .loading-text {
-            font-family: var(--mono);
-            font-size: var(--text-sm);
-            color: var(--t3);
-            letter-spacing: 0.05em;
-        }
-
-        .toast {
-            position: fixed;
-            top: var(--space-lg);
-            left: 50%;
-            transform: translateX(-50%);
-            padding: var(--space-md) var(--space-xl);
-            border-radius: var(--r-sm);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: var(--text-sm);
-            font-weight: 600;
-            z-index: 9999;
-            display: none;
-            animation: slideDown 0.3s ease;
-            max-width: 90%;
-            text-align: center;
-        }
+        .toast { position: fixed; top: var(--space-lg); left: 50%; transform: translateX(-50%); padding: var(--space-md) var(--space-xl); border-radius: var(--r-sm); font-family: 'IBM Plex Mono', monospace; font-size: var(--text-sm); font-weight: 600; z-index: 9999; display: none; animation: slideDown 0.3s ease; max-width: 90%; text-align: center; }
         .toast.success { background: rgba(0, 230, 118, 0.15); border: 1px solid #00e676; color: #00e676; }
         .toast.error   { background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; }
         .toast.info    { background: rgba(0, 210, 255, 0.15); border: 1px solid #00d2ff; color: #00d2ff; }
         .toast.warning { background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
+        @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-        /* ── Container ─ */
-        .container {
-            max-width: 820px;
-            margin: 0 auto;
-            padding: var(--space-xl) var(--space-lg);
-            width: 100%;
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: calc(var(--nav-h) + var(--space-xl));
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ── Header ── */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: var(--space-sm);
-        }
-        .back-link {
-            color: var(--t3);
-            text-decoration: none;
-            font-family: var(--mono);
-            font-size: var(--text-sm);
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-xs);
-            transition: color 0.2s;
-        }
+        .container { max-width: 820px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); width: 100%; flex: 1; overflow-y: auto; padding-bottom: calc(var(--nav-h) + var(--space-xl)); position: relative; z-index: 1; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
+        .back-link { color: var(--t3); text-decoration: none; font-family: var(--mono); font-size: var(--text-sm); display: inline-flex; align-items: center; gap: var(--space-xs); transition: color 0.2s; }
         .back-link:hover { color: var(--gold); }
-        h1 {
-            font-size: var(--text-2xl);
-            font-weight: 600;
-            margin-bottom: var(--space-xs);
-        }
+        h1 { font-size: var(--text-2xl); font-weight: 600; margin-bottom: var(--space-xs); }
         h1 .accent { color: var(--gold); font-weight: 300; }
-        .sub {
-            color: var(--t3);
-            font-size: var(--text-sm);
-            margin-bottom: var(--space-xl);
-        }
-
-        /* ── Search ── */
+        .sub { color: var(--t3); font-size: var(--text-sm); margin-bottom: var(--space-xl); }
         .search-wrap { margin-bottom: var(--space-lg); }
-        .search-shell {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            background: var(--surface);
-            border: 1px solid var(--br-dim);
-            border-radius: var(--r-sm);
-            padding: 0 var(--space-md);
-            transition: border-color 0.2s;
-        }
+        .search-shell { display: flex; align-items: center; gap: var(--space-sm); background: var(--surface); border: 1px solid var(--br-dim); border-radius: var(--r-sm); padding: 0 var(--space-md); transition: border-color 0.2s; }
         .search-shell:focus-within { border-color: rgba(201,168,76,0.35); }
-        .search-shell input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--t1);
-            padding: var(--space-md) 0;
-            font-family: var(--ui);
-            font-size: var(--text-base);
-            outline: none;
-        }
+        .search-shell input { flex: 1; background: transparent; border: none; color: var(--t1); padding: var(--space-md) 0; font-family: var(--ui); font-size: var(--text-base); outline: none; }
         .search-shell input::placeholder { color: var(--t3); }
-        .search-shell .count {
-            font-family: var(--mono);
-            font-size: var(--text-xs);
-            color: var(--t3);
-            white-space: nowrap;
-        }
-
-        /* ── Date Group Headers ── */
-        .date-group-header {
-            font-family: var(--mono);
-            font-size: var(--text-xs);
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--t3);
-            padding: var(--space-md) var(--space-xs) var(--space-sm) var(--space-xs);
-            border-bottom: 1px solid var(--br-dim);
-            margin-bottom: var(--space-sm);
-        }
+        .search-shell .count { font-family: var(--mono); font-size: var(--text-xs); color: var(--t3); white-space: nowrap; }
+        .date-group-header { font-family: var(--mono); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--t3); padding: var(--space-md) var(--space-xs) var(--space-sm) var(--space-xs); border-bottom: 1px solid var(--br-dim); margin-bottom: var(--space-sm); }
         .date-group-header:first-of-type { padding-top: 0; }
-
-        /* ── Session List ── */
         .session-list { display: flex; flex-direction: column; gap: var(--space-sm); }
-        .session-item {
-            background: var(--surface);
-            border: 1px solid var(--br-dim);
-            border-radius: var(--r-lg);
-            overflow: hidden;
-            transition: border-color 0.2s, background 0.2s;
-        }
+        .session-item { background: var(--surface); border: 1px solid var(--br-dim); border-radius: var(--r-lg); overflow: hidden; transition: border-color 0.2s, background 0.2s; }
         .session-item:hover { border-color: var(--br-md); background: var(--raised); }
         .session-item.pinned { border-color: rgba(200,255,87,0.25); }
-
-        /* ── Session Header ── */
-        .session-header {
-            padding: var(--space-md) var(--space-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            gap: var(--space-md);
-        }
-        .session-name {
-            font-weight: 500;
-            font-size: var(--text-base);
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-        .session-name .pin-icon {
-            color: var(--gold);
-            flex-shrink: 0;
-        }
-        .session-meta {
-            font-family: var(--mono);
-            font-size: var(--text-xs);
-            color: var(--t3);
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            flex-shrink: 0;
-        }
-        .session-meta .count {
-            background: rgba(255,255,255,0.05);
-            padding: 2px var(--space-sm);
-            border-radius: var(--r-md);
-        }
-        .session-arrow {
-            color: var(--t3);
-            transition: transform 0.25s ease;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-        }
+        .session-header { padding: var(--space-md) var(--space-lg); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; gap: var(--space-md); }
+        .session-name { font-weight: 500; font-size: var(--text-base); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: var(--space-sm); }
+        .session-name .pin-icon { color: var(--gold); flex-shrink: 0; }
+        .session-meta { font-family: var(--mono); font-size: var(--text-xs); color: var(--t3); display: flex; align-items: center; gap: var(--space-sm); flex-shrink: 0; }
+        .session-meta .count { background: rgba(255,255,255,0.05); padding: 2px var(--space-sm); border-radius: var(--r-md); }
+        .session-arrow { color: var(--t3); transition: transform 0.25s ease; flex-shrink: 0; display: flex; align-items: center; }
         .session-item.expanded .session-arrow { transform: rotate(180deg); }
-        .type-badge {
-            font-size: var(--text-xs);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 2px var(--space-sm);
-            border-radius: var(--r-md);
-            background: rgba(255,255,255,0.05);
-            color: var(--t3);
-            border: 1px solid var(--br-dim);
-        }
+        .type-badge { font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; padding: 2px var(--space-sm); border-radius: var(--r-md); background: rgba(255,255,255,0.05); color: var(--t3); border: 1px solid var(--br-dim); }
         .type-badge.lead { border-color: rgba(200,255,87,0.2); color: var(--gold); }
         .type-badge.assistant { border-color: rgba(0,210,255,0.2); color: var(--sky); }
-
-        /* ── Session Messages ── */
-        .session-messages {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease;
-            background: rgba(0,0,0,0.2);
-            border-top: 1px solid var(--br-dim);
-        }
+        .session-messages { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; background: rgba(0,0,0,0.2); border-top: 1px solid var(--br-dim); }
         .session-item.expanded .session-messages { max-height: 3000px; }
-        .session-messages-inner {
-            padding: var(--space-md) var(--space-lg);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-sm);
-        }
-
-        /* ── Message Bubbles ── */
-        .msg-bubble {
-            padding: var(--space-md) var(--space-md);
-            border-radius: var(--r-sm);
-            font-size: var(--text-sm);
-            line-height: 1.6;
-            max-width: 88%;
-            word-break: break-word;
-        }
-        .msg-bubble.user {
-            background: var(--raised);
-            border: 1px solid var(--br-md);
-            align-self: flex-end;
-            border-bottom-right-radius: var(--r-xs);
-        }
-        .msg-bubble.ai {
-            background: var(--surface);
-            border: 1px solid var(--br-dim);
-            border-left: 2px solid rgba(201,168,76,0.3);
-            align-self: flex-start;
-            border-bottom-left-radius: var(--r-xs);
-            color: #ccc7bb;
-            font-family: var(--mono);
-            font-size: var(--text-xs);
-        }
-        .msg-bubble .msg-role {
-            font-size: var(--text-xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            opacity: 0.4;
-            margin-bottom: 2px;
-        }
+        .session-messages-inner { padding: var(--space-md) var(--space-lg); display: flex; flex-direction: column; gap: var(--space-sm); }
+        .msg-bubble { padding: var(--space-md) var(--space-md); border-radius: var(--r-sm); font-size: var(--text-sm); line-height: 1.6; max-width: 88%; word-break: break-word; }
+        .msg-bubble.user { background: var(--raised); border: 1px solid var(--br-md); align-self: flex-end; border-bottom-right-radius: var(--r-xs); }
+        .msg-bubble.ai { background: var(--surface); border: 1px solid var(--br-dim); border-left: 2px solid rgba(201,168,76,0.3); align-self: flex-start; border-bottom-left-radius: var(--r-xs); color: #ccc7bb; font-family: var(--mono); font-size: var(--text-xs); }
+        .msg-bubble .msg-role { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; opacity: 0.4; margin-bottom: 2px; }
         .msg-bubble .msg-content { white-space: pre-wrap; }
-        .msg-bubble .msg-time {
-            font-size: var(--text-xs);
-            color: var(--t3);
-            margin-top: var(--space-xs);
-            font-family: var(--mono);
-        }
-
-        /* ── Empty States ── */
-        .empty-state {
-            text-align: center;
-            color: var(--t3);
-            padding: var(--space-2xl) var(--space-lg);
-            font-size: var(--text-base);
-            line-height: 1.8;
-        }
-        .loading-spinner {
-            text-align: center;
-            color: var(--t3);
-            padding: var(--space-2xl);
-            font-family: var(--mono);
-            font-size: var(--text-xs);
-        }
-        .no-messages {
-            color: var(--t3);
-            font-size: var(--text-xs);
-            text-align: center;
-            padding: var(--space-sm) 0;
-            font-family: var(--mono);
-        }
-        .error-msg {
-            color: var(--rose);
-            font-size: var(--text-xs);
-            text-align: center;
-            padding: var(--space-sm) 0;
-            font-family: var(--mono);
-        }
-
-        /* ── Context Menu ── */
-        #contextMenu {
-            display: none;
-            position: fixed;
-            background: var(--base);
-            border: 1px solid var(--br-md);
-            border-radius: var(--r-sm);
-            padding: var(--space-xs) 0;
-            z-index: 1000;
-            min-width: 170px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-        }
-        #contextMenu .ctx-btn {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            width: 100%;
-            padding: var(--space-sm) var(--space-lg);
-            background: transparent;
-            border: none;
-            color: var(--t2);
-            font-family: var(--ui);
-            font-size: var(--text-sm);
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            text-align: left;
-        }
+        .msg-bubble .msg-time { font-size: var(--text-xs); color: var(--t3); margin-top: var(--space-xs); font-family: var(--mono); }
+        .empty-state { text-align: center; color: var(--t3); padding: var(--space-2xl) var(--space-lg); font-size: var(--text-base); line-height: 1.8; }
+        .no-messages { color: var(--t3); font-size: var(--text-xs); text-align: center; padding: var(--space-sm) 0; font-family: var(--mono); }
+        .error-msg { color: var(--rose); font-size: var(--text-xs); text-align: center; padding: var(--space-sm) 0; font-family: var(--mono); }
+        #contextMenu { display: none; position: fixed; background: var(--base); border: 1px solid var(--br-md); border-radius: var(--r-sm); padding: var(--space-xs) 0; z-index: 1000; min-width: 170px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+        #contextMenu .ctx-btn { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: var(--space-sm) var(--space-lg); background: transparent; border: none; color: var(--t2); font-family: var(--ui); font-size: var(--text-sm); cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; }
         #contextMenu .ctx-btn svg { flex-shrink: 0; opacity: 0.6; }
         #contextMenu .ctx-btn:hover { background: rgba(255,255,255,0.05); color: var(--t1); }
         #contextMenu .ctx-btn:hover svg { opacity: 1; }
         #contextMenu .ctx-btn.danger { color: var(--rose); }
         #contextMenu .ctx-btn.danger:hover { background: rgba(255,85,85,0.1); }
-        #contextMenu .ctx-divider {
-            height: 1px;
-            background: var(--br-dim);
-            margin: var(--space-xs) var(--space-md);
-        }
-
-        /* ── Rename Modal ── */
-        #renameModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
+        #contextMenu .ctx-divider { height: 1px; background: var(--br-dim); margin: var(--space-xs) var(--space-md); }
+        #renameModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         #renameModal.active { display: flex; }
-        .modal-box {
-            background: var(--base);
-            border: 1px solid var(--br-md);
-            border-radius: var(--r-lg);
-            padding: var(--space-xl);
-            max-width: 400px;
-            width: 90%;
-            animation: modalIn 0.2s ease;
-        }
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .modal-box h3 {
-            font-size: var(--text-xl);
-            font-weight: 600;
-            margin-bottom: var(--space-xs);
-        }
-        .modal-box .modal-sub {
-            color: var(--t3);
-            font-size: var(--text-sm);
-            margin-bottom: var(--space-lg);
-        }
-        .modal-box input {
-            width: 100%;
-            background: var(--surface);
-            border: 1px solid var(--br-dim);
-            border-radius: var(--r-sm);
-            padding: var(--space-md) var(--space-md);
-            color: var(--t1);
-            font-family: var(--ui);
-            font-size: var(--text-base);
-            outline: none;
-            margin-bottom: var(--space-lg);
-        }
+        .modal-box { background: var(--base); border: 1px solid var(--br-md); border-radius: var(--r-lg); padding: var(--space-xl); max-width: 400px; width: 90%; animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-box h3 { font-size: var(--text-xl); font-weight: 600; margin-bottom: var(--space-xs); }
+        .modal-box .modal-sub { color: var(--t3); font-size: var(--text-sm); margin-bottom: var(--space-lg); }
+        .modal-box input { width: 100%; background: var(--surface); border: 1px solid var(--br-dim); border-radius: var(--r-sm); padding: var(--space-md) var(--space-md); color: var(--t1); font-family: var(--ui); font-size: var(--text-base); outline: none; margin-bottom: var(--space-lg); }
         .modal-box input:focus { border-color: rgba(201,168,76,0.35); }
-        .modal-actions {
-            display: flex;
-            gap: var(--space-sm);
-            justify-content: flex-end;
-        }
-        .modal-actions button {
-            padding: var(--space-sm) var(--space-xl);
-            border-radius: var(--r-sm);
-            font-family: var(--ui);
-            font-size: var(--text-sm);
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-        .modal-actions .btn-cancel {
-            background: var(--surface);
-            color: var(--t2);
-        }
+        .modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; }
+        .modal-actions button { padding: var(--space-sm) var(--space-xl); border-radius: var(--r-sm); font-family: var(--ui); font-size: var(--text-sm); cursor: pointer; transition: all 0.2s; border: none; }
+        .modal-actions .btn-cancel { background: var(--surface); color: var(--t2); }
         .modal-actions .btn-cancel:hover { background: var(--hover); color: var(--t1); }
-        .modal-actions .btn-save {
-            background: var(--gold);
-            color: #0d0a04;
-        }
+        .modal-actions .btn-save { background: var(--gold); color: #0d0a04; }
         .modal-actions .btn-save:hover { background: var(--gold-bright); }
 
-        /* ── Bottom Navigation ── */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav-h);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            background: var(--base);
-            border-top: 1px solid var(--br-dim);
-            z-index: 10;
-            padding: 0 var(--space-sm);
-        }
+        .bottom-nav { position: relative; height: var(--nav-h); display: flex !important; align-items: center; justify-content: space-around; background: var(--base); border-top: 1px solid var(--br-dim); flex-shrink: 0; z-index: 100; padding: 0 var(--space-sm); visibility: visible !important; opacity: 1 !important; }
         .bottom-nav::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-xs);
-            flex: 1;
-            cursor: pointer;
-            padding: var(--space-xs) 0;
-            text-decoration: none;
-            color: var(--t3);
-            transition: color 0.25s;
-            position: relative;
-            border: none;
-            background: none;
-        }
-        .nav-item svg {
-            width: clamp(16px, 2vw, 22px);
-            height: clamp(16px, 2vw, 22px);
-            transition: transform 0.2s;
-        }
+        .nav-item { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-xs); flex: 1; cursor: pointer; padding: var(--space-xs) 0; text-decoration: none; color: var(--t3); transition: color 0.25s; position: relative; border: none; background: none; visibility: visible !important; opacity: 1 !important; }
+        .nav-item svg { width: clamp(16px, 2vw, 22px); height: clamp(16px, 2vw, 22px); transition: transform 0.2s; }
         .nav-item:hover { color: var(--gold); }
         .nav-item:hover svg { transform: scale(1.1) translateY(-1px); }
         .nav-item.active { color: var(--gold); }
-        .nav-item.active::after {
-            content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
-            width: clamp(16px, 2vw, 22px); height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border-radius: 2px 2px 0 0;
-        }
-        .nav-item.nav-home .home-wrap {
-            width: clamp(38px, 5vw, 48px);
-            height: clamp(38px, 5vw, 48px);
-            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
-            border-radius: var(--r-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4);
-            position: relative; overflow: hidden;
-        }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: clamp(16px, 2vw, 22px); height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border-radius: 2px 2px 0 0; }
+        .nav-item.nav-home .home-wrap { width: clamp(38px, 5vw, 48px); height: clamp(38px, 5vw, 48px); background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%); border-radius: var(--r-md); display: flex !important; align-items: center; justify-content: center; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(201,168,76,0.28), 0 0 0 1px rgba(201,168,76,0.4); position: relative; overflow: hidden; }
         .nav-item.nav-home .home-wrap::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%); }
         .nav-item.nav-home:hover .home-wrap { transform: scale(1.07) translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.40), 0 0 0 1px rgba(201,168,76,0.5); }
-        .nav-item.nav-home svg {
-            color: #0d0a04;
-            position: relative;
-            z-index: 1;
-            width: clamp(14px, 1.8vw, 20px);
-            height: clamp(14px, 1.8vw, 20px);
-        }
+        .nav-item.nav-home svg { color: #0d0a04; position: relative; z-index: 1; width: clamp(14px, 1.8vw, 20px); height: clamp(14px, 1.8vw, 20px); }
         .nav-item.nav-home::after { display: none; }
+        .nav-badge { position: absolute; top: -2px; right: -2px; width: clamp(6px, 0.8vw, 10px); height: clamp(6px, 0.8vw, 10px); background-color: #ff4d4d; border-radius: 50%; border: 1.5px solid #121212; z-index: 10; pointer-events: none; box-shadow: 0 0 4px rgba(255,77,77,0.6); animation: subtle-pulse 2s infinite ease-in-out; }
+        @keyframes subtle-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* ✅ NAV BADGE (Red Dot) */
-        .nav-badge {
-            position: absolute;
-            top: 2px;
-            right: calc(50% - 20px);
-            min-width: 18px;
-            height: 18px;
-            background: #ff5555;
-            border-radius: 50%;
-            border: 1.5px solid var(--base);
-            display: none;
-            color: #ffffff;
-            font-family: var(--mono);
-            font-size: 9px;
-            font-weight: 600;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-            z-index: 2;
-            box-shadow: 0 2px 6px rgba(255,85,85,0.3);
-        }
-        .nav-item.has-notifs .nav-badge {
-            display: flex;
-        }
-
-        /* ============================================================
-           ✅ RESPONSIVE BREAKPOINTS
-           ============================================================ */
-
-        /* ─── Very Large Screens (Tablets, Desktops) ─── */
-        @media (min-width: 1024px) {
-            .container { padding: var(--space-2xl) var(--space-2xl); max-width: 820px; }
-            .bottom-nav { padding: 0 24%; }
-            .session-header { padding: var(--space-lg) var(--space-xl); }
-            .session-messages-inner { padding: var(--space-lg) var(--space-xl); }
-        }
-
-        /* ─── Medium Screens (Tablets) ─── */
-        @media (min-width: 600px) and (max-width: 1023px) {
-            .container { padding: var(--space-xl) var(--space-xl); }
-            .bottom-nav { padding: 0 var(--space-md); }
-            .session-header { padding: var(--space-md) var(--space-lg); }
-            .session-messages-inner { padding: var(--space-md) var(--space-lg); }
-        }
-
-        /* ─── Large Phones (Pro Max, 6.7"+) ─── */
-        @media (min-width: 430px) and (max-width: 599px) {
-            html { font-size: 17px; }
-            .container { padding: var(--space-lg) var(--space-md); }
-            .session-header { padding: var(--space-md) var(--space-lg); }
-            .session-messages-inner { padding: var(--space-md) var(--space-lg); }
-        }
-
-        /* ─── Standard Phones (6.1") ─── */
-        @media (min-width: 375px) and (max-width: 429px) {
-            html { font-size: 16px; }
-            .container { padding: var(--space-md); }
-            .session-header { padding: var(--space-sm) var(--space-md); flex-wrap: wrap; gap: var(--space-xs); }
-            .session-name { font-size: var(--text-sm); }
-            .session-meta { font-size: var(--text-xs); gap: var(--space-xs); }
-            .msg-bubble { max-width: 94%; font-size: var(--text-xs); }
-            h1 { font-size: var(--text-xl); }
-            .bottom-nav { padding: 0 var(--space-sm); }
-            .search-shell input { font-size: var(--text-sm); }
-        }
-
-        /* ─── Small Phones (iPhone SE, 4.7") ─── */
-        @media (max-width: 374px) {
-            html { font-size: 14px; }
-            .container { padding: var(--space-sm); }
-            .session-header { padding: var(--space-sm) var(--space-md); flex-wrap: wrap; gap: var(--space-xs); }
-            .session-name { font-size: var(--text-sm); }
-            .session-meta { font-size: var(--text-xs); gap: var(--space-xs); flex-wrap: wrap; }
-            .msg-bubble { max-width: 96%; font-size: var(--text-xs); }
-            h1 { font-size: var(--text-lg); }
-            .sub { font-size: var(--text-xs); margin-bottom: var(--space-md); }
-            .bottom-nav { padding: 0 var(--space-xs); }
-            .nav-item { gap: 2px; padding: var(--space-xs) 0; }
-            .nav-item.nav-home .home-wrap { width: clamp(32px, 10vw, 38px); height: clamp(32px, 10vw, 38px); }
-            .search-shell input { font-size: var(--text-sm); padding: var(--space-sm) 0; }
-            .search-shell { padding: 0 var(--space-sm); }
-            .modal-box { padding: var(--space-lg); }
-            .modal-box h3 { font-size: var(--text-lg); }
-        }
-
-        /* ─── Landscape Mode ─── */
-        @media (max-height: 500px) and (orientation: landscape) {
-            :root {
-                --nav-h: clamp(44px, 10vh, 56px);
-                --top-h: clamp(40px, 8vh, 50px);
-                --bar-h: clamp(20px, 4vh, 28px);
-            }
-            .container { padding: var(--space-sm) var(--space-lg); padding-bottom: calc(var(--nav-h) + var(--space-sm)); }
-            .session-header { padding: var(--space-xs) var(--space-md); }
-            .session-messages-inner { padding: var(--space-xs) var(--space-md); }
-            .msg-bubble { font-size: var(--text-xs); padding: var(--space-xs) var(--space-sm); }
-            h1 { font-size: var(--text-lg); }
-            .sub { font-size: var(--text-xs); margin-bottom: var(--space-sm); }
-            .bottom-nav { padding: 0 var(--space-sm); }
-        }
+        @media (min-width: 1024px) { .container { padding: var(--space-2xl) var(--space-2xl); max-width: 820px; } .bottom-nav { padding: 0 24%; } .session-header { padding: var(--space-lg) var(--space-xl); } .session-messages-inner { padding: var(--space-lg) var(--space-xl); } }
+        @media (min-width: 600px) and (max-width: 1023px) { .container { padding: var(--space-xl) var(--space-xl); } .bottom-nav { padding: 0 var(--space-md); } .session-header { padding: var(--space-md) var(--space-lg); } .session-messages-inner { padding: var(--space-md) var(--space-lg); } }
+        @media (min-width: 430px) and (max-width: 599px) { html { font-size: 17px; } .container { padding: var(--space-lg) var(--space-md); } .session-header { padding: var(--space-md) var(--space-lg); } .session-messages-inner { padding: var(--space-md) var(--space-lg); } }
+        @media (min-width: 375px) and (max-width: 429px) { html { font-size: 16px; } .container { padding: var(--space-md); } .session-header { padding: var(--space-sm) var(--space-md); flex-wrap: wrap; gap: var(--space-xs); } .session-name { font-size: var(--text-sm); } .session-meta { font-size: var(--text-xs); gap: var(--space-xs); } .msg-bubble { max-width: 94%; font-size: var(--text-xs); } h1 { font-size: var(--text-xl); } .bottom-nav { padding: 0 var(--space-sm); } .search-shell input { font-size: var(--text-sm); } }
+        @media (max-width: 374px) { html { font-size: 14px; } .container { padding: var(--space-sm); } .session-header { padding: var(--space-sm) var(--space-md); flex-wrap: wrap; gap: var(--space-xs); } .session-name { font-size: var(--text-sm); } .session-meta { font-size: var(--text-xs); gap: var(--space-xs); flex-wrap: wrap; } .msg-bubble { max-width: 96%; font-size: var(--text-xs); } h1 { font-size: var(--text-lg); } .sub { font-size: var(--text-xs); margin-bottom: var(--space-md); } .bottom-nav { padding: 0 var(--space-xs); } .nav-item { gap: 2px; padding: var(--space-xs) 0; } .nav-item.nav-home .home-wrap { width: clamp(32px, 10vw, 38px); height: clamp(32px, 10vw, 38px); } .search-shell input { font-size: var(--text-sm); padding: var(--space-sm) 0; } .search-shell { padding: 0 var(--space-sm); } .modal-box { padding: var(--space-lg); } .modal-box h3 { font-size: var(--text-lg); } }
+        @media (max-height: 500px) and (orientation: landscape) { :root { --nav-h: clamp(44px, 10vh, 56px); --top-h: clamp(40px, 8vh, 50px); --bar-h: clamp(20px, 4vh, 28px); } .container { padding: var(--space-sm) var(--space-lg); padding-bottom: calc(var(--nav-h) + var(--space-sm)); } .session-header { padding: var(--space-xs) var(--space-md); } .session-messages-inner { padding: var(--space-xs) var(--space-md); } .msg-bubble { font-size: var(--text-xs); padding: var(--space-xs) var(--space-sm); } h1 { font-size: var(--text-lg); } .sub { font-size: var(--text-xs); margin-bottom: var(--space-sm); } .bottom-nav { padding: 0 var(--space-sm); } }
     </style>
 </head>
 <body>
 
-<!-- ✅ Circle Loading Overlay - Shows first for great UX -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner-container">
-        <div class="circle-spinner"></div>
-        <div class="loading-text">Loading sessions…</div>
-    </div>
+<!-- ✅ SKELETON LOADER — Shows immediately while sessions load -->
+<div class="skeleton-loader" id="skeletonLoader">
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-avatar"></div><div class="skeleton-content"><div class="skeleton-line skeleton-line-title"></div><div class="skeleton-line skeleton-line-sub"></div></div></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <div class="container">
-    <!-- Header -->
     <div class="header">
-        <a href="page.html" class="back-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 12H5M5 12l7-7M5 12l7 7"/>
-            </svg>
-            Back
-        </a>
+        <a href="page.html" class="back-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg> Back</a>
         <span style="font-family:var(--mono);font-size:var(--text-xs);color:var(--t3);">v2</span>
     </div>
     <h1>Session <span class="accent">History</span></h1>
     <p class="sub">Your saved conversations and lead searches</p>
-
-    <!-- Search -->
     <div class="search-wrap">
         <div class="search-shell">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="M21 21l-4.35-4.35"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input type="text" id="searchInput" placeholder="Search sessions…" />
             <span class="count" id="countBadge">—</span>
         </div>
     </div>
-
-    <!-- Session List -->
-    <div id="sessionList" class="session-list">
-        <!-- Sessions will be rendered here after loading -->
-    </div>
+    <div id="sessionList" class="session-list"></div>
 </div>
 
-<!-- Context Menu -->
 <div id="contextMenu">
-    <button class="ctx-btn" data-action="rename">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"/>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-        Rename
-    </button>
-    <button class="ctx-btn" data-action="pin" id="pinBtn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 17v5"/>
-            <path d="M5 17h14"/>
-            <path d="M7 7l10 10"/>
-            <path d="M9 5l2 2"/>
-            <path d="M15 11l2 2"/>
-            <path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/>
-        </svg>
-        <span id="pinLabel">Pin</span>
-    </button>
+    <button class="ctx-btn" data-action="rename"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Rename</button>
+    <button class="ctx-btn" data-action="pin" id="pinBtn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg> <span id="pinLabel">Pin</span></button>
     <div class="ctx-divider"></div>
-    <button class="ctx-btn danger" data-action="delete">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/>
-            <path d="M14 11v6"/>
-            <path d="M9 6V4h6v2"/>
-        </svg>
-        Delete
-    </button>
+    <button class="ctx-btn danger" data-action="delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete</button>
 </div>
 
-<!-- Rename Modal -->
 <div id="renameModal">
     <div class="modal-box">
         <h3>Rename Session</h3>
@@ -782,90 +212,36 @@
     </div>
 </div>
 
-<!-- Bottom Navigation -->
 <nav class="bottom-nav">
-    <a href="page.html" class="nav-item nav-home">
-        <div class="home-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </div>
-    </a>
-    <a href="history.html" class="nav-item active">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <polyline points="12 7 12 12 15 15"/>
-            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-            <polyline points="3 4 3 11 10 11"/>
-        </svg>
-    </a>
-    <!-- ✅ NOTIFICATION BUTTON WITH BADGE -->
-    <a href="notifications.html" class="nav-item" id="navNotifBtn">
-        <div class="nav-badge"></div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-    </a>
-    <a href="dashboard.html" class="nav-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-    </a>
+    <a href="page.html" class="nav-item nav-home"><div class="home-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></a>
+    <a href="history.html" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/><path d="M3.05 11a9 9 0 1 0 .5-3"/><polyline points="3 4 3 11 10 11"/></svg></a>
+    <a href="notifications.html" class="nav-item" id="navNotifBtn"><div class="nav-badge"></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
+    <a href="dashboard.html" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
 </nav>
 
-<!-- ✅ SHARED NOTIFICATION BADGE SCRIPT -->
 <script src="notif-badge.js"></script>
-
-<!-- ✅ SESSION CHECK - Auto-logout after 3 days -->
 <script src="session-check.js"></script>
 
 <script>
-    // ──────────────────────────────────────────────────────────────
-    //  TOAST
-    // ──────────────────────────────────────────────────────────────
-
-    function showToast(message, type = 'success', duration = 4000) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = 'toast ' + type;
-        toast.style.display = 'block';
+    function showToast(message, type, duration) {
+        type = type || 'success'; duration = duration || 4000;
+        var toast = document.getElementById('toast');
+        toast.textContent = message; toast.className = 'toast ' + type; toast.style.display = 'block';
         clearTimeout(toast._timeout);
         toast._timeout = setTimeout(function() { toast.style.display = 'none'; }, duration);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  CONFIG
-    // ──────────────────────────────────────────────────────────────
-
     var BACKEND = 'https://skylineapp-backend-file.onrender.com';
     var token = localStorage.getItem('token');
-
-    if (!token) {
-        window.location.href = 'login.html';
-    }
-
-    // ──────────────────────────────────────────────────────────────
-    //  STATE
-    // ──────────────────────────────────────────────────────────────
+    if (!token) window.location.href = 'login.html';
 
     var allSessions = [];
     var contextTargetId = null;
     var currentRenameId = null;
     var expandedSessions = {};
-
-    // ✅ PERF #4: Cache sessions list — skip API if data < 60s old
     var _cachedSessions = null;
     var _cachedSessionsTime = 0;
-    var SESSIONS_CACHE_TTL = 60000; // 60 seconds
-
-    // ──────────────────────────────────────────────────────────────
-    //  DOM REFS
-    // ──────────────────────────────────────────────────────────────
+    var SESSIONS_CACHE_TTL = 60000;
 
     var sessionList = document.getElementById('sessionList');
     var searchInput = document.getElementById('searchInput');
@@ -873,42 +249,20 @@
     var contextMenu = document.getElementById('contextMenu');
     var renameModal = document.getElementById('renameModal');
     var renameInput = document.getElementById('renameInput');
-    var loadingOverlay = document.getElementById('loadingOverlay');
+    var skeletonLoader = document.getElementById('skeletonLoader');
 
-    // ──────────────────────────────────────────────────────────────
-    //  UTILITY FUNCTIONS
-    // ──────────────────────────────────────────────────────────────
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        var div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-
-    // ✅ PERF: Safe DOMPurify wrapper — works even if DOMPurify hasn't loaded yet (deferred)
-    function safeSanitize(str) {
-        if (!str) return '';
-        if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
-        return escapeHtml(str);
-    }
+    function escapeHtml(str) { if (!str) return ''; var div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+    function safeSanitize(str) { if (!str) return ''; if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str); return escapeHtml(str); }
 
     function getDateGroup(dateStr) {
         if (!dateStr) return 'more';
         try {
-            var d = new Date(dateStr);
-            if (isNaN(d.getTime())) return 'more';
-            var now = new Date();
-            var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            var yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            var weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            var monthAgo = new Date(today);
-            monthAgo.setMonth(monthAgo.getMonth() - 1);
-
+            var d = new Date(dateStr); if (isNaN(d.getTime())) return 'more';
+            var now = new Date(); var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            var yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+            var weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+            var monthAgo = new Date(today); monthAgo.setMonth(monthAgo.getMonth() - 1);
             var dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
             if (dateOnly.getTime() === today.getTime()) return 'today';
             if (dateOnly.getTime() === yesterday.getTime()) return 'yesterday';
             if (dateOnly > weekAgo) return 'week';
@@ -916,532 +270,138 @@
             return 'more';
         } catch (e) { return 'more'; }
     }
-
-    function getDateGroupLabel(group) {
-        var labels = { 'today': 'Today', 'yesterday': 'Yesterday', 'week': 'This Week', 'month': 'This Month', 'more': 'Older' };
-        return labels[group] || 'Older';
-    }
-
+    function getDateGroupLabel(group) { var labels = { 'today': 'Today', 'yesterday': 'Yesterday', 'week': 'This Week', 'month': 'This Month', 'more': 'Older' }; return labels[group] || 'Older'; }
     function formatDate(dateStr) {
         if (!dateStr) return '';
-        try {
-            var d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '';
-            var now = new Date();
-            var diff = now - d;
-
-            if (diff < 60000) return 'Just now';
-            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
-            if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        } catch (e) { return ''; }
+        try { var d = new Date(dateStr); if (isNaN(d.getTime())) return ''; var now = new Date(); var diff = now - d; if (diff < 60000) return 'Just now'; if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago'; if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago'; if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago'; return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch (e) { return ''; }
     }
+    function formatTime(dateStr) { if (!dateStr) return ''; try { var d = new Date(dateStr); if (isNaN(d.getTime())) return ''; return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+    function formatAI(text) { if (!text) return ''; var s = safeSanitize(text); s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>'); s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) { return '<ul style="margin:4px 0;padding-left:20px;list-style:none;">' + m + '</ul>'; }); s = s.replace(/\n/g, '<br>'); return s; }
+    function getTypeLabel(type) { if (type === 'assistant') return 'ASSISTANT'; if (type === 'lead') return 'LEAD'; return 'CHAT'; }
+    function getTypeClass(type) { if (type === 'assistant') return 'assistant'; if (type === 'lead') return 'lead'; return 'chat'; }
 
-    function formatTime(dateStr) {
-        if (!dateStr) return '';
-        try {
-            var d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '';
-            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch (e) { return ''; }
+    function hideSkeleton() {
+        if (skeletonLoader) {
+            skeletonLoader.style.transition = 'opacity 0.3s ease';
+            skeletonLoader.style.opacity = '0';
+            setTimeout(function() { if (skeletonLoader && skeletonLoader.parentNode) skeletonLoader.parentNode.removeChild(skeletonLoader); }, 300);
+        }
     }
-
-    function formatAI(text) {
-        if (!text) return '';
-        var s = safeSanitize(text);
-        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-        s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) {
-            return '<ul style="margin:4px 0;padding-left:20px;list-style:none;">' + m + '</ul>';
-        });
-        s = s.replace(/\n/g, '<br>');
-        return s;
-    }
-
-    function getTypeLabel(type) {
-        if (type === 'assistant') return 'ASSISTANT';
-        if (type === 'lead') return 'LEAD';
-        return 'CHAT';
-    }
-
-    function getTypeClass(type) {
-        if (type === 'assistant') return 'assistant';
-        if (type === 'lead') return 'lead';
-        return 'chat';
-    }
-
-    // ──────────────────────────────────────────────────────────────
-    //  ✅ PERF #4: LOAD SESSIONS — cached, skips API if data < 60s old
-    // ──────────────────────────────────────────────────────────────
 
     function loadSessions(forceRefresh) {
         var now_ts = Date.now();
-
-        // Use cache if available and fresh (unless force refresh after rename/delete/pin)
         if (!forceRefresh && _cachedSessions && (now_ts - _cachedSessionsTime) < SESSIONS_CACHE_TTL) {
-            allSessions = _cachedSessions;
-            renderSessions(allSessions);
-            hideLoadingOverlay();
-            return Promise.resolve();
+            allSessions = _cachedSessions; renderSessions(allSessions); hideSkeleton(); return Promise.resolve();
         }
-
-        return fetch(BACKEND + '/api/sessions', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(function(res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        })
-        .then(function(data) {
-            allSessions = data;
-            _cachedSessions = data;
-            _cachedSessionsTime = Date.now();
-            renderSessions(allSessions);
-            hideLoadingOverlay();
-        })
-        .catch(function(err) {
-            console.error('Error loading sessions:', err);
-            sessionList.innerHTML = '<div class="empty-state">Failed to load sessions.<br><span style="font-size:var(--text-xs);color:var(--t4);">' + escapeHtml(err.message) + '</span></div>';
-            countBadge.textContent = '0';
-            hideLoadingOverlay();
-        });
+        return fetch(BACKEND + '/api/sessions', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+        .then(function(data) { allSessions = data; _cachedSessions = data; _cachedSessionsTime = Date.now(); renderSessions(allSessions); hideSkeleton(); })
+        .catch(function(err) { console.error('Error loading sessions:', err); sessionList.innerHTML = '<div class="empty-state">Failed to load sessions.<br><span style="font-size:var(--text-xs);color:var(--t4);">' + escapeHtml(err.message) + '</span></div>'; countBadge.textContent = '0'; hideSkeleton(); });
     }
-
-    // ──────────────────────────────────────────────────────────────
-    //  ✅ HIDE LOADING OVERLAY
-    // ──────────────────────────────────────────────────────────────
-
-    function hideLoadingOverlay() {
-        if (loadingOverlay) {
-            loadingOverlay.classList.add('hidden');
-            // Remove from DOM after transition completes to free memory
-            setTimeout(function() {
-                if (loadingOverlay && loadingOverlay.parentNode) {
-                    loadingOverlay.parentNode.removeChild(loadingOverlay);
-                }
-            }, 400);
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────
-    //  RENDER SESSIONS WITH DATE GROUPING
-    // ──────────────────────────────────────────────────────────────
 
     function renderSessions(sessions) {
-        sessionList.innerHTML = '';
-        countBadge.textContent = sessions.length;
-
-        if (sessions.length === 0) {
-            sessionList.innerHTML = '<div class="empty-state">No conversations yet.<br><span style="font-size:var(--text-sm);color:var(--t4);">Start a new search in the Dream Architect.</span></div>';
-            return;
-        }
-
-        var groups = {};
-        var order = ['today', 'yesterday', 'week', 'month', 'more'];
-
-        for (var i = 0; i < sessions.length; i++) {
-            var session = sessions[i];
-            var group = getDateGroup(session.lastUpdated || session.createdAt);
-            if (!groups[group]) groups[group] = [];
-            groups[group].push(session);
-        }
-
-        for (var key in groups) {
-            groups[key].sort(function(a, b) {
-                var dateA = new Date(a.lastUpdated || a.createdAt);
-                var dateB = new Date(b.lastUpdated || b.createdAt);
-                return dateB - dateA;
-            });
-        }
-
-        for (var j = 0; j < order.length; j++) {
-            var gKey = order[j];
-            if (!groups[gKey] || groups[gKey].length === 0) continue;
-
-            var groupDiv = document.createElement('div');
-            groupDiv.className = 'date-group-header';
-            groupDiv.textContent = getDateGroupLabel(gKey);
-            sessionList.appendChild(groupDiv);
-
-            for (var k = 0; k < groups[gKey].length; k++) {
-                var item = createSessionElement(groups[gKey][k]);
-                sessionList.appendChild(item);
-            }
-        }
+        sessionList.innerHTML = ''; countBadge.textContent = sessions.length;
+        if (sessions.length === 0) { sessionList.innerHTML = '<div class="empty-state">No conversations yet.<br><span style="font-size:var(--text-sm);color:var(--t4);">Start a new search in the Dream Architect.</span></div>'; return; }
+        var groups = {}; var order = ['today', 'yesterday', 'week', 'month', 'more'];
+        for (var i = 0; i < sessions.length; i++) { var session = sessions[i]; var group = getDateGroup(session.lastUpdated || session.createdAt); if (!groups[group]) groups[group] = []; groups[group].push(session); }
+        for (var key in groups) { groups[key].sort(function(a, b) { return new Date(b.lastUpdated || b.createdAt) - new Date(a.lastUpdated || a.createdAt); }); }
+        for (var j = 0; j < order.length; j++) { var gKey = order[j]; if (!groups[gKey] || groups[gKey].length === 0) continue; var groupDiv = document.createElement('div'); groupDiv.className = 'date-group-header'; groupDiv.textContent = getDateGroupLabel(gKey); sessionList.appendChild(groupDiv); for (var k = 0; k < groups[gKey].length; k++) { sessionList.appendChild(createSessionElement(groups[gKey][k])); } }
     }
-
-    // ──────────────────────────────────────────────────────────────
-    //  CREATE SESSION ELEMENT
-    // ──────────────────────────────────────────────────────────────
 
     function createSessionElement(session) {
-        var sessionId = session.sessionId;
-        var name = session.name || 'Untitled';
-        var type = session.type || 'chat';
-        var msgCount = session.messageCount || 0;
-        var isPinned = session.pinned || false;
-        var isExpanded = !!expandedSessions[sessionId];
-        var date = formatDate(session.lastUpdated || session.createdAt);
-        var typeLabel = getTypeLabel(type);
-        var typeClass = getTypeClass(type);
-
-        var div = document.createElement('div');
-        div.className = 'session-item' + (isPinned ? ' pinned' : '') + (isExpanded ? ' expanded' : '');
-        div.dataset.sessionId = sessionId;
-
-        var header = document.createElement('div');
-        header.className = 'session-header';
-        header.dataset.sessionId = sessionId;
-
-        var nameSpan = document.createElement('span');
-        nameSpan.className = 'session-name';
+        var sessionId = session.sessionId; var name = session.name || 'Untitled'; var type = session.type || 'chat'; var msgCount = session.messageCount || 0; var isPinned = session.pinned || false; var isExpanded = !!expandedSessions[sessionId]; var date = formatDate(session.lastUpdated || session.createdAt); var typeLabel = getTypeLabel(type); var typeClass = getTypeClass(type);
+        var div = document.createElement('div'); div.className = 'session-item' + (isPinned ? ' pinned' : '') + (isExpanded ? ' expanded' : ''); div.dataset.sessionId = sessionId;
+        var header = document.createElement('div'); header.className = 'session-header'; header.dataset.sessionId = sessionId;
+        var nameSpan = document.createElement('span'); nameSpan.className = 'session-name';
         var pinSvg = isPinned ? '<span class="pin-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M5 17h14"/><path d="M7 7l10 10"/><path d="M9 5l2 2"/><path d="M15 11l2 2"/><path d="M7 7a4 4 0 0 1 6-2l2 2a4 4 0 0 1-2 6"/></svg></span>' : '';
-        nameSpan.innerHTML = pinSvg + safeSanitize(name);
-        header.appendChild(nameSpan);
-
-        var meta = document.createElement('div');
-        meta.className = 'session-meta';
-        meta.innerHTML = '<span class="count">' + msgCount + '</span><span>' + date + '</span><span class="type-badge ' + typeClass + '">' + typeLabel + '</span><span class="session-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span>';
-        header.appendChild(meta);
-
-        var messagesDiv = document.createElement('div');
-        messagesDiv.className = 'session-messages';
-
-        var inner = document.createElement('div');
-        inner.className = 'session-messages-inner';
-        inner.innerHTML = '<div class="loading-spinner" style="padding:12px;font-size:11px;">Loading messages\u2026</div>';
-        messagesDiv.appendChild(inner);
-
-        div.appendChild(header);
-        div.appendChild(messagesDiv);
-
-        header.onclick = function(e) {
-            e.stopPropagation();
-            var sid = this.dataset.sessionId;
-            toggleSession(sid, div, messagesDiv);
-        };
-
-        header.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            var sid = this.dataset.sessionId;
-            showContextMenu(e.clientX, e.clientY, sid);
-        });
-
-        var timer;
-        header.addEventListener('touchstart', function(e) {
-            var self = this;
-            timer = setTimeout(function() {
-                e.preventDefault();
-                var touch = e.touches[0];
-                var sid = self.dataset.sessionId;
-                showContextMenu(touch.clientX, touch.clientY, sid);
-            }, 600);
-        });
-        header.addEventListener('touchend', function() { clearTimeout(timer); });
-        header.addEventListener('touchmove', function() { clearTimeout(timer); });
-
+        nameSpan.innerHTML = pinSvg + safeSanitize(name); header.appendChild(nameSpan);
+        var meta = document.createElement('div'); meta.className = 'session-meta'; meta.innerHTML = '<span class="count">' + msgCount + '</span><span>' + date + '</span><span class="type-badge ' + typeClass + '">' + typeLabel + '</span><span class="session-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span>'; header.appendChild(meta);
+        var messagesDiv = document.createElement('div'); messagesDiv.className = 'session-messages';
+        var inner = document.createElement('div'); inner.className = 'session-messages-inner'; inner.innerHTML = '<div style="padding:12px;font-size:11px;color:var(--t3);font-family:var(--mono);text-align:center;">Loading messages\u2026</div>'; messagesDiv.appendChild(inner);
+        div.appendChild(header); div.appendChild(messagesDiv);
+        header.onclick = function(e) { e.stopPropagation(); toggleSession(this.dataset.sessionId, div, messagesDiv); };
+        header.addEventListener('contextmenu', function(e) { e.preventDefault(); showContextMenu(e.clientX, e.clientY, this.dataset.sessionId); });
+        var timer; header.addEventListener('touchstart', function(e) { var self = this; timer = setTimeout(function() { e.preventDefault(); var touch = e.touches[0]; showContextMenu(touch.clientX, touch.clientY, self.dataset.sessionId); }, 600); });
+        header.addEventListener('touchend', function() { clearTimeout(timer); }); header.addEventListener('touchmove', function() { clearTimeout(timer); });
         return div;
     }
-
-    // ──────────────────────────────────────────────────────────────
-    //  TOGGLE SESSION
-    // ──────────────────────────────────────────────────────────────
 
     function toggleSession(sessionId, element, messagesDiv) {
-        var isExpanded = !!expandedSessions[sessionId];
-
-        if (isExpanded) {
-            delete expandedSessions[sessionId];
-            element.classList.remove('expanded');
-        } else {
-            expandedSessions[sessionId] = true;
-            element.classList.add('expanded');
-            loadMessages(sessionId, messagesDiv);
-        }
+        if (expandedSessions[sessionId]) { delete expandedSessions[sessionId]; element.classList.remove('expanded'); }
+        else { expandedSessions[sessionId] = true; element.classList.add('expanded'); loadMessages(sessionId, messagesDiv); }
     }
-
-    // ──────────────────────────────────────────────────────────────
-    //  LOAD MESSAGES
-    // ──────────────────────────────────────────────────────────────
 
     function loadMessages(sessionId, container) {
-        var inner = container.querySelector('.session-messages-inner');
-        if (!inner) return;
-
-        if (inner.dataset.loaded === 'true') return;
-
-        fetch(BACKEND + '/api/history/messages/' + encodeURIComponent(sessionId), {
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(function(res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        })
-        .then(function(messages) {
-            inner.innerHTML = '';
-
-            if (!messages || messages.length === 0) {
-                inner.innerHTML = '<div class="no-messages">No messages in this session.</div>';
-            } else {
-                for (var i = 0; i < messages.length; i++) {
-                    var bubble = createMessageBubble(messages[i]);
-                    inner.appendChild(bubble);
-                }
-            }
-
-            inner.dataset.loaded = 'true';
-        })
-        .catch(function(err) {
-            console.error('Error loading messages:', err);
-            inner.innerHTML = '<div class="error-msg">\u26a0\ufe0f Failed to load messages</div>';
-        });
+        var inner = container.querySelector('.session-messages-inner'); if (!inner || inner.dataset.loaded === 'true') return;
+        fetch(BACKEND + '/api/history/messages/' + encodeURIComponent(sessionId), { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+        .then(function(messages) { inner.innerHTML = ''; if (!messages || messages.length === 0) { inner.innerHTML = '<div class="no-messages">No messages in this session.</div>'; } else { for (var i = 0; i < messages.length; i++) { inner.appendChild(createMessageBubble(messages[i])); } } inner.dataset.loaded = 'true'; })
+        .catch(function(err) { console.error('Error loading messages:', err); inner.innerHTML = '<div class="error-msg">\u26a0\ufe0f Failed to load messages</div>'; });
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  CREATE MESSAGE BUBBLE
-    // ──────────────────────────────────────────────────────────────
-
     function createMessageBubble(msg) {
-        var div = document.createElement('div');
-        var role = msg.role || 'user';
-        div.className = 'msg-bubble ' + role;
-
-        var roleLabel = role === 'ai' ? 'AI' : 'You';
-
-        var content = msg.content || '';
-        var displayContent = content;
-
+        var div = document.createElement('div'); var role = msg.role || 'user'; div.className = 'msg-bubble ' + role;
+        var roleLabel = role === 'ai' ? 'AI' : 'You'; var content = msg.content || ''; var displayContent = content;
         if (role === 'ai') {
             if ((content.charAt(0) === '[' || content.charAt(0) === '{') && content.length > 2) {
-                try {
-                    var parsed = JSON.parse(content);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        var leadText = '\ud83d\udcca ' + parsed.length + ' lead' + (parsed.length > 1 ? 's' : '') + ' found\n\n';
-                        var maxShow = Math.min(parsed.length, 5);
-                        for (var i = 0; i < maxShow; i++) {
-                            var l = parsed[i];
-                            var lname = l.name || l.company || 'Unknown';
-                            var company = l.company || '';
-                            var email = l.email || '';
-                            leadText += (i + 1) + '. ' + safeSanitize(lname) + (company ? ' - ' + safeSanitize(company) : '') + (email ? ' (' + safeSanitize(email) + ')' : '') + '\n';
-                        }
-                        if (parsed.length > 5) {
-                            leadText += '\n... and ' + (parsed.length - 5) + ' more';
-                        }
-                        displayContent = leadText;
-                    } else {
-                        displayContent = JSON.stringify(parsed, null, 2);
-                    }
-                } catch (e) {
-                    displayContent = content;
-                }
-            } else {
-                displayContent = formatAI(content);
-            }
-        } else {
-            displayContent = safeSanitize(content);
-        }
-
+                try { var parsed = JSON.parse(content); if (Array.isArray(parsed) && parsed.length > 0) { var leadText = '\ud83d\udcca ' + parsed.length + ' lead' + (parsed.length > 1 ? 's' : '') + ' found\n\n'; var maxShow = Math.min(parsed.length, 5); for (var i = 0; i < maxShow; i++) { var l = parsed[i]; var lname = l.name || l.company || 'Unknown'; var company = l.company || ''; var email = l.email || ''; leadText += (i + 1) + '. ' + safeSanitize(lname) + (company ? ' - ' + safeSanitize(company) : '') + (email ? ' (' + safeSanitize(email) + ')' : '') + '\n'; } if (parsed.length > 5) leadText += '\n... and ' + (parsed.length - 5) + ' more'; displayContent = leadText; } else { displayContent = JSON.stringify(parsed, null, 2); } } catch (e) { displayContent = content; }
+            } else { displayContent = formatAI(content); }
+        } else { displayContent = safeSanitize(content); }
         var time = msg.time || formatTime(msg.createdAt);
-
         div.innerHTML = '<div class="msg-role">' + roleLabel + '</div><div class="msg-content">' + displayContent + '</div>' + (time ? '<div class="msg-time">' + time + '</div>' : '');
-
         return div;
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  CONTEXT MENU
-    // ──────────────────────────────────────────────────────────────
-
     function showContextMenu(x, y, sessionId) {
-        contextTargetId = sessionId;
-        var session = null;
-        for (var i = 0; i < allSessions.length; i++) {
-            if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; }
-        }
+        contextTargetId = sessionId; var session = null;
+        for (var i = 0; i < allSessions.length; i++) { if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; } }
         var isPinned = session ? (session.pinned || false) : false;
-
-        var pinBtn = document.getElementById('pinBtn');
-        var pinLabel = document.getElementById('pinLabel');
-        pinLabel.textContent = isPinned ? 'Unpin' : 'Pin';
-
-        var menuWidth = 170;
-        var menuHeight = 140;
-        var left = Math.min(x, window.innerWidth - menuWidth - 10);
-        var top = Math.min(y, window.innerHeight - menuHeight - 10);
-        contextMenu.style.left = Math.max(10, left) + 'px';
-        contextMenu.style.top = Math.max(10, top) + 'px';
+        document.getElementById('pinLabel').textContent = isPinned ? 'Unpin' : 'Pin';
+        var menuWidth = 170; var menuHeight = 140;
+        contextMenu.style.left = Math.max(10, Math.min(x, window.innerWidth - menuWidth - 10)) + 'px';
+        contextMenu.style.top = Math.max(10, Math.min(y, window.innerHeight - menuHeight - 10)) + 'px';
         contextMenu.style.display = 'block';
     }
-
-    function hideContextMenu() {
-        contextMenu.style.display = 'none';
-        contextTargetId = null;
-    }
-
-    document.addEventListener('click', function(e) {
-        if (!contextMenu.contains(e.target)) hideContextMenu();
-    });
+    function hideContextMenu() { contextMenu.style.display = 'none'; contextTargetId = null; }
+    document.addEventListener('click', function(e) { if (!contextMenu.contains(e.target)) hideContextMenu(); });
 
     var ctxBtns = document.querySelectorAll('#contextMenu .ctx-btn');
     for (var ci = 0; ci < ctxBtns.length; ci++) {
-        ctxBtns[ci].addEventListener('click', function() {
-            var action = this.dataset.action;
-            var sid = contextTargetId;
-            hideContextMenu();
-
-            if (action === 'rename') openRenameModal(sid);
-            else if (action === 'pin') togglePin(sid);
-            else if (action === 'delete') deleteSession(sid);
-        });
+        ctxBtns[ci].addEventListener('click', function() { var action = this.dataset.action; var sid = contextTargetId; hideContextMenu(); if (action === 'rename') openRenameModal(sid); else if (action === 'pin') togglePin(sid); else if (action === 'delete') deleteSession(sid); });
     }
-
-    // ──────────────────────────────────────────────────────────────
-    //  RENAME SESSION
-    // ──────────────────────────────────────────────────────────────
 
     function openRenameModal(sessionId) {
-        currentRenameId = sessionId;
-        var session = null;
-        for (var i = 0; i < allSessions.length; i++) {
-            if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; }
-        }
-        renameInput.value = session ? (session.name || '') : '';
-        renameModal.classList.add('active');
-        renameInput.focus();
-        renameInput.select();
+        currentRenameId = sessionId; var session = null;
+        for (var i = 0; i < allSessions.length; i++) { if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; } }
+        renameInput.value = session ? (session.name || '') : ''; renameModal.classList.add('active'); renameInput.focus(); renameInput.select();
     }
-
-    document.getElementById('renameCancel').onclick = function() {
-        renameModal.classList.remove('active');
-        currentRenameId = null;
-    };
-
+    document.getElementById('renameCancel').onclick = function() { renameModal.classList.remove('active'); currentRenameId = null; };
     document.getElementById('renameConfirm').onclick = function() {
-        var name = renameInput.value.trim();
-        if (!name) return;
-
-        fetch(BACKEND + '/api/history/rename/' + encodeURIComponent(currentRenameId), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ name: name })
-        })
-        .then(function(res) {
-            if (res.ok) {
-                renameModal.classList.remove('active');
-                currentRenameId = null;
-                showToast('\u2705 Session renamed successfully', 'success');
-                // ✅ PERF: Invalidate cache after rename — force fresh data
-                _cachedSessions = null;
-                _cachedSessionsTime = 0;
-                loadSessions(true);
-            } else {
-                showToast('\u274c Failed to rename session', 'error');
-            }
-        })
-        .catch(function() {
-            showToast('\u274c Connection error', 'error');
-        });
+        var name = renameInput.value.trim(); if (!name) return;
+        fetch(BACKEND + '/api/history/rename/' + encodeURIComponent(currentRenameId), { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ name: name }) })
+        .then(function(res) { if (res.ok) { renameModal.classList.remove('active'); currentRenameId = null; showToast('\u2705 Session renamed successfully', 'success'); _cachedSessions = null; _cachedSessionsTime = 0; loadSessions(true); } else { showToast('\u274c Failed to rename session', 'error'); } })
+        .catch(function() { showToast('\u274c Connection error', 'error'); });
     };
-
-    renameInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') document.getElementById('renameConfirm').click();
-        if (e.key === 'Escape') document.getElementById('renameCancel').click();
-    });
-
-    // ──────────────────────────────────────────────────────────────
-    //  PIN / UNPIN
-    // ──────────────────────────────────────────────────────────────
+    renameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('renameConfirm').click(); if (e.key === 'Escape') document.getElementById('renameCancel').click(); });
 
     function togglePin(sessionId) {
-        var session = null;
-        for (var i = 0; i < allSessions.length; i++) {
-            if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; }
-        }
-        if (!session) return;
-
+        var session = null; for (var i = 0; i < allSessions.length; i++) { if (allSessions[i].sessionId === sessionId) { session = allSessions[i]; break; } } if (!session) return;
         var newPinned = !session.pinned;
-
-        fetch(BACKEND + '/api/history/pin/' + encodeURIComponent(sessionId), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ pinned: newPinned })
-        })
-        .then(function(res) {
-            if (res.ok) {
-                showToast(newPinned ? '\ud83d\udccc Session pinned' : '\ud83d\udccc Session unpinned', 'success');
-                // ✅ PERF: Invalidate cache after pin change
-                _cachedSessions = null;
-                _cachedSessionsTime = 0;
-                loadSessions(true);
-            } else {
-                showToast('\u274c Failed to update pin', 'error');
-            }
-        })
-        .catch(function() {
-            showToast('\u274c Connection error', 'error');
-        });
+        fetch(BACKEND + '/api/history/pin/' + encodeURIComponent(sessionId), { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ pinned: newPinned }) })
+        .then(function(res) { if (res.ok) { showToast(newPinned ? '\ud83d\udccc Session pinned' : '\ud83d\udccc Session unpinned', 'success'); _cachedSessions = null; _cachedSessionsTime = 0; loadSessions(true); } else { showToast('\u274c Failed to update pin', 'error'); } })
+        .catch(function() { showToast('\u274c Connection error', 'error'); });
     }
-
-    // ──────────────────────────────────────────────────────────────
-    //  DELETE SESSION
-    // ──────────────────────────────────────────────────────────────
 
     function deleteSession(sessionId) {
         if (!confirm('Delete this session and all its messages?')) return;
-
-        fetch(BACKEND + '/api/history/delete/' + encodeURIComponent(sessionId), {
-            method: 'DELETE',
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(function(res) {
-            if (res.ok) {
-                delete expandedSessions[sessionId];
-                showToast('\ud83d\uddd1\ufe0f Session deleted', 'success');
-                // ✅ PERF: Invalidate cache after delete
-                _cachedSessions = null;
-                _cachedSessionsTime = 0;
-                loadSessions(true);
-            } else {
-                showToast('\u274c Failed to delete session', 'error');
-            }
-        })
-        .catch(function() {
-            showToast('\u274c Connection error', 'error');
-        });
+        fetch(BACKEND + '/api/history/delete/' + encodeURIComponent(sessionId), { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(res) { if (res.ok) { delete expandedSessions[sessionId]; showToast('\ud83d\uddd1\ufe0f Session deleted', 'success'); _cachedSessions = null; _cachedSessionsTime = 0; loadSessions(true); } else { showToast('\u274c Failed to delete session', 'error'); } })
+        .catch(function() { showToast('\u274c Connection error', 'error'); });
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  SEARCH
-    // ──────────────────────────────────────────────────────────────
+    searchInput.addEventListener('input', function() { var query = this.value.toLowerCase().trim(); if (!query) { renderSessions(allSessions); return; } var filtered = []; for (var i = 0; i < allSessions.length; i++) { if ((allSessions[i].name || '').toLowerCase().indexOf(query) !== -1) filtered.push(allSessions[i]); } renderSessions(filtered); });
 
-    searchInput.addEventListener('input', function() {
-        var query = this.value.toLowerCase().trim();
-        if (!query) {
-            renderSessions(allSessions);
-            return;
-        }
-        var filtered = [];
-        for (var i = 0; i < allSessions.length; i++) {
-            if ((allSessions[i].name || '').toLowerCase().indexOf(query) !== -1) {
-                filtered.push(allSessions[i]);
-            }
-        }
-        renderSessions(filtered);
-    });
-
-    // ──────────────────────────────────────────────────────────────
-    //  INIT
-    // ──────────────────────────────────────────────────────────────
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // ✅ Loading overlay is already visible by default
-        // Load sessions immediately — benefits from server-side cache + gzip + keep-alive
-        loadSessions();
-    });
-
+    document.addEventListener('DOMContentLoaded', function() { loadSessions(); });
 </script>
-
 </body>
-    </html>
+            </html>
