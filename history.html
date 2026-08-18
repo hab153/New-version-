@@ -98,12 +98,14 @@
             background-size: 180px;
         }
 
-        /* ─── ✅ SKELETON LOADER (Replaces circle spinner) ─── */
+        /* ── ✅ SKELETON LOADER (Replaces circle spinner) ── */
         .skeleton-loader {
-            display: block;
-            padding: var(--space-md);
+            display: none;
+            padding: var(--space-sm);
             animation: skeletonFadeIn 0.3s ease;
+            flex: 1;
         }
+        .skeleton-loader.active { display: block; }
         @keyframes skeletonFadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -118,9 +120,9 @@
         }
 
         .skeleton-avatar {
-            width: clamp(40px, 4vw, 52px);
-            height: clamp(40px, 4vw, 52px);
-            border-radius: var(--r-md);
+            width: clamp(36px, 4vw, 48px);
+            height: clamp(36px, 4vw, 48px);
+            border-radius: 50%;
             flex-shrink: 0;
             background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
@@ -135,21 +137,15 @@
         }
 
         .skeleton-line {
-            height: 14px;
+            height: 12px;
             border-radius: var(--r-xs);
             background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
             animation: skeletonShimmer 1.5s ease-in-out infinite;
         }
 
-        .skeleton-line-title {
-            width: 65%;
-            height: 16px;
-        }
-        .skeleton-line-sub {
-            width: 40%;
-            height: 11px;
-        }
+        .skeleton-line-title { width: 65%; height: 14px; }
+        .skeleton-line-sub { width: 40%; height: 10px; }
 
         /* Wave effect delays */
         .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
@@ -166,9 +162,12 @@
             100% { background-position: -200% 0; }
         }
 
-        /* ─── Hide skeleton when content loads ─── */
-        .skeleton-loader.hidden {
-            display: none;
+        /* ── Hide skeleton when content loads ── */
+        body.content-loaded .skeleton-loader {
+            display: none !important;
+        }
+        body:not(.content-loaded) .skeleton-loader {
+            display: block;
         }
 
         .toast {
@@ -419,13 +418,6 @@
             padding: var(--space-2xl) var(--space-lg);
             font-size: var(--text-base);
             line-height: 1.8;
-        }
-        .loading-spinner {
-            text-align: center;
-            color: var(--t3);
-            padding: var(--space-2xl);
-            font-family: var(--mono);
-            font-size: var(--text-xs);
         }
         .no-messages {
             color: var(--t3);
@@ -724,8 +716,8 @@
 </head>
 <body>
 
-<!-- ✅ SKELETON LOADER (Shows immediately) -->
-<div class="skeleton-loader" id="skeletonLoader">
+<!-- ✅ SKELETON LOADER (Replaces circle spinner) -->
+<div class="skeleton-loader active" id="skeletonLoader">
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
@@ -736,70 +728,53 @@
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:55%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:45%"></div>
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
         </div>
     </div>
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:70%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:35%"></div>
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
         </div>
     </div>
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:60%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:40%"></div>
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
         </div>
     </div>
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:75%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:30%"></div>
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
         </div>
     </div>
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:50%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:50%"></div>
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
         </div>
     </div>
     <div class="skeleton-item">
         <div class="skeleton-avatar"></div>
         <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:65%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:38%"></div>
-        </div>
-    </div>
-    <div class="skeleton-item">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-content">
-            <div class="skeleton-line skeleton-line-title" style="width:58%"></div>
-            <div class="skeleton-line skeleton-line-sub" style="width:42%"></div>
+            <div class="skeleton-line skeleton-line-title"></div>
+            <div class="skeleton-line skeleton-line-sub"></div>
         </div>
     </div>
 </div>
 
+<!-- ✅ MAIN CONTENT -->
+<div id="main-content">
+
 <div class="toast" id="toast"></div>
 
 <div class="container">
-    <!-- Header -->
-    <div class="header">
-        <a href="page.html" class="back-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 12H5M5 12l7-7M5 12l7 7"/>
-            </svg>
-            Back
-        </a>
-        <span style="font-family:var(--mono);font-size:var(--text-xs);color:var(--t3);">v2</span>
-    </div>
-    <h1>Session <span class="accent">History</span></h1>
-    <p class="sub">Your saved conversations and lead searches</p>
-
     <!-- Search -->
     <div class="search-wrap">
         <div class="search-shell">
@@ -900,6 +875,8 @@
     </a>
 </nav>
 
+</div> <!-- End #main-content -->
+
 <!-- ✅ SHARED NOTIFICATION BADGE SCRIPT -->
 <script src="notif-badge.js"></script>
 
@@ -907,6 +884,18 @@
 <script src="session-check.js"></script>
 
 <script>
+    // ──────────────────────────────────────────────────────────────
+    //  ✅ HIDE SKELETON WHEN CONTENT LOADS
+    // ──────────────────────────────────────────────────────────────
+
+    function hideSkeleton() {
+        document.body.classList.add('content-loaded');
+        var skeleton = document.getElementById('skeletonLoader');
+        if (skeleton) {
+            skeleton.classList.remove('active');
+        }
+    }
+
     // ──────────────────────────────────────────────────────────────
     //  TOAST
     // ──────────────────────────────────────────────────────────────
@@ -955,7 +944,6 @@
     var contextMenu = document.getElementById('contextMenu');
     var renameModal = document.getElementById('renameModal');
     var renameInput = document.getElementById('renameInput');
-    var skeletonLoader = document.getElementById('skeletonLoader');
 
     // ──────────────────────────────────────────────────────────────
     //  UTILITY FUNCTIONS
@@ -1091,16 +1079,6 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  ✅ HIDE SKELETON
-    // ──────────────────────────────────────────────────────────────
-
-    function hideSkeleton() {
-        if (skeletonLoader) {
-            skeletonLoader.classList.add('hidden');
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────
     //  RENDER SESSIONS WITH DATE GROUPING
     // ──────────────────────────────────────────────────────────────
 
@@ -1186,7 +1164,7 @@
 
         var inner = document.createElement('div');
         inner.className = 'session-messages-inner';
-        inner.innerHTML = '<div class="loading-spinner" style="padding:12px;font-size:11px;">Loading messages\u2026</div>';
+        // ✅ REMOVED: loading-spinner div - now just empty, skeleton handles loading state
         messagesDiv.appendChild(inner);
 
         div.appendChild(header);
@@ -1512,12 +1490,12 @@
     // ──────────────────────────────────────────────────────────────
 
     document.addEventListener('DOMContentLoaded', function() {
-        // ✅ Skeleton is already visible by default
-        // Load sessions immediately — benefits from server-side cache + gzip + keep-alive
+        // ✅ Show skeleton immediately
+        // Load sessions
         loadSessions();
     });
 
 </script>
 
 </body>
-    </html>
+                </html>
