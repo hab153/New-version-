@@ -15,7 +15,7 @@
    ============================================================ */
 
 :root {
-    /* ─── Responsive scaling variables ─── */
+    /* ─── Responsive scaling variables ── */
     --scale-factor: clamp(0.85, 1.5vw, 1.15);
     
     /* ─── Font sizes (scalable) ─── */
@@ -130,32 +130,7 @@ body.chat-active .menu-container {
     pointer-events: none;
 }
 
-.chat-autoreply-btn-large {
-    width: clamp(28px, 4vw, 34px);
-    height: clamp(28px, 4vw, 34px);
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--r-sm);
-    color: #707070;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-}
-.chat-autoreply-btn-large:hover { 
-    background: rgba(255, 255, 255, 0.04); 
-    border-color: rgba(255, 255, 255, 0.12); 
-    color: #f5f5f5; 
-}
-.chat-autoreply-btn-large.active {
-    background: rgba(102, 221, 153, 0.12); 
-    border-color: #66dd99; 
-    color: #66dd99;
-    box-shadow: 0 0 12px rgba(102, 221, 153, 0.2);
-}
-.chat-autoreply-btn-large svg { width: clamp(14px, 2vw, 18px); height: clamp(14px, 2vw, 18px); }
+/* ✅ OLD STAR BUTTON REMOVED FROM HERE */
 
 .menu-btn {
     width: clamp(28px, 4vw, 34px);
@@ -562,6 +537,70 @@ body.chat-active .menu-container {
     fill: none;
 }
 
+/* ✅ NEW AI REPLY PILL BUTTON STYLES */
+.ai-reply-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(0, 210, 255, 0.08);
+    border: 1px solid rgba(0, 210, 255, 0.2);
+    border-radius: 20px;
+    color: #66ddff;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.ai-reply-toggle:hover {
+    background: rgba(0, 210, 255, 0.15);
+    border-color: rgba(0, 210, 255, 0.4);
+    box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
+}
+
+.ai-reply-toggle[data-state="on"] {
+    background: rgba(102, 221, 153, 0.12);
+    border-color: rgba(102, 221, 153, 0.3);
+    color: #66dd99;
+}
+
+.ai-reply-toggle[data-state="on"]:hover {
+    background: rgba(102, 221, 153, 0.2);
+    border-color: rgba(102, 221, 153, 0.5);
+    box-shadow: 0 0 12px rgba(102, 221, 153, 0.2);
+}
+
+.ai-reply-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.ai-reply-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.ai-reply-toggle[data-state="on"] .ai-reply-dot {
+    opacity: 1;
+    box-shadow: 0 0 8px currentColor;
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 8px currentColor; }
+    50% { box-shadow: 0 0 16px currentColor; }
+}
+
 .chat-followup-wrap {
     position: relative;
     flex-shrink: 0;
@@ -798,7 +837,7 @@ body.chat-active .menu-container {
     border-color: rgba(255,255,255,0.15);
 }
 
-/* ─── MESSAGES CONTAINER ─── */
+/* ── MESSAGES CONTAINER ─── */
 .messages-container {
     flex: 1;
     overflow-y: auto;
@@ -1360,7 +1399,7 @@ body.chat-active .menu-container {
     padding: var(--space-sm) 0;
 }
 
-/* ─── BOTTOM NAV ─── */
+/* ─── BOTTOM NAV ── */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -1484,6 +1523,15 @@ body.chat-active .menu-container {
     .chat-input-area { padding: 8px 10px 10px; }
     .modal-content { padding: 16px; }
     .menu-item { font-size: 11px; padding: 8px 12px; }
+    
+    /* Mobile adjustment for AI Reply pill */
+    .ai-reply-toggle {
+        padding: 5px 10px;
+        font-size: 10px;
+        gap: 6px;
+    }
+    .ai-reply-icon { width: 14px; height: 14px; }
+    .ai-reply-dot { width: 6px; height: 6px; }
 }
 
 /* ─── Small Phones (iPhone SE, 4.7") ─── */
