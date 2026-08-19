@@ -145,7 +145,7 @@
         .nav-item.nav-home svg { color: #0d0a04; }
         .nav-badge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 14px; height: 14px; background: #ff5555; border-radius: 10px; border: 1.5px solid #121212; display: none; color: white; font-size: 7px; font-weight: 600; align-items: center; justify-content: center; padding: 0 3px; }
 
-        /* ─── TOAST ── */
+        /* ─── TOAST ─── */
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; font-weight: 600; z-index: 9999; display: none; background: rgba(0,210,255,0.15); border: 1px solid #00d2ff; color: #00d2ff; max-width: 90%; text-align: center; }
 
         /* ─ HIDE LOADING SCREEN ─── */
@@ -265,7 +265,8 @@
         <div class="skeleton-item">
             <div class="skeleton-avatar"></div>
             <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div......
+                <div class="skeleton-line skeleton-line-title"></div>
+                <......
 </div>
         </div>
     </div>
@@ -417,7 +418,7 @@
         </div>
     </div>
 
-    <!-- ── AUTO FOLLOW-UP MODAL ─── -->
+    <!-- ─── AUTO FOLLOW-UP MODAL ─── -->
     <div class="modal-overlay" id="autoFollowupModal">
         <div class="modal-content" style="max-width:420px; padding:28px 32px 32px;">
             <div class="modal-header" style="margin-bottom:20px; padding-bottom:16px;">
@@ -466,7 +467,7 @@
         </div>
     </div>
 
-    <!-- ─── AI AUTO-REPLY MINI MODAL ── -->
+    <!-- ─── AI AUTO-REPLY MINI MODAL ─── -->
     <div class="autoreply-modal-overlay" id="autoReplyModalOverlay">
         <div class="autoreply-modal">
             <div class="autoreply-modal-header">
@@ -554,8 +555,6 @@
     <!-- ✅ PERF #5: Defer notifications.js — doesn't block page render -->
     <script defer src="notifications.js"></script>
 
-    <!-- ✅ AI HINT MODULE - Loaded AFTER notifications.js for shared globals -->
-    <script src="aihint.js"></script>
     
 </body>
     </html>
