@@ -33,8 +33,10 @@ var messagesContainer = document.getElementById('messagesContainer');
 var chatInput = document.getElementById('chatInput');
 var chatSendBtn = document.getElementById('chatSendBtn');
 
-// AI AUTO-REPLY DOM ELEMENTS
-var chatAutoReplyBtn = document.getElementById('chatAutoReplyBtn');
+// ✅ NEW AI REPLY PILL BUTTON (MOVED TO CHAT HEADER)
+var chatAiReplyBtn = document.getElementById('chatAiReplyBtn');
+
+// Auto-reply modal elements (kept for instructions editing)
 var autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
 var closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
 var autoReplyInstructions = document.getElementById('autoReplyInstructions');
@@ -57,7 +59,7 @@ var afCurrentStatus = document.getElementById('afCurrentStatus');
 var afSelectedDays = 3;
 var afCurrentEnabledState = false;
 
-// ─── STATE ───
+// ─── STATE ──
 var allContacts = [];
 var toastTimeout = null;
 var currentLeadId = null;
@@ -74,6 +76,8 @@ var _cachedChatHistory = {};
 var CHAT_HISTORY_CACHE_TTL = 30000;
 var _cachedFollowUpStatus = {};
 var FOLLOWUP_CACHE_TTL = 30000;
+var _cachedAiReplyStatus = {};
+var AI_REPLY_CACHE_TTL = 30000;
 
 // ─── POLLING ───
 var _pollInterval = null;
@@ -340,13 +344,13 @@ function handleNewMessageEvent(data) {
     playNotificationSound();
 }
 
-// ─── HANDLE LEAD UPDATED EVENT ───
+// ─── HANDLE LEAD UPDATED EVENT ──
 function handleLeadUpdatedEvent(data) {
     console.log('📨 [SSE] Lead updated:', data.leadId);
     loadContacts(true);
 }
 
-// ─── PLAY NOTIFICATION SOUND ───
+// ─── PLAY NOTIFICATION SOUND ──
 function playNotificationSound() {
     try {
         var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -372,12 +376,12 @@ function safeSanitize(str) {
     return div.innerHTML;
 }
 
-// ─── AUTH CHECK ───
+// ── AUTH CHECK ───
 if (!token) {
     window.location.href = 'login.html';
 }
 
-// ─── TOAST HELPER ───
+// ─── TOAST HELPER ──
 function showToast(message, duration) {
     duration = duration || 3000;
     toast.textContent = message;
@@ -425,7 +429,7 @@ revenueModal.addEventListener('click', function(e) {
     if (e.target === this) { revenueModal.classList.remove('active'); }
 });
 
-// ── FOLLOW-UP DROPDOWN ──
+// ── FOLLOW-UP DROPDOWN ─
 if (followupBtn && followupDropdown) {
     followupBtn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -557,7 +561,7 @@ if (confirmAutoFollowup) {
     });
 }
 
-// ─── CLOSE CHAT ───
+// ── CLOSE CHAT ───
 function closeChatAndGoBack() {
     chatView.classList.remove('active');
     document.body.classList.remove('chat-active');
@@ -585,7 +589,7 @@ chatInput.addEventListener('keydown', function(e) {
 
 chatSendBtn.addEventListener('click', sendMessage);
 
-// ─── RENAME ───
+// ─── RENAME ──
 chatRenameBtn.addEventListener('click', function() {
     if (!currentLeadId) { showToast('No lead selected.'); return; }
     var newName = prompt('Enter new name for this contact:', currentLeadName || '');
@@ -843,7 +847,7 @@ function openChat(leadId, name, email) {
         Promise.all([
             loadChatHistory(leadId),
             loadFollowUpStatus(),
-            loadAutoReplyStatus()
+            loadAiReplyStatus()
         ]).catch(function() {});
         return;
     }
@@ -873,7 +877,7 @@ function openChat(leadId, name, email) {
     Promise.all([
         loadFollowUpStatus(),
         loadChatHistory(leadId),
-        loadAutoReplyStatus()
+        loadAiReplyStatus()
     ]).then(function() {
         clearUnreadBadge(leadId);
         startPolling(leadId);
@@ -1432,58 +1436,76 @@ if (hintOption) {
     });
 }
 
-// ─── AUTO-REPLY ───
-function loadAutoReplyStatus() {
+// ─── AI REPLY PILL TOGGLE (NEW - SCOPED TO PRIVATE CHAT) ──
+function loadAiReplyStatus() {
     if (!currentLeadId) return Promise.resolve();
+    var cached = _cachedAiReplyStatus[currentLeadId];
+    if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
+        isAutoReplyActive = cached.data.enabled || false;
+        updateAiReplyButtonUI();
+        return Promise.resolve();
+    }
     return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(function(res) {
-        if (res.ok) return res.json();
-        return null;
+        if (!res.ok) return null;
+        return res.json();
     })
     .then(function(data) {
         if (data) {
+            _cachedAiReplyStatus[currentLeadId] = { data: data, time: Date.now() };
             isAutoReplyActive = data.enabled || false;
-            autoReplyInstructions.value = data.instructions || '';
-            updateAutoReplyButtonUI();
+            if (data.instructions) autoReplyInstructions.value = data.instructions;
+            updateAiReplyButtonUI();
         }
     })
-    .catch(function(err) { console.error('Failed to load auto-reply status:', err); });
+    .catch(function(err) { console.error('Failed to load AI reply status:', err); });
 }
 
-function updateAutoReplyButtonUI() {
+function updateAiReplyButtonUI() {
+    if (!chatAiReplyBtn) return;
     if (isAutoReplyActive) {
-        chatAutoReplyBtn.classList.add('active');
-        chatAutoReplyBtn.setAttribute('title', 'AI Auto-Reply ON - Click to turn OFF');
+        chatAiReplyBtn.dataset.state = 'on';
+        chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply ON - Click to turn OFF');
     } else {
-        chatAutoReplyBtn.classList.remove('active');
-        chatAutoReplyBtn.setAttribute('title', 'AI Auto-Reply OFF - Click to configure');
+        chatAiReplyBtn.dataset.state = 'off';
+        chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply OFF - Click to configure');
     }
 }
 
-chatAutoReplyBtn.addEventListener('click', function() {
-    if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    if (isAutoReplyActive) {
+if (chatAiReplyBtn) {
+    chatAiReplyBtn.addEventListener('click', function() {
+        if (!currentLeadId) { showToast('Open a chat first.'); return; }
+        var currentState = this.dataset.state;
+        var newState = currentState === 'on' ? 'off' : 'on';
+        
+        // Optimistic UI update
+        this.dataset.state = newState;
+        
         fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: false, instructions: autoReplyInstructions.value })
+            body: JSON.stringify({ enabled: newState === 'on', instructions: autoReplyInstructions.value })
         })
         .then(function(res) {
             if (res.ok) {
-                isAutoReplyActive = false;
-                updateAutoReplyButtonUI();
-                showToast('AI Auto-Reply disabled');
+                isAutoReplyActive = newState === 'on';
+                showToast(newState === 'on' ? 'AI Reply activated' : 'AI Reply deactivated', 'info', 2000);
+            } else {
+                // Revert on failure
+                this.dataset.state = currentState;
+                showToast('Failed to update AI Reply', 'error');
             }
-        })
-        .catch(function() { showToast('Failed to disable auto-reply'); });
-    } else {
-        autoReplyModalOverlay.classList.add('show');
-        autoReplyInstructions.focus();
-    }
-});
+        }.bind(this))
+        .catch(function() {
+            this.dataset.state = currentState;
+            showToast('Connection error while updating AI Reply', 'error');
+        }.bind(this));
+    });
+}
 
+// Auto-reply modal handlers (for editing instructions)
 closeAutoReplyModal.addEventListener('click', function() { autoReplyModalOverlay.classList.remove('show'); });
 autoReplyModalOverlay.addEventListener('click', function(e) {
     if (e.target === autoReplyModalOverlay) { autoReplyModalOverlay.classList.remove('show'); }
@@ -1492,6 +1514,8 @@ autoReplyModalOverlay.addEventListener('click', function(e) {
 saveAutoReplyBtn.addEventListener('click', function() {
     var instructions = autoReplyInstructions.value.trim();
     if (!instructions) { showToast('Please enter instructions first.'); return; }
+    if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    
     fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -1500,9 +1524,9 @@ saveAutoReplyBtn.addEventListener('click', function() {
     .then(function(res) {
         if (res.ok) {
             isAutoReplyActive = true;
-            updateAutoReplyButtonUI();
+            updateAiReplyButtonUI();
             autoReplyModalOverlay.classList.remove('show');
-            showToast('AI Auto-Reply activated!');
+            showToast('AI Auto-Reply instructions saved & activated!');
         } else {
             showToast('Failed to save auto-reply settings');
         }
@@ -1512,12 +1536,8 @@ saveAutoReplyBtn.addEventListener('click', function() {
 
 function openAutoReplyModal() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    if (isAutoReplyActive) {
-        chatAutoReplyBtn.click();
-    } else {
-        autoReplyModalOverlay.classList.add('show');
-        autoReplyInstructions.focus();
-    }
+    autoReplyModalOverlay.classList.add('show');
+    autoReplyInstructions.focus();
 }
 
 // ─── PHONE BACK BUTTON ───
@@ -1585,7 +1605,7 @@ function initNotifBadge() {
     }
 }
 
-// ─── RE-INIT ON VISIBILITY CHANGE ───
+// ─── RE-INIT ON VISIBILITY CHANGE ──
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
         console.log('🔔 [NOTIFICATIONS] Tab visible, refreshing badge...');
@@ -1595,7 +1615,7 @@ document.addEventListener('visibilitychange', function() {
     }
 });
 
-// ─── CALL INIT ───
+// ─── CALL INIT ──
 initNotifBadge();
 
 console.log('✅ [NOTIFICATIONS] Badge system initialized');
