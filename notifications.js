@@ -87,7 +87,7 @@ var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
 
 // ============================================================
-// ✅ SKELETON LOADER FUNCTIONS
+// ✅ SKELETON LOADER FUNCTIONS - FIXED
 // ============================================================
 
 function showSkeletonLoader() {
@@ -116,6 +116,7 @@ function showSkeletonLoader() {
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
 }
+
 function hideSkeletonLoader() {
     // Skeleton is removed when contacts are rendered
 }
@@ -1597,21 +1598,31 @@ window.addEventListener('beforeunload', function() {
 });
 
 // ─── START EVERYTHING ───
-// ✅ Inject skeleton styles
-injectSkeletonStyles();
+function initApp() {
+    // ✅ Inject skeleton styles
+    injectSkeletonStyles();
+    
+    // ✅ Show skeleton immediately (hides loading screen)
+    showSkeletonLoader();
+    
+    // ✅ Load contacts (will replace skeleton with real data)
+    loadContacts();
+    
+    // ✅ Start polling and SSE
+    startContactPolling();
+    connectSSE();
+    
+    // ✅ Initialize badge
+    initNotifBadge();
+    
+    console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
+}
 
-// ✅ Show skeleton immediately
-showSkeletonLoader();
+// Start the app
+initApp();
 
-// ✅ Load contacts
-loadContacts();
-
-// ✅ Start polling and SSE
-startContactPolling();
-connectSSE();
+// Keep this for phone back button
 history.pushState(null, '', window.location.href);
-
-console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
 
 // ============================================================
 // ✅ INIT SHARED BADGE
@@ -1652,8 +1663,5 @@ document.addEventListener('visibilitychange', function() {
         }
     }
 });
-
-// ─── CALL INIT ──
-initNotifBadge();
 
 console.log('✅ [NOTIFICATIONS] Badge system initialized');
