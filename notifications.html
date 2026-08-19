@@ -155,7 +155,7 @@
         /* ─── TOAST ─── */
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; font-weight: 600; z-index: 9999; display: none; background: rgba(0,210,255,0.15); border: 1px solid #00d2ff; color: #00d2ff; max-width: 90%; text-align: center; }
 
-        /* ─── HIDE LOADING SCREEN ─── */
+        /* ── HIDE LOADING SCREEN ─── */
         .loading-container.hidden { display: none; }
     </style>
 </head>
@@ -277,15 +277,12 @@
             </div>
         </div>
         <div class="skeleton-item">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line skeleton-line-title"></div>
-                <div class="skeleton-line skeleton-line-sub"></div>
-            </div>
+            <div......
+</div>
         </div>
     </div>
 
-    <!-- ─── SEARCH BAR ─── -->
+    <!-- ── SEARCH BAR ─── -->
     <div class="search-container">
         <div class="search-wrap">
             <div class="search-icon">
@@ -531,5 +528,87 @@
 
     <!-- ✅ PERF #5: Defer notifications.js — doesn't block page render -->
     <script defer src="notifications.js"></script>
+
+    <!-- ✅ VISUAL PERFORMANCE OVERLAY FOR NOTIFICATIONS -->
+    <div id="perfOverlay" style="display:none; position:fixed; top:60px; right:10px; background:rgba(0,0,0,0.9); color:#0f0; padding:10px; border-radius:8px; font-family:monospace; font-size:12px; z-index:99999; border:1px solid #333; max-width:250px; pointer-events:auto;">
+      <div style="font-weight:bold; margin-bottom:5px; color:#fff;"> Notif Metrics</div>
+      <div id="perfData">Measuring...</div>
+      <button onclick="document.getElementById('perfOverlay').style.display='none'" style="margin-top:5px; background:#333; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; width:100%;">Close</button>
+    </div>
+
+    <script>
+    (function() {
+      const metrics = {};
+      const perfStart = performance.now();
+      
+      // Track ALL API calls
+      const originalFetch = window.fetch;
+      window.fetch = async function(url, options) {
+        const apiStart = performance.now();
+        try {
+          const response = await originalFetch.apply(this, arguments);
+          const clone = response.clone();
+          
+          try {
+            const data = await clone.json();
+            const payloadSize = JSON.stringify(data).length;
+            metrics[url] = {
+              latency: Math.round(performance.now() - apiStart),
+              payloadSize: payloadSize,
+              statusCode: response.status
+            };
+          } catch(e) {
+            metrics[url] = {
+              latency: Math.round(performance.now() - apiStart),
+              payloadSize: 0,
+              statusCode: response.status
+            };
+          }
+          return response;
+        } catch(err) {
+          metrics[url] = {
+            latency: Math.round(performance.now() - apiStart),
+            payloadSize: 0,
+            statusCode: 0
+          };
+          throw err;
+        }
+      };
+
+      function showMetrics() {
+        const tti = Math.round(performance.now() - perfStart);
+        const apiCalls = Object.keys(metrics).length;
+        const totalPayload = Object.values(metrics).reduce((sum, m) => sum + m.payloadSize, 0);
+        
+        let html = `<div style="font-weight:bold;margin-bottom:4px;">⏱️ TTI: ${tti}ms</div>`;
+        html += `<div>🌐 APIs: ${apiCalls}</div>`;
+        html += `<div>📦 Data: ${(totalPayload/1024).toFixed(1)}KB</div><hr style="border-color:#333;margin:5px 0;">`;
+        
+        if (apiCalls === 0) {
+          html += '<div style="color:#ffaa00">Waiting for API calls...</div>';
+        } else {
+          Object.entries(metrics).forEach(([url, data]) => {
+            const color = data.latency > 1000 ? '#ff5555' : (data.latency > 500 ? '#ffaa00' : '#66dd99');
+            const endpoint = url.split('/api/')[1] || url.split('/').pop() || 'Unknown';
+            html += `<div style="color:${color};margin-bottom:2px;">${endpoint}: ${data.latency}ms (${(data.payloadSize/1024).toFixed(1)}KB)</div>`;
+          });
+        }
+
+        document.getElementById('perfData').innerHTML = html;
+        document.getElementById('perfOverlay').style.display = 'block';
+        
+        localStorage.setItem('notif_perf_baseline', JSON.stringify({ 
+          tti, apiCalls, totalPayload, details: metrics, timestamp: Date.now() 
+        }));
+      }
+
+      window.addEventListener('load', function() {
+        setTimeout(showMetrics, 500);
+        setTimeout(showMetrics, 2000);
+        setTimeout(showMetrics, 4000);
+        setTimeout(showMetrics, 7000);
+      });
+    })();
+    </script>
 </body>
-                                                                   </html>
+                    </html>
