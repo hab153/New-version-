@@ -91,6 +91,12 @@ var CONTACT_POLL_MS = 5000;
 // ============================================================
 
 function showSkeletonLoader() {
+    // 1. Hide the spinner/loading text IMMEDIATELY so it doesn't overlap
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+    }
+    
+    // 2. Build and inject skeleton HTML
     var skeletonHTML = '';
     for (var i = 0; i < 8; i++) {
         skeletonHTML += `
@@ -103,13 +109,13 @@ function showSkeletonLoader() {
             </div>
         `;
     }
+    
+    // 3. Inject into contact list and activate
     contactList.innerHTML = skeletonHTML;
     contactList.classList.add('active');
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
-    loadingScreen.classList.add('hidden');
 }
-
 function hideSkeletonLoader() {
     // Skeleton is removed when contacts are rendered
 }
