@@ -33,14 +33,15 @@ var messagesContainer = document.getElementById('messagesContainer');
 var chatInput = document.getElementById('chatInput');
 var chatSendBtn = document.getElementById('chatSendBtn');
 
-// ✅ NEW AI REPLY PILL BUTTON (MOVED TO CHAT HEADER)
+// ✅ NEW AI REPLY PILL TOGGLE & EDIT BUTTON
 var chatAiReplyBtn = document.getElementById('chatAiReplyBtn');
+var aiReplyEditBtn = document.getElementById('aiReplyEditBtn');
 
-// Auto-reply modal elements (kept for instructions editing)
-var autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
-var closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
-var autoReplyInstructions = document.getElementById('autoReplyInstructions');
-var saveAutoReplyBtn = document.getElementById('saveAutoReplyBtn');
+// ✅ MINI INSTRUCTION OVERLAY ELEMENTS
+var aiInstructionOverlay = document.getElementById('aiInstructionOverlay');
+var closeAiInstructions = document.getElementById('closeAiInstructions');
+var aiInstructionTextarea = document.getElementById('aiInstructionTextarea');
+var saveAiInstructions = document.getElementById('saveAiInstructions');
 
 // FOLLOW-UP ELEMENTS
 var followupBtn = document.getElementById('chatFollowupBtn');
@@ -238,7 +239,7 @@ function connectSSE() {
         sseConnection.addEventListener('message', function(event) {
             try {
                 var data = JSON.parse(event.data);
-                console.log('📨 [SSE] Event received:', data.type);
+                console.log(' [SSE] Event received:', data.type);
 
                 if (data.type === 'connected' || data.type === 'heartbeat') {
                     return;
@@ -317,7 +318,7 @@ function handleNewMessageEvent(data) {
 
     // ✅ 2. Show toast notification
     var sender = from === 'lead' ? 'You' : leadName;
-    var emoji = from === 'lead' ? '📤' : '📩';
+    var emoji = from === 'lead' ? '' : '📩';
     showToast(emoji + ' New message from ' + leadName, 4000);
 
     // ✅ 3. If chat is open and it's the same lead, append message
@@ -367,7 +368,7 @@ function playNotificationSound() {
     } catch (err) { /* Silently fail */ }
 }
 
-// ─── SAFE SANITIZE ───
+// ── SAFE SANITIZE ───
 function safeSanitize(str) {
     if (!str) return '';
     if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
@@ -418,7 +419,7 @@ document.querySelectorAll('.menu-item').forEach(function(item) {
         }
         if (action === 'autoreply') {
             if (!currentLeadId) { showToast('Open a chat first.'); return; }
-            openAutoReplyModal(); return;
+            openAiInstructionModal(); return;
         }
         showToast('Please open a chat to access this feature.');
     });
@@ -450,7 +451,7 @@ if (suggestBtn) {
     });
 }
 
-// ─── AUTO FOLLOW-UP MODAL ───
+// ── AUTO FOLLOW-UP MODAL ───
 var autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
 if (autoFollowupOption) {
     autoFollowupOption.addEventListener('click', function(e) {
@@ -636,7 +637,7 @@ function renameLead(leadId, newName) {
     });
 }
 
-// ─── SEND MESSAGE ───
+// ─── SEND MESSAGE ──
 function sendMessage() {
     var text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
@@ -706,7 +707,7 @@ function appendMessage(from, content, date) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── LOAD CHAT HISTORY ───
+// ─── LOAD CHAT HISTORY ──
 function loadChatHistory(leadId) {
     var cached = _cachedChatHistory[leadId];
     if (cached && (Date.now() - cached.time) < CHAT_HISTORY_CACHE_TTL) {
@@ -837,7 +838,7 @@ function clearUnreadBadge(leadId) {
         }
     })
     .catch(function(err) {
-        console.error('❌ [CLEAR] Error:', err);
+        console.error(' [CLEAR] Error:', err);
     });
 }
 
@@ -887,7 +888,7 @@ function openChat(leadId, name, email) {
     });
 }
 
-// ─── POLLING ───
+// ─── POLLING ──
 function startPolling(leadId) {
     stopPolling();
     _pollInterval = setInterval(function() {
@@ -1351,7 +1352,7 @@ function loadContacts(forceRefresh) {
         if (data.data && Array.isArray(data.data)) {
             contacts = data.data;
             if (data.pagination) {
-                console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+                console.log(' [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
             }
         } else if (Array.isArray(data)) {
             contacts = data;
@@ -1374,7 +1375,7 @@ function loadContacts(forceRefresh) {
     });
 }
 
-// ─── RENDER CONTACTS ───
+// ── RENDER CONTACTS ───
 function renderContacts(contacts) {
     if (!contacts || contacts.length === 0) {
         if (searchInput.value.trim() !== '') {
@@ -1436,12 +1437,14 @@ if (hintOption) {
     });
 }
 
-// ─── AI REPLY PILL TOGGLE (NEW - SCOPED TO PRIVATE CHAT) ──
+// ── AI REPLY PILL TOGGLE & MINI INSTRUCTION OVERLAY ──
+
 function loadAiReplyStatus() {
     if (!currentLeadId) return Promise.resolve();
     var cached = _cachedAiReplyStatus[currentLeadId];
     if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
         isAutoReplyActive = cached.data.enabled || false;
+        if (cached.data.instructions) aiInstructionTextarea.value = cached.data.instructions;
         updateAiReplyButtonUI();
         return Promise.resolve();
     }
@@ -1456,7 +1459,7 @@ function loadAiReplyStatus() {
         if (data) {
             _cachedAiReplyStatus[currentLeadId] = { data: data, time: Date.now() };
             isAutoReplyActive = data.enabled || false;
-            if (data.instructions) autoReplyInstructions.value = data.instructions;
+            if (data.instructions) aiInstructionTextarea.value = data.instructions;
             updateAiReplyButtonUI();
         }
     })
@@ -1468,76 +1471,105 @@ function updateAiReplyButtonUI() {
     if (isAutoReplyActive) {
         chatAiReplyBtn.dataset.state = 'on';
         chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply ON - Click to turn OFF');
+        // Show edit button only when active
+        if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'flex';
     } else {
         chatAiReplyBtn.dataset.state = 'off';
         chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply OFF - Click to configure');
+        // Hide edit button when inactive
+        if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'none';
     }
 }
 
+// Open mini instruction modal
+function openAiInstructionModal() {
+    if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    aiInstructionOverlay.classList.add('active');
+    aiInstructionTextarea.focus();
+}
+
+// Close mini instruction modal
+function closeAiInstructionModal() {
+    aiInstructionOverlay.classList.remove('active');
+}
+
+// Pill toggle click handler
 if (chatAiReplyBtn) {
     chatAiReplyBtn.addEventListener('click', function() {
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
-        var currentState = this.dataset.state;
-        var newState = currentState === 'on' ? 'off' : 'on';
         
-        // Optimistic UI update
-        this.dataset.state = newState;
+        // If already ON, toggle OFF immediately
+        if (this.dataset.state === 'on') {
+            this.dataset.state = 'off';
+            fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: false, instructions: aiInstructionTextarea.value })
+            })
+            .then(function(res) {
+                if (res.ok) {
+                    isAutoReplyActive = false;
+                    updateAiReplyButtonUI();
+                    showToast('AI Reply deactivated', 'info', 2000);
+                }
+            })
+            .catch(function() { showToast('Connection error', 'error'); });
+            return;
+        }
+        
+        // If OFF, open mini modal to get instructions first
+        openAiInstructionModal();
+    });
+}
+
+// Edit button reopens modal
+if (aiReplyEditBtn) {
+    aiReplyEditBtn.addEventListener('click', function() {
+        openAiInstructionModal();
+    });
+}
+
+// Close modal handlers
+if (closeAiInstructions) {
+    closeAiInstructions.addEventListener('click', closeAiInstructionModal);
+}
+if (aiInstructionOverlay) {
+    aiInstructionOverlay.addEventListener('click', function(e) {
+        if (e.target === aiInstructionOverlay) closeAiInstructionModal();
+    });
+}
+
+// Save button: saves instructions AND activates AI reply
+if (saveAiInstructions) {
+    saveAiInstructions.addEventListener('click', function() {
+        var instructions = aiInstructionTextarea.value.trim();
+        if (!instructions) { showToast('Please enter instructions first.'); return; }
+        if (!currentLeadId) { showToast('Open a chat first.'); return; }
+        
+        saveAiInstructions.disabled = true;
+        saveAiInstructions.textContent = 'Saving...';
         
         fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: newState === 'on', instructions: autoReplyInstructions.value })
+            body: JSON.stringify({ enabled: true, instructions: instructions })
         })
         .then(function(res) {
             if (res.ok) {
-                isAutoReplyActive = newState === 'on';
-                showToast(newState === 'on' ? 'AI Reply activated' : 'AI Reply deactivated', 'info', 2000);
+                isAutoReplyActive = true;
+                updateAiReplyButtonUI();
+                closeAiInstructionModal();
+                showToast('AI Reply activated with your instructions!', 'success', 3000);
             } else {
-                // Revert on failure
-                this.dataset.state = currentState;
-                showToast('Failed to update AI Reply', 'error');
+                showToast('Failed to save settings', 'error');
             }
-        }.bind(this))
-        .catch(function() {
-            this.dataset.state = currentState;
-            showToast('Connection error while updating AI Reply', 'error');
-        }.bind(this));
+        })
+        .catch(function() { showToast('Connection error while saving', 'error'); })
+        .finally(function() {
+            saveAiInstructions.disabled = false;
+            saveAiInstructions.textContent = 'Save & Activate';
+        });
     });
-}
-
-// Auto-reply modal handlers (for editing instructions)
-closeAutoReplyModal.addEventListener('click', function() { autoReplyModalOverlay.classList.remove('show'); });
-autoReplyModalOverlay.addEventListener('click', function(e) {
-    if (e.target === autoReplyModalOverlay) { autoReplyModalOverlay.classList.remove('show'); }
-});
-
-saveAutoReplyBtn.addEventListener('click', function() {
-    var instructions = autoReplyInstructions.value.trim();
-    if (!instructions) { showToast('Please enter instructions first.'); return; }
-    if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    
-    fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: true, instructions: instructions })
-    })
-    .then(function(res) {
-        if (res.ok) {
-            isAutoReplyActive = true;
-            updateAiReplyButtonUI();
-            autoReplyModalOverlay.classList.remove('show');
-            showToast('AI Auto-Reply instructions saved & activated!');
-        } else {
-            showToast('Failed to save auto-reply settings');
-        }
-    })
-    .catch(function() { showToast('Connection error while saving'); });
-});
-
-function openAutoReplyModal() {
-    if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    autoReplyModalOverlay.classList.add('show');
-    autoReplyInstructions.focus();
 }
 
 // ─── PHONE BACK BUTTON ───
