@@ -66,7 +66,7 @@ var afCurrentStatus = document.getElementById('afCurrentStatus');
 var afSelectedDays = 3;
 var afCurrentEnabledState = false;
 
-// ── STATE ──
+// ── STATE ─
 var allContacts = [];
 var toastTimeout = null;
 var currentLeadId = null;
@@ -324,7 +324,7 @@ function handleNewMessageEvent(data) {
 
     // ✅ 2. Show toast notification
     var sender = from === 'lead' ? 'You' : leadName;
-    var emoji = from === 'lead' ? '' : '📩';
+    var emoji = from === 'lead' ? '' : '';
     showToast(emoji + ' New message from ' + leadName, 4000);
 
     // ✅ 3. If chat is open and it's the same lead, append message
@@ -351,7 +351,7 @@ function handleNewMessageEvent(data) {
     playNotificationSound();
 }
 
-// ─── HANDLE LEAD UPDATED EVENT ──
+// ── HANDLE LEAD UPDATED EVENT ──
 function handleLeadUpdatedEvent(data) {
     console.log('📨 [SSE] Lead updated:', data.leadId);
     loadContacts(true);
@@ -374,7 +374,7 @@ function playNotificationSound() {
     } catch (err) { /* Silently fail */ }
 }
 
-// ─── SAFE SANITIZE ───
+// ─── SAFE SANITIZE ──
 function safeSanitize(str) {
     if (!str) return '';
     if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
@@ -538,7 +538,7 @@ function updateModalStatus(enabled) {
     }
 }
 
-// ─── DAY BUTTON CLICK ───
+// ── DAY BUTTON CLICK ───
 afDayButtons.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -580,7 +580,7 @@ function closeChatAndGoBack() {
 
 chatBack.addEventListener('click', function() { closeChatAndGoBack(); });
 
-// ─── CHAT INPUT ───
+// ─── CHAT INPUT ──
 chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 80) + 'px';
@@ -713,7 +713,7 @@ function appendMessage(from, content, date) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── LOAD CHAT HISTORY ───
+// ─── LOAD CHAT HISTORY ──
 function loadChatHistory(leadId) {
     var cached = _cachedChatHistory[leadId];
     if (cached && (Date.now() - cached.time) < CHAT_HISTORY_CACHE_TTL) {
@@ -1198,7 +1198,7 @@ function toggleAutoFollowUp(days, forceState) {
     });
 }
 
-// ─── REVENUE ───
+// ── REVENUE ───
 var CATEGORY_CONFIG = {
     contacted: { label: 'Contacted', icon: '\ud83d\udd35', color: '#66ddff' },
     replied: { label: 'Replied', icon: '\ud83d\udfe2', color: '#66dd99' },
@@ -1358,7 +1358,7 @@ function loadContacts(forceRefresh) {
         if (data.data && Array.isArray(data.data)) {
             contacts = data.data;
             if (data.pagination) {
-                console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+                console.log(' [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
             }
         } else if (Array.isArray(data)) {
             contacts = data;
@@ -1444,7 +1444,7 @@ if (hintOption) {
 }
 
 // ════════════════════════════════════════════════════════════
-// ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (REPLACES OLD TOGGLE)
+// ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (FIXED PERSISTENCE)
 // ════════════════════════════════════════════════════════════
 
 function loadAiReplyStatus() {
@@ -1505,30 +1505,36 @@ function closeAiInstructionModal() {
     if (aiInstructionOverlay) aiInstructionOverlay.classList.remove('active');
 }
 
-// Pill toggle click handler
+// Pill toggle click handler — FIXED PAYLOADS
 if (chatAiReplyBtn) {
     chatAiReplyBtn.addEventListener('click', function() {
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
         
-        // If already ON → toggle OFF immediately
+        // If already ON → toggle OFF immediately (send ONLY enabled:false)
         if (this.dataset.state === 'on') {
             this.dataset.state = 'off';
             fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
                 method: 'PUT',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    enabled: false, 
-                    instructions: aiInstructionTextarea ? aiInstructionTextarea.value : '' 
-                })
+                body: JSON.stringify({ enabled: false })
             })
             .then(function(res) {
                 if (res.ok) {
                     isAutoReplyActive = false;
+                    // Invalidate cache so refresh loads fresh state
+                    delete _cachedAiReplyStatus[currentLeadId];
                     updateAiReplyButtonUI();
                     showToast('AI Reply deactivated', 'info', 2000);
+                } else {
+                    // Revert UI on failure
+                    this.dataset.state = 'on';
+                    showToast('Failed to deactivate', 'error');
                 }
-            })
-            .catch(function() { showToast('Connection error', 'error'); });
+            }.bind(this))
+            .catch(function() { 
+                this.dataset.state = 'on';
+                showToast('Connection error', 'error'); 
+            }.bind(this));
             return;
         }
         
@@ -1554,7 +1560,7 @@ if (aiInstructionOverlay) {
     });
 }
 
-// Save button: saves instructions AND activates AI reply
+// Save button: saves instructions AND activates AI reply — FIXED PAYLOAD
 if (saveAiInstructions) {
     saveAiInstructions.addEventListener('click', function() {
         var instructions = aiInstructionTextarea ? aiInstructionTextarea.value.trim() : '';
@@ -1572,6 +1578,8 @@ if (saveAiInstructions) {
         .then(function(res) {
             if (res.ok) {
                 isAutoReplyActive = true;
+                // Invalidate cache so refresh loads fresh persisted state
+                delete _cachedAiReplyStatus[currentLeadId];
                 updateAiReplyButtonUI();
                 closeAiInstructionModal();
                 showToast('AI Reply activated with your instructions!', 'success', 3000);
@@ -1606,6 +1614,7 @@ saveAutoReplyBtn.addEventListener('click', function() {
     .then(function(res) {
         if (res.ok) {
             isAutoReplyActive = true;
+            delete _cachedAiReplyStatus[currentLeadId];
             updateAiReplyButtonUI();
             autoReplyModalOverlay.classList.remove('show');
             showToast('AI Auto-Reply instructions saved & activated!');
