@@ -73,9 +73,9 @@ var currentLeadId = null;
 var currentLeadName = null;
 var currentLeadEmail = null;
 var isSending = false;
-var isAutoReplyActive = false;
+// ❌ REMOVED: var isAutoReplyActive = false; — replaced with per-lead cache lookup
 
-// ─── CACHE ───
+// ── CACHE ───
 var _cachedContacts = null;
 var _cachedContactsTime = 0;
 var CONTACTS_CACHE_TTL = 5000;
@@ -91,6 +91,19 @@ var _pollInterval = null;
 var _currentMessageCount = 0;
 var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
+
+// ============================================================
+// ✅ PER-LEAD AI REPLY STATUS LOOKUP (REPLACES GLOBAL FLAG)
+// ============================================================
+
+function getAiReplyStatus(leadId) {
+    if (!leadId) return false;
+    var cached = _cachedAiReplyStatus[leadId];
+    if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
+        return cached.data.enabled || false;
+    }
+    return false; // default when not loaded yet
+}
 
 // ============================================================
 // ✅ SKELETON LOADER FUNCTIONS
@@ -245,7 +258,7 @@ function connectSSE() {
         sseConnection.addEventListener('message', function(event) {
             try {
                 var data = JSON.parse(event.data);
-                console.log('📨 [SSE] Event received:', data.type);
+                console.log(' [SSE] Event received:', data.type);
 
                 if (data.type === 'connected' || data.type === 'heartbeat') {
                     return;
@@ -278,7 +291,7 @@ function connectSSE() {
             var delay = Math.min(1000 * Math.pow(2, sseReconnectAttempts), 30000);
 
             if (sseReconnectAttempts <= MAX_SSE_RECONNECT_ATTEMPTS) {
-                console.log('🔄 [SSE] Reconnecting in ' + delay + 'ms... (attempt ' + sseReconnectAttempts + '/' + MAX_SSE_RECONNECT_ATTEMPTS + ')');
+                console.log(' [SSE] Reconnecting in ' + delay + 'ms... (attempt ' + sseReconnectAttempts + '/' + MAX_SSE_RECONNECT_ATTEMPTS + ')');
                 setTimeout(connectSSE, delay);
             } else {
                 console.error('❌ [SSE] Max reconnect attempts reached. Falling back to polling.');
@@ -538,7 +551,7 @@ function updateModalStatus(enabled) {
     }
 }
 
-// ── DAY BUTTON CLICK ───
+// ── DAY BUTTON CLICK ──
 afDayButtons.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -697,7 +710,7 @@ function sendMessage() {
     });
 }
 
-// ─── APPEND MESSAGE ───
+// ── APPEND MESSAGE ───
 function appendMessage(from, content, date) {
     var div = document.createElement('div');
     var cssClass = from === 'lead' ? 'from-lead' : 'from-ai';
@@ -844,7 +857,7 @@ function clearUnreadBadge(leadId) {
         }
     })
     .catch(function(err) {
-        console.error('❌ [CLEAR] Error:', err);
+        console.error(' [CLEAR] Error:', err);
     });
 }
 
@@ -894,7 +907,7 @@ function openChat(leadId, name, email) {
     });
 }
 
-// ─── POLLING ───
+// ─── POLLING ──
 function startPolling(leadId) {
     stopPolling();
     _pollInterval = setInterval(function() {
@@ -957,7 +970,7 @@ function startContactPolling() {
             if (data.data && Array.isArray(data.data)) {
                 contacts = data.data;
                 if (data.pagination) {
-                    console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+                    console.log(' [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
                 }
             }
             // If response is already an array (old format)
@@ -1444,14 +1457,13 @@ if (hintOption) {
 }
 
 // ════════════════════════════════════════════════════════════
-// ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (FIXED PERSISTENCE)
+// ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (PER-LEAD ISOLATION)
 // ════════════════════════════════════════════════════════════
 
 function loadAiReplyStatus() {
     if (!currentLeadId) return Promise.resolve();
     var cached = _cachedAiReplyStatus[currentLeadId];
     if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
-        isAutoReplyActive = cached.data.enabled || false;
         if (cached.data.instructions && aiInstructionTextarea) {
             aiInstructionTextarea.value = cached.data.instructions;
         }
@@ -1468,7 +1480,6 @@ function loadAiReplyStatus() {
     .then(function(data) {
         if (data) {
             _cachedAiReplyStatus[currentLeadId] = { data: data, time: Date.now() };
-            isAutoReplyActive = data.enabled || false;
             if (data.instructions && aiInstructionTextarea) {
                 aiInstructionTextarea.value = data.instructions;
             }
@@ -1479,16 +1490,16 @@ function loadAiReplyStatus() {
 }
 
 function updateAiReplyButtonUI() {
-    if (!chatAiReplyBtn) return;
-    if (isAutoReplyActive) {
+    if (!chatAiReplyBtn || !currentLeadId) return;
+    // ✅ ALWAYS read from per-lead cache, never from a global flag
+    var isActive = getAiReplyStatus(currentLeadId);
+    if (isActive) {
         chatAiReplyBtn.dataset.state = 'on';
         chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply ON — Click to turn OFF');
-        // Show small SVG edit button when active
         if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'flex';
     } else {
         chatAiReplyBtn.dataset.state = 'off';
         chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply OFF — Click to configure');
-        // Hide edit button when inactive
         if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'none';
     }
 }
@@ -1505,7 +1516,7 @@ function closeAiInstructionModal() {
     if (aiInstructionOverlay) aiInstructionOverlay.classList.remove('active');
 }
 
-// Pill toggle click handler — FIXED PAYLOADS
+// Pill toggle click handler — FIXED PAYLOADS + PER-LEAD
 if (chatAiReplyBtn) {
     chatAiReplyBtn.addEventListener('click', function() {
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
@@ -1520,8 +1531,7 @@ if (chatAiReplyBtn) {
             })
             .then(function(res) {
                 if (res.ok) {
-                    isAutoReplyActive = false;
-                    // Invalidate cache so refresh loads fresh state
+                    // Invalidate cache so next read returns false
                     delete _cachedAiReplyStatus[currentLeadId];
                     updateAiReplyButtonUI();
                     showToast('AI Reply deactivated', 'info', 2000);
@@ -1560,7 +1570,7 @@ if (aiInstructionOverlay) {
     });
 }
 
-// Save button: saves instructions AND activates AI reply — FIXED PAYLOAD
+// Save button: saves instructions AND activates AI reply — FIXED PAYLOAD + PER-LEAD
 if (saveAiInstructions) {
     saveAiInstructions.addEventListener('click', function() {
         var instructions = aiInstructionTextarea ? aiInstructionTextarea.value.trim() : '';
@@ -1577,8 +1587,7 @@ if (saveAiInstructions) {
         })
         .then(function(res) {
             if (res.ok) {
-                isAutoReplyActive = true;
-                // Invalidate cache so refresh loads fresh persisted state
+                // Invalidate cache so next read fetches fresh persisted state
                 delete _cachedAiReplyStatus[currentLeadId];
                 updateAiReplyButtonUI();
                 closeAiInstructionModal();
@@ -1613,7 +1622,6 @@ saveAutoReplyBtn.addEventListener('click', function() {
     })
     .then(function(res) {
         if (res.ok) {
-            isAutoReplyActive = true;
             delete _cachedAiReplyStatus[currentLeadId];
             updateAiReplyButtonUI();
             autoReplyModalOverlay.classList.remove('show');
