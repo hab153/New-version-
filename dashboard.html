@@ -73,6 +73,27 @@
       align-items: center;
     }
 
+    /* ✅ SKELETON SHIMMER ANIMATION */
+    @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skel { 
+      background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%) !important; 
+      background-size: 200% 100% !important; 
+      animation: skeletonShimmer 1.5s ease-in-out infinite !important; 
+      border-radius: 4px !important; 
+      color: transparent !important; 
+      pointer-events: none !important; 
+    }
+    .skel-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .skel-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+    .skel-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .skel-line-title { width: 60%; height: 14px; }
+    .skel-line-sub { width: 40%; height: 10px; }
+    .skel-item:nth-child(1) .skel-line-title, .skel-item:nth-child(1) .skel-line-sub { animation-delay: 0.05s; }
+    .skel-item:nth-child(2) .skel-line-title, .skel-item:nth-child(2) .skel-line-sub { animation-delay: 0.10s; }
+    .skel-item:nth-child(3) .skel-line-title, .skel-item:nth-child(3) .skel-line-sub { animation-delay: 0.15s; }
+    .skel-item:nth-child(4) .skel-line-title, .skel-item:nth-child(4) .skel-line-sub { animation-delay: 0.20s; }
+    .skel-item:nth-child(5) .skel-line-title, .skel-item:nth-child(5) .skel-line-sub { animation-delay: 0.25s; }
+
     .toast {
       position: fixed;
       top: var(--space-lg);
@@ -411,7 +432,7 @@
     .command-center:not(.collapsed) .lead-table,
     .command-center:not(.collapsed) .refresh-indicator { animation: fadeInUp 0.3s ease-out; }
 
-    /* ─── Bottom Navigation ─── */
+    /* ── Bottom Navigation ─── */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -546,7 +567,7 @@
       .stat-card { padding: var(--space-xl); }
     }
 
-    /* ─── Medium Screens (Tablets) ─── */
+    /* ── Medium Screens (Tablets) ─── */
     @media (min-width: 600px) and (max-width: 1023px) {
       .bottom-nav { padding: 0 8%; }
       .container { padding: var(--space-xl) var(--space-xl); }
@@ -663,9 +684,7 @@
           <span class="cc-title">Email Infrastructure</span>
         </div>
         <div style="display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap;">
-          <button id="connectEmailBtn" class="connect-btn" onclick="event.stopPropagation(); connectEmail()">
-            Connect Email
-          </button>
+          <button id="connectEmailBtn" class="connect-btn skel" disabled>Connect Email</button>
           <div class="toggle-button">
             <div class="toggle-button-circle">
               <svg class="toggle-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -680,15 +699,15 @@
         <div class="cc-content">
           <div class="analytics-grid">
             <div class="stat-card">
-              <div class="stat-value" id="totalLeads">—</div>
+              <div class="stat-value skel" id="totalLeads">&nbsp;</div>
               <div class="stat-label">Total Leads</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value" id="replyRate">—</div>
+              <div class="stat-value skel" id="replyRate">&nbsp;</div>
               <div class="stat-label">Reply Rate</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value" id="interestedCount">—</div>
+              <div class="stat-value skel" id="interestedCount">&nbsp;</div>
               <div class="stat-label">Interested</div>
             </div>
           </div>
@@ -703,11 +722,11 @@
               </tr>
             </thead>
             <tbody id="leadList">
-              <tr>
-                <td colspan="4" style="text-align:center; color: var(--t3); padding: var(--space-xl);">
-                  Loading leads...
-                </td>
-              </tr>
+              <tr class="skel-item"><td class="skel skel-avatar"></td><td colspan="3"><div class="skel-lines"><div class="skel skel-line-title"></div><div class="skel skel-line-sub"></div></div></td></tr>
+              <tr class="skel-item"><td class="skel skel-avatar"></td><td colspan="3"><div class="skel-lines"><div class="skel skel-line-title"></div><div class="skel skel-line-sub"></div></div></td></tr>
+              <tr class="skel-item"><td class="skel skel-avatar"></td><td colspan="3"><div class="skel-lines"><div class="skel skel-line-title"></div><div class="skel skel-line-sub"></div></div></td></tr>
+              <tr class="skel-item"><td class="skel skel-avatar"></td><td colspan="3"><div class="skel-lines"><div class="skel skel-line-title"></div><div class="skel skel-line-sub"></div></div></td></tr>
+              <tr class="skel-item"><td class="skel skel-avatar"></td><td colspan="3"><div class="skel-lines"><div class="skel skel-line-title"></div><div class="skel skel-line-sub"></div></div></td></tr>
             </tbody>
           </table>
           <div class="refresh-indicator" id="refreshIndicator">Last updated: Just now</div>
@@ -917,7 +936,7 @@
     let currentReplyEmail = null;
     let autoRefreshInterval = null;
 
-    // ── Toggle Command Center ────────────────────────────────────────────────
+    // ─ Toggle Command Center ────────────────────────────────────────────────
     function toggleCommandCenter() {
       const cc = document.getElementById('commandCenter');
       cc.classList.toggle('collapsed');
@@ -955,7 +974,7 @@
         window.history.replaceState({}, document.title, '/dashboard.html');
       } else if (nylasSuccess === 'error') {
         const errorMsg = params.get('error') || 'Unknown error';
-        showToast(`❌ Connection failed: ${decodeURIComponent(errorMsg)}`, 'error', 6000);
+        showToast(` Connection failed: ${decodeURIComponent(errorMsg)}`, 'error', 6000);
         window.history.replaceState({}, document.title, '/dashboard.html');
       }
     }
@@ -967,6 +986,7 @@
         btn.innerText = '✅ Connected';
         btn.classList.add('connected');
         btn.disabled = false;
+        btn.classList.remove('skel');
       }
     }
 
@@ -1048,6 +1068,7 @@
         console.log('📊 [FRONTEND] Email status:', data);
 
         if (btn) {
+          btn.classList.remove('skel');
           if (data.connected && !data.isExpired) {
             btn.innerText = '✅ Connected';
             btn.classList.add('connected');
@@ -1077,6 +1098,7 @@
         if (btn) {
           btn.innerText = 'Connect Email';
           btn.classList.remove('connected');
+          btn.classList.remove('skel');
           btn.disabled = false;
         }
       }
@@ -1094,6 +1116,11 @@
         const leads = await res.json();
         const tbody = document.getElementById('leadList');
 
+        // Remove skeleton classes from stat cards
+        document.getElementById('totalLeads').classList.remove('skel');
+        document.getElementById('replyRate').classList.remove('skel');
+        document.getElementById('interestedCount').classList.remove('skel');
+
         document.getElementById('totalLeads').innerText = leads.length;
         const interested = leads.filter(l => l.status === 'Interested').length;
         document.getElementById('interestedCount').innerText = interested;
@@ -1108,7 +1135,7 @@
             const statusClass = (lead.status || 'new').toLowerCase().replace(/\s/g, '-');
             const lastDate = lead.lastContactDate ? new Date(lead.lastContactDate).toLocaleDateString() : '—';
             return `
-              <tr onclick="openReplyModal('${lead._id}', '${lead.name || '—'}', '${lead.email || ''}')">
+              <tr onclick="openReplyModal('${lead._id}', '${(lead.name || '—').replace(/'/g, "\\'")}', '${(lead.email || '').replace(/'/g, "\\'")}')">
                 <td>${DOMPurify.sanitize(lead.name || '—')}</td>
                 <td>${DOMPurify.sanitize(lead.company || '—')}</td>
                 <td><span class="status-badge status-${statusClass}">${DOMPurify.sanitize(lead.status || 'New')}</span></td>
@@ -1147,7 +1174,7 @@
             return `
               <div class="reply-item" style="border-left: 3px solid ${isLead ? 'var(--gold)' : 'var(--sky)'}; padding-left: var(--space-md);">
                 <div class="reply-meta">
-                  ${isLead ? '📨 Lead' : '🤖 You'} • ${date}
+                  ${isLead ? ' Lead' : '🤖 You'} • ${date}
                   ${reply.subject ? `<br>Subject: ${DOMPurify.sanitize(reply.subject)}` : ''}
                 </div>
                 <div class="reply-content">${DOMPurify.sanitize(reply.content)}</div>
@@ -1222,7 +1249,7 @@
       }
     }
 
-    // ── Check Current Plan ───────────────────────────────────────────────────
+    // ── Check Current Plan ──────────────────────────────────────────────────
     async function checkCurrentPlan() {
       try {
         const res = await fetch(`${BACKEND}/api/users/me`, {
@@ -1244,7 +1271,7 @@
       window.location.href = 'notifications.html';
     }
 
-    // ── Logout ───────────────────────────────────────────────────────────────
+    // ── Logout ──────────────────────────────────────────────────────────────
     function handleLogout() {
       if (confirm('Are you sure you want to sign out?')) {
         localStorage.removeItem('token');
@@ -1254,9 +1281,9 @@
       }
     }
 
-    // ── Initialize ───────────────────────────────────────────────────────────
+    // ─ Initialize ───────────────────────────────────────────────────────────
     console.log('🚀 [FRONTEND] Dashboard initialized');
-    console.log('📝 [FRONTEND] Backend URL:', BACKEND);
+    console.log(' [FRONTEND] Backend URL:', BACKEND);
     console.log('📝 [FRONTEND] Token present:', !!token);
     
     handleOAuthRedirect();
@@ -1269,4 +1296,4 @@
     console.log('✅ [FRONTEND] Badge handled by notif-badge.js');
   </script>
 </body>
-  </html>
+          </html>
