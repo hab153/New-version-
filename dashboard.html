@@ -335,7 +335,7 @@
       font-family: var(--mono); 
     }
 
-    /* ─── Lead Table ─── */
+    /* ─── Lead Table ── */
     .lead-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
     .lead-table th {
       text-align: left; padding: var(--space-md); color: var(--t3);
@@ -927,6 +927,13 @@
     </div>
   </div>
 
+  <!-- ✅ VISUAL PERFORMANCE OVERLAY (Android Friendly) -->
+  <div id="perfOverlay" style="display:none; position:fixed; top:60px; right:10px; background:rgba(0,0,0,0.9); color:#0f0; padding:10px; border-radius:8px; font-family:monospace; font-size:12px; z-index:99999; border:1px solid #333; max-width:250px; pointer-events:auto;">
+    <div style="font-weight:bold; margin-bottom:5px; color:#fff;"> Skyline Metrics</div>
+    <div id="perfData">Measuring...</div>
+    <button onclick="document.getElementById('perfOverlay').style.display='none'" style="margin-top:5px; background:#333; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; width:100%;">Close</button>
+  </div>
+
   <script>
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token   = localStorage.getItem('token');
@@ -1104,7 +1111,7 @@
       }
     }
 
-    // ── Load Leads ───────────────────────────────────────────────────────────
+    // ─ Load Leads ───────────────────────────────────────────────────────────
     async function loadLeads() {
       try {
         const res = await fetch(`${BACKEND}/api/leads`, {
@@ -1150,7 +1157,7 @@
       }
     }
 
-    // ── Open Reply Modal ─────────────────────────────────────────────────────
+    // ─ Open Reply Modal ─────────────────────────────────────────────────────
     async function openReplyModal(leadId, name, email) {
       currentReplyLeadId = leadId;
       currentReplyEmail = email;
@@ -1282,7 +1289,7 @@
     }
 
     // ─ Initialize ───────────────────────────────────────────────────────────
-    console.log('🚀 [FRONTEND] Dashboard initialized');
+    console.log(' [FRONTEND] Dashboard initialized');
     console.log(' [FRONTEND] Backend URL:', BACKEND);
     console.log('📝 [FRONTEND] Token present:', !!token);
     
@@ -1295,5 +1302,62 @@
     // ✅ Notification badge is now handled by notif-badge.js
     console.log('✅ [FRONTEND] Badge handled by notif-badge.js');
   </script>
+
+  <!-- ✅ PERFORMANCE PROFILER SCRIPT -->
+  <script>
+  (function() {
+    const metrics = {};
+    const perfStart = performance.now();
+    
+    // Track API calls
+    const originalFetch = window.fetch;
+    window.fetch = async function(url, options) {
+      const apiStart = performance.now();
+      const response = await originalFetch.apply(this, arguments);
+      const clone = response.clone();
+      
+      try {
+        const data = await clone.json();
+        const payloadSize = JSON.stringify(data).length;
+        metrics[url] = {
+          latency: Math.round(performance.now() - apiStart),
+          payloadSize: payloadSize,
+          statusCode: response.status
+        };
+      } catch(e) {
+        metrics[url] = {
+          latency: Math.round(performance.now() - apiStart),
+          payloadSize: 0,
+          statusCode: response.status
+        };
+      }
+      return response;
+    };
+
+    // Show results on screen
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const tti = Math.round(performance.now() - perfStart);
+        const apiCalls = Object.keys(metrics).length;
+        const totalPayload = Object.values(metrics).reduce((sum, m) => sum + m.payloadSize, 0);
+        
+        let html = `<div>⏱️ TTI: ${tti}ms</div>`;
+        html += `<div>🌐 APIs: ${apiCalls}</div>`;
+        html += `<div>📦 Data: ${(totalPayload/1024).toFixed(1)}KB</div><hr style="border-color:#333; margin:5px 0;">`;
+        
+        Object.entries(metrics).forEach(([url, data]) => {
+          const color = data.latency > 1000 ? '#ff5555' : (data.latency > 500 ? '#ffaa00' : '#66dd99');
+          html += `<div style="color:${color}; margin-bottom:2px;">${url.split('/api/')[1] || 'Other'}: ${data.latency}ms</div>`;
+        });
+
+        document.getElementById('perfData').innerHTML = html;
+        document.getElementById('perfOverlay').style.display = 'block';
+        
+        // Save for comparison
+        localStorage.setItem('perf_baseline', JSON.stringify({ tti, apiCalls, totalPayload, details: metrics }));
+      }, 1000);
+    });
+  })();
+  </script>
 </body>
-          </html>
+    </html>
