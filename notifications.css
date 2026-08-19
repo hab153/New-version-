@@ -420,7 +420,7 @@ body.chat-active .menu-container {
     border-left: 3px solid #ff5555;
 }
 
-/* ─── CHAT VIEW ─── */
+/* ─── CHAT VIEW ── */
 .chat-view {
     display: none;
     position: fixed;
@@ -599,6 +599,141 @@ body.chat-active .menu-container {
 @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 8px currentColor; }
     50% { box-shadow: 0 0 16px currentColor; }
+}
+
+/* ✅ SMALL SVG EDIT BUTTON FOR AI REPLY INSTRUCTIONS */
+.ai-reply-edit-btn {
+    width: clamp(22px, 3vw, 28px);
+    height: clamp(22px, 3vw, 28px);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-xs);
+    color: #707070;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.ai-reply-edit-btn:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #f5f5f5;
+}
+
+.ai-reply-edit-btn svg {
+    width: clamp(10px, 1.2vw, 13px);
+    height: clamp(10px, 1.2vw, 13px);
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ✅ MINI INSTRUCTION OVERLAY MODAL */
+.ai-instruction-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-instruction-overlay.active { display: flex; }
+
+.ai-instruction-modal {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--r-lg);
+    padding: var(--space-xl);
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    animation: modalSlideUp 0.2s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-instruction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.ai-instruction-header h4 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: #f5f5f5;
+    margin: 0;
+}
+
+.ai-instruction-close {
+    background: none;
+    border: none;
+    color: #707070;
+    font-size: var(--text-xl);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.ai-instruction-close:hover { color: #f5f5f5; }
+
+.ai-instruction-sub {
+    font-size: var(--text-xs);
+    color: #b0b0b0;
+    margin-bottom: var(--space-md);
+    line-height: 1.5;
+}
+
+.ai-instruction-textarea {
+    width: 100%;
+    min-height: 120px;
+    background: #121212;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-sm);
+    color: #d0d0d0;
+    padding: var(--space-md);
+    font-size: var(--text-sm);
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.ai-instruction-textarea:focus {
+    border-color: rgba(102, 221, 153, 0.3);
+}
+
+.ai-instruction-footer {
+    margin-top: var(--space-md);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ai-instruction-save-btn {
+    padding: var(--space-sm) var(--space-xl);
+    background: #66dd99;
+    color: #0a0a04;
+    border: none;
+    border-radius: var(--r-sm);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-instruction-save-btn:hover {
+    background: #55cc88;
+    transform: scale(1.02);
 }
 
 .chat-followup-wrap {
@@ -837,7 +972,7 @@ body.chat-active .menu-container {
     border-color: rgba(255,255,255,0.15);
 }
 
-/* ── MESSAGES CONTAINER ─── */
+/* ── MESSAGES CONTAINER ── */
 .messages-container {
     flex: 1;
     overflow-y: auto;
@@ -1361,7 +1496,7 @@ body.chat-active .menu-container {
     color: #ff5555;
 }
 
-/* ─── TOAST ─── */
+/* ─── TOAST ── */
 .toast {
     position: fixed;
     bottom: calc(var(--nav-h) + var(--space-lg));
@@ -1501,7 +1636,7 @@ body.chat-active .menu-container {
     .contact-item { padding: 14px 18px; }
 }
 
-/* ─── Large Phones (Pro Max, 6.7"+) ─── */
+/* ── Large Phones (Pro Max, 6.7"+) ─── */
 @media (min-width: 430px) and (max-width: 599px) {
     html { font-size: 17px; }
     .search-container { padding: 64px 16px 12px 16px; }
@@ -1532,6 +1667,10 @@ body.chat-active .menu-container {
     }
     .ai-reply-icon { width: 14px; height: 14px; }
     .ai-reply-dot { width: 6px; height: 6px; }
+    
+    /* Mobile adjustment for edit button & instruction modal */
+    .ai-reply-edit-btn { width: 24px; height: 24px; }
+    .ai-instruction-modal { padding: var(--space-lg); max-width: 95%; }
 }
 
 /* ─── Small Phones (iPhone SE, 4.7") ─── */
@@ -1564,6 +1703,16 @@ body.chat-active .menu-container {
     .menu-container { top: 8px; right: 8px; }
     .menu-btn { width: 24px; height: 24px; }
     .menu-btn svg { width: 14px; height: 14px; }
+    
+    /* Small phone adjustments for new AI reply elements */
+    .ai-reply-toggle { padding: 4px 8px; font-size: 9px; gap: 4px; }
+    .ai-reply-icon { width: 12px; height: 12px; }
+    .ai-reply-dot { width: 5px; height: 5px; }
+    .ai-reply-edit-btn { width: 22px; height: 22px; }
+    .ai-instruction-modal { padding: var(--space-md); }
+    .ai-instruction-header h4 { font-size: var(--text-sm); }
+    .ai-instruction-textarea { min-height: 100px; font-size: var(--text-xs); }
+    .ai-instruction-save-btn { padding: var(--space-xs) var(--space-lg); font-size: var(--text-xs); }
 }
 
 /* ─── Landscape Mode ─── */
