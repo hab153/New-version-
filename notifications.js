@@ -33,15 +33,21 @@ var messagesContainer = document.getElementById('messagesContainer');
 var chatInput = document.getElementById('chatInput');
 var chatSendBtn = document.getElementById('chatSendBtn');
 
-// ✅ NEW AI REPLY PILL TOGGLE & EDIT BUTTON
+// ✅ NEW AI REPLY PILL BUTTON (MOVED TO CHAT HEADER)
 var chatAiReplyBtn = document.getElementById('chatAiReplyBtn');
-var aiReplyEditBtn = document.getElementById('aiReplyEditBtn');
 
-// ✅ MINI INSTRUCTION OVERLAY ELEMENTS
+// ✅ NEW MINI INSTRUCTION OVERLAY ELEMENTS
 var aiInstructionOverlay = document.getElementById('aiInstructionOverlay');
 var closeAiInstructions = document.getElementById('closeAiInstructions');
 var aiInstructionTextarea = document.getElementById('aiInstructionTextarea');
 var saveAiInstructions = document.getElementById('saveAiInstructions');
+var aiReplyEditBtn = document.getElementById('aiReplyEditBtn');
+
+// Auto-reply modal elements (kept for instructions editing fallback)
+var autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
+var closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
+var autoReplyInstructions = document.getElementById('autoReplyInstructions');
+var saveAutoReplyBtn = document.getElementById('saveAutoReplyBtn');
 
 // FOLLOW-UP ELEMENTS
 var followupBtn = document.getElementById('chatFollowupBtn');
@@ -60,7 +66,7 @@ var afCurrentStatus = document.getElementById('afCurrentStatus');
 var afSelectedDays = 3;
 var afCurrentEnabledState = false;
 
-// ─── STATE ──
+// ── STATE ──
 var allContacts = [];
 var toastTimeout = null;
 var currentLeadId = null;
@@ -80,23 +86,17 @@ var FOLLOWUP_CACHE_TTL = 30000;
 var _cachedAiReplyStatus = {};
 var AI_REPLY_CACHE_TTL = 30000;
 
-// ─── POLLING ───
+// ─── POLLING ──
 var _pollInterval = null;
 var _currentMessageCount = 0;
 var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
 
 // ============================================================
-// ✅ SKELETON LOADER FUNCTIONS - FIXED
+// ✅ SKELETON LOADER FUNCTIONS
 // ============================================================
 
 function showSkeletonLoader() {
-    // 1. Hide the spinner/loading text IMMEDIATELY so it doesn't overlap
-    if (loadingScreen) {
-        loadingScreen.classList.add('hidden');
-    }
-    
-    // 2. Build and inject skeleton HTML
     var skeletonHTML = '';
     for (var i = 0; i < 8; i++) {
         skeletonHTML += `
@@ -109,19 +109,18 @@ function showSkeletonLoader() {
             </div>
         `;
     }
-    
-    // 3. Inject into contact list and activate
     contactList.innerHTML = skeletonHTML;
     contactList.classList.add('active');
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
+    loadingScreen.classList.add('hidden');
 }
 
 function hideSkeletonLoader() {
     // Skeleton is removed when contacts are rendered
 }
 
-// ─── SKELETON CSS (add to your CSS file or inline) ───
+// ─── SKELETON CSS (add to your CSS file or inline) ──
 function injectSkeletonStyles() {
     if (document.getElementById('skeleton-styles')) return;
     
@@ -233,7 +232,7 @@ function connectSSE() {
         sseConnection = null;
     }
 
-    console.log('📡 [SSE] Connecting to real-time stream...');
+    console.log(' [SSE] Connecting to real-time stream...');
 
     try {
         sseConnection = new EventSource(BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
@@ -246,7 +245,7 @@ function connectSSE() {
         sseConnection.addEventListener('message', function(event) {
             try {
                 var data = JSON.parse(event.data);
-                console.log(' [SSE] Event received:', data.type);
+                console.log('📨 [SSE] Event received:', data.type);
 
                 if (data.type === 'connected' || data.type === 'heartbeat') {
                     return;
@@ -263,7 +262,7 @@ function connectSSE() {
                 }
 
             } catch (err) {
-                console.error('❌ [SSE] Error parsing event:', err.message);
+                console.error(' [SSE] Error parsing event:', err.message);
             }
         });
 
@@ -293,9 +292,9 @@ function connectSSE() {
     }
 }
 
-// ─── HANDLE NEW MESSAGE EVENT ───
+// ── HANDLE NEW MESSAGE EVENT ───
 function handleNewMessageEvent(data) {
-    console.log('📨 [SSE] New message from:', data.leadName || 'Unknown');
+    console.log(' [SSE] New message from:', data.leadName || 'Unknown');
 
     var leadId = data.leadId;
     var leadName = data.leadName || 'Unknown';
@@ -375,7 +374,7 @@ function playNotificationSound() {
     } catch (err) { /* Silently fail */ }
 }
 
-// ── SAFE SANITIZE ───
+// ─── SAFE SANITIZE ───
 function safeSanitize(str) {
     if (!str) return '';
     if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
@@ -426,7 +425,7 @@ document.querySelectorAll('.menu-item').forEach(function(item) {
         }
         if (action === 'autoreply') {
             if (!currentLeadId) { showToast('Open a chat first.'); return; }
-            openAiInstructionModal(); return;
+            openAutoReplyModal(); return;
         }
         showToast('Please open a chat to access this feature.');
     });
@@ -437,7 +436,7 @@ revenueModal.addEventListener('click', function(e) {
     if (e.target === this) { revenueModal.classList.remove('active'); }
 });
 
-// ── FOLLOW-UP DROPDOWN ─
+// ── FOLLOW-UP DROPDOWN 
 if (followupBtn && followupDropdown) {
     followupBtn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -458,7 +457,7 @@ if (suggestBtn) {
     });
 }
 
-// ── AUTO FOLLOW-UP MODAL ───
+// ─── AUTO FOLLOW-UP MODAL ───
 var autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
 if (autoFollowupOption) {
     autoFollowupOption.addEventListener('click', function(e) {
@@ -714,7 +713,7 @@ function appendMessage(from, content, date) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── LOAD CHAT HISTORY ──
+// ─── LOAD CHAT HISTORY ───
 function loadChatHistory(leadId) {
     var cached = _cachedChatHistory[leadId];
     if (cached && (Date.now() - cached.time) < CHAT_HISTORY_CACHE_TTL) {
@@ -800,7 +799,7 @@ function renderChatMessages(messages) {
 // ─── CLEAR UNREAD BADGE - WITH DATABASE RESET ───
 function clearUnreadBadge(leadId) {
     if (!leadId) return;
-    console.log('🔔 [CLEAR] Clearing unread badge for:', leadId);
+    console.log(' [CLEAR] Clearing unread badge for:', leadId);
 
     // ✅ STEP 1: Reset unread in database
     fetch(BACKEND + '/api/unread/reset/' + leadId, {
@@ -845,7 +844,7 @@ function clearUnreadBadge(leadId) {
         }
     })
     .catch(function(err) {
-        console.error(' [CLEAR] Error:', err);
+        console.error('❌ [CLEAR] Error:', err);
     });
 }
 
@@ -895,7 +894,7 @@ function openChat(leadId, name, email) {
     });
 }
 
-// ─── POLLING ──
+// ─── POLLING ───
 function startPolling(leadId) {
     stopPolling();
     _pollInterval = setInterval(function() {
@@ -939,7 +938,7 @@ function stopPolling() {
     }
 }
 
-// ─── CONTACT POLLING ───
+// ─── CONTACT POLLING ──
 function startContactPolling() {
     if (_contactPollInterval) clearInterval(_contactPollInterval);
     _contactPollInterval = setInterval(function() {
@@ -1359,7 +1358,7 @@ function loadContacts(forceRefresh) {
         if (data.data && Array.isArray(data.data)) {
             contacts = data.data;
             if (data.pagination) {
-                console.log(' [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+                console.log('📄 [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
             }
         } else if (Array.isArray(data)) {
             contacts = data;
@@ -1382,7 +1381,7 @@ function loadContacts(forceRefresh) {
     });
 }
 
-// ── RENDER CONTACTS ───
+// ─── RENDER CONTACTS ───
 function renderContacts(contacts) {
     if (!contacts || contacts.length === 0) {
         if (searchInput.value.trim() !== '') {
@@ -1444,14 +1443,18 @@ if (hintOption) {
     });
 }
 
-// ── AI REPLY PILL TOGGLE & MINI INSTRUCTION OVERLAY ──
+// ════════════════════════════════════════════════════════════
+// ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (REPLACES OLD TOGGLE)
+// ════════════════════════════════════════════════════════════
 
 function loadAiReplyStatus() {
     if (!currentLeadId) return Promise.resolve();
     var cached = _cachedAiReplyStatus[currentLeadId];
     if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
         isAutoReplyActive = cached.data.enabled || false;
-        if (cached.data.instructions) aiInstructionTextarea.value = cached.data.instructions;
+        if (cached.data.instructions && aiInstructionTextarea) {
+            aiInstructionTextarea.value = cached.data.instructions;
+        }
         updateAiReplyButtonUI();
         return Promise.resolve();
     }
@@ -1466,7 +1469,9 @@ function loadAiReplyStatus() {
         if (data) {
             _cachedAiReplyStatus[currentLeadId] = { data: data, time: Date.now() };
             isAutoReplyActive = data.enabled || false;
-            if (data.instructions) aiInstructionTextarea.value = data.instructions;
+            if (data.instructions && aiInstructionTextarea) {
+                aiInstructionTextarea.value = data.instructions;
+            }
             updateAiReplyButtonUI();
         }
     })
@@ -1477,27 +1482,27 @@ function updateAiReplyButtonUI() {
     if (!chatAiReplyBtn) return;
     if (isAutoReplyActive) {
         chatAiReplyBtn.dataset.state = 'on';
-        chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply ON - Click to turn OFF');
-        // Show edit button only when active
+        chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply ON — Click to turn OFF');
+        // Show small SVG edit button when active
         if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'flex';
     } else {
         chatAiReplyBtn.dataset.state = 'off';
-        chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply OFF - Click to configure');
+        chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply OFF — Click to configure');
         // Hide edit button when inactive
         if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'none';
     }
 }
 
-// Open mini instruction modal
+// Open mini instruction overlay
 function openAiInstructionModal() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    aiInstructionOverlay.classList.add('active');
-    aiInstructionTextarea.focus();
+    if (aiInstructionOverlay) aiInstructionOverlay.classList.add('active');
+    if (aiInstructionTextarea) aiInstructionTextarea.focus();
 }
 
-// Close mini instruction modal
+// Close mini instruction overlay
 function closeAiInstructionModal() {
-    aiInstructionOverlay.classList.remove('active');
+    if (aiInstructionOverlay) aiInstructionOverlay.classList.remove('active');
 }
 
 // Pill toggle click handler
@@ -1505,13 +1510,16 @@ if (chatAiReplyBtn) {
     chatAiReplyBtn.addEventListener('click', function() {
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
         
-        // If already ON, toggle OFF immediately
+        // If already ON → toggle OFF immediately
         if (this.dataset.state === 'on') {
             this.dataset.state = 'off';
             fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
                 method: 'PUT',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled: false, instructions: aiInstructionTextarea.value })
+                body: JSON.stringify({ 
+                    enabled: false, 
+                    instructions: aiInstructionTextarea ? aiInstructionTextarea.value : '' 
+                })
             })
             .then(function(res) {
                 if (res.ok) {
@@ -1524,12 +1532,12 @@ if (chatAiReplyBtn) {
             return;
         }
         
-        // If OFF, open mini modal to get instructions first
+        // If OFF → open mini modal to get instructions first
         openAiInstructionModal();
     });
 }
 
-// Edit button reopens modal
+// Edit button reopens modal with existing instructions
 if (aiReplyEditBtn) {
     aiReplyEditBtn.addEventListener('click', function() {
         openAiInstructionModal();
@@ -1549,7 +1557,7 @@ if (aiInstructionOverlay) {
 // Save button: saves instructions AND activates AI reply
 if (saveAiInstructions) {
     saveAiInstructions.addEventListener('click', function() {
-        var instructions = aiInstructionTextarea.value.trim();
+        var instructions = aiInstructionTextarea ? aiInstructionTextarea.value.trim() : '';
         if (!instructions) { showToast('Please enter instructions first.'); return; }
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
         
@@ -1579,6 +1587,41 @@ if (saveAiInstructions) {
     });
 }
 
+// Keep old auto-reply modal handlers as fallback
+closeAutoReplyModal.addEventListener('click', function() { autoReplyModalOverlay.classList.remove('show'); });
+autoReplyModalOverlay.addEventListener('click', function(e) {
+    if (e.target === autoReplyModalOverlay) { autoReplyModalOverlay.classList.remove('show'); }
+});
+
+saveAutoReplyBtn.addEventListener('click', function() {
+    var instructions = autoReplyInstructions.value.trim();
+    if (!instructions) { showToast('Please enter instructions first.'); return; }
+    if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    
+    fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: true, instructions: instructions })
+    })
+    .then(function(res) {
+        if (res.ok) {
+            isAutoReplyActive = true;
+            updateAiReplyButtonUI();
+            autoReplyModalOverlay.classList.remove('show');
+            showToast('AI Auto-Reply instructions saved & activated!');
+        } else {
+            showToast('Failed to save auto-reply settings');
+        }
+    })
+    .catch(function() { showToast('Connection error while saving'); });
+});
+
+function openAutoReplyModal() {
+    if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    autoReplyModalOverlay.classList.add('show');
+    autoReplyInstructions.focus();
+}
+
 // ─── PHONE BACK BUTTON ───
 window.addEventListener('popstate', function(e) {
     if (chatView.classList.contains('active')) {
@@ -1598,31 +1641,21 @@ window.addEventListener('beforeunload', function() {
 });
 
 // ─── START EVERYTHING ───
-function initApp() {
-    // ✅ Inject skeleton styles
-    injectSkeletonStyles();
-    
-    // ✅ Show skeleton immediately (hides loading screen)
-    showSkeletonLoader();
-    
-    // ✅ Load contacts (will replace skeleton with real data)
-    loadContacts();
-    
-    // ✅ Start polling and SSE
-    startContactPolling();
-    connectSSE();
-    
-    // ✅ Initialize badge
-    initNotifBadge();
-    
-    console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
-}
+// ✅ Inject skeleton styles
+injectSkeletonStyles();
 
-// Start the app
-initApp();
+// ✅ Show skeleton immediately
+showSkeletonLoader();
 
-// Keep this for phone back button
+// ✅ Load contacts
+loadContacts();
+
+// ✅ Start polling and SSE
+startContactPolling();
+connectSSE();
 history.pushState(null, '', window.location.href);
+
+console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
 
 // ============================================================
 // ✅ INIT SHARED BADGE
@@ -1663,5 +1696,8 @@ document.addEventListener('visibilitychange', function() {
         }
     }
 });
+
+// ─── CALL INIT ──
+initNotifBadge();
 
 console.log('✅ [NOTIFICATIONS] Badge system initialized');
