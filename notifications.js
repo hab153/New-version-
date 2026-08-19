@@ -2,7 +2,6 @@
 // notifications.js
 // Skyline AA-1 Inbox / Notifications Logic
 // WITH SKELETON LOADERS (instead of spinner)
-// AI HINT REMOVED
 // ============================================================
 
 // ── CONFIG ───
@@ -74,6 +73,7 @@ var currentLeadId = null;
 var currentLeadName = null;
 var currentLeadEmail = null;
 var isSending = false;
+// ❌ REMOVED: var isAutoReplyActive = false; — replaced with per-lead cache lookup
 
 // ── CACHE ───
 var _cachedContacts = null;
@@ -432,7 +432,10 @@ document.querySelectorAll('.menu-item').forEach(function(item) {
             if (!currentLeadId) { showToast('Open a chat first.'); return; }
             suggestFollowUp(); return;
         }
-        // ❌ REMOVED: AI Hint handler
+        if (action === 'hint') {
+            if (!currentLeadId) { showToast('Open a chat first.'); return; }
+            generateHint(); return;
+        }
         if (action === 'autoreply') {
             if (!currentLeadId) { showToast('Open a chat first.'); return; }
             openAutoReplyModal(); return;
@@ -466,8 +469,6 @@ if (suggestBtn) {
         suggestFollowUp();
     });
 }
-
-// ❌ REMOVED: AI Hint option click handler
 
 // ─── AUTO FOLLOW-UP MODAL ───
 var autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
@@ -1088,7 +1089,69 @@ function suggestFollowUp() {
     });
 }
 
-// ❌ REMOVED: generateHint() function
+function generateHint() {
+    if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    showToast('Generating AI hint...');
+    fetch(BACKEND + '/api/conversations/' + encodeURIComponent(currentLeadId), {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(convRes) {
+        if (!convRes.ok) {
+            if (convRes.status === 401 || convRes.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            showToast('Failed to load conversation.');
+            return;
+        }
+        return convRes.json();
+    })
+    .then(function(convData) {
+        if (!convData) return;
+        var messages = convData.messages || [];
+        if (messages.length === 0) {
+            showToast('No messages to generate a hint from.');
+            return;
+        }
+        return fetch(BACKEND + '/api/ai/suggest', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: messages.slice(-5) })
+        });
+    })
+    .then(function(suggestRes) {
+        if (!suggestRes) return;
+        if (!suggestRes.ok) {
+            if (suggestRes.status === 401 || suggestRes.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            return suggestRes.json().then(function(err) {
+                showToast('Failed: ' + (err.message || 'Unknown error'));
+            });
+        }
+        return suggestRes.json();
+    })
+    .then(function(data) {
+        if (!data) return;
+        if (data.suggestion) {
+            chatInput.value = data.suggestion;
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 80) + 'px';
+            chatSendBtn.disabled = false;
+            chatInput.focus();
+            showToast('AI hint ready!');
+        } else {
+            showToast(data.message || 'No hint generated.');
+        }
+    })
+    .catch(function(err) {
+        console.error('Generate hint error:', err);
+        showToast('Connection error. Please try again.');
+    });
+}
 
 function toggleAutoFollowUp(days, forceState) {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
@@ -1385,7 +1448,13 @@ function showEmptyState() {
     noResults.classList.remove('active');
 }
 
-// ❌ REMOVED: hintOption event listener
+var hintOption = document.querySelector('.chat-followup-option[data-action="hint"]');
+if (hintOption) {
+    hintOption.addEventListener('click', function() {
+        followupDropdown.classList.remove('show');
+        generateHint();
+    });
+}
 
 // ════════════════════════════════════════════════════════════
 // ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (PER-LEAD ISOLATION)
