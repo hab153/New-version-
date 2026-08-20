@@ -1,6 +1,7 @@
 // ============================================================
 // notifications.js — Skyline AA-1 Inbox Logic
 // COMPLETE REWRITE — Auto-reply fully fixed with persistence
+// + Phone back button fix (no refresh)
 // ============================================================
 
 // ─── CONFIG ───
@@ -523,21 +524,33 @@ function openChat(leadId, name, email) {
     });
 }
 
+// ✅ FIXED: Close chat without refreshing
 function closeChatAndGoBack() {
     chatView.classList.remove('active');
     document.body.classList.remove('chat-active');
     document.body.style.overflow = '';
     currentLeadId = null;
     stopPolling();
-    loadContacts(true);
+    
+    // ✅ Use cached contacts instead of refreshing
+    if (_cachedContacts && (Date.now() - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
+        allContacts = _cachedContacts;
+        renderContacts(allContacts);
+    } else {
+        loadContacts(false); // false = use cache if available
+    }
 }
 
-chatBack.addEventListener('click', function() { closeChatAndGoBack(); });
+// ─── CHAT BACK BUTTON ───
+chatBack.addEventListener('click', function() { 
+    closeChatAndGoBack(); 
+});
 
+// ✅ FIXED: Phone back button — no refresh, no extra history push
 window.addEventListener('popstate', function(e) {
     if (chatView.classList.contains('active')) {
         closeChatAndGoBack();
-        history.pushState(null, '', window.location.href);
+        // ✅ Let the browser handle the history naturally
     }
 });
 
