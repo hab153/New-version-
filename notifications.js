@@ -1,14 +1,13 @@
 // ============================================================
-// notifications.js
-// Skyline AA-1 Inbox / Notifications Logic
-// WITH SKELETON LOADERS (instead of spinner)
+// notifications.js — Skyline AA-1 Inbox Logic
+// COMPLETE REWRITE — Auto-reply fully fixed
 // ============================================================
 
-// ── CONFIG ───
+// ─── CONFIG ───
 var BACKEND = 'https://skylineapp-backend-file.onrender.com';
 var token = localStorage.getItem('token');
 
-// ── DOM ELEMENTS ──
+// ─── DOM ELEMENTS ───
 var loadingScreen = document.getElementById('loadingScreen');
 var contactList = document.getElementById('contactList');
 var emptyState = document.getElementById('emptyState');
@@ -33,17 +32,15 @@ var messagesContainer = document.getElementById('messagesContainer');
 var chatInput = document.getElementById('chatInput');
 var chatSendBtn = document.getElementById('chatSendBtn');
 
-// ✅ NEW AI REPLY PILL BUTTON (MOVED TO CHAT HEADER)
+// AI REPLY ELEMENTS
 var chatAiReplyBtn = document.getElementById('chatAiReplyBtn');
-
-// ✅ NEW MINI INSTRUCTION OVERLAY ELEMENTS
 var aiInstructionOverlay = document.getElementById('aiInstructionOverlay');
 var closeAiInstructions = document.getElementById('closeAiInstructions');
 var aiInstructionTextarea = document.getElementById('aiInstructionTextarea');
 var saveAiInstructions = document.getElementById('saveAiInstructions');
 var aiReplyEditBtn = document.getElementById('aiReplyEditBtn');
 
-// Auto-reply modal elements (kept for instructions editing fallback)
+// Auto-reply modal (fallback)
 var autoReplyModalOverlay = document.getElementById('autoReplyModalOverlay');
 var closeAutoReplyModal = document.getElementById('closeAutoReplyModal');
 var autoReplyInstructions = document.getElementById('autoReplyInstructions');
@@ -54,7 +51,7 @@ var followupBtn = document.getElementById('chatFollowupBtn');
 var followupDropdown = document.getElementById('chatFollowupDropdown');
 var followupStatus = document.getElementById('followupStatus');
 
-// AUTO FOLLOW-UP MODAL ELEMENTS
+// AUTO FOLLOW-UP MODAL
 var autoFollowupModal = document.getElementById('autoFollowupModal');
 var closeAutoFollowupModal = document.getElementById('closeAutoFollowupModal');
 var cancelAutoFollowup = document.getElementById('cancelAutoFollowup');
@@ -66,16 +63,15 @@ var afCurrentStatus = document.getElementById('afCurrentStatus');
 var afSelectedDays = 3;
 var afCurrentEnabledState = false;
 
-// ── STATE ─
+// ─── STATE ───
 var allContacts = [];
 var toastTimeout = null;
 var currentLeadId = null;
 var currentLeadName = null;
 var currentLeadEmail = null;
 var isSending = false;
-// ❌ REMOVED: var isAutoReplyActive = false; — replaced with per-lead cache lookup
 
-// ── CACHE ───
+// ─── CACHE ───
 var _cachedContacts = null;
 var _cachedContactsTime = 0;
 var CONTACTS_CACHE_TTL = 5000;
@@ -86,57 +82,54 @@ var FOLLOWUP_CACHE_TTL = 30000;
 var _cachedAiReplyStatus = {};
 var AI_REPLY_CACHE_TTL = 30000;
 
-// ─── POLLING ──
+// ─── POLLING ───
 var _pollInterval = null;
 var _currentMessageCount = 0;
 var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
 
 // ============================================================
-// ✅ PER-LEAD AI REPLY STATUS LOOKUP (REPLACES GLOBAL FLAG)
+// ✅ AUTH CHECK
 // ============================================================
-
-function getAiReplyStatus(leadId) {
-    if (!leadId) return false;
-    var cached = _cachedAiReplyStatus[leadId];
-    if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
-        return cached.data.enabled || false;
-    }
-    return false; // default when not loaded yet
+if (!token) {
+    window.location.href = 'login.html';
 }
 
 // ============================================================
-// ✅ SKELETON LOADER FUNCTIONS
+// ✅ HELPERS
 // ============================================================
 
-function showSkeletonLoader() {
-    var skeletonHTML = '';
-    for (var i = 0; i < 8; i++) {
-        skeletonHTML += `
-            <div class="skeleton-item">
-                <div class="skeleton-avatar"></div>
-                <div class="skeleton-content">
-                    <div class="skeleton-line skeleton-line-title"></div>
-                    <div class="skeleton-line skeleton-line-subtitle"></div>
-                </div>
-            </div>
-        `;
-    }
-    contactList.innerHTML = skeletonHTML;
-    contactList.classList.add('active');
-    emptyState.classList.remove('active');
-    noResults.classList.remove('active');
-    loadingScreen.classList.add('hidden');
+function safeSanitize(str) {
+    if (!str) return '';
+    if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
-function hideSkeletonLoader() {
-    // Skeleton is removed when contacts are rendered
+function showToast(message, duration) {
+    duration = duration || 3000;
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(function() {
+        toast.classList.remove('show');
+    }, duration);
 }
 
-// ─── SKELETON CSS (add to your CSS file or inline) ──
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ============================================================
+// ✅ SKELETON LOADER
+// ============================================================
+
 function injectSkeletonStyles() {
     if (document.getElementById('skeleton-styles')) return;
-    
     var style = document.createElement('style');
     style.id = 'skeleton-styles';
     style.textContent = `
@@ -172,14 +165,8 @@ function injectSkeletonStyles() {
             background-size: 200% 100%;
             animation: skeletonShimmer 1.5s ease-in-out infinite;
         }
-        .skeleton-line-title {
-            width: 65%;
-            height: 14px;
-        }
-        .skeleton-line-subtitle {
-            width: 40%;
-            height: 10px;
-        }
+        .skeleton-line-title { width: 65%; height: 14px; }
+        .skeleton-line-subtitle { width: 40%; height: 10px; }
         .skeleton-item:nth-child(1) .skeleton-line { animation-delay: 0.05s; }
         .skeleton-item:nth-child(2) .skeleton-line { animation-delay: 0.10s; }
         .skeleton-item:nth-child(3) .skeleton-line { animation-delay: 0.15s; }
@@ -188,13 +175,10 @@ function injectSkeletonStyles() {
         .skeleton-item:nth-child(6) .skeleton-line { animation-delay: 0.30s; }
         .skeleton-item:nth-child(7) .skeleton-line { animation-delay: 0.35s; }
         .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
-        
         @keyframes skeletonShimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-
-        /* ─── SKELETON FOR MESSAGES ─── */
         .skeleton-message {
             display: flex;
             align-items: flex-start;
@@ -228,6 +212,32 @@ function injectSkeletonStyles() {
     document.head.appendChild(style);
 }
 
+function showSkeletonLoader() {
+    var skeletonHTML = '';
+    for (var i = 0; i < 8; i++) {
+        skeletonHTML += `
+            <div class="skeleton-item">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line skeleton-line-title"></div>
+                    <div class="skeleton-line skeleton-line-subtitle"></div>
+                </div>
+            </div>
+        `;
+    }
+    contactList.innerHTML = skeletonHTML;
+    contactList.classList.add('active');
+    emptyState.classList.remove('active');
+    noResults.classList.remove('active');
+    loadingScreen.classList.add('hidden');
+}
+
+function showEmptyState() {
+    contactList.classList.remove('active');
+    emptyState.classList.add('active');
+    noResults.classList.remove('active');
+}
+
 // ============================================================
 // ✅ SSE: REAL-TIME CONNECTION
 // ============================================================
@@ -239,82 +249,54 @@ var MAX_SSE_RECONNECT_ATTEMPTS = 10;
 function connectSSE() {
     var token = localStorage.getItem('token');
     if (!token) return;
-
     if (sseConnection) {
         sseConnection.close();
         sseConnection = null;
     }
-
-    console.log(' [SSE] Connecting to real-time stream...');
-
+    console.log('📡 [SSE] Connecting...');
     try {
         sseConnection = new EventSource(BACKEND + '/api/events/stream?token=' + encodeURIComponent(token));
-
         sseConnection.addEventListener('open', function() {
-            console.log('✅ [SSE] Connection established');
+            console.log('✅ [SSE] Connected');
             sseReconnectAttempts = 0;
         });
-
         sseConnection.addEventListener('message', function(event) {
             try {
                 var data = JSON.parse(event.data);
-                console.log(' [SSE] Event received:', data.type);
-
-                if (data.type === 'connected' || data.type === 'heartbeat') {
-                    return;
-                }
-
-                if (data.type === 'new_message') {
-                    handleNewMessageEvent(data);
-                    return;
-                }
-
-                if (data.type === 'lead_updated') {
-                    handleLeadUpdatedEvent(data);
-                    return;
-                }
-
+                if (data.type === 'connected' || data.type === 'heartbeat') return;
+                if (data.type === 'new_message') handleNewMessageEvent(data);
+                if (data.type === 'lead_updated') handleLeadUpdatedEvent(data);
             } catch (err) {
-                console.error(' [SSE] Error parsing event:', err.message);
+                console.error('❌ [SSE] Parse error:', err.message);
             }
         });
-
-        sseConnection.addEventListener('error', function(event) {
-            console.warn('⚠️ [SSE] Connection error');
-
+        sseConnection.addEventListener('error', function() {
+            console.warn('⚠️ [SSE] Error');
             if (sseConnection) {
                 sseConnection.close();
                 sseConnection = null;
             }
-
             sseReconnectAttempts++;
             var delay = Math.min(1000 * Math.pow(2, sseReconnectAttempts), 30000);
-
             if (sseReconnectAttempts <= MAX_SSE_RECONNECT_ATTEMPTS) {
-                console.log(' [SSE] Reconnecting in ' + delay + 'ms... (attempt ' + sseReconnectAttempts + '/' + MAX_SSE_RECONNECT_ATTEMPTS + ')');
+                console.log('📡 [SSE] Reconnecting in ' + delay + 'ms...');
                 setTimeout(connectSSE, delay);
             } else {
-                console.error('❌ [SSE] Max reconnect attempts reached. Falling back to polling.');
+                console.error('❌ [SSE] Max attempts reached. Falling back to polling.');
                 startContactPolling();
             }
         });
-
     } catch (err) {
-        console.error('❌ [SSE] Failed to connect:', err.message);
+        console.error('❌ [SSE] Failed:', err.message);
         startContactPolling();
     }
 }
 
-// ── HANDLE NEW MESSAGE EVENT ───
 function handleNewMessageEvent(data) {
-    console.log(' [SSE] New message from:', data.leadName || 'Unknown');
-
     var leadId = data.leadId;
     var leadName = data.leadName || 'Unknown';
     var message = data.message || '';
     var from = data.from || 'customer';
-
-    // ✅ 1. Update contact list badge
     var contactFound = false;
     for (var i = 0; i < allContacts.length; i++) {
         if (allContacts[i].id === leadId) {
@@ -326,7 +308,6 @@ function handleNewMessageEvent(data) {
             break;
         }
     }
-
     if (!contactFound) {
         loadContacts(true);
     } else {
@@ -334,18 +315,11 @@ function handleNewMessageEvent(data) {
         _cachedContacts = allContacts;
         _cachedContactsTime = Date.now();
     }
-
-    // ✅ 2. Show toast notification
-    var sender = from === 'lead' ? 'You' : leadName;
-    var emoji = from === 'lead' ? '' : '';
-    showToast(emoji + ' New message from ' + leadName, 4000);
-
-    // ✅ 3. If chat is open and it's the same lead, append message
+    showToast('📩 New message from ' + leadName, 4000);
     if (currentLeadId === leadId && chatView.classList.contains('active')) {
         var messageFrom = from === 'lead' ? 'lead' : 'customer';
         appendMessage(messageFrom, message, new Date().toISOString());
         _currentMessageCount++;
-
         if (_cachedChatHistory[leadId]) {
             _cachedChatHistory[leadId].data.push({
                 from: messageFrom,
@@ -354,23 +328,15 @@ function handleNewMessageEvent(data) {
             });
         }
     }
-
-    // ✅ 4. Update global notification badge
-    if (typeof fetchGlobalUnreadCount === 'function') {
-        fetchGlobalUnreadCount();
-    }
-
-    // ✅ 5. Play notification sound
+    if (typeof fetchGlobalUnreadCount === 'function') fetchGlobalUnreadCount();
     playNotificationSound();
 }
 
-// ── HANDLE LEAD UPDATED EVENT ──
 function handleLeadUpdatedEvent(data) {
     console.log('📨 [SSE] Lead updated:', data.leadId);
     loadContacts(true);
 }
 
-// ─── PLAY NOTIFICATION SOUND ──
 function playNotificationSound() {
     try {
         var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -387,121 +353,19 @@ function playNotificationSound() {
     } catch (err) { /* Silently fail */ }
 }
 
-// ─── SAFE SANITIZE ──
-function safeSanitize(str) {
-    if (!str) return '';
-    if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+// ============================================================
+// ✅ CONTACTS
+// ============================================================
 
-// ── AUTH CHECK ───
-if (!token) {
-    window.location.href = 'login.html';
-}
-
-// ─── TOAST HELPER ──
-function showToast(message, duration) {
-    duration = duration || 3000;
-    toast.textContent = message;
-    toast.classList.add('show');
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(function() {
-        toast.classList.remove('show');
-    }, duration);
-}
-
-// ─── MENU TOGGLE ───
-menuBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    menuDropdown.classList.toggle('show');
-});
-
-document.addEventListener('click', function() {
-    menuDropdown.classList.remove('show');
-});
-
-document.querySelectorAll('.menu-item').forEach(function(item) {
-    item.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var action = this.dataset.action;
-        menuDropdown.classList.remove('show');
-        if (action === 'revenue') { fetchRevenueData(); return; }
-        if (action === 'followup') {
-            if (!currentLeadId) { showToast('Open a chat first.'); return; }
-            suggestFollowUp(); return;
-        }
-        if (action === 'hint') {
-            if (!currentLeadId) { showToast('Open a chat first.'); return; }
-            generateHint(); return;
-        }
-        if (action === 'autoreply') {
-            if (!currentLeadId) { showToast('Open a chat first.'); return; }
-            openAutoReplyModal(); return;
-        }
-        showToast('Please open a chat to access this feature.');
-    });
-});
-
-closeRevenueModal.addEventListener('click', function() { revenueModal.classList.remove('active'); });
-revenueModal.addEventListener('click', function(e) {
-    if (e.target === this) { revenueModal.classList.remove('active'); }
-});
-
-// ── FOLLOW-UP DROPDOWN 
-if (followupBtn && followupDropdown) {
-    followupBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        followupDropdown.classList.toggle('show');
-    });
-    document.addEventListener('click', function(e) {
-        if (!followupBtn.contains(e.target) && !followupDropdown.contains(e.target)) {
-            followupDropdown.classList.remove('show');
-        }
-    });
-}
-
-var suggestBtn = document.querySelector('.chat-followup-option[data-action="suggest"]');
-if (suggestBtn) {
-    suggestBtn.addEventListener('click', function() {
-        followupDropdown.classList.remove('show');
-        suggestFollowUp();
-    });
-}
-
-// ─── AUTO FOLLOW-UP MODAL ───
-var autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
-if (autoFollowupOption) {
-    autoFollowupOption.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (followupDropdown) { followupDropdown.classList.remove('show'); }
-        loadFollowUpStatusForModal();
-        if (autoFollowupModal) { autoFollowupModal.classList.add('active'); }
-    });
-}
-
-function closeAutoFollowupModalFn() {
-    if (autoFollowupModal) { autoFollowupModal.classList.remove('active'); }
-}
-
-if (closeAutoFollowupModal) closeAutoFollowupModal.addEventListener('click', closeAutoFollowupModalFn);
-if (cancelAutoFollowup) cancelAutoFollowup.addEventListener('click', closeAutoFollowupModalFn);
-if (autoFollowupModal) {
-    autoFollowupModal.addEventListener('click', function(e) {
-        if (e.target === this) { closeAutoFollowupModalFn(); }
-    });
-}
-
-function loadFollowUpStatusForModal() {
-    if (!currentLeadId) return;
-    var cached = _cachedFollowUpStatus[currentLeadId];
-    if (cached && (Date.now() - cached.time) < FOLLOWUP_CACHE_TTL) {
-        afCurrentEnabledState = cached.data.autoFollowUpEnabled || false;
-        updateModalStatus(afCurrentEnabledState);
+function loadContacts(forceRefresh) {
+    var now_ts = Date.now();
+    if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
+        allContacts = _cachedContacts;
+        renderContacts(allContacts);
         return Promise.resolve();
     }
-    return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/follow-up-status', {
+    showSkeletonLoader();
+    return fetch(BACKEND + '/api/conversations', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(function(res) {
@@ -511,77 +375,154 @@ function loadFollowUpStatusForModal() {
                 window.location.href = 'login.html';
                 return;
             }
-            return;
+            throw new Error('HTTP ' + res.status);
         }
         return res.json();
     })
     .then(function(data) {
-        if (data) {
-            _cachedFollowUpStatus[currentLeadId] = { data: data, time: Date.now() };
-            afCurrentEnabledState = data.autoFollowUpEnabled || false;
-            updateModalStatus(afCurrentEnabledState);
+        if (!data) return;
+        var contacts = data;
+        if (data.data && Array.isArray(data.data)) {
+            contacts = data.data;
+        } else if (Array.isArray(data)) {
+            contacts = data;
         }
+        if (!contacts || !Array.isArray(contacts)) contacts = [];
+        allContacts = contacts;
+        _cachedContacts = contacts;
+        _cachedContactsTime = Date.now();
+        renderContacts(allContacts);
+        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts');
     })
-    .catch(function(err) { console.error('Failed to load follow-up status:', err); });
+    .catch(function(err) {
+        console.error('Failed to load contacts:', err);
+        showEmptyState();
+    });
 }
 
-function updateModalStatus(enabled) {
-    if (followupStatus) {
-        if (enabled) {
-            followupStatus.textContent = 'ON';
-            followupStatus.className = 'followup-status on';
+function renderContacts(contacts) {
+    if (!contacts || contacts.length === 0) {
+        if (searchInput.value.trim() !== '') {
+            contactList.classList.remove('active');
+            emptyState.classList.remove('active');
+            noResults.classList.add('active');
         } else {
-            followupStatus.textContent = 'OFF';
-            followupStatus.className = 'followup-status';
+            showEmptyState();
+        }
+        return;
+    }
+    contactList.classList.add('active');
+    emptyState.classList.remove('active');
+    noResults.classList.remove('active');
+    var html = '';
+    for (var i = 0; i < contacts.length; i++) {
+        var c = contacts[i];
+        var initials = (c.name || '?').charAt(0).toUpperCase();
+        var preview = c.lastMessage || 'No messages yet';
+        var time = c.lastDate ? new Date(c.lastDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var unreadCount = c.unreadCount || 0;
+        var hasUnread = unreadCount > 0;
+        var unreadClass = hasUnread ? ' has-unread' : '';
+        var badgeHtml = '<div class="contact-unread-badge">' + (unreadCount > 9 ? '9+' : unreadCount) + '</div>';
+        html += '<div class="contact-item' + unreadClass + '" data-id="' + c.id + '" onclick="openChat(\'' + c.id + '\', \'' + safeSanitize(c.name || 'Unknown').replace(/'/g, "\\'") + '\', \'' + safeSanitize(c.email || '').replace(/'/g, "\\'") + '\')">' + badgeHtml + '<div class="contact-avatar">' + initials + '</div><div class="contact-info"><div class="contact-name">' + safeSanitize(c.name || 'Unknown') + '</div><div class="contact-preview">' + safeSanitize(preview) + '</div></div>' + (time ? '<div class="contact-time">' + time + '</div>' : '') + '</div>';
+    }
+    contactList.innerHTML = html;
+}
+
+searchInput.addEventListener('input', function() {
+    var query = this.value.toLowerCase().trim();
+    if (!query) {
+        renderContacts(allContacts);
+        return;
+    }
+    var filtered = [];
+    for (var i = 0; i < allContacts.length; i++) {
+        var c = allContacts[i];
+        if ((c.name || '').toLowerCase().indexOf(query) !== -1 ||
+            (c.company || '').toLowerCase().indexOf(query) !== -1 ||
+            (c.email || '').toLowerCase().indexOf(query) !== -1) {
+            filtered.push(c);
         }
     }
-    if (afStatusBadge) {
-        afStatusBadge.textContent = enabled ? 'ON' : 'OFF';
-        afStatusBadge.style.background = enabled ? 'rgba(102,221,153,0.12)' : 'rgba(255,85,85,0.12)';
-        afStatusBadge.style.color = enabled ? 'var(--green)' : '#ff5555';
-    }
-    if (afCurrentStatus) {
-        afCurrentStatus.textContent = enabled ? 'ON' : 'OFF';
-        afCurrentStatus.style.color = enabled ? 'var(--green)' : '#ff5555';
-    }
-    if (confirmAutoFollowup) {
-        confirmAutoFollowup.textContent = enabled ? '\u274c Disable Auto Follow-up' : '\u2705 Enable Auto Follow-up';
-        confirmAutoFollowup.style.background = enabled ? '#ff5555' : 'var(--green)';
-        confirmAutoFollowup.style.color = enabled ? '#fff' : '#000';
-    }
-}
-
-// ── DAY BUTTON CLICK ──
-afDayButtons.forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        afDayButtons.forEach(function(b) { b.classList.remove('active'); });
-        this.classList.add('active');
-        afSelectedDays = parseInt(this.dataset.days);
-        if (afCustomInput) { afCustomInput.value = afSelectedDays; }
-    });
+    renderContacts(filtered);
 });
 
-if (afCustomInput) {
-    afCustomInput.addEventListener('input', function() {
-        var val = parseInt(this.value);
-        if (isNaN(val) || val < 1) val = 1;
-        if (val > 7) val = 7;
-        this.value = val;
-        afSelectedDays = val;
-        afDayButtons.forEach(function(b) { b.classList.remove('active'); });
+// ============================================================
+// ✅ CONTACT POLLING
+// ============================================================
+
+function startContactPolling() {
+    if (_contactPollInterval) clearInterval(_contactPollInterval);
+    _contactPollInterval = setInterval(function() {
+        if (!token) return;
+        fetch(BACKEND + '/api/conversations', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(res) { if (!res.ok) return null; return res.json(); })
+        .then(function(data) {
+            if (!data) return;
+            var contacts = data;
+            if (data.data && Array.isArray(data.data)) contacts = data.data;
+            else if (Array.isArray(data)) contacts = data;
+            if (!contacts || !Array.isArray(contacts)) contacts = [];
+            allContacts = contacts;
+            _cachedContacts = contacts;
+            _cachedContactsTime = Date.now();
+            renderContacts(allContacts);
+        })
+        .catch(function() {});
+    }, CONTACT_POLL_MS);
+}
+
+function stopContactPolling() {
+    if (_contactPollInterval) {
+        clearInterval(_contactPollInterval);
+        _contactPollInterval = null;
+    }
+}
+
+// ============================================================
+// ✅ CHAT
+// ============================================================
+
+function openChat(leadId, name, email) {
+    if (currentLeadId === leadId && chatView.classList.contains('active')) {
+        Promise.all([
+            loadChatHistory(leadId),
+            loadFollowUpStatus(),
+            loadAiReplyStatus()
+        ]).catch(function() {});
+        return;
+    }
+    currentLeadId = leadId;
+    currentLeadName = name || 'Unknown';
+    currentLeadEmail = email || '';
+    chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
+    chatName.textContent = currentLeadName;
+    chatEmail.textContent = currentLeadEmail || 'No email provided';
+    chatView.classList.add('active');
+    document.body.classList.add('chat-active');
+    document.body.style.overflow = 'hidden';
+    menuDropdown.classList.remove('show');
+    if (followupDropdown) followupDropdown.classList.remove('show');
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    chatSendBtn.disabled = true;
+    history.pushState({ chatOpen: true }, '', window.location.href);
+    clearUnreadBadge(leadId);
+    Promise.all([
+        loadFollowUpStatus(),
+        loadChatHistory(leadId),
+        loadAiReplyStatus()
+    ]).then(function() {
+        clearUnreadBadge(leadId);
+        startPolling(leadId);
+    }).catch(function() {
+        clearUnreadBadge(leadId);
+        startPolling(leadId);
     });
 }
 
-if (confirmAutoFollowup) {
-    confirmAutoFollowup.addEventListener('click', function() {
-        var newState = !afCurrentEnabledState;
-        closeAutoFollowupModalFn();
-        toggleAutoFollowUp(afSelectedDays, newState);
-    });
-}
-
-// ── CLOSE CHAT ───
 function closeChatAndGoBack() {
     chatView.classList.remove('active');
     document.body.classList.remove('chat-active');
@@ -593,7 +534,14 @@ function closeChatAndGoBack() {
 
 chatBack.addEventListener('click', function() { closeChatAndGoBack(); });
 
-// ─── CHAT INPUT ──
+window.addEventListener('popstate', function(e) {
+    if (chatView.classList.contains('active')) {
+        closeChatAndGoBack();
+        history.pushState(null, '', window.location.href);
+    }
+});
+
+// ─── CHAT INPUT ───
 chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 80) + 'px';
@@ -609,68 +557,17 @@ chatInput.addEventListener('keydown', function(e) {
 
 chatSendBtn.addEventListener('click', sendMessage);
 
-// ─── RENAME ──
-chatRenameBtn.addEventListener('click', function() {
-    if (!currentLeadId) { showToast('No lead selected.'); return; }
-    var newName = prompt('Enter new name for this contact:', currentLeadName || '');
-    if (newName === null || newName.trim() === '') return;
-    renameLead(currentLeadId, newName.trim());
-});
-
-function renameLead(leadId, newName) {
-    fetch(BACKEND + '/api/leads/' + encodeURIComponent(leadId) + '/rename', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newName: newName })
-    })
-    .then(function(res) { return res.text().then(function(text) { return { ok: res.ok, status: res.status, text: text }; }); })
-    .then(function(result) {
-        var data = {};
-        if (result.text) {
-            try { data = JSON.parse(result.text); } catch (e) { data = { message: result.text || 'Empty response' }; }
-        }
-        if (!result.ok) {
-            if (result.status === 401 || result.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-                return;
-            }
-            showToast('Failed to rename: ' + (data.message || data.error || 'Unknown error'));
-            return;
-        }
-        if (data.success) {
-            currentLeadName = data.newName;
-            chatName.textContent = data.newName;
-            chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
-            showToast('Renamed successfully!');
-            _cachedContacts = null;
-            _cachedContactsTime = 0;
-            loadContacts(true);
-        } else {
-            showToast('Failed to rename: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(function(err) {
-        console.error('Rename error:', err);
-        showToast('Connection error while renaming.');
-    });
-}
-
-// ─── SEND MESSAGE ──
+// ─── SEND MESSAGE ───
 function sendMessage() {
     var text = chatInput.value.trim();
     if (!text || isSending || !currentLeadId) return;
-
     isSending = true;
     chatSendBtn.disabled = true;
-
     var originalText = text;
     chatInput.value = '';
     chatInput.style.height = 'auto';
-
     appendMessage('lead', originalText, new Date().toISOString());
     _currentMessageCount++;
-
     var payload = {
         leads: [{
             name: currentLeadName || 'Unknown',
@@ -681,7 +578,6 @@ function sendMessage() {
         leadId: currentLeadId,
         allowNewLead: false
     };
-
     fetch(BACKEND + '/api/leads/batch-send', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -710,31 +606,27 @@ function sendMessage() {
     });
 }
 
-// ── APPEND MESSAGE ───
+// ─── APPEND MESSAGE ───
 function appendMessage(from, content, date) {
     var div = document.createElement('div');
     var cssClass = from === 'lead' ? 'from-lead' : 'from-ai';
     var senderLabel = from === 'lead' ? 'You' : 'Customer';
     var alignItems = from === 'lead' ? 'flex-end' : 'flex-start';
     var time = date ? new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
     div.className = 'msg-group ' + cssClass;
     div.style.alignSelf = alignItems;
     div.innerHTML = '<div class="msg-sender">' + senderLabel + '</div><div class="message-bubble">' + safeSanitize(content) + '</div><div class="message-time">' + time + '</div>';
-
     messagesContainer.appendChild(div);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── LOAD CHAT HISTORY ──
+// ─── LOAD CHAT HISTORY ───
 function loadChatHistory(leadId) {
     var cached = _cachedChatHistory[leadId];
     if (cached && (Date.now() - cached.time) < CHAT_HISTORY_CACHE_TTL) {
         renderChatMessages(cached.data);
         return Promise.resolve();
     }
-
-    // ✅ SKELETON LOADER for messages
     messagesContainer.innerHTML = `
         <div class="skeleton-message">
             <div class="skeleton-message-avatar"></div>
@@ -760,7 +652,6 @@ function loadChatHistory(leadId) {
             </div>
         </div>
     `;
-
     return fetch(BACKEND + '/api/conversations/' + encodeURIComponent(leadId), {
         headers: { 'Authorization': 'Bearer ' + token }
     })
@@ -809,105 +700,7 @@ function renderChatMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ─── CLEAR UNREAD BADGE - WITH DATABASE RESET ───
-function clearUnreadBadge(leadId) {
-    if (!leadId) return;
-    console.log(' [CLEAR] Clearing unread badge for:', leadId);
-
-    // ✅ STEP 1: Reset unread in database
-    fetch(BACKEND + '/api/unread/reset/' + leadId, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(function(res) {
-        if (res.ok) {
-            console.log('✅ [CLEAR] Unread reset in database for:', leadId);
-            
-            // ✅ STEP 2: Update local state
-            for (var i = 0; i < allContacts.length; i++) {
-                if (allContacts[i].id === leadId) {
-                    allContacts[i].unreadCount = 0;
-                    allContacts[i].unread = false;
-                    break;
-                }
-            }
-
-            if (_cachedContacts) {
-                for (var j = 0; j < _cachedContacts.length; j++) {
-                    if (_cachedContacts[j].id === leadId) {
-                        _cachedContacts[j].unreadCount = 0;
-                        _cachedContacts[j].unread = false;
-                        break;
-                    }
-                }
-            }
-
-            // ✅ STEP 3: Re-render contacts
-            renderContacts(allContacts);
-            
-            // ✅ STEP 4: Update global badge
-            if (typeof fetchGlobalUnreadCount === 'function') {
-                fetchGlobalUnreadCount();
-            }
-        } else {
-            console.error('❌ [CLEAR] Failed to reset unread in database');
-        }
-    })
-    .catch(function(err) {
-        console.error(' [CLEAR] Error:', err);
-    });
-}
-
-// ─── OPEN CHAT ───
-function openChat(leadId, name, email) {
-    if (currentLeadId === leadId && chatView.classList.contains('active')) {
-        Promise.all([
-            loadChatHistory(leadId),
-            loadFollowUpStatus(),
-            loadAiReplyStatus()
-        ]).catch(function() {});
-        return;
-    }
-
-    currentLeadId = leadId;
-    currentLeadName = name || 'Unknown';
-    currentLeadEmail = email || '';
-
-    chatAvatar.textContent = (name || '?').charAt(0).toUpperCase();
-    chatName.textContent = currentLeadName;
-    chatEmail.textContent = currentLeadEmail || 'No email provided';
-
-    chatView.classList.add('active');
-    document.body.classList.add('chat-active');
-    document.body.style.overflow = 'hidden';
-    menuDropdown.classList.remove('show');
-    if (followupDropdown) followupDropdown.classList.remove('show');
-
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-    chatSendBtn.disabled = true;
-
-    history.pushState({ chatOpen: true }, '', window.location.href);
-
-    clearUnreadBadge(leadId);
-
-    Promise.all([
-        loadFollowUpStatus(),
-        loadChatHistory(leadId),
-        loadAiReplyStatus()
-    ]).then(function() {
-        clearUnreadBadge(leadId);
-        startPolling(leadId);
-    }).catch(function() {
-        clearUnreadBadge(leadId);
-        startPolling(leadId);
-    });
-}
-
-// ─── POLLING ──
+// ─── POLLING ───
 function startPolling(leadId) {
     stopPolling();
     _pollInterval = setInterval(function() {
@@ -918,10 +711,7 @@ function startPolling(leadId) {
         fetch(BACKEND + '/api/conversations/' + encodeURIComponent(leadId), {
             headers: { 'Authorization': 'Bearer ' + token }
         })
-        .then(function(res) {
-            if (!res.ok) return null;
-            return res.json();
-        })
+        .then(function(res) { if (!res.ok) return null; return res.json(); })
         .then(function(data) {
             if (!data || !data.messages) return;
             var newMessages = data.messages;
@@ -933,7 +723,7 @@ function startPolling(leadId) {
                 _currentMessageCount = newMessages.length;
                 var lastMsg = newMessages[newMessages.length - 1];
                 if (lastMsg.from !== 'lead') {
-                    showToast('\ud83d\udcac New reply from ' + (currentLeadName || 'customer') + '!');
+                    showToast('💬 New reply from ' + (currentLeadName || 'customer') + '!');
                 }
                 _cachedContacts = null;
                 _cachedContactsTime = 0;
@@ -951,55 +741,92 @@ function stopPolling() {
     }
 }
 
-// ─── CONTACT POLLING ──
-function startContactPolling() {
-    if (_contactPollInterval) clearInterval(_contactPollInterval);
-    _contactPollInterval = setInterval(function() {
-        if (!token) return;
-        fetch(BACKEND + '/api/conversations', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(function(res) { if (!res.ok) return null; return res.json(); })
-        .then(function(data) {
-            if (!data) return;
-            
-            // ✅ FIX: Handle both old and new response formats
-            var contacts = data;
-            
-            // If response has "data" field (new paginated format)
-            if (data.data && Array.isArray(data.data)) {
-                contacts = data.data;
-                if (data.pagination) {
-                    console.log(' [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
+// ─── CLEAR UNREAD ───
+function clearUnreadBadge(leadId) {
+    if (!leadId) return;
+    fetch(BACKEND + '/api/unread/reset/' + leadId, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) {
+        if (res.ok) {
+            for (var i = 0; i < allContacts.length; i++) {
+                if (allContacts[i].id === leadId) {
+                    allContacts[i].unreadCount = 0;
+                    allContacts[i].unread = false;
+                    break;
                 }
             }
-            // If response is already an array (old format)
-            else if (Array.isArray(data)) {
-                contacts = data;
+            if (_cachedContacts) {
+                for (var j = 0; j < _cachedContacts.length; j++) {
+                    if (_cachedContacts[j].id === leadId) {
+                        _cachedContacts[j].unreadCount = 0;
+                        _cachedContacts[j].unread = false;
+                        break;
+                    }
+                }
             }
-            
-            if (!contacts || !Array.isArray(contacts)) {
-                contacts = [];
-            }
-            
-            allContacts = contacts;
-            _cachedContacts = contacts;
-            _cachedContactsTime = Date.now();
             renderContacts(allContacts);
-            console.log('✅ [CONTACT POLLING] Loaded', contacts.length, 'contacts');
-        })
-        .catch(function() {});
-    }, CONTACT_POLL_MS);
+            if (typeof fetchGlobalUnreadCount === 'function') fetchGlobalUnreadCount();
+        }
+    })
+    .catch(function(err) { console.error('❌ [CLEAR] Error:', err); });
 }
 
-function stopContactPolling() {
-    if (_contactPollInterval) {
-        clearInterval(_contactPollInterval);
-        _contactPollInterval = null;
-    }
+// ─── RENAME ───
+chatRenameBtn.addEventListener('click', function() {
+    if (!currentLeadId) { showToast('No lead selected.'); return; }
+    var newName = prompt('Enter new name for this contact:', currentLeadName || '');
+    if (newName === null || newName.trim() === '') return;
+    renameLead(currentLeadId, newName.trim());
+});
+
+function renameLead(leadId, newName) {
+    fetch(BACKEND + '/api/leads/' + encodeURIComponent(leadId) + '/rename', {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newName: newName })
+    })
+    .then(function(res) { return res.text().then(function(text) { return { ok: res.ok, status: res.status, text: text }; }); })
+    .then(function(result) {
+        var data = {};
+        if (result.text) {
+            try { data = JSON.parse(result.text); } catch (e) { data = { message: result.text || 'Empty response' }; }
+        }
+        if (!result.ok) {
+            if (result.status === 401 || result.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            showToast('Failed to rename: ' + (data.message || data.error || 'Unknown error'));
+            return;
+        }
+        if (data.success) {
+            currentLeadName = data.newName;
+            chatName.textContent = data.newName;
+            chatAvatar.textContent = data.newName.charAt(0).toUpperCase();
+            showToast('Renamed successfully!');
+            _cachedContacts = null;
+            _cachedContactsTime = 0;
+            loadContacts(true);
+        } else {
+            showToast('Failed to rename: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(function(err) {
+        console.error('Rename error:', err);
+        showToast('Connection error while renaming.');
+    });
 }
 
-// ─── FOLLOW-UP FUNCTIONS ───
+// ============================================================
+// ✅ FOLLOW-UP
+// ============================================================
+
 function loadFollowUpStatus() {
     if (!currentLeadId) return Promise.resolve();
     var cached = _cachedFollowUpStatus[currentLeadId];
@@ -1048,6 +875,32 @@ function loadFollowUpStatus() {
         updateModalStatus(afCurrentEnabledState);
     })
     .catch(function(err) { console.error('Failed to load follow-up status:', err); });
+}
+
+function updateModalStatus(enabled) {
+    if (followupStatus) {
+        if (enabled) {
+            followupStatus.textContent = 'ON';
+            followupStatus.className = 'followup-status on';
+        } else {
+            followupStatus.textContent = 'OFF';
+            followupStatus.className = 'followup-status';
+        }
+    }
+    if (afStatusBadge) {
+        afStatusBadge.textContent = enabled ? 'ON' : 'OFF';
+        afStatusBadge.style.background = enabled ? 'rgba(102,221,153,0.12)' : 'rgba(255,85,85,0.12)';
+        afStatusBadge.style.color = enabled ? '#66dd99' : '#ff5555';
+    }
+    if (afCurrentStatus) {
+        afCurrentStatus.textContent = enabled ? 'ON' : 'OFF';
+        afCurrentStatus.style.color = enabled ? '#66dd99' : '#ff5555';
+    }
+    if (confirmAutoFollowup) {
+        confirmAutoFollowup.textContent = enabled ? '❌ Disable Auto Follow-up' : '✅ Enable Auto Follow-up';
+        confirmAutoFollowup.style.background = enabled ? '#ff5555' : '#66dd99';
+        confirmAutoFollowup.style.color = enabled ? '#fff' : '#000';
+    }
 }
 
 function suggestFollowUp() {
@@ -1159,7 +1012,6 @@ function toggleAutoFollowUp(days, forceState) {
     var newStatus = typeof forceState !== 'undefined' ? forceState : !afCurrentEnabledState;
     afCurrentEnabledState = newStatus;
     updateModalStatus(afCurrentEnabledState);
-
     fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-follow-up', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -1211,13 +1063,128 @@ function toggleAutoFollowUp(days, forceState) {
     });
 }
 
-// ── REVENUE ───
+// ─── FOLLOW-UP UI EVENTS ───
+if (followupBtn && followupDropdown) {
+    followupBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        followupDropdown.classList.toggle('show');
+    });
+    document.addEventListener('click', function(e) {
+        if (!followupBtn.contains(e.target) && !followupDropdown.contains(e.target)) {
+            followupDropdown.classList.remove('show');
+        }
+    });
+}
+
+var suggestBtn = document.querySelector('.chat-followup-option[data-action="suggest"]');
+if (suggestBtn) {
+    suggestBtn.addEventListener('click', function() {
+        followupDropdown.classList.remove('show');
+        suggestFollowUp();
+    });
+}
+
+var hintOption = document.querySelector('.chat-followup-option[data-action="hint"]');
+if (hintOption) {
+    hintOption.addEventListener('click', function() {
+        followupDropdown.classList.remove('show');
+        generateHint();
+    });
+}
+
+var autoFollowupOption = document.querySelector('.chat-followup-option[data-action="auto"]');
+if (autoFollowupOption) {
+    autoFollowupOption.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (followupDropdown) { followupDropdown.classList.remove('show'); }
+        loadFollowUpStatusForModal();
+        if (autoFollowupModal) { autoFollowupModal.classList.add('active'); }
+    });
+}
+
+function closeAutoFollowupModalFn() {
+    if (autoFollowupModal) { autoFollowupModal.classList.remove('active'); }
+}
+
+if (closeAutoFollowupModal) closeAutoFollowupModal.addEventListener('click', closeAutoFollowupModalFn);
+if (cancelAutoFollowup) cancelAutoFollowup.addEventListener('click', closeAutoFollowupModalFn);
+if (autoFollowupModal) {
+    autoFollowupModal.addEventListener('click', function(e) {
+        if (e.target === this) { closeAutoFollowupModalFn(); }
+    });
+}
+
+function loadFollowUpStatusForModal() {
+    if (!currentLeadId) return;
+    var cached = _cachedFollowUpStatus[currentLeadId];
+    if (cached && (Date.now() - cached.time) < FOLLOWUP_CACHE_TTL) {
+        afCurrentEnabledState = cached.data.autoFollowUpEnabled || false;
+        updateModalStatus(afCurrentEnabledState);
+        return Promise.resolve();
+    }
+    return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/follow-up-status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            return;
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data) {
+            _cachedFollowUpStatus[currentLeadId] = { data: data, time: Date.now() };
+            afCurrentEnabledState = data.autoFollowUpEnabled || false;
+            updateModalStatus(afCurrentEnabledState);
+        }
+    })
+    .catch(function(err) { console.error('Failed to load follow-up status:', err); });
+}
+
+afDayButtons.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        afDayButtons.forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        afSelectedDays = parseInt(this.dataset.days);
+        if (afCustomInput) { afCustomInput.value = afSelectedDays; }
+    });
+});
+
+if (afCustomInput) {
+    afCustomInput.addEventListener('input', function() {
+        var val = parseInt(this.value);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 7) val = 7;
+        this.value = val;
+        afSelectedDays = val;
+        afDayButtons.forEach(function(b) { b.classList.remove('active'); });
+    });
+}
+
+if (confirmAutoFollowup) {
+    confirmAutoFollowup.addEventListener('click', function() {
+        var newState = !afCurrentEnabledState;
+        closeAutoFollowupModalFn();
+        toggleAutoFollowUp(afSelectedDays, newState);
+    });
+}
+
+// ============================================================
+// ✅ REVENUE
+// ============================================================
+
 var CATEGORY_CONFIG = {
-    contacted: { label: 'Contacted', icon: '\ud83d\udd35', color: '#66ddff' },
-    replied: { label: 'Replied', icon: '\ud83d\udfe2', color: '#66dd99' },
-    interested: { label: 'Interested', icon: '\ud83d\udfe1', color: '#ffbb44' },
-    ongoing: { label: 'Ongoing', icon: '\ud83d\udfea', color: '#bb88ff' },
-    win: { label: 'Win', icon: '\ud83d\udd34', color: '#ff6b6b' }
+    contacted: { label: 'Contacted', icon: '🔵', color: '#66ddff' },
+    replied: { label: 'Replied', icon: '🟢', color: '#66dd99' },
+    interested: { label: 'Interested', icon: '🟡', color: '#ffbb44' },
+    ongoing: { label: 'Ongoing', icon: '🟣', color: '#bb88ff' },
+    win: { label: 'Win', icon: '🔴', color: '#ff6b6b' }
 };
 
 function fetchRevenueData() {
@@ -1248,25 +1215,18 @@ function fetchRevenueData() {
     });
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
 function renderRevenueData(data) {
     var tier = data.tier || 'free';
     tierBadge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
     var categories = data.categories || {};
     var html = '';
-    html += '<div style="margin-bottom:12px;"><strong style="color:#f5f5f5; font-size:13px;">\ud83d\udcca Categories</strong></div>';
+    html += '<div style="margin-bottom:12px;"><strong style="color:#f5f5f5; font-size:13px;">📊 Categories</strong></div>';
     var hasCategories = false;
     var catKeys = Object.keys(categories);
     for (var ci = 0; ci < catKeys.length; ci++) {
         var key = catKeys[ci];
         var leads = categories[key];
-        var config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '\u2022', color: '#707070' };
+        var config = CATEGORY_CONFIG[key] || { label: key.charAt(0).toUpperCase() + key.slice(1), icon: '•', color: '#707070' };
         var count = Array.isArray(leads) ? leads.length : 0;
         if (count > 0) hasCategories = true;
         html += '<div class="category-section cat-' + key + '"><div class="category-header"><span class="category-name"><span class="category-icon"></span>' + config.icon + ' ' + config.label + '</span><span class="category-count">' + count + '</span></div>';
@@ -1280,7 +1240,7 @@ function renderRevenueData(data) {
                 var lname = lead.name || 'Unknown';
                 var company = lead.company || '';
                 var leadId = lead.id || '';
-                html += '<div class="lead-item" data-id="' + leadId + '" onclick="openChatFromRevenue(\'' + leadId + '\', \'' + safeSanitize(lname).replace(/'/g, "\\'") + '\', \'' + safeSanitize(lead.email || '').replace(/'/g, "\\'") + '\')"><span class="lead-name">' + safeSanitize(lname) + '</span>' + (company ? '<span class="lead-company">\u00b7 ' + safeSanitize(company) + '</span>' : '') + '</div>';
+                html += '<div class="lead-item" data-id="' + leadId + '" onclick="openChatFromRevenue(\'' + leadId + '\', \'' + safeSanitize(lname).replace(/'/g, "\\'") + '\', \'' + safeSanitize(lead.email || '').replace(/'/g, "\\'") + '\')"><span class="lead-name">' + safeSanitize(lname) + '</span>' + (company ? '<span class="lead-company">· ' + safeSanitize(company) + '</span>' : '') + '</div>';
             }
             if (remaining > 0) {
                 html += '<div class="lead-item" style="color:#505050; font-style:italic; border-left-color:transparent; cursor:default;">+ ' + remaining + ' more</div>';
@@ -1294,7 +1254,7 @@ function renderRevenueData(data) {
     if (adviceKeys.length > 0) {
         html += '<div class="section-divider"></div>';
         html += '<div class="advice-section">';
-        html += '<div class="advice-title">\ud83d\udca1 Strategic Advice</div>';
+        html += '<div class="advice-title">💡 Strategic Advice</div>';
         for (var ai = 0; ai < adviceKeys.length; ai++) {
             var akey = adviceKeys[ai];
             var label = akey.replace('Advice', '').replace(/([A-Z])/g, ' $1').replace(/^./, function(str) { return str.toUpperCase(); });
@@ -1313,7 +1273,7 @@ function renderRevenueData(data) {
         var maxActions = Math.min(actions.length, 10);
         for (var aci = 0; aci < maxActions; aci++) {
             var action = actions[aci];
-            html += '<div class="action-item"><span style="color:#505050; font-size:10px;">' + (aci + 1) + '.</span><span class="action-lead">' + safeSanitize(action.leadName || 'Lead') + '</span><span class="action-text">\u2014 ' + safeSanitize(action.action || 'Follow up') + '</span></div>';
+            html += '<div class="action-item"><span style="color:#505050; font-size:10px;">' + (aci + 1) + '.</span><span class="action-lead">' + safeSanitize(action.leadName || 'Lead') + '</span><span class="action-text">— ' + safeSanitize(action.action || 'Follow up') + '</span></div>';
         }
         if (actions.length > 10) {
             html += '<div class="no-data" style="padding-top:4px;">+ ' + (actions.length - 10) + ' more actions</div>';
@@ -1322,7 +1282,7 @@ function renderRevenueData(data) {
     }
     if (tierBadge.textContent === 'Free') {
         html += '<div class="section-divider"></div>';
-        html += '<div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;"><p style="color:#ffbb44; font-size:12px; margin:0;">Upgrade to <strong>Go</strong> for AI\u2011powered advice, or <strong>Pro</strong> for personalised actions on your top leads.</p></div>';
+        html += '<div style="background: rgba(255,187,68,0.06); border: 1px solid rgba(255,187,68,0.15); border-radius: 8px; padding: 12px 16px; margin-top: 4px;"><p style="color:#ffbb44; font-size:12px; margin:0;">Upgrade to <strong>Go</strong> for AI‑powered advice, or <strong>Pro</strong> for personalised actions on your top leads.</p></div>';
     }
     revenueBody.innerHTML = html;
 }
@@ -1332,134 +1292,61 @@ function openChatFromRevenue(leadId, name, email) {
     openChat(leadId, name, email);
 }
 
-// ============================================================
-// ✅ LOAD CONTACTS - WITH SKELETON LOADER
-// ============================================================
-function loadContacts(forceRefresh) {
-    var now_ts = Date.now();
-    
-    // ✅ If cache exists and not forced, use it
-    if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
-        allContacts = _cachedContacts;
-        renderContacts(allContacts);
-        return Promise.resolve();
-    }
-    
-    // ✅ Show skeleton loader immediately
-    showSkeletonLoader();
-    
-    return fetch(BACKEND + '/api/conversations', {
-        headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(function(res) {
-        if (!res.ok) {
-            if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-                return;
-            }
-            throw new Error('HTTP ' + res.status);
-        }
-        return res.json();
-    })
-    .then(function(data) {
-        if (!data) return;
-        
-        // ✅ Handle both old and new response formats
-        var contacts = data;
-        
-        if (data.data && Array.isArray(data.data)) {
-            contacts = data.data;
-            if (data.pagination) {
-                console.log(' [PAGINATION] Page:', data.pagination.page, 'of', data.pagination.pages);
-            }
-        } else if (Array.isArray(data)) {
-            contacts = data;
-        }
-        
-        if (!contacts || !Array.isArray(contacts)) {
-            contacts = [];
-        }
-        
-        allContacts = contacts;
-        _cachedContacts = contacts;
-        _cachedContactsTime = Date.now();
-        renderContacts(allContacts);
-        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts');
-    })
-    .catch(function(err) {
-        console.error('Failed to load contacts:', err);
-        // Show empty state if no contacts
-        showEmptyState();
-    });
-}
-
-// ─── RENDER CONTACTS ───
-function renderContacts(contacts) {
-    if (!contacts || contacts.length === 0) {
-        if (searchInput.value.trim() !== '') {
-            contactList.classList.remove('active');
-            emptyState.classList.remove('active');
-            noResults.classList.add('active');
-        } else {
-            showEmptyState();
-        }
-        return;
-    }
-    contactList.classList.add('active');
-    emptyState.classList.remove('active');
-    noResults.classList.remove('active');
-    var html = '';
-    for (var i = 0; i < contacts.length; i++) {
-        var c = contacts[i];
-        var initials = (c.name || '?').charAt(0).toUpperCase();
-        var preview = c.lastMessage || 'No messages yet';
-        var time = c.lastDate ? new Date(c.lastDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var unreadCount = c.unreadCount || 0;
-        var hasUnread = unreadCount > 0;
-        var unreadClass = hasUnread ? ' has-unread' : '';
-        var badgeHtml = '<div class="contact-unread-badge">' + (unreadCount > 9 ? '9+' : unreadCount) + '</div>';
-        html += '<div class="contact-item' + unreadClass + '" data-id="' + c.id + '" onclick="openChat(\'' + c.id + '\', \'' + safeSanitize(c.name || 'Unknown').replace(/'/g, "\\'") + '\', \'' + safeSanitize(c.email || '').replace(/'/g, "\\'") + '\')">' + badgeHtml + '<div class="contact-avatar">' + initials + '</div><div class="contact-info"><div class="contact-name">' + safeSanitize(c.name || 'Unknown') + '</div><div class="contact-preview">' + safeSanitize(preview) + '</div></div>' + (time ? '<div class="contact-time">' + time + '</div>' : '') + '</div>';
-    }
-    contactList.innerHTML = html;
-}
-
-searchInput.addEventListener('input', function() {
-    var query = this.value.toLowerCase().trim();
-    if (!query) {
-        renderContacts(allContacts);
-        return;
-    }
-    var filtered = [];
-    for (var i = 0; i < allContacts.length; i++) {
-        var c = allContacts[i];
-        if ((c.name || '').toLowerCase().indexOf(query) !== -1 ||
-            (c.company || '').toLowerCase().indexOf(query) !== -1 ||
-            (c.email || '').toLowerCase().indexOf(query) !== -1) {
-            filtered.push(c);
-        }
-    }
-    renderContacts(filtered);
+closeRevenueModal.addEventListener('click', function() { revenueModal.classList.remove('active'); });
+revenueModal.addEventListener('click', function(e) {
+    if (e.target === this) { revenueModal.classList.remove('active'); }
 });
 
-function showEmptyState() {
-    contactList.classList.remove('active');
-    emptyState.classList.add('active');
-    noResults.classList.remove('active');
-}
+// ============================================================
+// ✅ MENU
+// ============================================================
 
-var hintOption = document.querySelector('.chat-followup-option[data-action="hint"]');
-if (hintOption) {
-    hintOption.addEventListener('click', function() {
-        followupDropdown.classList.remove('show');
-        generateHint();
+menuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    menuDropdown.classList.toggle('show');
+});
+
+document.addEventListener('click', function() {
+    menuDropdown.classList.remove('show');
+});
+
+document.querySelectorAll('.menu-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var action = this.dataset.action;
+        menuDropdown.classList.remove('show');
+        if (action === 'revenue') { fetchRevenueData(); return; }
+        if (action === 'followup') {
+            if (!currentLeadId) { showToast('Open a chat first.'); return; }
+            suggestFollowUp(); return;
+        }
+        if (action === 'hint') {
+            if (!currentLeadId) { showToast('Open a chat first.'); return; }
+            generateHint(); return;
+        }
+        if (action === 'autoreply') {
+            if (!currentLeadId) { showToast('Open a chat first.'); return; }
+            openAutoReplyModal(); return;
+        }
+        showToast('Please open a chat to access this feature.');
     });
+});
+
+// ============================================================
+// ✅ AUTO-REPLY — COMPLETE FIXED LOGIC
+// ============================================================
+
+// ─── GET STATUS FROM CACHE ───
+function getAiReplyStatus(leadId) {
+    if (!leadId) return false;
+    var cached = _cachedAiReplyStatus[leadId];
+    if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
+        return cached.data.enabled || false;
+    }
+    return false;
 }
 
-// ════════════════════════════════════════════════════════════
-// ✅ NEW AI REPLY PILL + EDIT BUTTON LOGIC (PER-LEAD ISOLATION)
-// ════════════════════════════════════════════════════════════
-
+// ─── LOAD AI REPLY STATUS ───
 function loadAiReplyStatus() {
     if (!currentLeadId) return Promise.resolve();
     var cached = _cachedAiReplyStatus[currentLeadId];
@@ -1484,46 +1371,97 @@ function loadAiReplyStatus() {
                 aiInstructionTextarea.value = data.instructions;
             }
             updateAiReplyButtonUI();
+        } else {
+            // Default: OFF
+            _cachedAiReplyStatus[currentLeadId] = { 
+                data: { enabled: false, instructions: '' }, 
+                time: Date.now() 
+            };
+            updateAiReplyButtonUI();
         }
     })
-    .catch(function(err) { console.error('Failed to load AI reply status:', err); });
+    .catch(function(err) { 
+        console.error('Failed to load AI reply status:', err);
+        _cachedAiReplyStatus[currentLeadId] = { 
+            data: { enabled: false, instructions: '' }, 
+            time: Date.now() 
+        };
+        updateAiReplyButtonUI();
+    });
 }
 
+// ─── UPDATE UI ───
 function updateAiReplyButtonUI() {
     if (!chatAiReplyBtn || !currentLeadId) return;
-    // ✅ ALWAYS read from per-lead cache, never from a global flag
     var isActive = getAiReplyStatus(currentLeadId);
+    
     if (isActive) {
+        // ✅ ON — Green state
         chatAiReplyBtn.dataset.state = 'on';
         chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply ON — Click to turn OFF');
-        if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'flex';
+        chatAiReplyBtn.classList.add('active');
+        chatAiReplyBtn.style.borderColor = '#66dd99';
+        chatAiReplyBtn.style.background = 'rgba(102, 221, 153, 0.12)';
+        chatAiReplyBtn.style.boxShadow = '0 0 16px rgba(102, 221, 153, 0.15)';
+        
+        // ✅ Show edit button
+        if (aiReplyEditBtn) {
+            aiReplyEditBtn.style.display = 'flex';
+            aiReplyEditBtn.style.visibility = 'visible';
+            aiReplyEditBtn.style.opacity = '1';
+        }
     } else {
+        // ✅ OFF — Black/default state
         chatAiReplyBtn.dataset.state = 'off';
         chatAiReplyBtn.setAttribute('title', 'AI Auto-Reply OFF — Click to configure');
-        if (aiReplyEditBtn) aiReplyEditBtn.style.display = 'none';
+        chatAiReplyBtn.classList.remove('active');
+        chatAiReplyBtn.style.borderColor = 'rgba(255,255,255,0.08)';
+        chatAiReplyBtn.style.background = 'rgba(255,255,255,0.06)';
+        chatAiReplyBtn.style.boxShadow = 'none';
+        
+        // ✅ Hide edit button
+        if (aiReplyEditBtn) {
+            aiReplyEditBtn.style.display = 'none';
+            aiReplyEditBtn.style.visibility = 'hidden';
+            aiReplyEditBtn.style.opacity = '0';
+        }
     }
 }
 
-// Open mini instruction overlay
+// ─── OPEN/CLOSE INSTRUCTION MODAL ───
 function openAiInstructionModal() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    // Load existing instructions into the textarea
+    var cached = _cachedAiReplyStatus[currentLeadId];
+    if (cached && cached.data.instructions) {
+        aiInstructionTextarea.value = cached.data.instructions;
+    } else {
+        aiInstructionTextarea.value = '';
+    }
     if (aiInstructionOverlay) aiInstructionOverlay.classList.add('active');
     if (aiInstructionTextarea) aiInstructionTextarea.focus();
 }
 
-// Close mini instruction overlay
 function closeAiInstructionModal() {
     if (aiInstructionOverlay) aiInstructionOverlay.classList.remove('active');
 }
 
-// Pill toggle click handler — FIXED PAYLOADS + PER-LEAD
+// ─── TOGGLE CLICK HANDLER ───
 if (chatAiReplyBtn) {
     chatAiReplyBtn.addEventListener('click', function() {
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
         
-        // If already ON → toggle OFF immediately (send ONLY enabled:false)
-        if (this.dataset.state === 'on') {
-            this.dataset.state = 'off';
+        var isActive = getAiReplyStatus(currentLeadId);
+        
+        // ── IF ON → TURN OFF ──
+        if (isActive) {
+            // ✅ Optimistic UI update
+            _cachedAiReplyStatus[currentLeadId] = { 
+                data: { enabled: false, instructions: '' }, 
+                time: Date.now() 
+            };
+            updateAiReplyButtonUI();
+            
             fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
                 method: 'PUT',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -1531,36 +1469,50 @@ if (chatAiReplyBtn) {
             })
             .then(function(res) {
                 if (res.ok) {
-                    // Invalidate cache so next read returns false
-                    delete _cachedAiReplyStatus[currentLeadId];
+                    // ✅ Confirm OFF
+                    _cachedAiReplyStatus[currentLeadId] = { 
+                        data: { enabled: false, instructions: '' }, 
+                        time: Date.now() 
+                    };
                     updateAiReplyButtonUI();
-                    showToast('AI Reply deactivated', 'info', 2000);
+                    showToast('🔴 AI Reply turned OFF', 2000);
                 } else {
-                    // Revert UI on failure
-                    this.dataset.state = 'on';
-                    showToast('Failed to deactivate', 'error');
+                    // ❌ Revert on error
+                    var oldInstructions = aiInstructionTextarea ? aiInstructionTextarea.value : '';
+                    _cachedAiReplyStatus[currentLeadId] = { 
+                        data: { enabled: true, instructions: oldInstructions }, 
+                        time: Date.now() 
+                    };
+                    updateAiReplyButtonUI();
+                    showToast('Failed to deactivate', 3000);
                 }
-            }.bind(this))
-            .catch(function() { 
-                this.dataset.state = 'on';
-                showToast('Connection error', 'error'); 
-            }.bind(this));
+            })
+            .catch(function() {
+                // ❌ Revert on network error
+                var oldInstructions = aiInstructionTextarea ? aiInstructionTextarea.value : '';
+                _cachedAiReplyStatus[currentLeadId] = { 
+                    data: { enabled: true, instructions: oldInstructions }, 
+                    time: Date.now() 
+                };
+                updateAiReplyButtonUI();
+                showToast('Connection error', 3000);
+            });
             return;
         }
         
-        // If OFF → open mini modal to get instructions first
+        // ── IF OFF → OPEN MODAL ──
         openAiInstructionModal();
     });
 }
 
-// Edit button reopens modal with existing instructions
+// ─── EDIT BUTTON ───
 if (aiReplyEditBtn) {
     aiReplyEditBtn.addEventListener('click', function() {
         openAiInstructionModal();
     });
 }
 
-// Close modal handlers
+// ─── CLOSE MODAL HANDLERS ───
 if (closeAiInstructions) {
     closeAiInstructions.addEventListener('click', closeAiInstructionModal);
 }
@@ -1570,7 +1522,7 @@ if (aiInstructionOverlay) {
     });
 }
 
-// Save button: saves instructions AND activates AI reply — FIXED PAYLOAD + PER-LEAD
+// ─── SAVE INSTRUCTIONS ───
 if (saveAiInstructions) {
     saveAiInstructions.addEventListener('click', function() {
         var instructions = aiInstructionTextarea ? aiInstructionTextarea.value.trim() : '';
@@ -1587,16 +1539,19 @@ if (saveAiInstructions) {
         })
         .then(function(res) {
             if (res.ok) {
-                // Invalidate cache so next read fetches fresh persisted state
-                delete _cachedAiReplyStatus[currentLeadId];
+                // ✅ Update cache with new state
+                _cachedAiReplyStatus[currentLeadId] = { 
+                    data: { enabled: true, instructions: instructions }, 
+                    time: Date.now() 
+                };
                 updateAiReplyButtonUI();
                 closeAiInstructionModal();
-                showToast('AI Reply activated with your instructions!', 'success', 3000);
+                showToast('✅ AI Reply activated with your instructions!', 3000);
             } else {
-                showToast('Failed to save settings', 'error');
+                showToast('Failed to save settings', 3000);
             }
         })
-        .catch(function() { showToast('Connection error while saving', 'error'); })
+        .catch(function() { showToast('Connection error while saving', 3000); })
         .finally(function() {
             saveAiInstructions.disabled = false;
             saveAiInstructions.textContent = 'Save & Activate';
@@ -1604,86 +1559,68 @@ if (saveAiInstructions) {
     });
 }
 
-// Keep old auto-reply modal handlers as fallback
-closeAutoReplyModal.addEventListener('click', function() { autoReplyModalOverlay.classList.remove('show'); });
-autoReplyModalOverlay.addEventListener('click', function(e) {
-    if (e.target === autoReplyModalOverlay) { autoReplyModalOverlay.classList.remove('show'); }
-});
-
-saveAutoReplyBtn.addEventListener('click', function() {
-    var instructions = autoReplyInstructions.value.trim();
-    if (!instructions) { showToast('Please enter instructions first.'); return; }
-    if (!currentLeadId) { showToast('Open a chat first.'); return; }
-    
-    fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: true, instructions: instructions })
-    })
-    .then(function(res) {
-        if (res.ok) {
-            delete _cachedAiReplyStatus[currentLeadId];
-            updateAiReplyButtonUI();
-            autoReplyModalOverlay.classList.remove('show');
-            showToast('AI Auto-Reply instructions saved & activated!');
-        } else {
-            showToast('Failed to save auto-reply settings');
+// ─── OLD AUTO-REPLY MODAL (FALLBACK) ───
+if (closeAutoReplyModal) {
+    closeAutoReplyModal.addEventListener('click', function() { 
+        autoReplyModalOverlay.classList.remove('show'); 
+    });
+}
+if (autoReplyModalOverlay) {
+    autoReplyModalOverlay.addEventListener('click', function(e) {
+        if (e.target === autoReplyModalOverlay) { 
+            autoReplyModalOverlay.classList.remove('show'); 
         }
-    })
-    .catch(function() { showToast('Connection error while saving'); });
-});
+    });
+}
+
+if (saveAutoReplyBtn) {
+    saveAutoReplyBtn.addEventListener('click', function() {
+        var instructions = autoReplyInstructions.value.trim();
+        if (!instructions) { showToast('Please enter instructions first.'); return; }
+        if (!currentLeadId) { showToast('Open a chat first.'); return; }
+        
+        fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: true, instructions: instructions })
+        })
+        .then(function(res) {
+            if (res.ok) {
+                _cachedAiReplyStatus[currentLeadId] = { 
+                    data: { enabled: true, instructions: instructions }, 
+                    time: Date.now() 
+                };
+                updateAiReplyButtonUI();
+                autoReplyModalOverlay.classList.remove('show');
+                showToast('✅ AI Auto-Reply activated!');
+            } else {
+                showToast('Failed to save auto-reply settings');
+            }
+        })
+        .catch(function() { showToast('Connection error while saving'); });
+    });
+}
 
 function openAutoReplyModal() {
     if (!currentLeadId) { showToast('Open a chat first.'); return; }
+    var cached = _cachedAiReplyStatus[currentLeadId];
+    if (cached && cached.data.instructions) {
+        autoReplyInstructions.value = cached.data.instructions;
+    } else {
+        autoReplyInstructions.value = '';
+    }
     autoReplyModalOverlay.classList.add('show');
     autoReplyInstructions.focus();
 }
 
-// ─── PHONE BACK BUTTON ───
-window.addEventListener('popstate', function(e) {
-    if (chatView.classList.contains('active')) {
-        closeChatAndGoBack();
-        history.pushState(null, '', window.location.href);
-    }
-});
-
-// ─── CLEAN UP ───
-window.addEventListener('beforeunload', function() {
-    stopPolling();
-    stopContactPolling();
-    if (sseConnection) {
-        sseConnection.close();
-        sseConnection = null;
-    }
-});
-
-// ─── START EVERYTHING ───
-// ✅ Inject skeleton styles
-injectSkeletonStyles();
-
-// ✅ Show skeleton immediately
-showSkeletonLoader();
-
-// ✅ Load contacts
-loadContacts();
-
-// ✅ Start polling and SSE
-startContactPolling();
-connectSSE();
-history.pushState(null, '', window.location.href);
-
-console.log('✅ [NOTIFICATIONS] Loaded with skeleton loaders');
-
 // ============================================================
 // ✅ INIT SHARED BADGE
 // ============================================================
+
 function initNotifBadge() {
     var token = localStorage.getItem('token');
     if (!token) return;
-
     console.log('🔔 [NOTIFICATIONS] Initializing badge...');
-
-    // Check if notif-badge.js is loaded
     if (typeof window.NotifBadge !== 'undefined') {
         if (window.NotifBadge.fetch) {
             window.NotifBadge.fetch();
@@ -1695,7 +1632,6 @@ function initNotifBadge() {
         }
     } else {
         console.warn('🔔 [NOTIFICATIONS] notif-badge.js not loaded');
-        // Fallback: hide badge
         var badge = document.querySelector('.nav-badge');
         if (badge) {
             badge.textContent = '';
@@ -1704,7 +1640,6 @@ function initNotifBadge() {
     }
 }
 
-// ─── RE-INIT ON VISIBILITY CHANGE ──
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
         console.log('🔔 [NOTIFICATIONS] Tab visible, refreshing badge...');
@@ -1714,7 +1649,29 @@ document.addEventListener('visibilitychange', function() {
     }
 });
 
-// ─── CALL INIT ──
+// ============================================================
+// ✅ CLEAN UP
+// ============================================================
+
+window.addEventListener('beforeunload', function() {
+    stopPolling();
+    stopContactPolling();
+    if (sseConnection) {
+        sseConnection.close();
+        sseConnection = null;
+    }
+});
+
+// ============================================================
+// ✅ START EVERYTHING
+// ============================================================
+
+injectSkeletonStyles();
+showSkeletonLoader();
+loadContacts();
+startContactPolling();
+connectSSE();
+history.pushState(null, '', window.location.href);
 initNotifBadge();
 
-console.log('✅ [NOTIFICATIONS] Badge system initialized');
+console.log('✅ [NOTIFICATIONS] Fully loaded with auto-reply fixes');
