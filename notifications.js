@@ -1,6 +1,6 @@
 // ============================================================
 // notifications.js — Skyline AA-1 Inbox Logic
-// COMPLETE REWRITE — Auto-reply fully fixed
+// COMPLETE REWRITE — Auto-reply fully fixed with persistence
 // ============================================================
 
 // ─── CONFIG ───
@@ -1333,7 +1333,7 @@ document.querySelectorAll('.menu-item').forEach(function(item) {
 });
 
 // ============================================================
-// ✅ AUTO-REPLY — COMPLETE FIXED LOGIC
+// ✅ AUTO-REPLY — COMPLETE FIXED LOGIC WITH PERSISTENCE
 // ============================================================
 
 // ─── GET STATUS FROM CACHE ───
@@ -1346,9 +1346,11 @@ function getAiReplyStatus(leadId) {
     return false;
 }
 
-// ─── LOAD AI REPLY STATUS ───
+// ─── LOAD AI REPLY STATUS — FIXED PERSISTENCE ───
 function loadAiReplyStatus() {
     if (!currentLeadId) return Promise.resolve();
+    
+    // ✅ Check cache first
     var cached = _cachedAiReplyStatus[currentLeadId];
     if (cached && (Date.now() - cached.time) < AI_REPLY_CACHE_TTL) {
         if (cached.data.instructions && aiInstructionTextarea) {
@@ -1357,6 +1359,8 @@ function loadAiReplyStatus() {
         updateAiReplyButtonUI();
         return Promise.resolve();
     }
+    
+    // ✅ Fetch from backend
     return fetch(BACKEND + '/api/leads/' + encodeURIComponent(currentLeadId) + '/auto-reply', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
@@ -1365,23 +1369,28 @@ function loadAiReplyStatus() {
         return res.json();
     })
     .then(function(data) {
+        // ✅ ALWAYS update cache, even if data is null
         if (data) {
-            _cachedAiReplyStatus[currentLeadId] = { data: data, time: Date.now() };
+            _cachedAiReplyStatus[currentLeadId] = { 
+                data: data, 
+                time: Date.now() 
+            };
             if (data.instructions && aiInstructionTextarea) {
                 aiInstructionTextarea.value = data.instructions;
             }
-            updateAiReplyButtonUI();
         } else {
-            // Default: OFF
+            // ✅ Default: OFF
             _cachedAiReplyStatus[currentLeadId] = { 
                 data: { enabled: false, instructions: '' }, 
                 time: Date.now() 
             };
-            updateAiReplyButtonUI();
         }
+        // ✅ ALWAYS update UI after cache is set
+        updateAiReplyButtonUI();
     })
     .catch(function(err) { 
         console.error('Failed to load AI reply status:', err);
+        // ✅ On error, set default and update UI
         _cachedAiReplyStatus[currentLeadId] = { 
             data: { enabled: false, instructions: '' }, 
             time: Date.now() 
@@ -1390,10 +1399,14 @@ function loadAiReplyStatus() {
     });
 }
 
-// ─── UPDATE UI ───
+// ─── UPDATE UI — FORCES READ FROM CACHE ───
 function updateAiReplyButtonUI() {
     if (!chatAiReplyBtn || !currentLeadId) return;
+    
+    // ✅ Force read from cache, not from DOM
     var isActive = getAiReplyStatus(currentLeadId);
+    
+    console.log('🔄 [AI REPLY] Updating UI for lead:', currentLeadId, 'Active:', isActive);
     
     if (isActive) {
         // ✅ ON — Green state
@@ -1409,6 +1422,7 @@ function updateAiReplyButtonUI() {
             aiReplyEditBtn.style.display = 'flex';
             aiReplyEditBtn.style.visibility = 'visible';
             aiReplyEditBtn.style.opacity = '1';
+            aiReplyEditBtn.classList.add('visible');
         }
     } else {
         // ✅ OFF — Black/default state
@@ -1424,6 +1438,7 @@ function updateAiReplyButtonUI() {
             aiReplyEditBtn.style.display = 'none';
             aiReplyEditBtn.style.visibility = 'hidden';
             aiReplyEditBtn.style.opacity = '0';
+            aiReplyEditBtn.classList.remove('visible');
         }
     }
 }
@@ -1446,7 +1461,7 @@ function closeAiInstructionModal() {
     if (aiInstructionOverlay) aiInstructionOverlay.classList.remove('active');
 }
 
-// ─── TOGGLE CLICK HANDLER ───
+// ─── TOGGLE CLICK HANDLER — FIXED PERSISTENCE ───
 if (chatAiReplyBtn) {
     chatAiReplyBtn.addEventListener('click', function() {
         if (!currentLeadId) { showToast('Open a chat first.'); return; }
