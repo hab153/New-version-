@@ -3,8 +3,8 @@
 // COMPLETE REWRITE — Auto-reply fully fixed with persistence
 // + Phone back button fix (no refresh)
 // + Motivation button with color cycling
-// + Progressive contact list rendering (1 by 1)
-// + SINGLE REQUEST (no pagination — loads ALL contacts at once)
+// + Progressive contact list rendering
+// + PAGINATION + LOAD MORE BUTTON (15 per page)
 // ============================================================
 
 // ─── CONFIG ───
@@ -81,10 +81,16 @@ var currentLeadEmail = null;
 var isSending = false;
 var isRenderingProgressively = false;
 
+// ✅ PAGINATION STATE
+var currentPage = 1;
+var totalPages = 1;
+var isLoadingMore = false;
+var hasMorePages = false;
+
 // ─── CACHE ───
 var _cachedContacts = null;
 var _cachedContactsTime = 0;
-var CONTACTS_CACHE_TTL = 30000;  // ✅ Increased to 30s
+var CONTACTS_CACHE_TTL = 30000;
 var _cachedChatHistory = {};
 var CHAT_HISTORY_CACHE_TTL = 30000;
 var _cachedFollowUpStatus = {};
@@ -369,21 +375,32 @@ function playNotificationSound() {
 }
 
 // ============================================================
-// ✅ CONTACTS — SINGLE REQUEST (NO PAGINATION)
+// ✅ CONTACTS — PAGINATION + LOAD MORE
 // ============================================================
 
 function loadContacts(forceRefresh) {
     var now_ts = Date.now();
     if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
         allContacts = _cachedContacts;
-        renderContactsProgressively(allContacts);
+        renderContactsWithLoadMore(allContacts);
         return Promise.resolve();
     }
     
-    showSkeletonLoader();
+    // ✅ Reset pagination state
+    currentPage = 1;
+    totalPages = 1;
+    hasMorePages = false;
+    allContacts = [];
     
-    // ✅ SINGLE REQUEST — get ALL leads in one go
-    return fetch(BACKEND + '/api/conversations', {
+    showSkeletonLoader();
+    return loadPage(1);
+}
+
+function loadPage(page) {
+    if (isLoadingMore) return Promise.resolve();
+    isLoadingMore = true;
+    
+    return fetch(BACKEND + '/api/conversations?page=' + page + '&limit=15', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(function(res) {
@@ -401,33 +418,34 @@ function loadContacts(forceRefresh) {
         if (!data) return;
         
         var contacts = data.data || [];
-        allContacts = contacts;
-        _cachedContacts = contacts;
+        var pagination = data.pagination || {};
+        totalPages = pagination.pages || 1;
+        currentPage = pagination.page || 1;
+        hasMorePages = pagination.hasMore || false;
+        
+        // ✅ Append new contacts to existing list
+        allContacts = allContacts.concat(contacts);
+        
+        // ✅ Update cache
+        _cachedContacts = allContacts;
         _cachedContactsTime = Date.now();
         
-        // ✅ Render progressively (1 by 1) for smooth UI
-        renderContactsProgressively(allContacts);
+        // ✅ Render with "Load More" button
+        renderContactsWithLoadMore(allContacts);
         
-        // ✅ Hide skeleton immediately
-        var skeletonLoader = document.getElementById('skeletonLoader');
-        if (skeletonLoader) {
-            skeletonLoader.classList.remove('active');
-        }
+        console.log('✅ [loadPage] Loaded page', currentPage, 'of', totalPages, '(', allContacts.length, 'total contacts)');
         
-        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts (all at once)');
+        isLoadingMore = false;
     })
     .catch(function(err) {
         console.error('Failed to load contacts:', err);
         showEmptyState();
-        var skeletonLoader = document.getElementById('skeletonLoader');
-        if (skeletonLoader) {
-            skeletonLoader.classList.remove('active');
-        }
+        isLoadingMore = false;
     });
 }
 
-// ✅ PROGRESSIVE RENDERING — Renders contacts one by one
-function renderContactsProgressively(contacts) {
+// ✅ RENDER CONTACTS WITH LOAD MORE BUTTON
+function renderContactsWithLoadMore(contacts) {
     if (!contacts || contacts.length === 0) {
         if (searchInput.value.trim() !== '') {
             contactList.classList.remove('active');
@@ -436,82 +454,77 @@ function renderContactsProgressively(contacts) {
         } else {
             showEmptyState();
         }
+        var skeletonLoader = document.getElementById('skeletonLoader');
+        if (skeletonLoader) {
+            skeletonLoader.classList.remove('active');
+        }
         return;
     }
     
-    // ✅ Clear existing content and show list container
     contactList.classList.add('active');
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
     
-    // ✅ If already rendering, stop
-    if (isRenderingProgressively) {
-        isRenderingProgressively = false;
+    // ✅ Build contact items HTML
+    var html = '';
+    for (var i = 0; i < contacts.length; i++) {
+        var c = contacts[i];
+        var initials = (c.name || '?').charAt(0).toUpperCase();
+        var preview = c.lastMessage || 'No messages yet';
+        var time = c.lastDate ? new Date(c.lastDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var unreadCount = c.unreadCount || 0;
+        var hasUnread = unreadCount > 0;
+        var unreadClass = hasUnread ? ' has-unread' : '';
+        var badgeHtml = '<div class="contact-unread-badge">' + (unreadCount > 9 ? '9+' : unreadCount) + '</div>';
+        var safeName = safeSanitize(c.name || 'Unknown').replace(/'/g, "\\'");
+        var safeEmail = safeSanitize(c.email || '').replace(/'/g, "\\'");
+        
+        html += '<div class="contact-item' + unreadClass + '" data-id="' + c.id + '" onclick="openChat(\'' + c.id + '\', \'' + safeName + '\', \'' + safeEmail + '\')">' + badgeHtml + '<div class="contact-avatar">' + initials + '</div><div class="contact-info"><div class="contact-name">' + safeSanitize(c.name || 'Unknown') + '</div><div class="contact-preview">' + safeSanitize(preview) + '</div></div>' + (time ? '<div class="contact-time">' + time + '</div>' : '') + '</div>';
     }
     
-    // ✅ Start progressive rendering
-    isRenderingProgressively = true;
-    
-    // ✅ Clear the list first
-    contactList.innerHTML = '';
-    
-    // ✅ Render contacts one by one with delay
-    var renderIndex = 0;
-    var renderBatchSize = 3; // Render 3 at a time for speed
-    
-    function renderNextBatch() {
-        if (!isRenderingProgressively || renderIndex >= contacts.length) {
-            isRenderingProgressively = false;
-            console.log('✅ [Progressive] All', contacts.length, 'contacts rendered');
-            return;
-        }
-        
-        var endIndex = Math.min(renderIndex + renderBatchSize, contacts.length);
-        
-        for (var i = renderIndex; i < endIndex; i++) {
-            var c = contacts[i];
-            var contactHtml = createContactHTML(c);
-            contactList.appendChild(createContactElement(contactHtml));
-        }
-        
-        renderIndex = endIndex;
-        
-        // ✅ Schedule next batch with a small delay (30ms for smooth appearance)
-        if (renderIndex < contacts.length) {
-            setTimeout(renderNextBatch, 30);
-        } else {
-            isRenderingProgressively = false;
-            console.log('✅ [Progressive] All', contacts.length, 'contacts rendered');
-        }
+    // ✅ Add "Load More" button if there are more pages
+    if (hasMorePages) {
+        html += `
+            <div class="load-more-container">
+                <button class="load-more-btn" id="loadMoreBtn">
+                    <span class="load-more-text">📥 Load More</span>
+                    <span class="load-more-count">(${contacts.length} of ${totalPages * 15}+)</span>
+                </button>
+            </div>
+        `;
+    } else if (contacts.length > 0) {
+        // ✅ All contacts loaded — show "End of contacts"
+        html += `
+            <div class="end-of-contacts">
+                <span class="end-icon">🏁</span>
+                <span class="end-text">End of contacts</span>
+                <span class="end-count">${contacts.length} total</span>
+            </div>
+        `;
     }
     
-    // ✅ Start rendering
-    setTimeout(renderNextBatch, 50);
-}
-
-// ✅ Create contact HTML string
-function createContactHTML(contact) {
-    var initials = (contact.name || '?').charAt(0).toUpperCase();
-    var preview = contact.lastMessage || 'No messages yet';
-    var time = contact.lastDate ? new Date(contact.lastDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-    var unreadCount = contact.unreadCount || 0;
-    var hasUnread = unreadCount > 0;
-    var unreadClass = hasUnread ? ' has-unread' : '';
-    var badgeHtml = '<div class="contact-unread-badge">' + (unreadCount > 9 ? '9+' : unreadCount) + '</div>';
-    var safeName = safeSanitize(contact.name || 'Unknown').replace(/'/g, "\\'");
-    var safeEmail = safeSanitize(contact.email || '').replace(/'/g, "\\'");
+    contactList.innerHTML = html;
     
-    return '<div class="contact-item' + unreadClass + '" data-id="' + contact.id + '" onclick="openChat(\'' + contact.id + '\', \'' + safeName + '\', \'' + safeEmail + '\')">' + badgeHtml + '<div class="contact-avatar">' + initials + '</div><div class="contact-info"><div class="contact-name">' + safeSanitize(contact.name || 'Unknown') + '</div><div class="contact-preview">' + safeSanitize(preview) + '</div></div>' + (time ? '<div class="contact-time">' + time + '</div>' : '') + '</div>';
+    // ✅ Hide skeleton
+    var skeletonLoader = document.getElementById('skeletonLoader');
+    if (skeletonLoader) {
+        skeletonLoader.classList.remove('active');
+    }
+    
+    // ✅ Attach Load More button event
+    var loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            if (hasMorePages && !isLoadingMore) {
+                loadMoreBtn.textContent = '⏳ Loading...';
+                loadMoreBtn.disabled = true;
+                loadPage(currentPage + 1);
+            }
+        });
+    }
 }
 
-// ✅ Create DOM element from HTML string
-function createContactElement(html) {
-    var temp = document.createElement('div');
-    temp.innerHTML = html;
-    return temp.firstElementChild;
-}
-
-// ─── FALLBACK: Render all at once (if progressive fails)
+// ✅ FALLBACK: Render contacts (for search)
 function renderContacts(contacts) {
     if (!contacts || contacts.length === 0) {
         if (searchInput.value.trim() !== '') {
@@ -524,7 +537,6 @@ function renderContacts(contacts) {
         return;
     }
     
-    isRenderingProgressively = false;
     contactList.classList.add('active');
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
@@ -548,7 +560,7 @@ searchInput.addEventListener('input', function() {
     var query = this.value.toLowerCase().trim();
     if (!query) {
         if (_cachedContacts) {
-            renderContactsProgressively(_cachedContacts);
+            renderContactsWithLoadMore(_cachedContacts);
         }
         return;
     }
@@ -561,7 +573,7 @@ searchInput.addEventListener('input', function() {
             filtered.push(c);
         }
     }
-    renderContactsProgressively(filtered);
+    renderContacts(filtered);
 });
 
 // ============================================================
@@ -572,22 +584,21 @@ function startContactPolling() {
     if (_contactPollInterval) clearInterval(_contactPollInterval);
     _contactPollInterval = setInterval(function() {
         if (!token) return;
-        fetch(BACKEND + '/api/conversations', {
+        // ✅ Only poll first page to check for changes
+        fetch(BACKEND + '/api/conversations?page=1&limit=15', {
             headers: { 'Authorization': 'Bearer ' + token }
         })
         .then(function(res) { if (!res.ok) return null; return res.json(); })
         .then(function(data) {
             if (!data) return;
-            var contacts = data;
-            if (data.data && Array.isArray(data.data)) contacts = data.data;
-            else if (Array.isArray(data)) contacts = data;
-            if (!contacts || !Array.isArray(contacts)) contacts = [];
+            var contacts = data.data || [];
+            var pagination = data.pagination || {};
             // ✅ Only update if something changed
-            if (contacts.length !== allContacts.length) {
+            if (contacts.length > 0 && allContacts.length === 0) {
                 allContacts = contacts;
                 _cachedContacts = contacts;
                 _cachedContactsTime = Date.now();
-                renderContactsProgressively(allContacts);
+                renderContactsWithLoadMore(allContacts);
             }
         })
         .catch(function() {});
@@ -654,7 +665,7 @@ function closeChatAndGoBack() {
     // ✅ Use cached contacts instead of refreshing
     if (_cachedContacts && (Date.now() - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
         allContacts = _cachedContacts;
-        renderContactsProgressively(allContacts);
+        renderContactsWithLoadMore(allContacts);
     } else {
         loadContacts(false);
     }
@@ -900,7 +911,7 @@ function clearUnreadBadge(leadId) {
                     }
                 }
             }
-            renderContactsProgressively(allContacts);
+            renderContactsWithLoadMore(allContacts);
             if (typeof fetchGlobalUnreadCount === 'function') fetchGlobalUnreadCount();
         }
     })
@@ -1865,4 +1876,4 @@ history.pushState(null, '', window.location.href);
 initNotifBadge();
 startColorCycling();
 
-console.log('✅ [NOTIFICATIONS] Fully loaded with auto-reply fixes + motivation button + progressive rendering + SINGLE REQUEST (no pagination)');
+console.log('✅ [NOTIFICATIONS] Fully loaded with pagination + Load More button (15 per page)');
