@@ -565,10 +565,10 @@ body.chat-active .menu-container {
 }
 
 /* ============================================================
-   ✅ FIXED: CONTACT LIST — PROPER SCROLLING
+   ✅ FIXED: CONTACT LIST — PROPER SCROLLING + VISIBLE LOAD MORE
    ============================================================ */
 .contact-list {
-    padding: 0 16px 100px;
+    padding: 0 16px 140px;  /* ✅ Increased bottom padding to clear bottom nav */
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(100vh - 160px);
@@ -2056,6 +2056,12 @@ body.chat-active .menu-container {
     .modal-content { padding: 16px; }
     .menu-item { font-size: 11px; padding: 8px 12px; }
     
+    /* ✅ Fix contact list padding for mobile */
+    .contact-list {
+        padding: 0 14px 130px;  /* Slightly less padding on mobile */
+        height: calc(100vh - 150px);
+    }
+    
     /* Mobile adjustment for AI Reply pill */
     .ai-reply-toggle {
         padding: 5px 10px;
@@ -2114,6 +2120,12 @@ body.chat-active .menu-container {
     .menu-btn { width: 24px; height: 24px; }
     .menu-btn svg { width: 14px; height: 14px; }
     
+    /* ✅ Fix contact list padding for small phones */
+    .contact-list {
+        padding: 0 10px 120px;
+        height: calc(100vh - 140px);
+    }
+    
     /* Small phone adjustments for AI reply elements */
     .ai-reply-toggle { padding: 4px 8px; font-size: 9px; gap: 4px; }
     .ai-reply-icon { width: 12px; height: 12px; }
@@ -2156,6 +2168,12 @@ body.chat-active .menu-container {
     .msg-group { max-width: 75%; }
     .message-bubble { font-size: 11px; padding: 4px 8px; }
     .bottom-nav { padding: 0 8%; }
+    
+    /* ✅ Fix contact list padding for landscape */
+    .contact-list {
+        padding: 0 12px 120px;
+        height: calc(100vh - 130px);
+    }
     
     /* Landscape adjustments for motivation modal */
     .motivation-modal { max-width: 380px; padding: 20px 20px 16px; }
