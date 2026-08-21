@@ -56,9 +56,60 @@
         .brand-name span { color: #ffffff; font-weight: 400; }
         .brand-sub { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #707070; font-family: 'Monaco', 'Menlo', monospace; }
 
-        /* ===== MENU ===== */
+        /* ===== MENU + MOTIVATION BUTTON ===== */
         .menu-container { position: fixed; top: 14px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 100; }
-        .menu-btn { background: none; border: none; color: #b0b0b0; cursor: pointer; padding: 4px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s, color 0.2s; }
+        
+        /* ✅ MOTIVATION BUTTON — beside the 3-dot menu */
+        .motivation-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.06);
+            color: #b0b0b0;
+            font-size: 16px;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .motivation-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.12);
+        }
+        .motivation-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+        /* Color cycling will be applied via JS */
+        .motivation-btn.cycling {
+            animation: none;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #b0b0b0;
+            cursor: pointer;
+            padding: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
         .menu-btn:hover { background: rgba(255,255,255,0.06); color: #ffffff; }
         .menu-btn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.5; }
         .menu-dropdown { position: absolute; top: 40px; right: 0; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 6px 0; min-width: 180px; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 200; }
@@ -67,6 +118,145 @@
         .menu-item:hover { background: rgba(255,255,255,0.06); color: #ffffff; }
         .menu-item svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; flex-shrink: 0; }
         .menu-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 12px; }
+
+        /* ===== MOTIVATION MODAL ===== */
+        .motivation-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .motivation-modal-overlay.active { display: flex; }
+        .motivation-modal {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            max-width: 460px;
+            width: 100%;
+            padding: 32px 28px 28px;
+            position: relative;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+            animation: modalSlideUp 0.35s ease-out;
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .motivation-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #707070;
+            cursor: pointer;
+            padding: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            z-index: 5;
+        }
+        .motivation-modal-close:hover {
+            background: rgba(255,255,255,0.06);
+            color: #f5f5f5;
+        }
+        .motivation-modal-close svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2.5;
+        }
+        .motivation-modal-icon {
+            text-align: center;
+            font-size: 42px;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        .motivation-modal-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #f5f5f5;
+            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+        }
+        .motivation-modal-sub {
+            text-align: center;
+            font-size: 11px;
+            color: #66dd99;
+            font-family: 'Monaco', 'Menlo', monospace;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .motivation-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            margin: 12px 0 16px;
+        }
+        .motivation-text {
+            color: #d0d0d0;
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 4px 0;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .motivation-text .highlight {
+            color: #66dd99;
+            font-weight: 500;
+        }
+        .motivation-text .highlight-gold {
+            color: #ffbb44;
+            font-weight: 500;
+        }
+        .motivation-text .highlight-sky {
+            color: #66ddff;
+            font-weight: 500;
+        }
+        .motivation-text .line {
+            display: block;
+            padding: 4px 0;
+            opacity: 0;
+            animation: fadeInLine 0.5s ease forwards;
+        }
+        .motivation-text .line:nth-child(1) { animation-delay: 0.1s; }
+        .motivation-text .line:nth-child(2) { animation-delay: 0.2s; }
+        .motivation-text .line:nth-child(3) { animation-delay: 0.3s; }
+        .motivation-text .line:nth-child(4) { animation-delay: 0.4s; }
+        .motivation-text .line:nth-child(5) { animation-delay: 0.5s; }
+        @keyframes fadeInLine {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .motivation-footer {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        .motivation-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .motivation-dot.active {
+            background: #66dd99;
+            box-shadow: 0 0 12px rgba(102,221,153,0.3);
+        }
 
         /* ===== SEARCH ===== */
         .search-container { padding: 76px 16px 12px; }
@@ -81,6 +271,34 @@
         .contact-list { padding: 0 16px 80px; overflow-y: auto; max-height: calc(100vh - 170px); }
         .contact-list::-webkit-scrollbar { width: 2px; }
         .contact-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        /* ===== CONTACT ITEM ===== */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 10px;
+            margin-bottom: 2px;
+            opacity: 0;
+            transform: translateY(8px);
+            animation: contactAppear 0.25s ease forwards;
+        }
+        .contact-item:hover { background: rgba(255,255,255,0.04); }
+        @keyframes contactAppear {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .contact-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, #2a2a2a, #1a1a1a); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: #b0b0b0; text-transform: uppercase; }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-name { font-size: 14px; font-weight: 500; color: #f5f5f5; display: flex; align-items: center; gap: 6px; }
+        .contact-preview { font-size: 12px; color: #707070; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-time { font-size: 10px; color: #505050; flex-shrink: 0; }
+        .contact-unread-badge { position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; background: #ff5555; color: #fff; font-size: 9px; font-weight: 600; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+        .contact-item { position: relative; }
 
         /* ===== EMPTY / NO RESULTS ===== */
         .empty-state, .no-results { display: none; text-align: center; padding: 60px 24px; color: #707070; }
@@ -231,8 +449,17 @@
         <span class="brand-sub">AA-1</span>
     </div>
 
-    <!-- ===== TOP RIGHT MENU ===== -->
+    <!-- ===== TOP RIGHT MENU + MOTIVATION BUTTON ===== -->
     <div class="menu-container">
+        <!-- ✅ MOTIVATION BUTTON — Beside the 3-dot menu -->
+        <button class="motivation-btn" id="motivationBtn" aria-label="Get motivated">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+            </svg>
+        </button>
+        
         <button class="menu-btn" id="menuBtn" aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="6" x2="21" y2="6"/>
@@ -508,6 +735,35 @@
         </div>
     </div>
 
+    <!-- ✅ MOTIVATION MODAL -->
+    <div class="motivation-modal-overlay" id="motivationModal">
+        <div class="motivation-modal">
+            <button class="motivation-modal-close" id="closeMotivationModal" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div class="motivation-modal-icon">⚡</div>
+            <div class="motivation-modal-title">Keep Going</div>
+            <div class="motivation-modal-sub">✦ Your breakthrough is closer than you think ✦</div>
+            <div class="motivation-divider"></div>
+            <div class="motivation-text">
+                <span class="line">You've already come this far — <span class="highlight">don't stop now</span>.</span>
+                <span class="line">Every reply, every follow-up, every connection is a <span class="highlight-gold">step forward</span>.</span>
+                <span class="line">The deal you're chasing might be <span class="highlight-sky">just one message away</span>.</span>
+                <span class="line">Remember why you started — <span class="highlight">your hard work is about to pay off</span>.</span>
+                <span class="line">Success is built on <span class="highlight-gold">consistency</span>, not luck. <span class="highlight">Keep pushing</span>.</span>
+            </div>
+            <div class="motivation-footer">
+                <span class="motivation-dot active"></span>
+                <span class="motivation-dot"></span>
+                <span class="motivation-dot"></span>
+                <span class="motivation-dot"></span>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== TOAST ===== -->
     <div class="toast" id="toast">Please open a chat to access this feature.</div>
 
@@ -555,4 +811,4 @@
     <script defer src="notifications.js"></script>
 
 </body>
-                    </html>
+    </html>
