@@ -59,7 +59,6 @@
         /* ===== MENU + MOTIVATION BUTTON ===== */
         .menu-container { position: fixed; top: 14px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 100; }
         
-        /* ✅ MOTIVATION BUTTON — beside the 3-dot menu */
         .motivation-btn {
             width: 32px;
             height: 32px;
@@ -89,10 +88,6 @@
             stroke-width: 2;
             fill: none;
             transition: all 0.3s ease;
-        }
-        /* Color cycling will be applied via JS */
-        .motivation-btn.cycling {
-            animation: none;
         }
 
         .menu-btn {
@@ -211,18 +206,9 @@
             text-align: center;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        .motivation-text .highlight {
-            color: #66dd99;
-            font-weight: 500;
-        }
-        .motivation-text .highlight-gold {
-            color: #ffbb44;
-            font-weight: 500;
-        }
-        .motivation-text .highlight-sky {
-            color: #66ddff;
-            font-weight: 500;
-        }
+        .motivation-text .highlight { color: #66dd99; font-weight: 500; }
+        .motivation-text .highlight-gold { color: #ffbb44; font-weight: 500; }
+        .motivation-text .highlight-sky { color: #66ddff; font-weight: 500; }
         .motivation-text .line {
             display: block;
             padding: 4px 0;
@@ -299,6 +285,91 @@
         .contact-time { font-size: 10px; color: #505050; flex-shrink: 0; }
         .contact-unread-badge { position: absolute; top: 8px; right: 8px; min-width: 18px; height: 18px; background: #ff5555; color: #fff; font-size: 9px; font-weight: 600; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
         .contact-item { position: relative; }
+
+        /* ✅ LOAD MORE BUTTON — NEW STYLES */
+        .load-more-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0 30px 0;
+        }
+        .load-more-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 28px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50px;
+            color: #b0b0b0;
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+        .load-more-btn:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+            color: #f5f5f5;
+            transform: scale(1.02);
+        }
+        .load-more-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .load-more-text {
+            font-size: 13px;
+        }
+        .load-more-count {
+            font-size: 10px;
+            color: #707070;
+            font-weight: 400;
+        }
+        .load-more-btn .spinner-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+        .load-more-btn.loading .spinner-small {
+            display: block;
+        }
+        .load-more-btn.loading .load-more-text {
+            display: none;
+        }
+        .load-more-btn.loading .load-more-count {
+            display: none;
+        }
+
+        /* ✅ END OF CONTACTS — NEW STYLES */
+        .end-of-contacts {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 24px 0 30px 0;
+            color: #505050;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+        .end-icon {
+            font-size: 16px;
+        }
+        .end-text {
+            color: #707070;
+        }
+        .end-count {
+            font-size: 10px;
+            color: #505050;
+            background: rgba(255,255,255,0.04);
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
 
         /* ===== EMPTY / NO RESULTS ===== */
         .empty-state, .no-results { display: none; text-align: center; padding: 60px 24px; color: #707070; }
@@ -451,7 +522,6 @@
 
     <!-- ===== TOP RIGHT MENU + MOTIVATION BUTTON ===== -->
     <div class="menu-container">
-        <!-- ✅ MOTIVATION BUTTON — Beside the 3-dot menu -->
         <button class="motivation-btn" id="motivationBtn" aria-label="Get motivated">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2L2 7l10 5 10-5-10-5z"/>
