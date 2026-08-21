@@ -43,6 +43,12 @@
     --r-md: clamp(8px, 1vw, 12px);
     --r-lg: clamp(12px, 1.5vw, 18px);
     --r-xl: clamp(16px, 2vw, 24px);
+    
+    /* ─── Colors ─── */
+    --green: #66dd99;
+    --sky: #66ddff;
+    --gold: #ffbb44;
+    --rose: #ff5555;
 }
 
 html {
@@ -117,6 +123,243 @@ body.chat-active .brand {
     color: #707070;
     font-weight: 400;
     font-family: 'Monaco', 'Menlo', monospace;
+}
+
+/* ============================================================
+   ✅ MOTIVATION BUTTON
+   ============================================================ */
+.motivation-btn {
+    width: clamp(28px, 4vw, 34px);
+    height: clamp(28px, 4vw, 34px);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: #b0b0b0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.motivation-btn:hover {
+    transform: scale(1.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.motivation-btn svg {
+    width: clamp(14px, 2vw, 18px);
+    height: clamp(14px, 2vw, 18px);
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    transition: all 0.3s ease;
+}
+
+.motivation-btn .pulse-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    opacity: 0;
+    animation: pulseRing 2s ease-in-out infinite;
+}
+
+@keyframes pulseRing {
+    0% { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* Color cycling states — applied via JS */
+.motivation-btn.color-1 { color: #ff6b6b; border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.08); }
+.motivation-btn.color-2 { color: #ffbb44; border-color: rgba(255,187,68,0.3); background: rgba(255,187,68,0.08); }
+.motivation-btn.color-3 { color: #66dd99; border-color: rgba(102,221,153,0.3); background: rgba(102,221,153,0.08); }
+.motivation-btn.color-4 { color: #66ddff; border-color: rgba(102,221,255,0.3); background: rgba(102,221,255,0.08); }
+.motivation-btn.color-5 { color: #bb88ff; border-color: rgba(187,136,255,0.3); background: rgba(187,136,255,0.08); }
+.motivation-btn.color-6 { color: #ff88bb; border-color: rgba(255,136,187,0.3); background: rgba(255,136,187,0.08); }
+.motivation-btn.color-7 { color: #88ddff; border-color: rgba(136,221,255,0.3); background: rgba(136,221,255,0.08); }
+
+/* ============================================================
+   ✅ MOTIVATION MODAL
+   ============================================================ */
+.motivation-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.motivation-modal-overlay.active {
+    display: flex;
+}
+
+.motivation-modal {
+    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--r-xl);
+    max-width: 460px;
+    width: 100%;
+    padding: 36px 28px 28px;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.motivation-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #707070;
+    cursor: pointer;
+    padding: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    z-index: 5;
+}
+
+.motivation-modal-close:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f5f5f5;
+    transform: rotate(90deg);
+}
+
+.motivation-modal-close svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2.5;
+}
+
+.motivation-modal-icon {
+    text-align: center;
+    font-size: 44px;
+    margin-bottom: 4px;
+    line-height: 1;
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.motivation-modal-title {
+    text-align: center;
+    font-size: clamp(18px, 2.5vw, 22px);
+    font-weight: 700;
+    color: #f5f5f5;
+    margin-bottom: 2px;
+    letter-spacing: 0.02em;
+    background: linear-gradient(135deg, #fff 0%, #b0b0b0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.motivation-modal-sub {
+    text-align: center;
+    font-size: clamp(9px, 1.2vw, 11px);
+    color: var(--green);
+    font-family: 'Monaco', 'Menlo', monospace;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.motivation-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    margin: 8px 0 16px;
+}
+
+.motivation-text {
+    color: #d0d0d0;
+    font-size: clamp(13px, 1.6vw, 15px);
+    line-height: 1.9;
+    padding: 4px 0;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.motivation-text .highlight {
+    color: var(--green);
+    font-weight: 600;
+}
+
+.motivation-text .highlight-gold {
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.motivation-text .highlight-sky {
+    color: var(--sky);
+    font-weight: 600;
+}
+
+.motivation-text .highlight-rose {
+    color: var(--rose);
+    font-weight: 600;
+}
+
+.motivation-text .line {
+    display: block;
+    padding: 5px 0;
+    opacity: 0;
+    animation: fadeInLine 0.5s ease forwards;
+}
+
+.motivation-text .line:nth-child(1) { animation-delay: 0.1s; }
+.motivation-text .line:nth-child(2) { animation-delay: 0.2s; }
+.motivation-text .line:nth-child(3) { animation-delay: 0.3s; }
+.motivation-text .line:nth-child(4) { animation-delay: 0.4s; }
+.motivation-text .line:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInLine {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.motivation-footer {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.motivation-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    transition: all 0.5s ease;
+}
+
+.motivation-dot.active {
+    background: var(--green);
+    box-shadow: 0 0 12px rgba(102, 221, 153, 0.3);
 }
 
 /* ─── MENU (TOP RIGHT CORNER) ─── */
@@ -333,18 +576,33 @@ body.chat-active .menu-container {
     display: block;
 }
 
+/* ✅ CONTACT ITEM — Progressive reveal animation */
 .contact-item {
     padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.25s ease;
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    opacity: 0;
+    transform: translateY(6px);
+    animation: contactAppear 0.3s ease forwards;
 }
 
 .contact-item:hover {
     background: rgba(255, 255, 255, 0.03);
+}
+
+@keyframes contactAppear {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .contact-avatar {
@@ -615,7 +873,7 @@ body.chat-active .menu-container {
     border-radius: var(--r-xs);
     color: #66dd99;
     cursor: pointer;
-    display: none;  /* ✅ HIDDEN BY DEFAULT — JS shows when AI Reply is ON */
+    display: none;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
@@ -630,7 +888,7 @@ body.chat-active .menu-container {
 }
 
 .ai-reply-edit-btn.visible {
-    display: flex;  /* ✅ JS adds this class when AI Reply is active */
+    display: flex;
 }
 
 .ai-reply-edit-btn svg {
@@ -1681,6 +1939,12 @@ body.chat-active .menu-container {
     /* Mobile adjustment for edit button & instruction modal */
     .ai-reply-edit-btn { width: 24px; height: 24px; }
     .ai-instruction-modal { padding: var(--space-lg); max-width: 95%; }
+    
+    /* Mobile adjustment for motivation button & modal */
+    .motivation-btn { width: 28px; height: 28px; }
+    .motivation-btn svg { width: 16px; height: 16px; }
+    .motivation-modal { padding: 28px 20px 20px; }
+    .motivation-text { font-size: 13px; }
 }
 
 /* ─── Small Phones (iPhone SE, 4.7") ─── */
@@ -1723,6 +1987,14 @@ body.chat-active .menu-container {
     .ai-instruction-header h4 { font-size: var(--text-sm); }
     .ai-instruction-textarea { min-height: 100px; font-size: var(--text-xs); }
     .ai-instruction-save-btn { padding: var(--space-xs) var(--space-lg); font-size: var(--text-xs); }
+    
+    /* Small phone adjustments for motivation button & modal */
+    .motivation-btn { width: 24px; height: 24px; }
+    .motivation-btn svg { width: 14px; height: 14px; }
+    .motivation-modal { padding: 24px 16px 16px; }
+    .motivation-modal-title { font-size: 16px; }
+    .motivation-text { font-size: 12px; line-height: 1.7; }
+    .motivation-modal-icon { font-size: 34px; }
 }
 
 /* ─── Landscape Mode ─── */
@@ -1739,4 +2011,10 @@ body.chat-active .menu-container {
     .msg-group { max-width: 75%; }
     .message-bubble { font-size: 11px; padding: 4px 8px; }
     .bottom-nav { padding: 0 8%; }
-       }
+    
+    /* Landscape adjustments for motivation modal */
+    .motivation-modal { max-width: 380px; padding: 20px 20px 16px; }
+    .motivation-text { font-size: 12px; line-height: 1.6; }
+    .motivation-modal-icon { font-size: 30px; }
+    .motivation-modal-title { font-size: 16px; }
+                         }
