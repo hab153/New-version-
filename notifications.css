@@ -564,20 +564,41 @@ body.chat-active .menu-container {
     50% { opacity: 1; }
 }
 
-/* ── CONTACT LIST ─── */
+/* ============================================================
+   ✅ FIXED: CONTACT LIST — PROPER SCROLLING
+   ============================================================ */
 .contact-list {
-    flex: 1;
+    padding: 0 16px 100px;  /* Increased bottom padding to clear nav */
     overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 160px);  /* Fixed height for consistent scrolling */
     display: none;
-    padding-bottom: calc(var(--nav-h) + var(--space-lg));
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .contact-list.active {
     display: block;
 }
 
-/* ✅ CONTACT ITEM — Progressive reveal animation */
+/* Custom scrollbar for contact list */
+.contact-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.contact-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.contact-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Ensure contact items don't overflow */
 .contact-item {
+    width: 100%;
+    box-sizing: border-box;
     padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     cursor: pointer;
@@ -2017,4 +2038,4 @@ body.chat-active .menu-container {
     .motivation-text { font-size: 12px; line-height: 1.6; }
     .motivation-modal-icon { font-size: 30px; }
     .motivation-modal-title { font-size: 16px; }
-                         }
+   }
