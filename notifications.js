@@ -4,7 +4,7 @@
 // + Phone back button fix (no refresh)
 // + Motivation button with color cycling
 // + Progressive contact list rendering (1 by 1)
-// + AUTO-LOAD ALL PAGES (no more "only 20" issue)
+// + SINGLE REQUEST (no pagination — loads ALL contacts at once)
 // ============================================================
 
 // ─── CONFIG ───
@@ -81,16 +81,10 @@ var currentLeadEmail = null;
 var isSending = false;
 var isRenderingProgressively = false;
 
-// ✅ PAGINATION STATE
-var currentPage = 1;
-var totalPages = 1;
-var isLoadingMore = false;
-var allLoadedContacts = [];
-
 // ─── CACHE ───
 var _cachedContacts = null;
 var _cachedContactsTime = 0;
-var CONTACTS_CACHE_TTL = 5000;
+var CONTACTS_CACHE_TTL = 30000;  // ✅ Increased to 30s
 var _cachedChatHistory = {};
 var CHAT_HISTORY_CACHE_TTL = 30000;
 var _cachedFollowUpStatus = {};
@@ -375,7 +369,7 @@ function playNotificationSound() {
 }
 
 // ============================================================
-// ✅ CONTACTS — AUTO-LOAD ALL PAGES + PROGRESSIVE RENDERING
+// ✅ CONTACTS — SINGLE REQUEST (NO PAGINATION)
 // ============================================================
 
 function loadContacts(forceRefresh) {
@@ -386,21 +380,10 @@ function loadContacts(forceRefresh) {
         return Promise.resolve();
     }
     
-    // Reset pagination state
-    currentPage = 1;
-    totalPages = 1;
-    allLoadedContacts = [];
-    isLoadingMore = false;
-    
     showSkeletonLoader();
-    return loadPage(1);
-}
-
-function loadPage(page) {
-    if (isLoadingMore) return Promise.resolve();
-    isLoadingMore = true;
     
-    return fetch(BACKEND + '/api/conversations?page=' + page + '&limit=20', {
+    // ✅ SINGLE REQUEST — get ALL leads in one go
+    return fetch(BACKEND + '/api/conversations', {
         headers: { 'Authorization': 'Bearer ' + token }
     })
     .then(function(res) {
@@ -418,46 +401,28 @@ function loadPage(page) {
         if (!data) return;
         
         var contacts = data.data || [];
-        var pagination = data.pagination || {};
-        totalPages = pagination.pages || 1;
-        currentPage = pagination.page || 1;
-        var hasMore = pagination.hasMore || false;
-        
-        // ✅ Append to all loaded contacts
-        allLoadedContacts = allLoadedContacts.concat(contacts);
-        
-        // ✅ Store in cache
-        allContacts = allLoadedContacts;
-        _cachedContacts = allLoadedContacts;
+        allContacts = contacts;
+        _cachedContacts = contacts;
         _cachedContactsTime = Date.now();
         
-        // ✅ Render contacts progressively
-        renderContactsProgressively(allLoadedContacts);
+        // ✅ Render progressively (1 by 1) for smooth UI
+        renderContactsProgressively(allContacts);
         
-        console.log('✅ [loadPage] Loaded page', currentPage, 'of', totalPages, '(', allLoadedContacts.length, 'total contacts)');
-        
-        isLoadingMore = false;
-        
-        // ✅ If there are more pages, load them automatically
-        if (hasMore && currentPage < totalPages) {
-            console.log('🔄 [loadPage] Auto-loading next page...');
-            // Small delay to let the UI breathe
-            setTimeout(function() {
-                loadPage(currentPage + 1);
-            }, 200);
-        } else {
-            // ✅ All pages loaded — hide skeleton
-            console.log('✅ [loadPage] All', allLoadedContacts.length, 'contacts loaded');
-            var skeletonLoader = document.getElementById('skeletonLoader');
-            if (skeletonLoader) {
-                skeletonLoader.classList.remove('active');
-            }
+        // ✅ Hide skeleton immediately
+        var skeletonLoader = document.getElementById('skeletonLoader');
+        if (skeletonLoader) {
+            skeletonLoader.classList.remove('active');
         }
+        
+        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts (all at once)');
     })
     .catch(function(err) {
         console.error('Failed to load contacts:', err);
         showEmptyState();
-        isLoadingMore = false;
+        var skeletonLoader = document.getElementById('skeletonLoader');
+        if (skeletonLoader) {
+            skeletonLoader.classList.remove('active');
+        }
     });
 }
 
@@ -1900,4 +1865,4 @@ history.pushState(null, '', window.location.href);
 initNotifBadge();
 startColorCycling();
 
-console.log('✅ [NOTIFICATIONS] Fully loaded with auto-reply fixes + motivation button + progressive rendering + auto-load all pages');
+console.log('✅ [NOTIFICATIONS] Fully loaded with auto-reply fixes + motivation button + progressive rendering + SINGLE REQUEST (no pagination)');
