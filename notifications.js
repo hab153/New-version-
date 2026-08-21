@@ -2,6 +2,8 @@
 // notifications.js — Skyline AA-1 Inbox Logic
 // COMPLETE REWRITE — Auto-reply fully fixed with persistence
 // + Phone back button fix (no refresh)
+// + Motivation button with color cycling
+// + Progressive contact list rendering (1 by 1)
 // ============================================================
 
 // ─── CONFIG ───
@@ -64,6 +66,11 @@ var afCurrentStatus = document.getElementById('afCurrentStatus');
 var afSelectedDays = 3;
 var afCurrentEnabledState = false;
 
+// ✅ MOTIVATION BUTTON ELEMENTS
+var motivationBtn = document.getElementById('motivationBtn');
+var motivationModal = document.getElementById('motivationModal');
+var closeMotivationModal = document.getElementById('closeMotivationModal');
+
 // ─── STATE ───
 var allContacts = [];
 var toastTimeout = null;
@@ -71,6 +78,7 @@ var currentLeadId = null;
 var currentLeadName = null;
 var currentLeadEmail = null;
 var isSending = false;
+var isRenderingProgressively = false;
 
 // ─── CACHE ───
 var _cachedContacts = null;
@@ -88,6 +96,11 @@ var _pollInterval = null;
 var _currentMessageCount = 0;
 var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
+
+// ─── MOTIVATION BUTTON COLOR CYCLING ───
+var motivationColors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6', 'color-7'];
+var currentColorIndex = 0;
+var colorCycleInterval = null;
 
 // ============================================================
 // ✅ AUTH CHECK
@@ -355,14 +368,14 @@ function playNotificationSound() {
 }
 
 // ============================================================
-// ✅ CONTACTS
+// ✅ CONTACTS — PROGRESSIVE RENDERING (1 BY 1)
 // ============================================================
 
 function loadContacts(forceRefresh) {
     var now_ts = Date.now();
     if (!forceRefresh && _cachedContacts && (now_ts - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
         allContacts = _cachedContacts;
-        renderContacts(allContacts);
+        renderContactsProgressively(allContacts);
         return Promise.resolve();
     }
     showSkeletonLoader();
@@ -392,8 +405,10 @@ function loadContacts(forceRefresh) {
         allContacts = contacts;
         _cachedContacts = contacts;
         _cachedContactsTime = Date.now();
-        renderContacts(allContacts);
-        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts');
+        
+        // ✅ Render progressively (1 by 1)
+        renderContactsProgressively(allContacts);
+        console.log('✅ [loadContacts] Loaded', contacts.length, 'contacts (progressive render)');
     })
     .catch(function(err) {
         console.error('Failed to load contacts:', err);
@@ -401,7 +416,8 @@ function loadContacts(forceRefresh) {
     });
 }
 
-function renderContacts(contacts) {
+// ✅ PROGRESSIVE RENDERING — Renders contacts one by one
+function renderContactsProgressively(contacts) {
     if (!contacts || contacts.length === 0) {
         if (searchInput.value.trim() !== '') {
             contactList.classList.remove('active');
@@ -412,9 +428,101 @@ function renderContacts(contacts) {
         }
         return;
     }
+    
+    // ✅ Clear existing content and show list container
     contactList.classList.add('active');
     emptyState.classList.remove('active');
     noResults.classList.remove('active');
+    
+    // ✅ If already rendering, stop
+    if (isRenderingProgressively) {
+        // Cancel ongoing rendering
+        isRenderingProgressively = false;
+    }
+    
+    // ✅ Start progressive rendering
+    isRenderingProgressively = true;
+    
+    // ✅ Clear the list first
+    contactList.innerHTML = '';
+    
+    // ✅ Render contacts one by one with delay
+    var renderIndex = 0;
+    var renderBatchSize = 1; // Render 1 at a time
+    
+    function renderNextBatch() {
+        if (!isRenderingProgressively || renderIndex >= contacts.length) {
+            isRenderingProgressively = false;
+            console.log('✅ [Progressive] All', contacts.length, 'contacts rendered');
+            return;
+        }
+        
+        var endIndex = Math.min(renderIndex + renderBatchSize, contacts.length);
+        
+        for (var i = renderIndex; i < endIndex; i++) {
+            var c = contacts[i];
+            var contactHtml = createContactHTML(c);
+            contactList.appendChild(createContactElement(contactHtml));
+        }
+        
+        renderIndex = endIndex;
+        
+        // ✅ Schedule next batch with a small delay (50ms for smooth appearance)
+        if (renderIndex < contacts.length) {
+            setTimeout(renderNextBatch, 50);
+        } else {
+            isRenderingProgressively = false;
+            console.log('✅ [Progressive] All', contacts.length, 'contacts rendered');
+        }
+    }
+    
+    // ✅ Start rendering
+    setTimeout(renderNextBatch, 100);
+}
+
+// ✅ Create contact HTML string
+function createContactHTML(contact) {
+    var initials = (contact.name || '?').charAt(0).toUpperCase();
+    var preview = contact.lastMessage || 'No messages yet';
+    var time = contact.lastDate ? new Date(contact.lastDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    var unreadCount = contact.unreadCount || 0;
+    var hasUnread = unreadCount > 0;
+    var unreadClass = hasUnread ? ' has-unread' : '';
+    var badgeHtml = '<div class="contact-unread-badge">' + (unreadCount > 9 ? '9+' : unreadCount) + '</div>';
+    var safeName = safeSanitize(contact.name || 'Unknown').replace(/'/g, "\\'");
+    var safeEmail = safeSanitize(contact.email || '').replace(/'/g, "\\'");
+    
+    return '<div class="contact-item' + unreadClass + '" data-id="' + contact.id + '" onclick="openChat(\'' + contact.id + '\', \'' + safeName + '\', \'' + safeEmail + '\')">' + badgeHtml + '<div class="contact-avatar">' + initials + '</div><div class="contact-info"><div class="contact-name">' + safeSanitize(contact.name || 'Unknown') + '</div><div class="contact-preview">' + safeSanitize(preview) + '</div></div>' + (time ? '<div class="contact-time">' + time + '</div>' : '') + '</div>';
+}
+
+// ✅ Create DOM element from HTML string
+function createContactElement(html) {
+    var temp = document.createElement('div');
+    temp.innerHTML = html;
+    return temp.firstElementChild;
+}
+
+// ─── FALLBACK: Render all at once (if progressive fails)
+function renderContacts(contacts) {
+    // This is now a fallback — progressive rendering is the default
+    if (!contacts || contacts.length === 0) {
+        if (searchInput.value.trim() !== '') {
+            contactList.classList.remove('active');
+            emptyState.classList.remove('active');
+            noResults.classList.add('active');
+        } else {
+            showEmptyState();
+        }
+        return;
+    }
+    
+    // If progressive rendering is already happening, stop it
+    isRenderingProgressively = false;
+    
+    contactList.classList.add('active');
+    emptyState.classList.remove('active');
+    noResults.classList.remove('active');
+    
     var html = '';
     for (var i = 0; i < contacts.length; i++) {
         var c = contacts[i];
@@ -433,7 +541,10 @@ function renderContacts(contacts) {
 searchInput.addEventListener('input', function() {
     var query = this.value.toLowerCase().trim();
     if (!query) {
-        renderContacts(allContacts);
+        // Show all contacts progressively
+        if (_cachedContacts) {
+            renderContactsProgressively(_cachedContacts);
+        }
         return;
     }
     var filtered = [];
@@ -445,7 +556,7 @@ searchInput.addEventListener('input', function() {
             filtered.push(c);
         }
     }
-    renderContacts(filtered);
+    renderContactsProgressively(filtered);
 });
 
 // ============================================================
@@ -469,7 +580,7 @@ function startContactPolling() {
             allContacts = contacts;
             _cachedContacts = contacts;
             _cachedContactsTime = Date.now();
-            renderContacts(allContacts);
+            renderContactsProgressively(allContacts);
         })
         .catch(function() {});
     }, CONTACT_POLL_MS);
@@ -535,7 +646,7 @@ function closeChatAndGoBack() {
     // ✅ Use cached contacts instead of refreshing
     if (_cachedContacts && (Date.now() - _cachedContactsTime) < CONTACTS_CACHE_TTL) {
         allContacts = _cachedContacts;
-        renderContacts(allContacts);
+        renderContactsProgressively(allContacts);
     } else {
         loadContacts(false); // false = use cache if available
     }
@@ -782,7 +893,7 @@ function clearUnreadBadge(leadId) {
                     }
                 }
             }
-            renderContacts(allContacts);
+            renderContactsProgressively(allContacts);
             if (typeof fetchGlobalUnreadCount === 'function') fetchGlobalUnreadCount();
         }
     })
@@ -1346,6 +1457,80 @@ document.querySelectorAll('.menu-item').forEach(function(item) {
 });
 
 // ============================================================
+// ✅ MOTIVATION BUTTON — COLOR CYCLING
+// ============================================================
+
+function startColorCycling() {
+    if (colorCycleInterval) {
+        clearInterval(colorCycleInterval);
+        colorCycleInterval = null;
+    }
+    
+    // Set initial color
+    if (motivationBtn) {
+        motivationBtn.className = 'motivation-btn ' + motivationColors[0];
+        currentColorIndex = 0;
+    }
+    
+    // Start cycling every 2 seconds
+    colorCycleInterval = setInterval(function() {
+        if (!motivationBtn) return;
+        currentColorIndex = (currentColorIndex + 1) % motivationColors.length;
+        motivationBtn.className = 'motivation-btn ' + motivationColors[currentColorIndex];
+    }, 2000);
+}
+
+// ============================================================
+// ✅ MOTIVATION MODAL — OPEN/CLOSE
+// ============================================================
+
+function openMotivationModal() {
+    if (motivationModal) {
+        motivationModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeMotivationModalFn() {
+    if (motivationModal) {
+        motivationModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// ─── MOTIVATION BUTTON CLICK ───
+if (motivationBtn) {
+    motivationBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openMotivationModal();
+    });
+}
+
+// ─── CLOSE MOTIVATION MODAL ───
+if (closeMotivationModal) {
+    closeMotivationModal.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeMotivationModalFn();
+    });
+}
+
+// ─── CLICK OUTSIDE TO CLOSE ───
+if (motivationModal) {
+    motivationModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeMotivationModalFn();
+        }
+    });
+}
+
+// ─── ESC KEY TO CLOSE ───
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && motivationModal && motivationModal.classList.contains('active')) {
+        closeMotivationModalFn();
+    }
+});
+
+// ============================================================
 // ✅ AUTO-REPLY — COMPLETE FIXED LOGIC WITH PERSISTENCE
 // ============================================================
 
@@ -1688,6 +1873,10 @@ window.addEventListener('beforeunload', function() {
         sseConnection.close();
         sseConnection = null;
     }
+    if (colorCycleInterval) {
+        clearInterval(colorCycleInterval);
+        colorCycleInterval = null;
+    }
 });
 
 // ============================================================
@@ -1702,4 +1891,7 @@ connectSSE();
 history.pushState(null, '', window.location.href);
 initNotifBadge();
 
-console.log('✅ [NOTIFICATIONS] Fully loaded with auto-reply fixes');
+// ✅ Start motivation button color cycling
+startColorCycling();
+
+console.log('✅ [NOTIFICATIONS] Fully loaded with auto-reply fixes + motivation button + progressive rendering');
