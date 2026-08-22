@@ -34,7 +34,7 @@
     --space-xl: clamp(1rem, 2vw, 1.5rem);
     --space-2xl: clamp(1.5rem, 3vw, 2.5rem);
     
-    /* ─── Component sizes ─── */
+    /* ─── Component sizes ── */
     --nav-h: clamp(52px, 7vw, 64px);
     
     /* ─── Border radius ─── */
@@ -64,7 +64,7 @@ body {
     font-size: var(--text-base);
 }
 
-/* ─── BRAND / LOGO ─── */
+/* ─── BRAND / LOGO ── */
 .brand {
     position: absolute;
     top: clamp(12px, 2.5vw, 20px);
@@ -568,7 +568,7 @@ body.chat-active .menu-container {
    ✅ FIXED: CONTACT LIST — PROPER SCROLLING + VISIBLE LOAD MORE
    ============================================================ */
 .contact-list {
-    padding: 0 16px 180px;  /* ✅ Increased bottom padding to clear bottom nav */
+    padding: 0 16px 220px;  /* ✅ Increased bottom padding to clear bottom nav */
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(100vh - 160px);
@@ -710,7 +710,7 @@ body.chat-active .menu-container {
 .load-more-container {
     display: flex;
     justify-content: center;
-    padding: 20px 0 50px 0;  /* ✅ Increased bottom padding */
+    padding: 20px 0 70px 0;  /* ✅ Increased bottom padding */
 }
 
 .load-more-btn {
@@ -805,7 +805,7 @@ body.chat-active .menu-container {
     border-radius: 12px;
 }
 
-/* ─── CHAT VIEW ── */
+/* ─── CHAT VIEW ─ */
 .chat-view {
     display: none;
     position: fixed;
@@ -2058,7 +2058,7 @@ body.chat-active .menu-container {
     
     /* ✅ Fix contact list padding for mobile */
     .contact-list {
-        padding: 0 14px 130px;  /* Slightly less padding on mobile */
+        padding: 0 14px 200px;  /* ✅ Increased from 130px to 200px */
         height: calc(100vh - 150px);
     }
     
@@ -2085,7 +2085,7 @@ body.chat-active .menu-container {
     .load-more-btn { padding: 8px 16px; gap: 8px; }
     .load-more-text { font-size: 11px; }
     .load-more-count { font-size: 9px; }
-    .load-more-container { padding: 12px 0 20px 0; }
+    .load-more-container { padding: 12px 0 40px 0; } /* ✅ Increased bottom padding */
     .end-of-contacts { padding: 12px 0 20px 0; font-size: 10px; gap: 6px; }
 }
 
@@ -2122,7 +2122,7 @@ body.chat-active .menu-container {
     
     /* ✅ Fix contact list padding for small phones */
     .contact-list {
-        padding: 0 10px 120px;
+        padding: 0 10px 180px; /* ✅ Increased from 120px to 180px */
         height: calc(100vh - 140px);
     }
     
@@ -2148,7 +2148,7 @@ body.chat-active .menu-container {
     .load-more-btn { padding: 6px 12px; gap: 6px; }
     .load-more-text { font-size: 10px; }
     .load-more-count { font-size: 8px; }
-    .load-more-container { padding: 8px 0 16px 0; }
+    .load-more-container { padding: 8px 0 30px 0; } /* ✅ Increased bottom padding */
     .end-of-contacts { padding: 8px 0 16px 0; font-size: 9px; gap: 4px; }
     .end-icon { font-size: 12px; }
     .end-count { font-size: 8px; padding: 1px 6px; }
@@ -2171,7 +2171,7 @@ body.chat-active .menu-container {
     
     /* ✅ Fix contact list padding for landscape */
     .contact-list {
-        padding: 0 12px 120px;
+        padding: 0 12px 160px; /* ✅ Increased from 120px to 160px */
         height: calc(100vh - 130px);
     }
     
@@ -2183,6 +2183,6 @@ body.chat-active .menu-container {
     
     /* Landscape adjustments for Load More */
     .load-more-btn { padding: 6px 14px; }
-    .load-more-container { padding: 10px 0 16px 0; }
+    .load-more-container { padding: 10px 0 30px 0; } /* ✅ Increased bottom padding */
     .end-of-contacts { padding: 10px 0 16px 0; }
-                                                             }
+   }
