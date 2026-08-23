@@ -2186,3 +2186,102 @@ body.chat-active .menu-container {
     .load-more-container { padding: 10px 0 30px 0; } /* ✅ Increased bottom padding */
     .end-of-contacts { padding: 10px 0 16px 0; }
    }
+/* ============================================================
+   ✅ COMPOSE BUTTON (FAB)
+   ============================================================ */
+.compose-fab {
+    position: fixed;
+    bottom: 88px;
+    right: 20px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px 12px 16px;
+    background: linear-gradient(135deg, #ffffff, #f0f0f0);
+    border: none;
+    border-radius: 50px;
+    color: #0a0a0a;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.compose-fab:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, #ffffff, #e8e8e8);
+}
+
+.compose-fab:active {
+    transform: scale(0.95);
+}
+
+.compose-fab svg {
+    width: 20px;
+    height: 20px;
+    stroke: #0a0a0a;
+    stroke-width: 2.5;
+    fill: none;
+    flex-shrink: 0;
+}
+
+.compose-fab-text {
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+/* ─── Mobile adjustment for compose button ─── */
+@media (max-width: 429px) {
+    .compose-fab {
+        bottom: 78px;
+        right: 14px;
+        padding: 10px 14px 10px 12px;
+        font-size: 12px;
+    }
+    .compose-fab svg {
+        width: 16px;
+        height: 16px;
+    }
+    .compose-fab-text {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 374px) {
+    .compose-fab {
+        bottom: 72px;
+        right: 10px;
+        padding: 8px 12px 8px 10px;
+        font-size: 11px;
+    }
+    .compose-fab svg {
+        width: 14px;
+        height: 14px;
+    }
+    .compose-fab-text {
+        font-size: 10px;
+    }
+}
+
+/* ─── Icon only for very small screens ─── */
+@media (max-width: 350px) {
+    .compose-fab-text {
+        display: none;
+    }
+    .compose-fab {
+        padding: 12px;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        justify-content: center;
+    }
+    .compose-fab svg {
+        width: 22px;
+        height: 22px;
+    }
+   }
