@@ -5,6 +5,7 @@
 // + Motivation button with color cycling
 // + Progressive contact list rendering
 // + PAGINATION + LOAD MORE BUTTON (15 per page)
+// + UNREAD COUNT + MARK ALL AS READ
 // ============================================================
 
 // ─── CONFIG ───
@@ -72,6 +73,11 @@ var motivationBtn = document.getElementById('motivationBtn');
 var motivationModal = document.getElementById('motivationModal');
 var closeMotivationModal = document.getElementById('closeMotivationModal');
 
+// ✅ UNREAD HEADER ELEMENTS
+var unreadCountEl = document.getElementById('unreadCount');
+var unreadDot = document.getElementById('unreadDot');
+var markAllBtn = document.getElementById('markAllBtn');
+
 // ─── STATE ───
 var allContacts = [];
 var toastTimeout = null;
@@ -97,12 +103,17 @@ var _cachedFollowUpStatus = {};
 var FOLLOWUP_CACHE_TTL = 30000;
 var _cachedAiReplyStatus = {};
 var AI_REPLY_CACHE_TTL = 30000;
+var _cachedUnreadCount = null;
+var _cachedUnreadTime = 0;
+var UNREAD_CACHE_TTL = 10000;
 
 // ─── POLLING ───
 var _pollInterval = null;
 var _currentMessageCount = 0;
 var _contactPollInterval = null;
 var CONTACT_POLL_MS = 5000;
+var _unreadPollInterval = null;
+var UNREAD_POLL_MS = 10000;
 
 // ─── MOTIVATION BUTTON COLOR CYCLING ───
 var motivationColors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6', 'color-7'];
@@ -260,6 +271,157 @@ function showEmptyState() {
 }
 
 // ============================================================
+// ✅ UNREAD COUNT — FETCH + UPDATE UI
+// ============================================================
+
+function fetchUnreadCount() {
+    var now = Date.now();
+    
+    // ✅ Use cache if fresh
+    if (_cachedUnreadCount && (now - _cachedUnreadTime) < UNREAD_CACHE_TTL) {
+        updateUnreadUI(_cachedUnreadCount);
+        return Promise.resolve(_cachedUnreadCount);
+    }
+    
+    return fetch(BACKEND + '/api/unread/status', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('HTTP ' + res.status);
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        var count = data.unreadCount || 0;
+        _cachedUnreadCount = count;
+        _cachedUnreadTime = Date.now();
+        updateUnreadUI(count);
+        return count;
+    })
+    .catch(function(err) {
+        console.error('Failed to fetch unread count:', err);
+        return 0;
+    });
+}
+
+function updateUnreadUI(count) {
+    if (unreadCountEl) {
+        unreadCountEl.textContent = count;
+    }
+    
+    if (unreadDot) {
+        if (count > 0) {
+            unreadDot.classList.add('has-unread');
+        } else {
+            unreadDot.classList.remove('has-unread');
+        }
+    }
+    
+    // ✅ Update nav badge if exists
+    var navBadge = document.querySelector('.nav-badge');
+    if (navBadge) {
+        if (count > 0) {
+            navBadge.textContent = count > 9 ? '9+' : count;
+            navBadge.style.display = 'flex';
+        } else {
+            navBadge.style.display = 'none';
+        }
+    }
+}
+
+// ============================================================
+// ✅ MARK ALL AS READ
+// ============================================================
+
+function markAllAsRead() {
+    if (!markAllBtn) return;
+    
+    // ✅ Disable button and show loading state
+    markAllBtn.disabled = true;
+    markAllBtn.classList.add('loading');
+    
+    fetch(BACKEND + '/api/unread/mark-all', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+                return;
+            }
+            throw new Error('HTTP ' + res.status);
+        }
+        return res.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            // ✅ Reset all contact unread counts
+            for (var i = 0; i < allContacts.length; i++) {
+                allContacts[i].unreadCount = 0;
+                allContacts[i].unread = false;
+            }
+            
+            // ✅ Update cache
+            if (_cachedContacts) {
+                for (var j = 0; j < _cachedContacts.length; j++) {
+                    _cachedContacts[j].unreadCount = 0;
+                    _cachedContacts[j].unread = false;
+                }
+            }
+            
+            // ✅ Update UI
+            renderContactsWithLoadMore(allContacts);
+            updateUnreadUI(0);
+            _cachedUnreadCount = 0;
+            _cachedUnreadTime = Date.now();
+            
+            showToast('✅ All messages marked as read', 3000);
+        } else {
+            showToast('Failed to mark all as read: ' + (data.message || 'Unknown error'), 3000);
+        }
+    })
+    .catch(function(err) {
+        console.error('Mark all as read error:', err);
+        showToast('Connection error. Please try again.', 3000);
+    })
+    .finally(function() {
+        if (markAllBtn) {
+            markAllBtn.disabled = false;
+            markAllBtn.classList.remove('loading');
+        }
+    });
+}
+
+// ============================================================
+// ✅ UNREAD POLLING
+// ============================================================
+
+function startUnreadPolling() {
+    if (_unreadPollInterval) clearInterval(_unreadPollInterval);
+    _unreadPollInterval = setInterval(function() {
+        fetchUnreadCount();
+    }, UNREAD_POLL_MS);
+}
+
+function stopUnreadPolling() {
+    if (_unreadPollInterval) {
+        clearInterval(_unreadPollInterval);
+        _unreadPollInterval = null;
+    }
+}
+
+// ============================================================
 // ✅ SSE: REAL-TIME CONNECTION
 // ============================================================
 
@@ -332,7 +494,7 @@ function handleNewMessageEvent(data) {
     if (!contactFound) {
         loadContacts(true);
     } else {
-        renderContacts(allContacts);
+        renderContactsWithLoadMore(allContacts);
         _cachedContacts = allContacts;
         _cachedContactsTime = Date.now();
     }
@@ -349,6 +511,10 @@ function handleNewMessageEvent(data) {
             });
         }
     }
+    
+    // ✅ Refresh unread count
+    fetchUnreadCount();
+    
     if (typeof fetchGlobalUnreadCount === 'function') fetchGlobalUnreadCount();
     playNotificationSound();
 }
@@ -356,6 +522,7 @@ function handleNewMessageEvent(data) {
 function handleLeadUpdatedEvent(data) {
     console.log('📨 [SSE] Lead updated:', data.leadId);
     loadContacts(true);
+    fetchUnreadCount();
 }
 
 function playNotificationSound() {
@@ -870,6 +1037,7 @@ function startPolling(leadId) {
                 _cachedContacts = null;
                 _cachedContactsTime = 0;
                 loadContacts(true);
+                fetchUnreadCount();
             }
         })
         .catch(function() {});
@@ -912,6 +1080,7 @@ function clearUnreadBadge(leadId) {
                 }
             }
             renderContactsWithLoadMore(allContacts);
+            fetchUnreadCount();
             if (typeof fetchGlobalUnreadCount === 'function') fetchGlobalUnreadCount();
         }
     })
@@ -1543,6 +1712,17 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ============================================================
+// ✅ MARK ALL AS READ — EVENT LISTENER
+// ============================================================
+
+if (markAllBtn) {
+    markAllBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        markAllAsRead();
+    });
+}
+
+// ============================================================
 // ✅ AUTO-REPLY — COMPLETE FIXED LOGIC WITH PERSISTENCE
 // ============================================================
 
@@ -1843,6 +2023,8 @@ document.addEventListener('visibilitychange', function() {
         if (typeof window.NotifBadge !== 'undefined' && window.NotifBadge.fetch) {
             window.NotifBadge.fetch();
         }
+        // ✅ Also refresh unread count when tab becomes visible
+        fetchUnreadCount();
     }
 });
 
@@ -1853,6 +2035,7 @@ document.addEventListener('visibilitychange', function() {
 window.addEventListener('beforeunload', function() {
     stopPolling();
     stopContactPolling();
+    stopUnreadPolling();
     if (sseConnection) {
         sseConnection.close();
         sseConnection = null;
@@ -1871,9 +2054,14 @@ injectSkeletonStyles();
 showSkeletonLoader();
 loadContacts();
 startContactPolling();
+startUnreadPolling();
 connectSSE();
 history.pushState(null, '', window.location.href);
 initNotifBadge();
 startColorCycling();
 
+// ✅ Initial unread count fetch
+fetchUnreadCount();
+
 console.log('✅ [NOTIFICATIONS] Fully loaded with pagination + Load More button (15 per page)');
+console.log('✅ [NOTIFICATIONS] Unread count + Mark All as Read enabled');
