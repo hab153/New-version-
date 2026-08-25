@@ -458,9 +458,14 @@ body.chat-active .menu-container {
     margin: var(--space-xs) var(--space-md);
 }
 
-/* ─── SEARCH BAR ─── */
+/* ============================================================
+   ✅ SEARCH BAR — MOVED 30px LOWER (3cm)
+   ============================================================ */
 .search-container {
-    padding: clamp(56px, 10vw, 72px) var(--space-lg) var(--space-md) var(--space-lg);
+    padding-top: clamp(86px, 10vw + 30px, 102px);  /* ✅ 30px lower */
+    padding-right: var(--space-lg);
+    padding-bottom: var(--space-md);
+    padding-left: var(--space-lg);
     background: #0a0a0a;
     flex-shrink: 0;
 }
@@ -2058,7 +2063,7 @@ body.chat-active .menu-container {
     
     /* ✅ Fix contact list padding for mobile */
     .contact-list {
-        padding: 0 14px 200px;  /* ✅ Increased from 130px to 200px */
+        padding: 0 14px 200px;
         height: calc(100vh - 150px);
     }
     
@@ -2085,7 +2090,7 @@ body.chat-active .menu-container {
     .load-more-btn { padding: 8px 16px; gap: 8px; }
     .load-more-text { font-size: 11px; }
     .load-more-count { font-size: 9px; }
-    .load-more-container { padding: 12px 0 40px 0; } /* ✅ Increased bottom padding */
+    .load-more-container { padding: 12px 0 40px 0; }
     .end-of-contacts { padding: 12px 0 20px 0; font-size: 10px; gap: 6px; }
 }
 
@@ -2120,13 +2125,11 @@ body.chat-active .menu-container {
     .menu-btn { width: 24px; height: 24px; }
     .menu-btn svg { width: 14px; height: 14px; }
     
-    /* ✅ Fix contact list padding for small phones */
     .contact-list {
-        padding: 0 10px 180px; /* ✅ Increased from 120px to 180px */
+        padding: 0 10px 180px;
         height: calc(100vh - 140px);
     }
     
-    /* Small phone adjustments for AI reply elements */
     .ai-reply-toggle { padding: 4px 8px; font-size: 9px; gap: 4px; }
     .ai-reply-icon { width: 12px; height: 12px; }
     .ai-reply-dot { width: 5px; height: 5px; }
@@ -2136,7 +2139,6 @@ body.chat-active .menu-container {
     .ai-instruction-textarea { min-height: 100px; font-size: var(--text-xs); }
     .ai-instruction-save-btn { padding: var(--space-xs) var(--space-lg); font-size: var(--text-xs); }
     
-    /* Small phone adjustments for motivation button & modal */
     .motivation-btn { width: 24px; height: 24px; }
     .motivation-btn svg { width: 14px; height: 14px; }
     .motivation-modal { padding: 24px 16px 16px; }
@@ -2144,11 +2146,10 @@ body.chat-active .menu-container {
     .motivation-text { font-size: 12px; line-height: 1.7; }
     .motivation-modal-icon { font-size: 34px; }
     
-    /* Small phone adjustments for Load More */
     .load-more-btn { padding: 6px 12px; gap: 6px; }
     .load-more-text { font-size: 10px; }
     .load-more-count { font-size: 8px; }
-    .load-more-container { padding: 8px 0 30px 0; } /* ✅ Increased bottom padding */
+    .load-more-container { padding: 8px 0 30px 0; }
     .end-of-contacts { padding: 8px 0 16px 0; font-size: 9px; gap: 4px; }
     .end-icon { font-size: 12px; }
     .end-count { font-size: 8px; padding: 1px 6px; }
@@ -2169,23 +2170,21 @@ body.chat-active .menu-container {
     .message-bubble { font-size: 11px; padding: 4px 8px; }
     .bottom-nav { padding: 0 8%; }
     
-    /* ✅ Fix contact list padding for landscape */
     .contact-list {
-        padding: 0 12px 160px; /* ✅ Increased from 120px to 160px */
+        padding: 0 12px 160px;
         height: calc(100vh - 130px);
     }
     
-    /* Landscape adjustments for motivation modal */
     .motivation-modal { max-width: 380px; padding: 20px 20px 16px; }
     .motivation-text { font-size: 12px; line-height: 1.6; }
     .motivation-modal-icon { font-size: 30px; }
     .motivation-modal-title { font-size: 16px; }
     
-    /* Landscape adjustments for Load More */
     .load-more-btn { padding: 6px 14px; }
-    .load-more-container { padding: 10px 0 30px 0; } /* ✅ Increased bottom padding */
+    .load-more-container { padding: 10px 0 30px 0; }
     .end-of-contacts { padding: 10px 0 16px 0; }
-   }
+}
+
 /* ============================================================
    ✅ COMPOSE BUTTON (FAB)
    ============================================================ */
