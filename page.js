@@ -68,79 +68,12 @@ function showToast(message, type, duration) {
 
 function formatAI(text) {
     if (!text) return '';
-    // If text is an object, stringify it
-    if (typeof text === 'object') {
-        text = JSON.stringify(text, null, 2);
-    }
     var s = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(text) : esc(text);
     s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
     s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) { return '<ul class="ai-ul">' + m + '</ul>'; });
     s = s.replace(/\n/g, '<br>');
     return s;
-}
-
-/**
- * Format understanding response from backend
- * Handles both string and object responses
- */
-function formatUnderstandingResponse(data) {
-    // If it's already a string, return it
-    if (typeof data === 'string') return data;
-    
-    // If it's an object with status, format it nicely
-    if (data && typeof data === 'object') {
-        // Check if it's the understanding result
-        if (data.status) {
-            let formatted = '';
-            
-            if (data.status === 'invalid') {
-                const errorMsg = data.ambiguities?.[0]?.reason || 'Unknown error';
-                formatted = `❌ **Sorry, I couldn't understand your request**\n\n`;
-                formatted += `Error: ${errorMsg}\n\n`;
-                formatted += `Please try rephrasing with more details.`;
-                return formatted;
-            }
-            
-            if (data.status === 'needs_clarification') {
-                formatted = `🤔 **I need a bit more clarity**\n\n`;
-                if (data.ambiguities && data.ambiguities.length > 0) {
-                    data.ambiguities.forEach(a => {
-                        formatted += `• ${a.reason}\n`;
-                    });
-                }
-                formatted += `\nCould you please provide more details?`;
-                return formatted;
-            }
-            
-            // Status: 'ready' - Build confirmation
-            const target = data.target?.type || 'company';
-            const quantity = data.target?.quantity || 'as many as possible';
-            const industries = data.company?.industries?.join(', ') || 'any industry';
-            const location = data.location?.include?.join(', ') || 'anywhere';
-            const roles = data.contact?.roles?.join(', ') || 'decision makers';
-            const hasEmail = data.data?.email ? '✅' : '❌';
-            const hasVerification = data.data?.emailVerification ? '✅' : '❌';
-            
-            formatted = `✅ **Lead Request Understood!**\n\n`;
-            formatted += `📌 **Target:** ${target}s\n`;
-            formatted += `📊 **Quantity:** ${quantity}\n`;
-            formatted += `🏢 **Industry:** ${industries}\n`;
-            formatted += `📍 **Location:** ${location}\n`;
-            formatted += `👤 **Contacts:** ${roles}\n`;
-            formatted += `📧 **Email Required:** ${hasEmail}\n`;
-            formatted += `✅ **Email Verification:** ${hasVerification}\n\n`;
-            formatted += `🔍 Searching for the best leads... 🚀`;
-            
-            return formatted;
-        }
-        
-        // Fallback: stringify the object
-        return JSON.stringify(data, null, 2);
-    }
-    
-    // Fallback: convert to string
-    return String(data);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -171,15 +104,7 @@ var leadCharCount = document.getElementById('leadCharCount');
 function appendLeadMsg(role, content) {
     var row = document.createElement('div');
     row.className = 'msg-row ' + role;
-    
-    // Format the content - handle both string and object
-    var displayContent;
-    if (role === 'ai') {
-        displayContent = formatAI(content);
-    } else {
-        displayContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content);
-    }
-    
+    var displayContent = role === 'ai' ? formatAI(content) : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content));
     row.innerHTML = '<div class="av">' + (role === 'ai' ? 'AI' : 'ME') + '</div><div class="bubble-wrap"><div class="bubble">' + displayContent + '</div><div class="msg-time">' + now() + '</div></div>';
     leadMsgContainer.appendChild(row);
     scrollDown(leadChatArea);
@@ -209,6 +134,7 @@ function sendLeadMessage() {
     fetchLeadResponse(text);
 }
 
+// ─── FETCH LEAD RESPONSE — FIXED ───
 function fetchLeadResponse(message) {
     isTyping = true; updateLeadSend();
     var steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
@@ -221,10 +147,12 @@ function fetchLeadResponse(message) {
         if (data.sessionId && !currentSessionId) { currentSessionId = data.sessionId; var url = new URL(window.location); url.searchParams.set('session', data.sessionId); window.history.pushState({}, '', url); }
         if (data.history) conversationHistory = data.history;
         
-        // Format the reply - handle both string and object
-        var reply = data.reply || "Request received. How can I help further?";
-        var formattedReply = formatUnderstandingResponse(reply);
-        appendLeadMsg('ai', formattedReply);
+        // ✅ FIX: Handle object reply
+        var replyText = data.reply;
+        if (typeof replyText === 'object' && replyText !== null) {
+            replyText = JSON.stringify(replyText, null, 2);
+        }
+        appendLeadMsg('ai', replyText || "Request received. How can I help further?");
     })
     .catch(function() { clearInterval(statusInterval); hideLeadTyping(); appendLeadMsg('ai', '🔌 Connection error — check your network and try again.'); })
     .finally(function() { isTyping = false; updateLeadSend(); });
@@ -244,15 +172,7 @@ var assistantCharCount = document.getElementById('assistantCharCount');
 function appendAssistantMsg(role, content) {
     var row = document.createElement('div');
     row.className = 'msg-row ' + role;
-    
-    // Format the content - handle both string and object
-    var displayContent;
-    if (role === 'ai') {
-        displayContent = formatAI(content);
-    } else {
-        displayContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content);
-    }
-    
+    var displayContent = role === 'ai' ? formatAI(content) : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content));
     row.innerHTML = '<div class="av">' + (role === 'ai' ? 'AI' : 'ME') + '</div><div class="bubble-wrap"><div class="bubble">' + displayContent + '</div><div class="msg-time">' + now() + '</div></div>';
     assistantMsgContainer.appendChild(row);
     scrollDown(assistantChatArea);
@@ -289,11 +209,7 @@ function fetchAssistantResponse(message) {
     .then(function(data) {
         hideAssistantTyping();
         if (data.sessionId) assistantSessionId = data.sessionId;
-        
-        // Format the response - handle both string and object
-        var response = data.response || "I couldn't process that. Please try again.";
-        var formattedResponse = formatUnderstandingResponse(response);
-        appendAssistantMsg('ai', formattedResponse);
+        appendAssistantMsg('ai', data.response || "I couldn't process that. Please try again.");
     })
     .catch(function() { hideAssistantTyping(); appendAssistantMsg('ai', '🔌 Connection error — check your network and try again.'); })
     .finally(function() { isTyping = false; updateAssistantSend(); });
