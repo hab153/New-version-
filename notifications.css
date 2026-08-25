@@ -459,10 +459,10 @@ body.chat-active .menu-container {
 }
 
 /* ============================================================
-   ✅ SEARCH BAR — MOVED 30px LOWER (3cm)
+   ✅ SEARCH BAR — MOVED 60px LOWER (6cm total)
    ============================================================ */
 .search-container {
-    padding-top: clamp(86px, 10vw + 30px, 102px);  /* ✅ 30px lower */
+    padding-top: clamp(116px, 10vw + 60px, 132px);  /* ✅ 60px lower (6cm) */
     padding-right: var(--space-lg);
     padding-bottom: var(--space-md);
     padding-left: var(--space-lg);
