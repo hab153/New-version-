@@ -48,13 +48,10 @@
         .skeleton-item:nth-child(8) .skeleton-line { animation-delay: 0.40s; }
         @keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        /* ===== BRAND (Fixed Top Left) ===== */
-        .brand { position: fixed; top: 14px; left: 16px; display: flex; align-items: center; gap: 8px; z-index: 100; }
+        /* ===== BRAND (Fixed Top Left) — LOGO ONLY ===== */
+        .brand { position: fixed; top: 14px; left: 16px; display: flex; align-items: center; z-index: 100; }
         .brand-mark { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #fff 0%, #f0f0f0 50%, #fff 100%); display: flex; align-items: center; justify-content: center; }
         .brand-mark svg { width: 14px; height: 14px; color: #0d0a04; }
-        .brand-name { font-size: 16px; font-weight: 500; color: #f5f5f5; }
-        .brand-name span { color: #ffffff; font-weight: 400; }
-        .brand-sub { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #707070; font-family: 'Monaco', 'Menlo', monospace; }
 
         /* ===== MENU + MOTIVATION BUTTON (Fixed Top Right) ===== */
         .menu-container { position: fixed; top: 14px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 100; }
@@ -244,7 +241,7 @@
             box-shadow: 0 0 12px rgba(102,221,153,0.3);
         }
 
-        /* ===== SEARCH (FIXED: Pushed down below header) ===== */
+        /* ===== SEARCH ===== */
         .search-container { 
             padding: 60px 16px 12px; 
             position: relative;
@@ -530,15 +527,13 @@
 </head>
 <body>
 
-    <!-- ===== TOP LEFT LOGO ===== -->
+    <!-- ===== TOP LEFT LOGO — LOGO ONLY (NO TEXT) ===== -->
     <div class="brand">
         <div class="brand-mark">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
         </div>
-        <span class="brand-name">Sky<span>line</span></span>
-        <span class="brand-sub">AA-1</span>
     </div>
 
     <!-- ===== TOP RIGHT MENU + MOTIVATION BUTTON ===== -->
