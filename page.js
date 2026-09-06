@@ -101,13 +101,50 @@ var leadMsgInput = document.getElementById('leadMsgInput');
 var leadSendBtn = document.getElementById('leadSendBtn');
 var leadCharCount = document.getElementById('leadCharCount');
 
+// ─── APPEND LEAD MESSAGE — WITH CLARIFICATION SUPPORT ───
 function appendLeadMsg(role, content) {
     var row = document.createElement('div');
     row.className = 'msg-row ' + role;
-    var displayContent = role === 'ai' ? formatAI(content) : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content));
-    row.innerHTML = '<div class="av">' + (role === 'ai' ? 'AI' : 'ME') + '</div><div class="bubble-wrap"><div class="bubble">' + displayContent + '</div><div class="msg-time">' + now() + '</div></div>';
+    
+    var displayContent = content;
+    
+    // ✅ Check if content is a JSON string that needs formatting
+    if (typeof content === 'string') {
+        try {
+            var parsed = JSON.parse(content);
+            // If it has ambiguities, format as clarification message
+            if (parsed.ambiguities && parsed.ambiguities.length > 0) {
+                displayContent = buildClarificationDisplay(parsed);
+            }
+        } catch (e) {
+            // Not JSON, use as-is
+        }
+    }
+    
+    var formattedContent = role === 'ai' ? formatAI(displayContent) : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(displayContent) : esc(displayContent));
+    row.innerHTML = '<div class="av">' + (role === 'ai' ? 'AI' : 'ME') + '</div><div class="bubble-wrap"><div class="bubble">' + formattedContent + '</div><div class="msg-time">' + now() + '</div></div>';
     leadMsgContainer.appendChild(row);
     scrollDown(leadChatArea);
+}
+
+// ─── BUILD CLARIFICATION DISPLAY ───
+function buildClarificationDisplay(parsed) {
+    if (!parsed.ambiguities || parsed.ambiguities.length === 0) {
+        return 'I understood your request. What would you like me to do?';
+    }
+
+    var msg = '⚠️ **I need a bit more clarity:**\n\n';
+
+    parsed.ambiguities.forEach(function(amb) {
+        msg += '• **' + amb.field + '**: ' + amb.issue + '\n';
+        if (amb.candidates && amb.candidates.length > 0) {
+            msg += '  → Options: ' + amb.candidates.join(' | ') + '\n';
+        }
+        msg += '\n';
+    });
+
+    msg += 'Please provide more details so I can help you better.';
+    return msg;
 }
 
 function showLeadTyping(label) {
@@ -147,7 +184,7 @@ function fetchLeadResponse(message) {
         if (data.sessionId && !currentSessionId) { currentSessionId = data.sessionId; var url = new URL(window.location); url.searchParams.set('session', data.sessionId); window.history.pushState({}, '', url); }
         if (data.history) conversationHistory = data.history;
         
-        // ✅ FIX: Handle object reply
+        // ✅ Handle reply
         var replyText = data.reply;
         if (typeof replyText === 'object' && replyText !== null) {
             replyText = JSON.stringify(replyText, null, 2);
