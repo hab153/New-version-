@@ -171,15 +171,31 @@ function sendLeadMessage() {
     fetchLeadResponse(text);
 }
 
-// ─── FETCH LEAD RESPONSE — FIXED ───
+// ─── FETCH LEAD RESPONSE — FIXED WITH 429 HANDLING ───
 function fetchLeadResponse(message) {
     isTyping = true; updateLeadSend();
     var steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
     var si = 0; showLeadTyping(steps[0]);
     statusInterval = setInterval(function() { si++; if (si < steps.length) showLeadTyping(steps[si]); }, 2500);
-    fetch(BACKEND + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ message: message, history: conversationHistory, sessionId: currentSessionId }) })
-    .then(function(res) { return res.json(); })
+    fetch(BACKEND + '/api/chat', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, 
+        body: JSON.stringify({ message: message, history: conversationHistory, sessionId: currentSessionId }) 
+    })
+    .then(function(res) { 
+        // ✅ Check for 429 (rate limit) response
+        if (res.status === 429) {
+            return res.json().then(function(data) {
+                clearInterval(statusInterval); hideLeadTyping();
+                var errorMsg = data.message || 'Daily limit reached. Please try again tomorrow.';
+                appendLeadMsg('ai', '⚠️ ' + errorMsg);
+                return null;
+            });
+        }
+        return res.json(); 
+    })
     .then(function(data) {
+        if (!data) return;
         clearInterval(statusInterval); hideLeadTyping();
         if (data.sessionId && !currentSessionId) { currentSessionId = data.sessionId; var url = new URL(window.location); url.searchParams.set('session', data.sessionId); window.history.pushState({}, '', url); }
         if (data.history) conversationHistory = data.history;
