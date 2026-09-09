@@ -49,8 +49,85 @@
             localStorage.removeItem(key);
         });
 
+        // ✅ Clear session storage too
+        try {
+            sessionStorage.clear();
+        } catch(e) {}
+
         console.log('🔒 [SESSION] All session data cleared');
     }
+
+    // ─── LOGOUT FUNCTION ───
+    function logoutUser() {
+        console.log('🚪 [LOGOUT] Logging out user...');
+
+        // ✅ Clear ALL localStorage
+        localStorage.clear();
+
+        // ✅ Clear session storage
+        try {
+            sessionStorage.clear();
+        } catch(e) {}
+
+        // ✅ Clear any in-memory caches
+        if (window._cachedPlan !== undefined) {
+            window._cachedPlan = null;
+            window._cachedPlanTime = 0;
+        }
+        if (window._cachedStatus !== undefined) {
+            window._cachedStatus = null;
+            window._cachedStatusTime = 0;
+        }
+        if (window.conversationHistory !== undefined) {
+            window.conversationHistory = [];
+        }
+        if (window.currentGeneratedLeads !== undefined) {
+            window.currentGeneratedLeads = [];
+        }
+        if (window.currentSessionId !== undefined) {
+            window.currentSessionId = null;
+        }
+        if (window.assistantSessionId !== undefined) {
+            window.assistantSessionId = null;
+        }
+        if (window.assistantConversationHistory !== undefined) {
+            window.assistantConversationHistory = [];
+        }
+
+        // ✅ Close SSE connection
+        if (window.sseConnection) {
+            try {
+                window.sseConnection.close();
+            } catch(e) {}
+            window.sseConnection = null;
+        }
+
+        // ✅ Stop any intervals
+        if (window.statusInterval) {
+            try {
+                clearInterval(window.statusInterval);
+            } catch(e) {}
+            window.statusInterval = null;
+        }
+        if (window._pollInterval) {
+            try {
+                clearInterval(window._pollInterval);
+            } catch(e) {}
+            window._pollInterval = null;
+        }
+        if (window._contactPollInterval) {
+            try {
+                clearInterval(window._contactPollInterval);
+            } catch(e) {}
+            window._contactPollInterval = null;
+        }
+
+        // ✅ Redirect to login
+        window.location.href = 'login.html';
+    }
+
+    // ─── Make logout available globally ───
+    window.logoutUser = logoutUser;
 
     // ─── Get remaining session time ───
     function getRemainingTime() {
@@ -151,6 +228,11 @@
 
         // No token - user is not logged in
         if (!token) {
+            // ✅ Clear everything before redirect
+            localStorage.clear();
+            try {
+                sessionStorage.clear();
+            } catch(e) {}
             // Only redirect if not already on login page
             if (!window.location.pathname.includes('login.html')) {
                 redirectToLogin(false);
@@ -189,6 +271,11 @@
         window.addEventListener('storage', function(e) {
             if (e.key === 'token' && !e.newValue) {
                 // Token was removed from another tab
+                // ✅ Clear everything before redirect
+                localStorage.clear();
+                try {
+                    sessionStorage.clear();
+                } catch(err) {}
                 redirectToLogin(false);
             }
             if (e.key === 'loginTime') {
