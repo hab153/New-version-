@@ -47,140 +47,149 @@
     }
 
     /* ============================================================
-       ✅ NEW: TEXT-AREA-ONLY INPUT STYLES
-       Removes the rounded box container. Keeps clean minimal input.
+       ✅ TEXT AREA ONLY — NO BOX
        ============================================================ */
-
-    /* Input bar wrapper — bottom anchored, clean */
     .input-bar {
         position: fixed;
-        bottom: 68px; /* above bottom nav */
+        bottom: 68px;
         left: 0;
         right: 0;
-        padding: 12px 16px;
-        background: rgba(10, 10, 10, 0.95);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 12px 16px 16px;
+        background: #0a0a0a;
         z-index: 50;
         display: none;
     }
     .input-bar.active { display: block; }
 
-    /* Remove the rounded shell — replace with flat layout */
     .input-shell {
         display: flex;
         align-items: flex-end;
         gap: 10px;
-        max-width: 100%;
-        position: relative;
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
+        width: 100%;
     }
 
-    /* Text area — flat, no border, blends into background */
     .msg-ta {
         flex: 1;
         width: 100%;
-        min-height: 44px;
+        min-height: 40px;
         max-height: 140px;
-        padding: 10px 4px;
+        padding: 8px 0;
         background: transparent;
         border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 0;
+        outline: none;
         color: #f5f5f5;
         font-size: 15px;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        line-height: 1.45;
-        outline: none;
+        line-height: 1.5;
         resize: none;
-        transition: border-color 0.2s ease;
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
     }
-    .msg-ta::placeholder {
-        color: #505050;
-    }
-    .msg-ta:focus {
-        border-bottom-color: rgba(255, 255, 255, 0.25);
-    }
+    .msg-ta::placeholder { color: #505050; }
+    .msg-ta:focus { outline: none; box-shadow: none; }
 
-    /* Send button — small, minimal, sits inline */
     .send-btn {
         flex-shrink: 0;
         width: 36px;
         height: 36px;
         border-radius: 50%;
         border: none;
-        background: linear-gradient(135deg, #ffffff 0%, #e8e8e8 100%);
+        background: #ffffff;
         color: #0a0a0a;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 4px;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(255, 255, 255, 0.08);
+        margin-bottom: 2px;
+        transition: opacity 0.2s, transform 0.2s;
     }
-    .send-btn:hover:not(:disabled) {
-        background: linear-gradient(135deg, #f0f0f0 0%, #dcdcdc 100%);
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.12);
-    }
-    .send-btn:active:not(:disabled) {
-        transform: scale(0.95);
-    }
-    .send-btn:disabled {
-        background: rgba(255, 255, 255, 0.04);
-        cursor: not-allowed;
-        opacity: 0.4;
-        box-shadow: none;
-    }
-    .send-btn:disabled svg {
-        stroke: #505050;
-    }
+    .send-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.05); }
+    .send-btn:active:not(:disabled) { transform: scale(0.95); }
+    .send-btn:disabled { background: rgba(255, 255, 255, 0.06); cursor: not-allowed; opacity: 0.4; }
+    .send-btn:disabled svg { stroke: #505050; }
 
-    /* Input footer — tiny meta line */
     .input-foot {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 6px;
-        padding: 0 4px;
+        margin-top: 4px;
         font-family: 'Monaco', 'Menlo', monospace;
         font-size: 10px;
         color: #505050;
         letter-spacing: 0.05em;
     }
-    .input-tag {
-        text-transform: uppercase;
-        opacity: 0.6;
+    .input-tag { text-transform: uppercase; opacity: 0.6; }
+    .char-ct { color: #707070; }
+
+    /* ============================================================
+       ✅ EMPTY STATE — shown when no chat active
+       ============================================================ */
+    .empty-home {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 24px;
+        text-align: center;
+        min-height: 60vh;
     }
-    .char-ct {
-        color: #707070;
+    .empty-home-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+    .empty-home-icon svg { width: 28px; height: 28px; stroke: #707070; stroke-width: 1.5; }
+    .empty-home h2 { font-size: 22px; font-weight: 500; color: #f5f5f5; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .empty-home h2 em { font-style: italic; color: #ffffff; font-weight: 400; }
+    .empty-home p { font-size: 13px; color: #707070; max-width: 320px; line-height: 1.5; }
+    .empty-home-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 32px;
+        max-width: 400px;
+    }
+    .empty-home-suggestion {
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        color: #b0b0b0;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .empty-home-suggestion:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #f5f5f5;
     }
 
-    /* Mobile responsive adjustments */
+    /* Mobile */
     @media (max-width: 429px) {
-        .input-bar { padding: 10px 12px; }
-        .msg-ta { font-size: 15px; min-height: 40px; }
-        .send-btn { width: 34px; height: 34px; }
+        .input-bar { padding: 10px 12px 14px; }
+        .msg-ta { font-size: 15px; }
+        .empty-home { padding: 40px 20px; min-height: 55vh; }
+        .empty-home h2 { font-size: 20px; }
     }
-
     @media (max-width: 374px) {
-        .input-bar { padding: 8px 10px; }
-        .msg-ta { font-size: 14px; padding: 8px 4px; }
+        .input-bar { padding: 8px 10px 12px; }
+        .msg-ta { font-size: 14px; }
         .send-btn { width: 32px; height: 32px; }
+        .empty-home h2 { font-size: 18px; }
     }
-
-    /* Landscape */
     @media (max-height: 500px) and (orientation: landscape) {
-        .input-bar { bottom: 56px; padding: 8px 16px; }
-        .msg-ta { min-height: 36px; max-height: 80px; }
+        .input-bar { bottom: 56px; padding: 8px 16px 10px; }
+        .msg-ta { min-height: 32px; max-height: 70px; }
     }
 </style>
 </head>
@@ -239,68 +248,31 @@
 
 <!-- ─── LEAD MODE CONTAINER ─── -->
 <div class="mode-container active" id="leadModeContainer">
-    <div id="setupWizard">
-        <div class="wizard-eyebrow">
-            <div class="eyebrow-line"></div>
-            <span class="eyebrow-text">Prospecting Engine · v2</span>
-            <div class="eyebrow-line right"></div>
+    <!-- ✅ EMPTY HOME STATE (replaces wizard) -->
+    <div class="empty-home" id="emptyHome">
+        <div class="empty-home-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+            </svg>
         </div>
-        <div class="wizard-card">
-            <div class="wizard-card-bar"></div>
-            <div class="wizard-body">
-                <h2 class="wizard-heading">Define your <em>target.</em></h2>
-                <p class="wizard-sub">Tell us who to reach — we'll find them and craft personalised outreach.</p>
-                <div class="wizard-divider">
-                    <div class="wizard-divider-line"></div>
-                    <span class="wizard-divider-text">Search Parameters</span>
-                    <div class="wizard-divider-line"></div>
-                </div>
-                <form id="targetForm" autocomplete="off">
-                    <div class="form-stack">
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label class="field-label" for="industry">Industry</label>
-                                <input type="text" id="industry" class="field-input" placeholder="SaaS, Real Estate…" required autocomplete="off">
-                            </div>
-                            <div class="form-field">
-                                <label class="field-label" for="region">Region</label>
-                                <input type="text" id="region" class="field-input" placeholder="USA, London…" required autocomplete="off">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label class="field-label" for="companySize">Company size</label>
-                                <select id="companySize" class="field-input">
-                                    <option value="Any">Any size</option>
-                                    <option value="1-10">1–10</option>
-                                    <option value="11-50">11–50</option>
-                                    <option value="51-200">51–200</option>
-                                    <option value="201-500">201–500</option>
-                                    <option value="500+">500+</option>
-                                </select>
-                            </div>
-                            <div class="form-field">
-                                <label class="field-label" for="jobTitle">Job title</label>
-                                <input type="text" id="jobTitle" class="field-input" placeholder="CEO, Founder…" required autocomplete="off">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="launch-btn" id="launchBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                        Start Search
-                    </button>
-                </form>
-            </div>
+        <h2>Find your next <em>customer.</em></h2>
+        <p>Describe who you're looking for — Skyline will find them and craft personalised outreach.</p>
+        <div class="empty-home-suggestions">
+            <div class="empty-home-suggestion" onclick="fillSuggestion('Find CEOs in SaaS companies in San Francisco')">CEOs in SaaS · San Francisco</div>
+            <div class="empty-home-suggestion" onclick="fillSuggestion('Find founders in Fintech startups in London')">Founders in Fintech · London</div>
+            <div class="empty-home-suggestion" onclick="fillSuggestion('Find CTOs in AI companies in Berlin')">CTOs in AI · Berlin</div>
+            <div class="empty-home-suggestion" onclick="fillSuggestion('Find marketing directors in E-commerce in New York')">Marketing directors · NY</div>
         </div>
     </div>
 
-    <div class="chat-area" id="leadChatArea">
+    <div class="chat-area" id="leadChatArea" style="display:none;">
         <div id="leadMsgContainer"></div>
     </div>
 
     <div id="reviewPanel" style="display:none;"></div>
 
-    <!-- ✅ TEXT-AREA-ONLY INPUT (no box) -->
+    <!-- ✅ TEXT AREA ONLY — NO BOX -->
     <div class="input-bar" id="leadInputBar">
         <div class="input-shell">
             <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
@@ -329,7 +301,7 @@
         </div>
     </div>
 
-    <!-- ✅ TEXT-AREA-ONLY INPUT (no box) -->
+    <!-- ✅ TEXT AREA ONLY — NO BOX -->
     <div class="input-bar active" id="assistantInputBar">
         <div class="input-shell">
             <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
@@ -391,7 +363,6 @@
     var bar = document.getElementById('statusBar');
     var txt = document.getElementById('statusText');
 
-    // ── Step 1: Show cached values instantly, remove skeleton ──
     try {
         var planRaw = localStorage.getItem('skyline_plan');
         if (planRaw) {
@@ -424,7 +395,6 @@
         }
     } catch(e) {}
 
-    // ── Step 2: Fetch fresh data in background ──
     if (!token) return;
 
     fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
@@ -464,7 +434,6 @@
         if (bar) bar.classList.remove('skeleton');
     });
 
-    // ── Failsafe: remove skeleton after 10s max ──
     setTimeout(function() {
         if (chip) chip.classList.remove('skeleton');
         if (bar) bar.classList.remove('skeleton');
@@ -472,7 +441,30 @@
 })();
 </script>
 
+<script>
+    // ✅ Helper: Fill suggestion into input
+    function fillSuggestion(text) {
+        var input = document.getElementById('leadMsgInput');
+        if (!input) return;
+        input.value = text;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+    }
+
+    // ✅ Helper: Show chat area when user starts typing/chatting
+    function showChatArea() {
+        var emptyHome = document.getElementById('emptyHome');
+        var chatArea = document.getElementById('leadChatArea');
+        if (emptyHome) emptyHome.style.display = 'none';
+        if (chatArea) chatArea.style.display = 'block';
+    }
+
+    // Expose globally so page.js can call it
+    window.showChatArea = showChatArea;
+    window.fillSuggestion = fillSuggestion;
+</script>
+
 <script src="session-check.js"></script>
 <script src="page.js"></script>
 </body>
-                                                                                                                                                                                                               </html>
+    </html>
