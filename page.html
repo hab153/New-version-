@@ -47,7 +47,125 @@
     }
 
     /* ============================================================
-       ✅ TEXT AREA ONLY — NO BOX
+       ✅ MAIN BIG TEXT AREA (empty home state)
+       ============================================================ */
+    .empty-home {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 24px 60px;
+        text-align: center;
+        min-height: calc(100vh - 200px);
+    }
+    .empty-home-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .empty-home-icon svg { width: 24px; height: 24px; stroke: #707070; stroke-width: 1.5; }
+    .empty-home h2 { font-size: 24px; font-weight: 500; color: #f5f5f5; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .empty-home h2 em { font-style: italic; color: #ffffff; font-weight: 400; }
+    .empty-home p { font-size: 13px; color: #707070; max-width: 340px; line-height: 1.5; margin-bottom: 32px; }
+
+    /* ✅ BIG CENTERED TEXT AREA */
+    .big-input-wrap {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto 20px;
+    }
+    .big-input {
+        width: 100%;
+        min-height: 120px;
+        max-height: 260px;
+        padding: 20px 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        outline: none;
+        color: #f5f5f5;
+        font-size: 17px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        line-height: 1.55;
+        text-align: center;
+        resize: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    .big-input::placeholder {
+        color: #505050;
+        font-size: 17px;
+    }
+    .big-input:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    /* ✅ Big send button under the text area */
+    .big-send-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        border-radius: 999px;
+        border: none;
+        background: #ffffff;
+        color: #0a0a0a;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.2s;
+        margin-top: 8px;
+    }
+    .big-send-btn:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    .big-send-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+    .big-send-btn:disabled {
+        background: rgba(255, 255, 255, 0.06);
+        color: #505050;
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    .big-send-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; }
+
+    /* ✅ Suggestions below */
+    .empty-home-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 24px;
+        max-width: 500px;
+    }
+    .empty-home-suggestion {
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        color: #b0b0b0;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .empty-home-suggestion:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #f5f5f5;
+    }
+
+    /* ============================================================
+       ✅ BOTTOM INPUT (used after chat starts)
        ============================================================ */
     .input-bar {
         position: fixed;
@@ -83,9 +201,6 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         line-height: 1.5;
         resize: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
     }
     .msg-ta::placeholder { color: #505050; }
     .msg-ta:focus { outline: none; box-shadow: none; }
@@ -123,73 +238,25 @@
     .input-tag { text-transform: uppercase; opacity: 0.6; }
     .char-ct { color: #707070; }
 
-    /* ============================================================
-       ✅ EMPTY STATE — shown when no chat active
-       ============================================================ */
-    .empty-home {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 60px 24px;
-        text-align: center;
-        min-height: 60vh;
-    }
-    .empty-home-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 24px;
-    }
-    .empty-home-icon svg { width: 28px; height: 28px; stroke: #707070; stroke-width: 1.5; }
-    .empty-home h2 { font-size: 22px; font-weight: 500; color: #f5f5f5; margin-bottom: 8px; letter-spacing: -0.01em; }
-    .empty-home h2 em { font-style: italic; color: #ffffff; font-weight: 400; }
-    .empty-home p { font-size: 13px; color: #707070; max-width: 320px; line-height: 1.5; }
-    .empty-home-suggestions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-        margin-top: 32px;
-        max-width: 400px;
-    }
-    .empty-home-suggestion {
-        padding: 8px 14px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 20px;
-        color: #b0b0b0;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .empty-home-suggestion:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.12);
-        color: #f5f5f5;
-    }
-
     /* Mobile */
     @media (max-width: 429px) {
+        .empty-home { padding: 30px 16px 50px; }
+        .empty-home h2 { font-size: 21px; }
+        .big-input { font-size: 16px; min-height: 100px; }
+        .big-input::placeholder { font-size: 16px; }
         .input-bar { padding: 10px 12px 14px; }
-        .msg-ta { font-size: 15px; }
-        .empty-home { padding: 40px 20px; min-height: 55vh; }
-        .empty-home h2 { font-size: 20px; }
     }
     @media (max-width: 374px) {
+        .empty-home h2 { font-size: 19px; }
+        .big-input { font-size: 15px; }
+        .big-send-btn { font-size: 13px; padding: 10px 22px; }
         .input-bar { padding: 8px 10px 12px; }
-        .msg-ta { font-size: 14px; }
         .send-btn { width: 32px; height: 32px; }
-        .empty-home h2 { font-size: 18px; }
     }
     @media (max-height: 500px) and (orientation: landscape) {
+        .empty-home { padding: 20px 16px 30px; min-height: auto; }
+        .big-input { min-height: 70px; }
         .input-bar { bottom: 56px; padding: 8px 16px 10px; }
-        .msg-ta { min-height: 32px; max-height: 70px; }
     }
 </style>
 </head>
@@ -248,7 +315,8 @@
 
 <!-- ─── LEAD MODE CONTAINER ─── -->
 <div class="mode-container active" id="leadModeContainer">
-    <!-- ✅ EMPTY HOME STATE (replaces wizard) -->
+
+    <!-- ✅ EMPTY HOME STATE with BIG TEXT AREA -->
     <div class="empty-home" id="emptyHome">
         <div class="empty-home-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -258,6 +326,26 @@
         </div>
         <h2>Find your next <em>customer.</em></h2>
         <p>Describe who you're looking for — Skyline will find them and craft personalised outreach.</p>
+
+        <!-- ✅ BIG TEXT AREA -->
+        <div class="big-input-wrap">
+            <textarea 
+                class="big-input" 
+                id="bigInput" 
+                rows="4"
+                placeholder="Find CEOs in SaaS companies in San Francisco…"
+            ></textarea>
+        </div>
+
+        <!-- ✅ BIG SEND BUTTON -->
+        <button class="big-send-btn" id="bigSendBtn" disabled>
+            Start Search
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </button>
+
+        <!-- ✅ Suggestion chips -->
         <div class="empty-home-suggestions">
             <div class="empty-home-suggestion" onclick="fillSuggestion('Find CEOs in SaaS companies in San Francisco')">CEOs in SaaS · San Francisco</div>
             <div class="empty-home-suggestion" onclick="fillSuggestion('Find founders in Fintech startups in London')">Founders in Fintech · London</div>
@@ -266,13 +354,14 @@
         </div>
     </div>
 
+    <!-- Chat area (hidden until user sends first message) -->
     <div class="chat-area" id="leadChatArea" style="display:none;">
         <div id="leadMsgContainer"></div>
     </div>
 
     <div id="reviewPanel" style="display:none;"></div>
 
-    <!-- ✅ TEXT AREA ONLY — NO BOX -->
+    <!-- ✅ TEXT AREA ONLY — NO BOX (bottom, after chat starts) -->
     <div class="input-bar" id="leadInputBar">
         <div class="input-shell">
             <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
@@ -353,7 +442,7 @@
     </a>
 </nav>
 
-<!-- ✅ INSTANT CACHE LOADER + SKELETON REMOVAL -->
+<!-- ✅ INSTANT CACHE LOADER -->
 <script>
 (function() {
     var BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -441,30 +530,104 @@
 })();
 </script>
 
+<!-- ✅ BIG TEXT AREA LOGIC -->
 <script>
-    // ✅ Helper: Fill suggestion into input
-    function fillSuggestion(text) {
-        var input = document.getElementById('leadMsgInput');
-        if (!input) return;
-        input.value = text;
-        input.dispatchEvent(new Event('input'));
-        input.focus();
-    }
-
-    // ✅ Helper: Show chat area when user starts typing/chatting
-    function showChatArea() {
+    (function() {
+        var bigInput = document.getElementById('bigInput');
+        var bigSendBtn = document.getElementById('bigSendBtn');
         var emptyHome = document.getElementById('emptyHome');
         var chatArea = document.getElementById('leadChatArea');
-        if (emptyHome) emptyHome.style.display = 'none';
-        if (chatArea) chatArea.style.display = 'block';
-    }
+        var leadInputBar = document.getElementById('leadInputBar');
+        var leadMsgInput = document.getElementById('leadMsgInput');
 
-    // Expose globally so page.js can call it
-    window.showChatArea = showChatArea;
-    window.fillSuggestion = fillSuggestion;
+        // ── Enable/disable send button based on text ──
+        function updateBigSend() {
+            if (!bigSendBtn || !bigInput) return;
+            bigSendBtn.disabled = !bigInput.value.trim();
+        }
+
+        // ── Auto-resize textarea ──
+        function autoResize() {
+            if (!bigInput) return;
+            bigInput.style.height = 'auto';
+            bigInput.style.height = Math.min(bigInput.scrollHeight, 260) + 'px';
+        }
+
+        // ── Handle input changes ──
+        if (bigInput) {
+            bigInput.addEventListener('input', function() {
+                autoResize();
+                updateBigSend();
+            });
+
+            // ── Enter to send (Shift+Enter for new line) ──
+            bigInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!bigSendBtn.disabled) {
+                        bigSendBtn.click();
+                    }
+                }
+            });
+        }
+
+        // ── Send from big text area ──
+        if (bigSendBtn) {
+            bigSendBtn.addEventListener('click', function() {
+                var text = bigInput.value.trim();
+                if (!text) return;
+
+                // Hide empty home, show chat area
+                if (emptyHome) emptyHome.style.display = 'none';
+                if (chatArea) {
+                    chatArea.style.display = 'block';
+                    chatArea.classList.add('active');
+                }
+                if (leadInputBar) leadInputBar.classList.add('active');
+
+                // Sync text to the bottom input (which page.js uses)
+                if (leadMsgInput) {
+                    leadMsgInput.value = text;
+                    leadMsgInput.dispatchEvent(new Event('input'));
+                }
+
+                // Trigger send via the main bottom input (page.js handles it)
+                var leadSendBtn = document.getElementById('leadSendBtn');
+                if (leadSendBtn && !leadSendBtn.disabled) {
+                    leadSendBtn.click();
+                }
+
+                // Clear big input
+                bigInput.value = '';
+                bigInput.style.height = 'auto';
+                updateBigSend();
+            });
+        }
+
+        // ── Fill suggestion ──
+        window.fillSuggestion = function(text) {
+            if (!bigInput) return;
+            bigInput.value = text;
+            bigInput.dispatchEvent(new Event('input'));
+            bigInput.focus();
+        };
+
+        // ── Expose show chat helper ──
+        window.showChatArea = function() {
+            if (emptyHome) emptyHome.style.display = 'none';
+            if (chatArea) {
+                chatArea.style.display = 'block';
+                chatArea.classList.add('active');
+            }
+            if (leadInputBar) leadInputBar.classList.add('active');
+        };
+
+        // ── Initialize ──
+        updateBigSend();
+    })();
 </script>
 
 <script src="session-check.js"></script>
 <script src="page.js"></script>
 </body>
-    </html>
+                </html>
