@@ -169,15 +169,15 @@
        ============================================================ */
     .input-bar {
         position: fixed;
-        bottom: 0; /* Moved to absolute bottom */
+        bottom: 68px; /* Positioned above the 4 nav buttons */
         left: 0;
         right: 0;
         padding: 12px 16px 16px;
-        background: rgba(10, 10, 10, 0.95); /* Slightly transparent for depth */
+        background: rgba(10, 10, 10, 0.95); /* Slightly transparent */
         backdrop-filter: blur(10px); /* Blurs content behind it */
-        z-index: 100; /* Higher than nav to ensure visibility */
+        z-index: 100; /* Ensures it sits above other content but below modals */
         display: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.05); /* Subtle separator */
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
     .input-bar.active { display: block; }
 
@@ -248,7 +248,7 @@
         .big-input::placeholder { font-size: 16px; }
         .input-bar { 
             padding: 10px 12px 14px; 
-            bottom: 0; 
+            bottom: 68px; /* Keep above nav on mobile */
         }
     }
     @media (max-width: 374px) {
@@ -257,7 +257,7 @@
         .big-send-btn { font-size: 13px; padding: 10px 22px; }
         .input-bar { 
             padding: 8px 10px 12px; 
-            bottom: 0;
+            bottom: 68px;
         }
         .send-btn { width: 32px; height: 32px; }
     }
@@ -265,7 +265,7 @@
         .empty-home { padding: 20px 16px 30px; min-height: auto; }
         .big-input { min-height: 70px; }
         .input-bar { 
-            bottom: 0; 
+            bottom: 56px; /* Adjusted for landscape nav height */
             padding: 8px 16px 10px; 
         }
     }
@@ -641,4 +641,4 @@
 <script src="session-check.js"></script>
 <script src="page.js"></script>
 </body>
-                                                                                                                                                       </html>
+    </html>
