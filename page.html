@@ -169,13 +169,15 @@
        ============================================================ */
     .input-bar {
         position: fixed;
-        bottom: 68px;
+        bottom: 0; /* Moved to absolute bottom */
         left: 0;
         right: 0;
         padding: 12px 16px 16px;
-        background: #0a0a0a;
-        z-index: 50;
+        background: rgba(10, 10, 10, 0.95); /* Slightly transparent for depth */
+        backdrop-filter: blur(10px); /* Blurs content behind it */
+        z-index: 100; /* Higher than nav to ensure visibility */
         display: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.05); /* Subtle separator */
     }
     .input-bar.active { display: block; }
 
@@ -244,19 +246,28 @@
         .empty-home h2 { font-size: 21px; }
         .big-input { font-size: 16px; min-height: 100px; }
         .big-input::placeholder { font-size: 16px; }
-        .input-bar { padding: 10px 12px 14px; }
+        .input-bar { 
+            padding: 10px 12px 14px; 
+            bottom: 0; 
+        }
     }
     @media (max-width: 374px) {
         .empty-home h2 { font-size: 19px; }
         .big-input { font-size: 15px; }
         .big-send-btn { font-size: 13px; padding: 10px 22px; }
-        .input-bar { padding: 8px 10px 12px; }
+        .input-bar { 
+            padding: 8px 10px 12px; 
+            bottom: 0;
+        }
         .send-btn { width: 32px; height: 32px; }
     }
     @media (max-height: 500px) and (orientation: landscape) {
         .empty-home { padding: 20px 16px 30px; min-height: auto; }
         .big-input { min-height: 70px; }
-        .input-bar { bottom: 56px; padding: 8px 16px 10px; }
+        .input-bar { 
+            bottom: 0; 
+            padding: 8px 16px 10px; 
+        }
     }
 </style>
 </head>
@@ -630,4 +641,4 @@
 <script src="session-check.js"></script>
 <script src="page.js"></script>
 </body>
-                </html>
+                                                                                                                                                       </html>
