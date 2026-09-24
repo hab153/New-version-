@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Skyline · Business Agent</title>
+<title>Skyline · Nexa</title>
 
 <link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
 <link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
@@ -18,13 +18,13 @@
 <link rel="stylesheet" href="page.css" />
 
 <style>
-    /* ✅ Nav badge */
+    /* Nav badge */
     .nav-item .icon-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
     .nav-badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background-color: #ff4d4d; border-radius: 50%; border: 1.5px solid #121212; z-index: 10; pointer-events: none; box-shadow: 0 0 4px rgba(255,77,77,0.6); animation: subtle-pulse 2s infinite ease-in-out; }
     @keyframes subtle-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-    /* ✅ INLINE SKELETON — plan chip shimmer */
+    /* Plan chip skeleton */
     .plan-chip.skeleton {
         background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 75%) !important;
         background-size: 200% 100% !important;
@@ -35,7 +35,7 @@
     }
     @keyframes chipShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    /* ✅ INLINE SKELETON — status bar shimmer */
+    /* Status bar skeleton */
     .status-bar.skeleton .status-pip { visibility: hidden; }
     .status-bar.skeleton #statusText {
         background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
@@ -44,102 +44,6 @@
         color: transparent !important;
         border-radius: 4px;
         padding: 2px 60px;
-    }
-
-    /* ============================================================
-       ✅ BOTTOM INPUT (Always Visible on Main Page)
-       ============================================================ */
-    .input-bar {
-        position: fixed;
-        bottom: 68px; /* Positioned exactly above the 4 nav buttons */
-        left: 0;
-        right: 0;
-        padding: 12px 16px 16px;
-        background: rgba(10, 10, 10, 0.95);
-        backdrop-filter: blur(10px);
-        z-index: 100;
-        display: block; /* Always visible */
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .input-shell {
-        display: flex;
-        align-items: flex-end;
-        gap: 10px;
-        width: 100%;
-    }
-
-    .msg-ta {
-        flex: 1;
-        width: 100%;
-        min-height: 40px;
-        max-height: 140px;
-        padding: 8px 0;
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        outline: none;
-        color: #f5f5f5;
-        font-size: 15px;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        line-height: 1.5;
-        resize: none;
-    }
-    .msg-ta::placeholder { color: #505050; }
-    .msg-ta:focus { outline: none; box-shadow: none; }
-
-    .send-btn {
-        flex-shrink: 0;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: none;
-        background: #ffffff;
-        color: #0a0a0a;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 2px;
-        transition: opacity 0.2s, transform 0.2s;
-    }
-    .send-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.05); }
-    .send-btn:active:not(:disabled) { transform: scale(0.95); }
-    .send-btn:disabled { background: rgba(255, 255, 255, 0.06); cursor: not-allowed; opacity: 0.4; }
-    .send-btn:disabled svg { stroke: #505050; }
-
-    .input-foot {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 4px;
-        font-family: 'Monaco', 'Menlo', monospace;
-        font-size: 10px;
-        color: #505050;
-        letter-spacing: 0.05em;
-    }
-    .input-tag { text-transform: uppercase; opacity: 0.6; }
-    .char-ct { color: #707070; }
-
-    /* Mobile Adjustments */
-    @media (max-width: 429px) {
-        .input-bar { 
-            padding: 10px 12px 14px; 
-            bottom: 68px; 
-        }
-    }
-    @media (max-width: 374px) {
-        .input-bar { 
-            padding: 8px 10px 12px; 
-            bottom: 68px;
-        }
-        .send-btn { width: 32px; height: 32px; }
-    }
-    @media (max-height: 500px) and (orientation: landscape) {
-        .input-bar { 
-            bottom: 56px; 
-            padding: 8px 16px 10px; 
-        }
     }
 </style>
 </head>
@@ -161,10 +65,10 @@
     </div>
     <div class="topbar-center">
         <div class="pulse-ring"></div>
-        <span class="topbar-label">Business Agent</span>
+        <span class="topbar-label">Lead Search</span>
     </div>
     <div class="topbar-right">
-        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New search">
+        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New chat">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
         <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
@@ -184,6 +88,47 @@
     ↑ New reply detected — tap to open Dashboard
 </div>
 
+<!-- ─── GUIDE MODAL ─── -->
+<div id="guideModal" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <div class="guide-card">
+        <div class="guide-shimmer"></div>
+        <div class="guide-body">
+            <div class="guide-top">
+                <div class="guide-mark">💡</div>
+                <div>
+                    <div class="guide-eyebrow">SKYLINE · FIELD GUIDE</div>
+                    <h2 class="guide-title" id="guideTitle">Make your request <em>clear</em> for better lead results</h2>
+                    <p class="guide-sub">For the best results, try to include:</p>
+                </div>
+            </div>
+
+            <div class="guide-grid">
+                <div class="g-item"><span class="g-ico">🎯</span><div><b>Target</b><i>who you want to find</i></div></div>
+                <div class="g-item"><span class="g-ico">📌</span><div><b>Problem</b><i>what they may need</i></div></div>
+                <div class="g-item"><span class="g-ico">💡</span><div><b>Intent</b><i>what to find out or accomplish</i></div></div>
+                <div class="g-item"><span class="g-ico">📍</span><div><b>Location</b><i>where they should be</i></div></div>
+                <div class="g-item"><span class="g-ico">🏭</span><div><b>Industry</b><i>type of organization</i></div></div>
+                <div class="g-item"><span class="g-ico">✅</span><div><b>Qualification</b><i>requirements they must meet</i></div></div>
+                <div class="g-item"><span class="g-ico">📡</span><div><b>Signal</b><i>evidence supporting the need</i></div></div>
+                <div class="g-item"><span class="g-ico">🔢</span><div><b>Quantity</b><i>how many leads you want</i></div></div>
+                <div class="g-item"><span class="g-ico">📋</span><div><b>Information</b><i>details Skyline should collect</i></div></div>
+                <div class="g-item"><span class="g-ico">🚫</span><div><b>Exclusion</b><i>who or what to leave out</i></div></div>
+                <div class="g-item"><span class="g-ico">📎</span><div><b>Constraint</b><i>special rules to follow</i></div></div>
+            </div>
+
+            <div class="guide-example">
+                <div class="ge-label">Example request</div>
+                <p>“Find 200 healthcare companies in Chicago that may need MRI equipment. Focus on hospitals hiring radiology staff, with revenue above $10M. Exclude government-owned facilities, avoid duplicates, and provide the company name, email, phone, and short information.”</p>
+            </div>
+
+            <button class="guide-okay" id="guideOkayBtn" type="button">
+                <span>Okay, got it</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ─── MODE SELECTOR ─── -->
 <div class="mode-selector">
     <button class="mode-btn lead-mode active" id="leadModeBtn" onclick="switchMode('lead')">
@@ -199,23 +144,21 @@
 <!-- ─── LEAD MODE CONTAINER ─── -->
 <div class="mode-container active" id="leadModeContainer">
 
-    <!-- Chat area (Visible immediately) -->
     <div class="chat-area active" id="leadChatArea">
         <div id="leadMsgContainer"></div>
     </div>
 
     <div id="reviewPanel" style="display:none;"></div>
 
-    <!-- ✅ MAIN INPUT BAR (Fixed at bottom) -->
     <div class="input-bar" id="leadInputBar">
         <div class="input-shell">
-            <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Describe the leads you want…" aria-label="Message"></textarea>
+            <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Ask Nexa…" aria-label="Message Nexa"></textarea>
             <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </button>
         </div>
         <div class="input-foot">
-            <span class="input-tag">Lead Search</span>
+            <span class="input-tag">Nexa · Lead Search</span>
             <span class="char-ct" id="leadCharCount"></span>
         </div>
     </div>
@@ -226,25 +169,24 @@
     <div class="chat-area active" id="assistantChatArea">
         <div id="assistantMsgContainer">
             <div class="msg-row ai">
-                <div class="av">AI</div>
+                <div class="av">N</div>
                 <div class="bubble-wrap">
-                    <div class="bubble">👋 Hello! I'm your business assistant. Ask me anything about your business, leads, or strategy!</div>
+                    <div class="bubble">👋 Hi, I'm <strong>Nexa</strong> — your business assistant. Ask me anything about your business, leads, or strategy.</div>
                     <div class="msg-time">Just now</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ✅ ASSISTANT INPUT BAR (Fixed at bottom) -->
     <div class="input-bar" id="assistantInputBar">
         <div class="input-shell">
-            <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask about your business, leads, or account…" aria-label="Message"></textarea>
+            <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask Nexa…" aria-label="Message Nexa"></textarea>
             <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </button>
         </div>
         <div class="input-foot">
-            <span class="input-tag">Assistant</span>
+            <span class="input-tag">Nexa · Assistant</span>
             <span class="char-ct" id="assistantCharCount"></span>
         </div>
     </div>
@@ -378,4 +320,4 @@
 <script src="session-check.js"></script>
 <script src="page.js"></script>
 </body>
-                                                                                                                                                                               </html>
+                </html>
