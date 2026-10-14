@@ -22,6 +22,9 @@ var _cachedStatus = null;
 var _cachedStatusTime = 0;
 var CACHE_TTL = 60000;
 
+// ── STREAM STATE ─
+var _activeEventSource = null;
+
 // ──────────────────────────────────────────────────────────────
 //  UTIL
 // ──────────────────────────────────────────────────────────────
@@ -182,52 +185,190 @@ function sendLeadMessage() {
     if (!text || isTyping) return;
     appendLeadMsg('user', text);
     leadMsgInput.value = ''; leadMsgInput.style.height = 'auto'; updateLeadSend();
-    fetchLeadResponse(text);
+    streamLeadResponse(text);
 }
 
-function fetchLeadResponse(message) {
-    isTyping = true; updateLeadSend();
-    var steps = ['Searching…', 'Filtering results…', 'Finding decision-makers…', 'Finalising…'];
-    var si = 0; showLeadTyping('Nexa · ' + steps[0]);
-    statusInterval = setInterval(function() {
-        si++;
-        if (si < steps.length) showLeadTyping('Nexa · ' + steps[si]);
-    }, 2500);
+// ──────────────────────────────────────────────────────────────
+//  LEAD STREAM — descriptive stage labels
+// ──────────────────────────────────────────────────────────────
 
-    fetch(BACKEND + '/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ message: message, history: conversationHistory, sessionId: currentSessionId })
-    })
-    .then(function(res) {
-        if (res.status === 429) {
-            return res.json().then(function(data) {
-                clearInterval(statusInterval); hideLeadTyping();
-                appendLeadMsg('ai', '⚠️ ' + (data.message || 'Daily limit reached. Please try again tomorrow.'));
-                return null;
-            });
+var STAGE_LABELS = {
+    'stage 1': '🔍 Understanding your request…',
+    'stage 2': '🧭 Planning the search…',
+    'stage 3': '📝 Summarizing the plan…',
+    'stage 4': '🔎 Generating searches…',
+    'stage 5': '📡 Running searches…',
+    'stage 6': '🏢 Organizing companies…',
+    'stage 7': '✅ Verifying leads…'
+};
+
+function streamLeadResponse(message) {
+    isTyping = true; updateLeadSend();
+
+    // Close any lingering stream from a previous request
+    if (_activeEventSource) {
+        try { _activeEventSource.close(); } catch (e) {}
+        _activeEventSource = null;
+    }
+
+    showLeadTyping('Nexa · ' + (STAGE_LABELS['stage 1'] || 'Working…'));
+
+    var url = BACKEND + '/api/stream/pipeline'
+        + '?message=' + encodeURIComponent(message)
+        + '&token=' + encodeURIComponent(token);
+
+    var stages = {};
+    var lastStage = null;
+
+    var es;
+    try {
+        es = new EventSource(url);
+    } catch (e) {
+        hideLeadTyping();
+        appendLeadMsg('ai', '🔌 Could not open a live connection. Please try again.');
+        isTyping = false; updateLeadSend();
+        return;
+    }
+
+    _activeEventSource = es;
+
+    es.addEventListener('stage', function(event) {
+        var payload;
+        try { payload = JSON.parse(event.data); } catch (e) { return; }
+        if (!payload || !payload.stage) return;
+
+        var stageName = payload.stage;
+
+        // Store stage data
+        stages[stageName] = payload.data;
+
+        // If we have a descriptive label for this stage, show it
+        if (STAGE_LABELS[stageName]) {
+            lastStage = stageName;
+            showLeadTyping('Nexa · ' + STAGE_LABELS[stageName]);
         }
-        return res.json();
-    })
-    .then(function(data) {
-        if (!data) return;
-        clearInterval(statusInterval); hideLeadTyping();
-        if (data.sessionId && !currentSessionId) {
-            currentSessionId = data.sessionId;
-            var url = new URL(window.location);
-            url.searchParams.set('session', data.sessionId);
-            window.history.pushState({}, '', url);
+
+        // Done event — close and render
+        if (stageName === 'done') {
+            try { es.close(); } catch (e) {}
+            _activeEventSource = null;
+
+            hideLeadTyping();
+
+            renderFinalReply(stages['stage 7']);
+
+            isTyping = false; updateLeadSend();
+            return;
         }
-        if (data.history) conversationHistory = data.history;
-        var replyText = data.reply;
-        if (typeof replyText === 'object' && replyText !== null) replyText = JSON.stringify(replyText, null, 2);
-        appendLeadMsg('ai', replyText || 'Request received. How can I help further?');
-    })
-    .catch(function() {
-        clearInterval(statusInterval); hideLeadTyping();
-        appendLeadMsg('ai', '🔌 Connection error — check your network and try again.');
-    })
-    .finally(function() { isTyping = false; updateLeadSend(); });
+
+        // Error event — close and show friendly message
+        if (stageName === 'error') {
+            try { es.close(); } catch (e) {}
+            _activeEventSource = null;
+
+            hideLeadTyping();
+            appendLeadMsg('ai', '⚠️ Something went wrong while processing your request. Please try again.');
+            isTyping = false; updateLeadSend();
+        }
+    });
+
+    es.addEventListener('error', function() {
+        // Fires on network issues OR server closing the stream after done
+        // Guard against firing after the stream already completed
+        if (_activeEventSource !== es) return;
+
+        try { es.close(); } catch (e) {}
+        _activeEventSource = null;
+
+        hideLeadTyping();
+
+        // If we got all 7 stages, treat as success
+        if (stages['stage 7']) {
+            renderFinalReply(stages['stage 7']);
+        } else {
+            appendLeadMsg('ai', '🔌 Connection lost — please try again.');
+        }
+
+        isTyping = false; updateLeadSend();
+    });
+}
+
+// ──────────────────────────────────────────────────────────────
+//  FINAL REPLY RENDER — builds a chat bubble from stage 7 data
+// ──────────────────────────────────────────────────────────────
+
+function renderFinalReply(verification) {
+    if (!verification || typeof verification !== 'object') {
+        appendLeadMsg('ai', 'Request received. How can I help further?');
+        return;
+    }
+
+    // Fallback shape — Generation or Verification returned a message
+    if (typeof verification.message === 'string' && verification.message.trim()) {
+        appendLeadMsg('ai', '💬 ' + verification.message.trim());
+        return;
+    }
+
+    var lines = [];
+
+    // ── Summary block ──
+    var summary = verification.summary;
+    if (summary && typeof summary === 'object') {
+        var parts = [];
+        if (typeof summary.valid === 'number') parts.push(summary.valid + ' valid');
+        if (typeof summary.invalid === 'number') parts.push(summary.invalid + ' invalid');
+        if (typeof summary.total === 'number') parts.push(summary.total + ' total');
+        if (parts.length > 0) {
+            lines.push('**📊 Summary:** ' + parts.join(' / '));
+        }
+        if (typeof summary.qualified === 'number') {
+            lines.push('**✅ Qualified (rating 5+):** ' + summary.qualified);
+        }
+    }
+
+    // ── Qualified companies ──
+    var qualified = Array.isArray(verification.qualified) ? verification.qualified : [];
+
+    if (qualified.length > 0) {
+        lines.push('');
+        lines.push('---');
+        lines.push('');
+        lines.push('**QUALIFIED COMPANIES**');
+        lines.push('');
+
+        for (var i = 0; i < qualified.length; i++) {
+            var c = qualified[i];
+            if (!c || typeof c !== 'object') continue;
+
+            var name = (typeof c.name === 'string' && c.name.trim()) ? c.name.trim() : ('Company ' + (i + 1));
+            lines.push('**' + (i + 1) + '. ' + name + '**');
+
+            if (typeof c.rating === 'number') lines.push('⭐ Rating: ' + c.rating);
+            if (typeof c.status === 'string' && c.status.trim()) lines.push('🏷️ Status: ' + c.status.trim());
+            if (typeof c.reason === 'string' && c.reason.trim()) lines.push('💬 ' + c.reason.trim());
+
+            var mentions = Array.isArray(c.mentions) ? c.mentions : [];
+            for (var j = 0; j < mentions.length; j++) {
+                var m = mentions[j];
+                if (!m || typeof m !== 'object') continue;
+
+                if (typeof m.url === 'string' && m.url.trim()) {
+                    lines.push('🔗 ' + m.url.trim());
+                }
+                if (typeof m.title === 'string' && m.title.trim()) {
+                    lines.push('📝 ' + m.title.trim());
+                }
+                // Only show first mention's details to keep the bubble readable
+                if (j === 0) break;
+            }
+
+            lines.push('');
+        }
+    } else if (lines.length === 0) {
+        lines.push('No qualified companies were found for this request.');
+    }
+
+    appendLeadMsg('ai', lines.join('\n'));
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -372,6 +513,12 @@ function applyStatus(data) {
 //  CLEAR / NEW CHAT
 // ──────────────────────────────────────────────────────────────
 function clearChat() {
+    // Close any in-flight stream
+    if (_activeEventSource) {
+        try { _activeEventSource.close(); } catch (e) {}
+        _activeEventSource = null;
+    }
+
     leadMsgContainer.innerHTML = ''; conversationHistory = []; currentGeneratedLeads = []; currentSessionId = null;
     assistantMsgContainer.innerHTML = '';
     assistantMsgContainer.innerHTML =
@@ -417,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var msg = 'Find me ' + jobTitle + 's in the ' + industry + ' industry, located in ' + region + '. Company size: ' + companySize + '.';
             var wz = document.getElementById('setupWizard');
             if (wz) wz.style.display = 'none';
-            appendLeadMsg('user', msg); fetchLeadResponse(msg);
+            appendLeadMsg('user', msg); streamLeadResponse(msg);
         });
     }
 
@@ -436,9 +583,14 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready');
+    console.log('✅ [PAGE] Nexa ready (streaming enabled)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
+
+        if (_activeEventSource) {
+            try { _activeEventSource.close(); } catch (e) {}
+            _activeEventSource = null;
+        }
     });
 });
