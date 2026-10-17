@@ -24,6 +24,7 @@ var CACHE_TTL = 60000;
 
 // ── STREAM STATE ─
 var _activeEventSource = null;
+var _runCounter = 0; // increments per run / clear, so stale callbacks can detect they are outdated
 
 // ──────────────────────────────────────────────────────────────
 //  UTIL
@@ -105,15 +106,16 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — pipeline progress indicator
+//  STEPPER — inline chat message showing pipeline progress
 // ──────────────────────────────────────────────────────────────
 //
-// The stepper reflects the real backend stage. Every visual change is
-// triggered by a real SSE event — no fake timers, no simulated progress.
+// The stepper is now a chat message at the AI reply position (left side).
+// It is created fresh for every request, updated by real SSE events, and
+// replaced in the same position by the AI's real reply when the pipeline
+// finishes. A live timer counts elapsed seconds while it runs.
 //
 // The backend sends neutral stage IDs (s1..s7) and a `done` event. The
-// stepper maps those IDs to display labels. When the pipeline finishes,
-// the stepper fades out and the final reply is rendered as a chat bubble.
+// stepper maps those IDs to display labels.
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
@@ -125,17 +127,42 @@ var STEPPER_STAGES = [
     { id: 's7', label: 'Verification' }
 ];
 
-var _stepperBuilt = false;
+var _stepperRow = null; // the inline stepper message row currently in the chat
 
-// Build the stepper HTML once and mount it into #leadStepper
-function initStepper() {
-    if (_stepperBuilt) return;
+// ── Live timer ──
+var _timerInterval = null;
+var _timerStart = 0;
+var _timerEl = null;
 
-    var container = document.getElementById('leadStepper');
-    if (!container) return;
+function elapsedSeconds() {
+    return _timerStart ? Math.floor((Date.now() - _timerStart) / 1000) : 0;
+}
 
+function renderTimer(seconds) {
+    if (_timerEl) _timerEl.textContent = '⏱️ ' + seconds + 's';
+}
+
+function startRunTimer(el) {
+    stopRunTimer();
+    _timerEl = el;
+    _timerStart = Date.now();
+    renderTimer(0);
+    _timerInterval = setInterval(function() {
+        renderTimer(elapsedSeconds());
+    }, 1000);
+}
+
+// Stops the timer and returns the final elapsed seconds
+function stopRunTimer() {
+    var secs = elapsedSeconds();
+    if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+    _timerStart = 0;
+    return secs;
+}
+
+// Build the stage list markup (all stages waiting)
+function buildStepperStagesHTML() {
     var html = '';
-
     for (var i = 0; i < STEPPER_STAGES.length; i++) {
         var stage = STEPPER_STAGES[i];
         var isLast = i === STEPPER_STAGES.length - 1;
@@ -153,47 +180,71 @@ function initStepper() {
         }
         html += '</div>';
     }
-
-    container.innerHTML = html;
-    _stepperBuilt = true;
+    return html;
 }
 
-// Show the stepper overlay
+// Show the stepper: appends an AI-style message row to the chat and starts the timer
 function showStepper() {
-    initStepper();
+    // Remove any leftover stepper first
+    if (_stepperRow && _stepperRow.parentNode) _stepperRow.parentNode.removeChild(_stepperRow);
 
-    // Reset all stages to waiting
-    var stages = document.querySelectorAll('.stepper-stage');
-    for (var i = 0; i < stages.length; i++) {
-        stages[i].className = 'stepper-stage waiting';
-        var icon = stages[i].querySelector('.stepper-icon');
-        if (icon) {
-            icon.innerHTML =
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">' +
-                '<circle cx="12" cy="12" r="8"/></svg>';
-        }
-        var lbl = stages[i].querySelector('.stepper-label');
-        if (lbl) {
-            // Restore original label (drop any sublabel)
-            var original = null;
-            for (var j = 0; j < STEPPER_STAGES.length; j++) {
-                if (STEPPER_STAGES[j].id === stages[i].getAttribute('data-stage')) {
-                    original = STEPPER_STAGES[j].label;
-                    break;
-                }
-            }
-            if (original) lbl.textContent = original;
-        }
+    var row = document.createElement('div');
+    row.className = 'msg-row ai stepper-row';
+    row.setAttribute('aria-live', 'polite');
+    row.innerHTML =
+        '<div class="av">N</div>' +
+        '<div class="bubble-wrap">' +
+            '<div class="bubble stepper-bubble">' +
+                '<div class="stepper-head">' +
+                    '<span class="stepper-title">Nexa is working…</span>' +
+                    '<span class="stepper-timer">⏱️ 0s</span>' +
+                '</div>' +
+                '<div class="stepper">' + buildStepperStagesHTML() + '</div>' +
+            '</div>' +
+        '</div>';
+
+    leadMsgContainer.appendChild(row);
+    _stepperRow = row;
+
+    startRunTimer(row.querySelector('.stepper-timer'));
+    scrollDown(leadChatArea);
+}
+
+// Remove the stepper immediately (no reply) and stop the timer
+function hideStepper() {
+    stopRunTimer();
+    if (_stepperRow && _stepperRow.parentNode) _stepperRow.parentNode.removeChild(_stepperRow);
+    _stepperRow = null;
+}
+
+// Fade the stepper out, then replace it in the same position with the reply.
+//
+// runId    — the run this swap belongs to (ignored if a newer run / clear happened)
+// renderFn — function(opts) that renders the reply; opts.replaceEl is the stepper row
+// seconds  — optional final elapsed seconds, shown as "Completed in Ns"
+function swapStepperWithReply(runId, renderFn, seconds) {
+    if (runId !== _runCounter) return;
+
+    var row = _stepperRow;
+    _stepperRow = null;
+
+    var opts = {};
+    if (typeof seconds === 'number') opts.duration = seconds;
+
+    if (!row || !row.parentNode) {
+        renderFn(opts);
+        return;
     }
 
-    var overlay = document.getElementById('leadStepperOverlay');
-    if (overlay) overlay.classList.remove('hidden');
-}
-
-// Hide the stepper overlay
-function hideStepper() {
-    var overlay = document.getElementById('leadStepperOverlay');
-    if (overlay) overlay.classList.add('hidden');
+    row.classList.add('fade-out');
+    setTimeout(function() {
+        if (runId !== _runCounter) {
+            if (row.parentNode) row.parentNode.removeChild(row);
+            return;
+        }
+        opts.replaceEl = row;
+        renderFn(opts);
+    }, 300);
 }
 
 // Update one stage's visual state.
@@ -202,9 +253,9 @@ function hideStepper() {
 // state   — 'waiting' | 'processing' | 'completed' | 'failed'
 // extra   — optional { sublabel: '3 of 10' }
 function updateStepperStage(stageId, state, extra) {
-    initStepper();
+    if (!_stepperRow) return;
 
-    var stageEl = document.querySelector('.stepper-stage[data-stage="' + stageId + '"]');
+    var stageEl = _stepperRow.querySelector('.stepper-stage[data-stage="' + stageId + '"]');
     if (!stageEl) return;
 
     stageEl.className = 'stepper-stage ' + state;
@@ -258,7 +309,11 @@ var leadMsgInput = document.getElementById('leadMsgInput');
 var leadSendBtn = document.getElementById('leadSendBtn');
 var leadCharCount = document.getElementById('leadCharCount');
 
-function appendLeadMsg(role, content) {
+// opts (optional):
+//   replaceEl — existing element to replace in place (used to swap the stepper for the reply)
+//   duration  — seconds; adds "Completed in Ns" to the message footer
+function appendLeadMsg(role, content, opts) {
+    opts = opts || {};
     var row = document.createElement('div');
     row.className = 'msg-row ' + role;
     var displayContent = content;
@@ -273,10 +328,20 @@ function appendLeadMsg(role, content) {
     var formattedContent = role === 'ai'
         ? formatAI(displayContent)
         : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(displayContent) : esc(displayContent));
+
+    var durationHTML = (typeof opts.duration === 'number')
+        ? '<span class="reply-duration">Completed in ' + opts.duration + 's</span> · '
+        : '';
+
     row.innerHTML = '<div class="av">' + avatarFor(role) + '</div>' +
                     '<div class="bubble-wrap"><div class="bubble">' + formattedContent + '</div>' +
-                    '<div class="msg-time">' + now() + '</div></div>';
-    leadMsgContainer.appendChild(row);
+                    '<div class="msg-time">' + durationHTML + now() + '</div></div>';
+
+    if (opts.replaceEl && opts.replaceEl.parentNode === leadMsgContainer) {
+        leadMsgContainer.replaceChild(row, opts.replaceEl);
+    } else {
+        leadMsgContainer.appendChild(row);
+    }
     scrollDown(leadChatArea);
 }
 
@@ -315,6 +380,7 @@ leadSendBtn.addEventListener('click', sendLeadMessage);
 function sendLeadMessage() {
     var text = leadMsgInput.value.trim();
     if (!text || isTyping) return;
+    // User bubble appears instantly, before any pipeline work begins
     appendLeadMsg('user', text);
     leadMsgInput.value = ''; leadMsgInput.style.height = 'auto'; updateLeadSend();
     streamLeadResponse(text);
@@ -333,7 +399,9 @@ function streamLeadResponse(message) {
         _activeEventSource = null;
     }
 
-    // Show stepper, all stages waiting
+    var runId = ++_runCounter;
+
+    // Show inline stepper (all stages waiting) and start the timer
     showStepper();
 
     var url = BACKEND + '/api/stream/pipeline'
@@ -346,9 +414,11 @@ function streamLeadResponse(message) {
     try {
         es = new EventSource(url);
     } catch (e) {
-        hideStepper();
-        appendLeadMsg('ai', '🔌 Could not open a live connection. Please try again.');
-        isTyping = false; updateLeadSend();
+        stopRunTimer();
+        swapStepperWithReply(runId, function(opts) {
+            appendLeadMsg('ai', '🔌 Could not open a live connection. Please try again.', opts);
+            isTyping = false; updateLeadSend();
+        });
         return;
     }
 
@@ -356,6 +426,8 @@ function streamLeadResponse(message) {
 
     // The backend sends: { stage: 's1'..'s7'|'done'|'error', data: { status, data?, current?, total? } }
     es.addEventListener('stage', function(event) {
+        if (runId !== _runCounter) return;
+
         var payload;
         try { payload = JSON.parse(event.data); } catch (e) { return; }
         if (!payload || !payload.stage) return;
@@ -375,30 +447,37 @@ function streamLeadResponse(message) {
         if (stageId === 'error') {
             try { es.close(); } catch (e) {}
             _activeEventSource = null;
+            stopRunTimer();
 
             // Mark any processing stage as failed
-            var processing = document.querySelectorAll('.stepper-stage.processing');
-            for (var i = 0; i < processing.length; i++) {
-                processing[i].className = 'stepper-stage failed';
+            if (_stepperRow) {
+                var processing = _stepperRow.querySelectorAll('.stepper-stage.processing');
+                for (var i = 0; i < processing.length; i++) {
+                    processing[i].className = 'stepper-stage failed';
+                }
             }
 
             setTimeout(function() {
-                hideStepper();
-                appendLeadMsg('ai', '⚠️ Something went wrong while processing your request. Please try again.');
-                isTyping = false; updateLeadSend();
+                swapStepperWithReply(runId, function(opts) {
+                    appendLeadMsg('ai', '⚠️ Something went wrong while processing your request. Please try again.', opts);
+                    isTyping = false; updateLeadSend();
+                });
             }, 900);
             return;
         }
 
-        // Done event — hide stepper, render final reply
+        // Done event — stop timer, fade stepper out, render final reply in its place
         if (stageId === 'done') {
             try { es.close(); } catch (e) {}
             _activeEventSource = null;
 
+            var secs = stopRunTimer();
+
             setTimeout(function() {
-                hideStepper();
-                renderFinalReply(stages['s7']);
-                isTyping = false; updateLeadSend();
+                swapStepperWithReply(runId, function(opts) {
+                    renderFinalReply(stages['s7'], opts);
+                    isTyping = false; updateLeadSend();
+                }, secs);
             }, 500);
             return;
         }
@@ -421,23 +500,28 @@ function streamLeadResponse(message) {
 
     es.addEventListener('error', function() {
         if (_activeEventSource !== es) return;
+        if (runId !== _runCounter) return;
 
         try { es.close(); } catch (e) {}
         _activeEventSource = null;
+
+        var secs = stopRunTimer();
 
         // If we got stage 7 data, the stream completed but the connection
         // closed abruptly. Treat as success.
         if (stages['s7']) {
             setTimeout(function() {
-                hideStepper();
-                renderFinalReply(stages['s7']);
-                isTyping = false; updateLeadSend();
+                swapStepperWithReply(runId, function(opts) {
+                    renderFinalReply(stages['s7'], opts);
+                    isTyping = false; updateLeadSend();
+                }, secs);
             }, 300);
         } else {
             setTimeout(function() {
-                hideStepper();
-                appendLeadMsg('ai', '🔌 Connection lost — please try again.');
-                isTyping = false; updateLeadSend();
+                swapStepperWithReply(runId, function(opts) {
+                    appendLeadMsg('ai', '🔌 Connection lost — please try again.', opts);
+                    isTyping = false; updateLeadSend();
+                });
             }, 300);
         }
     });
@@ -447,15 +531,15 @@ function streamLeadResponse(message) {
 //  FINAL REPLY RENDER — builds a chat bubble from stage 7 data
 // ──────────────────────────────────────────────────────────────
 
-function renderFinalReply(verification) {
+function renderFinalReply(verification, opts) {
     if (!verification || typeof verification !== 'object') {
-        appendLeadMsg('ai', 'Request received. How can I help further?');
+        appendLeadMsg('ai', 'Request received. How can I help further?', opts);
         return;
     }
 
     // Fallback shape — Generation or Verification returned a message
     if (typeof verification.message === 'string' && verification.message.trim()) {
-        appendLeadMsg('ai', '💬 ' + verification.message.trim());
+        appendLeadMsg('ai', '💬 ' + verification.message.trim(), opts);
         return;
     }
 
@@ -517,7 +601,7 @@ function renderFinalReply(verification) {
         lines.push('No qualified companies were found for this request.');
     }
 
-    appendLeadMsg('ai', lines.join('\n'));
+    appendLeadMsg('ai', lines.join('\n'), opts);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -662,14 +746,19 @@ function applyStatus(data) {
 //  CLEAR / NEW CHAT
 // ──────────────────────────────────────────────────────────────
 function clearChat() {
+    // Invalidate any in-flight run so its callbacks do nothing
+    _runCounter++;
+
     // Close any in-flight stream
     if (_activeEventSource) {
         try { _activeEventSource.close(); } catch (e) {}
         _activeEventSource = null;
     }
 
-    // Hide stepper if visible
+    // Remove stepper + stop timer if running, and unlock the input
     hideStepper();
+    isTyping = false;
+    updateLeadSend();
 
     leadMsgContainer.innerHTML = ''; conversationHistory = []; currentGeneratedLeads = []; currentSessionId = null;
     assistantMsgContainer.innerHTML = '';
@@ -704,9 +793,6 @@ document.addEventListener('DOMContentLoaded', function() {
     Promise.all([checkPlan(), updateStatus()]).catch(function() {});
     statusInterval = setInterval(updateStatus, 120000);
 
-    // Build stepper once so it exists even before first use
-    initStepper();
-
     // Legacy wizard form (guard — may not exist)
     var targetForm = document.getElementById('targetForm');
     if (targetForm) {
@@ -738,10 +824,11 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (stepper streaming enabled)');
+    console.log('✅ [PAGE] Nexa ready (inline stepper + timer enabled)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
+        stopRunTimer();
 
         if (_activeEventSource) {
             try { _activeEventSource.close(); } catch (e) {}
