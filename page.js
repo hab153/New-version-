@@ -104,20 +104,14 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — inline chat message showing pipeline progress
+//  STEPPER — 4 stages matching the new pipeline
 // ──────────────────────────────────────────────────────────────
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
-    { id: 's2', label: 'Planning' },
-    { id: 's3', label: 'Summary' },
-    { id: 's4', label: 'Generation' },
-    { id: 's5', label: 'Controlling' },
-    { id: 's6', label: 'Search System' },
-    { id: 's7', label: 'Verification' },
-    { id: 's8', label: 'Search Generation' },
-    { id: 's9', label: 'Search Controller' },
-    { id: 's10', label: 'Domain Extraction' }
+    { id: 's2', label: 'Generate Searches' },
+    { id: 's3', label: 'Search 1' },
+    { id: 's4', label: 'Search 2' }
 ];
 
 var _stepperRow = null;
@@ -441,17 +435,10 @@ function streamLeadResponse(message) {
 
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s7'], opts, stages['s8'], stages['s10']);
+                    renderFinalReply(stages['s2'], opts, stages['s3'], stages['s4']);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 500);
-            return;
-        }
-
-        if (stageId === 's6' && status === 'processing' && typeof stageData.current === 'number' && typeof stageData.total === 'number') {
-            updateStepperStage('s6', 'processing', {
-                sublabel: stageData.current + ' of ' + stageData.total
-            });
             return;
         }
 
@@ -471,10 +458,10 @@ function streamLeadResponse(message) {
 
         var secs = stopRunTimer();
 
-        if (stages['s7']) {
+        if (stages['s2']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s7'], opts, stages['s8'], stages['s10']);
+                    renderFinalReply(stages['s2'], opts, stages['s3'], stages['s4']);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 300);
@@ -490,160 +477,83 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — builds a chat bubble from stage 7 + 8 + 10 data
+//  FINAL REPLY RENDER — builds a chat bubble from the new pipeline
 // ──────────────────────────────────────────────────────────────
+//
+// stages['s2'] = { searches: [...] }
+// stages['s3'] = { search, response }   (search 1)
+// stages['s4'] = { search, response }   (search 2)
 
-function renderFinalReply(verification, opts, searchGeneration, domainExtraction) {
-    if (!verification || typeof verification !== 'object') {
-        appendLeadMsg('ai', 'Request received. How can I help further?', opts);
-        return;
-    }
-
-    if (typeof verification.message === 'string' && verification.message.trim()) {
-        appendLeadMsg('ai', '💬 ' + verification.message.trim(), opts);
-        return;
-    }
-
+function renderFinalReply(searchGeneration, opts, search1, search2) {
     var lines = [];
 
-    var summary = verification.summary;
-    if (summary && typeof summary === 'object') {
-        var parts = [];
-        if (typeof summary.valid === 'number') parts.push(summary.valid + ' valid');
-        if (typeof summary.invalid === 'number') parts.push(summary.invalid + ' invalid');
-        if (typeof summary.total === 'number') parts.push(summary.total + ' total');
-        if (parts.length > 0) {
-            lines.push('**📊 Summary:** ' + parts.join(' / '));
-        }
-        if (typeof summary.qualified === 'number') {
-            lines.push('**✅ Qualified (rating 5+):** ' + summary.qualified);
-        }
+    // ── Searches generated ──
+    var searches = [];
+    if (searchGeneration && Array.isArray(searchGeneration.searches)) {
+        searches = searchGeneration.searches.filter(function(s) {
+            return typeof s === 'string' && s.trim();
+        });
     }
 
-    var qualified = Array.isArray(verification.qualified) ? verification.qualified : [];
-
-    if (qualified.length > 0) {
+    if (searches.length > 0) {
+        lines.push('**🔎 SEARCHES GENERATED**');
         lines.push('');
+        for (var i = 0; i < searches.length; i++) {
+            lines.push((i + 1) + '. ' + searches[i].trim());
+        }
+        lines.push('');
+    }
+
+    // ── Results from each search ──
+    var searchEntries = [search1, search2].filter(function(e) {
+        return e && e.response && Array.isArray(e.response.results);
+    });
+
+    var totalResults = 0;
+    for (var e = 0; e < searchEntries.length; e++) {
+        totalResults += searchEntries[e].response.results.length;
+    }
+
+    if (searchEntries.length > 0) {
         lines.push('---');
         lines.push('');
-        lines.push('**QUALIFIED COMPANIES**');
+        lines.push('**📦 SEARCH RESULTS**');
+        lines.push('');
+        lines.push('📊 ' + searchEntries.length + ' search(es) returned ' + totalResults + ' result(s)');
         lines.push('');
 
-        for (var i = 0; i < qualified.length; i++) {
-            var c = qualified[i];
-            if (!c || typeof c !== 'object') continue;
+        for (var s = 0; s < searchEntries.length; s++) {
+            var entry = searchEntries[s];
+            var query = (typeof entry.search === 'string') ? entry.search : 'Search ' + (s + 1);
+            var results = Array.isArray(entry.response.results) ? entry.response.results : [];
 
-            var name = (typeof c.name === 'string' && c.name.trim()) ? c.name.trim() : ('Company ' + (i + 1));
-            lines.push('**' + (i + 1) + '. ' + name + '**');
+            lines.push('**' + (s + 1) + '. ' + query + '**');
+            lines.push('📄 ' + results.length + ' result(s)');
 
-            if (typeof c.rating === 'number') lines.push('⭐ Rating: ' + c.rating);
-            if (typeof c.status === 'string' && c.status.trim()) lines.push('🏷️ Status: ' + c.status.trim());
-            if (typeof c.reason === 'string' && c.reason.trim()) lines.push('💬 ' + c.reason.trim());
+            for (var r = 0; r < results.length && r < 5; r++) {
+                var item = results[r];
+                if (!item || typeof item !== 'object') continue;
 
-            var mentions = Array.isArray(c.mentions) ? c.mentions : [];
-            for (var j = 0; j < mentions.length; j++) {
-                var m = mentions[j];
-                if (!m || typeof m !== 'object') continue;
+                var title = (typeof item.title === 'string' && item.title.trim()) ? item.title.trim() : null;
+                var url = (typeof item.url === 'string' && item.url.trim()) ? item.url.trim() : null;
 
-                if (typeof m.url === 'string' && m.url.trim()) {
-                    lines.push('🔗 ' + m.url.trim());
+                if (title) {
+                    lines.push('• ' + title);
                 }
-                if (typeof m.title === 'string' && m.title.trim()) {
-                    lines.push('📝 ' + m.title.trim());
+                if (url) {
+                    lines.push('  🔗 ' + url);
                 }
-                if (j === 0) break;
+            }
+
+            if (results.length > 5) {
+                lines.push('… and ' + (results.length - 5) + ' more');
             }
 
             lines.push('');
         }
-    } else if (lines.length === 0) {
-        lines.push('No qualified companies were found for this request.');
-    }
-
-    // ── SEARCH GENERATION (stage 8) ──
-    if (searchGeneration && typeof searchGeneration === 'object') {
-
-        if (typeof searchGeneration.message === 'string' && searchGeneration.message.trim()) {
-            lines.push('');
-            lines.push('---');
-            lines.push('');
-            lines.push('**🔎 SEARCHES GENERATED**');
-            lines.push('');
-            lines.push('💬 ' + searchGeneration.message.trim());
-        } else if (Array.isArray(searchGeneration.searches) && searchGeneration.searches.length > 0) {
-            lines.push('');
-            lines.push('---');
-            lines.push('');
-            lines.push('**🔎 SEARCHES GENERATED (for domain discovery)**');
-            lines.push('');
-
-            for (var k = 0; k < searchGeneration.searches.length; k++) {
-                var searchText = searchGeneration.searches[k];
-                if (typeof searchText !== 'string' || !searchText.trim()) continue;
-                lines.push((k + 1) + '. ' + searchText.trim());
-            }
-        }
-    }
-
-    // ── DOMAIN EXTRACTION (stage 10) ──
-    if (domainExtraction && typeof domainExtraction === 'object') {
-
-        if (typeof domainExtraction.message === 'string' && domainExtraction.message.trim()) {
-            lines.push('');
-            lines.push('---');
-            lines.push('');
-            lines.push('**🌐 DOMAIN EXTRACTION**');
-            lines.push('');
-            lines.push('💬 ' + domainExtraction.message.trim());
-        } else {
-            var domainSummary = domainExtraction.summary;
-            if (domainSummary && typeof domainSummary === 'object') {
-                var dParts = [];
-                if (typeof domainSummary.withDomain === 'number') dParts.push(domainSummary.withDomain + ' with domain');
-                if (typeof domainSummary.withoutDomain === 'number') dParts.push(domainSummary.withoutDomain + ' without domain');
-                if (typeof domainSummary.total === 'number') dParts.push(domainSummary.total + ' total');
-                if (dParts.length > 0) {
-                    lines.push('');
-                    lines.push('---');
-                    lines.push('');
-                    lines.push('**🌐 DOMAIN EXTRACTION**');
-                    lines.push('');
-                    lines.push('📊 ' + dParts.join(' / '));
-                }
-            }
-
-            var domainCompanies = Array.isArray(domainExtraction.companies) ? domainExtraction.companies : [];
-
-            if (domainCompanies.length > 0) {
-                lines.push('');
-
-                for (var d = 0; d < domainCompanies.length; d++) {
-                    var dc = domainCompanies[d];
-                    if (!dc || typeof dc !== 'object') continue;
-
-                    var dcName = (typeof dc.name === 'string' && dc.name.trim()) ? dc.name.trim() : ('Company ' + (d + 1));
-                    lines.push('**' + (d + 1) + '. ' + dcName + '**');
-
-                    if (typeof dc.domain === 'string' && dc.domain.trim()) {
-                        lines.push('🌐 Domain: ' + dc.domain.trim());
-                    } else {
-                        lines.push('🌐 Domain: (not identified)');
-                    }
-
-                    var dcUrls = (dc.urls && typeof dc.urls === 'object') ? dc.urls : {};
-
-                    if (typeof dcUrls.contact === 'string' && dcUrls.contact.trim()) {
-                        lines.push('📧 Contact: ' + dcUrls.contact.trim());
-                    }
-
-                    if (typeof dcUrls.about === 'string' && dcUrls.about.trim()) {
-                        lines.push('ℹ️ About: ' + dcUrls.about.trim());
-                    }
-
-                    lines.push('');
-                }
-            }
-        }
+    } else {
+        lines.push('');
+        lines.push('⚠️ No search results were returned.');
     }
 
     appendLeadMsg('ai', lines.join('\n'), opts);
@@ -859,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (10-stage stepper + domain extraction)');
+    console.log('✅ [PAGE] Nexa ready (4-stage stepper + generate and search pipeline)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
