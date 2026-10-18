@@ -24,7 +24,7 @@ var CACHE_TTL = 60000;
 
 // ── STREAM STATE ─
 var _activeEventSource = null;
-var _runCounter = 0; // increments per run / clear, so stale callbacks can detect they are outdated
+var _runCounter = 0;
 
 // ──────────────────────────────────────────────────────────────
 //  UTIL
@@ -68,7 +68,6 @@ function formatAI(text) {
     return s;
 }
 
-// Nexa avatar helper
 function avatarFor(role) { return role === 'ai' ? 'N' : 'ME'; }
 
 // ──────────────────────────────────────────────────────────────
@@ -98,7 +97,6 @@ function hideGuide() {
     if (!m) return;
     m.style.display = 'none';
     document.body.style.overflow = '';
-    // auto-focus input after dismiss
     setTimeout(function() {
         var inp = currentMode === 'lead' ? leadMsgInput : assistantMsgInput;
         if (inp) inp.focus();
@@ -108,14 +106,6 @@ function hideGuide() {
 // ──────────────────────────────────────────────────────────────
 //  STEPPER — inline chat message showing pipeline progress
 // ──────────────────────────────────────────────────────────────
-//
-// The stepper is now a chat message at the AI reply position (left side).
-// It is created fresh for every request, updated by real SSE events, and
-// replaced in the same position by the AI's real reply when the pipeline
-// finishes. A live timer counts elapsed seconds while it runs.
-//
-// The backend sends neutral stage IDs (s1..s7) and a `done` event. The
-// stepper maps those IDs to display labels.
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
@@ -124,10 +114,11 @@ var STEPPER_STAGES = [
     { id: 's4', label: 'Generation' },
     { id: 's5', label: 'Controlling' },
     { id: 's6', label: 'Search System' },
-    { id: 's7', label: 'Verification' }
+    { id: 's7', label: 'Verification' },
+    { id: 's8', label: 'Search Generation' }
 ];
 
-var _stepperRow = null; // the inline stepper message row currently in the chat
+var _stepperRow = null;
 
 // ── Live timer ──
 var _timerInterval = null;
@@ -152,7 +143,6 @@ function startRunTimer(el) {
     }, 1000);
 }
 
-// Stops the timer and returns the final elapsed seconds
 function stopRunTimer() {
     var secs = elapsedSeconds();
     if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
@@ -160,7 +150,6 @@ function stopRunTimer() {
     return secs;
 }
 
-// Build the stage list markup (all stages waiting)
 function buildStepperStagesHTML() {
     var html = '';
     for (var i = 0; i < STEPPER_STAGES.length; i++) {
@@ -169,7 +158,6 @@ function buildStepperStagesHTML() {
 
         html += '<div class="stepper-stage waiting" data-stage="' + stage.id + '">';
         html +=   '<div class="stepper-icon">';
-        // Circle outline (waiting state)
         html +=     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">';
         html +=       '<circle cx="12" cy="12" r="8"/>';
         html +=     '</svg>';
@@ -183,9 +171,7 @@ function buildStepperStagesHTML() {
     return html;
 }
 
-// Show the stepper: appends an AI-style message row to the chat and starts the timer
 function showStepper() {
-    // Remove any leftover stepper first
     if (_stepperRow && _stepperRow.parentNode) _stepperRow.parentNode.removeChild(_stepperRow);
 
     var row = document.createElement('div');
@@ -210,18 +196,12 @@ function showStepper() {
     scrollDown(leadChatArea);
 }
 
-// Remove the stepper immediately (no reply) and stop the timer
 function hideStepper() {
     stopRunTimer();
     if (_stepperRow && _stepperRow.parentNode) _stepperRow.parentNode.removeChild(_stepperRow);
     _stepperRow = null;
 }
 
-// Fade the stepper out, then replace it in the same position with the reply.
-//
-// runId    — the run this swap belongs to (ignored if a newer run / clear happened)
-// renderFn — function(opts) that renders the reply; opts.replaceEl is the stepper row
-// seconds  — optional final elapsed seconds, shown as "Completed in Ns"
 function swapStepperWithReply(runId, renderFn, seconds) {
     if (runId !== _runCounter) return;
 
@@ -247,11 +227,6 @@ function swapStepperWithReply(runId, renderFn, seconds) {
     }, 300);
 }
 
-// Update one stage's visual state.
-//
-// stageId — 's1'..'s7'
-// state   — 'waiting' | 'processing' | 'completed' | 'failed'
-// extra   — optional { sublabel: '3 of 10' }
 function updateStepperStage(stageId, state, extra) {
     if (!_stepperRow) return;
 
@@ -309,9 +284,6 @@ var leadMsgInput = document.getElementById('leadMsgInput');
 var leadSendBtn = document.getElementById('leadSendBtn');
 var leadCharCount = document.getElementById('leadCharCount');
 
-// opts (optional):
-//   replaceEl — existing element to replace in place (used to swap the stepper for the reply)
-//   duration  — seconds; adds "Completed in Ns" to the message footer
 function appendLeadMsg(role, content, opts) {
     opts = opts || {};
     var row = document.createElement('div');
@@ -380,7 +352,6 @@ leadSendBtn.addEventListener('click', sendLeadMessage);
 function sendLeadMessage() {
     var text = leadMsgInput.value.trim();
     if (!text || isTyping) return;
-    // User bubble appears instantly, before any pipeline work begins
     appendLeadMsg('user', text);
     leadMsgInput.value = ''; leadMsgInput.style.height = 'auto'; updateLeadSend();
     streamLeadResponse(text);
@@ -393,7 +364,6 @@ function sendLeadMessage() {
 function streamLeadResponse(message) {
     isTyping = true; updateLeadSend();
 
-    // Close any lingering stream from a previous request
     if (_activeEventSource) {
         try { _activeEventSource.close(); } catch (e) {}
         _activeEventSource = null;
@@ -401,7 +371,6 @@ function streamLeadResponse(message) {
 
     var runId = ++_runCounter;
 
-    // Show inline stepper (all stages waiting) and start the timer
     showStepper();
 
     var url = BACKEND + '/api/stream/pipeline'
@@ -424,7 +393,6 @@ function streamLeadResponse(message) {
 
     _activeEventSource = es;
 
-    // The backend sends: { stage: 's1'..'s7'|'done'|'error', data: { status, data?, current?, total? } }
     es.addEventListener('stage', function(event) {
         if (runId !== _runCounter) return;
 
@@ -438,18 +406,15 @@ function streamLeadResponse(message) {
 
         console.log('[SSE] Stage event:', stageId, status);
 
-        // Store final data for the done renderer
         if (status === 'completed' && stageData.data) {
             stages[stageId] = stageData.data;
         }
 
-        // Error event
         if (stageId === 'error') {
             try { es.close(); } catch (e) {}
             _activeEventSource = null;
             stopRunTimer();
 
-            // Mark any processing stage as failed
             if (_stepperRow) {
                 var processing = _stepperRow.querySelectorAll('.stepper-stage.processing');
                 for (var i = 0; i < processing.length; i++) {
@@ -466,7 +431,6 @@ function streamLeadResponse(message) {
             return;
         }
 
-        // Done event — stop timer, fade stepper out, render final reply in its place
         if (stageId === 'done') {
             try { es.close(); } catch (e) {}
             _activeEventSource = null;
@@ -482,7 +446,6 @@ function streamLeadResponse(message) {
             return;
         }
 
-        // Per-search progress for s6
         if (stageId === 's6' && status === 'processing' && typeof stageData.current === 'number' && typeof stageData.total === 'number') {
             updateStepperStage('s6', 'processing', {
                 sublabel: stageData.current + ' of ' + stageData.total
@@ -490,7 +453,6 @@ function streamLeadResponse(message) {
             return;
         }
 
-        // Normal stage transitions
         if (status === 'processing') {
             updateStepperStage(stageId, 'processing');
         } else if (status === 'completed') {
@@ -507,8 +469,6 @@ function streamLeadResponse(message) {
 
         var secs = stopRunTimer();
 
-        // If we got stage 7 data, the stream completed but the connection
-        // closed abruptly. Treat as success.
         if (stages['s7']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
@@ -537,7 +497,6 @@ function renderFinalReply(verification, opts) {
         return;
     }
 
-    // Fallback shape — Generation or Verification returned a message
     if (typeof verification.message === 'string' && verification.message.trim()) {
         appendLeadMsg('ai', '💬 ' + verification.message.trim(), opts);
         return;
@@ -545,7 +504,6 @@ function renderFinalReply(verification, opts) {
 
     var lines = [];
 
-    // ── Summary block ──
     var summary = verification.summary;
     if (summary && typeof summary === 'object') {
         var parts = [];
@@ -560,7 +518,6 @@ function renderFinalReply(verification, opts) {
         }
     }
 
-    // ── Qualified companies ──
     var qualified = Array.isArray(verification.qualified) ? verification.qualified : [];
 
     if (qualified.length > 0) {
@@ -746,16 +703,13 @@ function applyStatus(data) {
 //  CLEAR / NEW CHAT
 // ──────────────────────────────────────────────────────────────
 function clearChat() {
-    // Invalidate any in-flight run so its callbacks do nothing
     _runCounter++;
 
-    // Close any in-flight stream
     if (_activeEventSource) {
         try { _activeEventSource.close(); } catch (e) {}
         _activeEventSource = null;
     }
 
-    // Remove stepper + stop timer if running, and unlock the input
     hideStepper();
     isTyping = false;
     updateLeadSend();
@@ -771,7 +725,6 @@ function clearChat() {
 
     var url = new URL(window.location); url.searchParams.delete('session'); window.history.pushState({}, '', url);
 
-    // Show guide again on new chat
     showGuide();
 }
 
@@ -779,21 +732,17 @@ function clearChat() {
 //  INIT
 // ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
-    // Topbar buttons
     var newBtn = document.getElementById('newChatBtn');
     var clrBtn = document.getElementById('clearSessionBtn');
     if (newBtn) newBtn.addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
     if (clrBtn) clrBtn.addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
 
-    // Guide modal Okay button
     var okayBtn = document.getElementById('guideOkayBtn');
     if (okayBtn) okayBtn.addEventListener('click', hideGuide);
 
-    // Plan + status
     Promise.all([checkPlan(), updateStatus()]).catch(function() {});
     statusInterval = setInterval(updateStatus, 120000);
 
-    // Legacy wizard form (guard — may not exist)
     var targetForm = document.getElementById('targetForm');
     if (targetForm) {
         targetForm.addEventListener('submit', function(e) {
@@ -809,12 +758,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load session if present (skip guide)
     if (currentSessionId) {
         hideGuide();
         loadLeadSession();
     } else {
-        // Show guide on first load / new chat
         showGuide();
     }
 
@@ -824,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (inline stepper + timer enabled)');
+    console.log('✅ [PAGE] Nexa ready (8-stage stepper + timer enabled)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
