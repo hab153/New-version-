@@ -785,4 +785,134 @@ body::after {
         gap: 12px;
         padding: 8px 0;
     }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TREE / BRANCH LAYOUT — for the 4-stage pipeline
+   Understanding → Generate Searches → [Search 1 | Search 2]
+   ══════════════════════════════════════════════════════════════ */
+
+/* Container for a branch: the parent stage + arrow + 2-column children */
+.stepper-branch {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* The trunk above the branch (Understanding + Generate Searches) */
+.stepper-trunk {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Parent → split arrow (vertical line + V shape) */
+.stepper-branch-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 24px;
+    position: relative;
+    margin: 2px 0;
+}
+
+.stepper-branch-arrow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.5px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 1px;
+    transition: background 0.3s ease;
+}
+
+/* Arrow glows green when the parent (s2) is completed */
+.stepper-branch-arrow.branch-complete::before {
+    background: rgba(102, 221, 153, 0.45);
+}
+
+/* The V-shape lines that split down-left and down-right */
+.stepper-branch-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1.5px;
+    background: transparent;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1px;
+    transition: border-color 0.3s ease;
+}
+
+.stepper-branch-arrow.branch-complete::after {
+    border-top-color: rgba(102, 221, 153, 0.45);
+}
+
+/* The two children (Search 1 and Search 2) side-by-side */
+.stepper-branch-children {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    padding: 4px 0 0 0;
+}
+
+/* Each child — a compact stage with icon on top and label below */
+.stepper-branch-children .stepper-stage {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 10px 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.stepper-branch-children .stepper-stage .stepper-label {
+    flex: 0 0 auto;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.stepper-branch-children .stepper-stage .stepper-icon {
+    width: 26px;
+    height: 26px;
+}
+
+.stepper-branch-children .stepper-stage .stepper-icon svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* Subtle highlight when a child is processing */
+.stepper-branch-children .stepper-stage.processing {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Completed children get a soft green tint */
+.stepper-branch-children .stepper-stage.completed {
+    background: rgba(102, 221, 153, 0.05);
+    border-color: rgba(102, 221, 153, 0.22);
+}
+
+/* Narrow screens — keep side-by-side but tighter */
+@media (max-width: 380px) {
+    .stepper-branch-children {
+        gap: 8px;
     }
+    .stepper-branch-children .stepper-stage {
+        padding: 8px 4px;
+    }
+    .stepper-branch-children .stepper-stage .stepper-label {
+        font-size: 10px;
+    }
+}
