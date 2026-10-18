@@ -439,7 +439,7 @@ function streamLeadResponse(message) {
 
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s7'], opts);
+                    renderFinalReply(stages['s7'], opts, stages['s8']);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 500);
@@ -472,7 +472,7 @@ function streamLeadResponse(message) {
         if (stages['s7']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s7'], opts);
+                    renderFinalReply(stages['s7'], opts, stages['s8']);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 300);
@@ -488,10 +488,10 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — builds a chat bubble from stage 7 data
+//  FINAL REPLY RENDER — builds a chat bubble from stage 7 + 8 data
 // ──────────────────────────────────────────────────────────────
 
-function renderFinalReply(verification, opts) {
+function renderFinalReply(verification, opts, searchGeneration) {
     if (!verification || typeof verification !== 'object') {
         appendLeadMsg('ai', 'Request received. How can I help further?', opts);
         return;
@@ -556,6 +556,31 @@ function renderFinalReply(verification, opts) {
         }
     } else if (lines.length === 0) {
         lines.push('No qualified companies were found for this request.');
+    }
+
+    // ── SEARCH GENERATION (stage 8) ──
+    if (searchGeneration && typeof searchGeneration === 'object') {
+
+        if (typeof searchGeneration.message === 'string' && searchGeneration.message.trim()) {
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            lines.push('**🔎 SEARCHES GENERATED**');
+            lines.push('');
+            lines.push('💬 ' + searchGeneration.message.trim());
+        } else if (Array.isArray(searchGeneration.searches) && searchGeneration.searches.length > 0) {
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            lines.push('**🔎 SEARCHES GENERATED (for domain discovery)**');
+            lines.push('');
+
+            for (var k = 0; k < searchGeneration.searches.length; k++) {
+                var searchText = searchGeneration.searches[k];
+                if (typeof searchText !== 'string' || !searchText.trim()) continue;
+                lines.push((k + 1) + '. ' + searchText.trim());
+            }
+        }
     }
 
     appendLeadMsg('ai', lines.join('\n'), opts);
@@ -771,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (8-stage stepper + timer enabled)');
+    console.log('✅ [PAGE] Nexa ready (8-stage stepper + search generation display)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
