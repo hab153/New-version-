@@ -115,7 +115,8 @@ var STEPPER_STAGES = [
     { id: 's5', label: 'Controlling' },
     { id: 's6', label: 'Search System' },
     { id: 's7', label: 'Verification' },
-    { id: 's8', label: 'Search Generation' }
+    { id: 's8', label: 'Search Generation' },
+    { id: 's9', label: 'Search Controller' }
 ];
 
 var _stepperRow = null;
@@ -796,7 +797,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (8-stage stepper + search generation display)');
+    console.log('✅ [PAGE] Nexa ready (9-stage stepper + search generation + search controller)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
