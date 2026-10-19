@@ -104,7 +104,7 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — 2 stages matching the new pipeline
+//  STEPPER — 2 stages matching the Seeker pipeline
 // ──────────────────────────────────────────────────────────────
 
 var STEPPER_STAGES = [
@@ -475,13 +475,13 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — builds a chat bubble from the 2-stage pipeline
+//  FINAL REPLY RENDER
 // ──────────────────────────────────────────────────────────────
 //
-// stages['s2'] = { searches: [...], tavilyResults: [...] }
+// stages['s2'] = { searches: [...], results: [...] }
 //
-// tavilyResults is an array of { search, response } — one per Tavily
-// search that succeeded (0, 1, or 2 entries).
+// Seeker.js returns { searches, results } — not tavilyResults.
+// Each results entry is { search, response } — one per Tavily call.
 
 function renderFinalReply(discovery, opts) {
     var lines = [];
@@ -504,12 +504,12 @@ function renderFinalReply(discovery, opts) {
     }
 
     // ── Results from each Tavily search ──
-    var tavilyResults =
-        discovery && Array.isArray(discovery.tavilyResults)
-            ? discovery.tavilyResults
+    var results =
+        discovery && Array.isArray(discovery.results)
+            ? discovery.results
             : [];
 
-    var searchEntries = tavilyResults.filter(function(e) {
+    var searchEntries = results.filter(function(e) {
         return e && e.response && Array.isArray(e.response.results);
     });
 
@@ -529,28 +529,24 @@ function renderFinalReply(discovery, opts) {
         for (var s = 0; s < searchEntries.length; s++) {
             var entry = searchEntries[s];
             var query = (typeof entry.search === 'string') ? entry.search : 'Search ' + (s + 1);
-            var results = Array.isArray(entry.response.results) ? entry.response.results : [];
+            var items = Array.isArray(entry.response.results) ? entry.response.results : [];
 
             lines.push('**' + (s + 1) + '. ' + query + '**');
-            lines.push('📄 ' + results.length + ' result(s)');
+            lines.push('📄 ' + items.length + ' result(s)');
 
-            for (var r = 0; r < results.length && r < 5; r++) {
-                var item = results[r];
+            for (var r = 0; r < items.length && r < 5; r++) {
+                var item = items[r];
                 if (!item || typeof item !== 'object') continue;
 
                 var title = (typeof item.title === 'string' && item.title.trim()) ? item.title.trim() : null;
                 var url = (typeof item.url === 'string' && item.url.trim()) ? item.url.trim() : null;
 
-                if (title) {
-                    lines.push('• ' + title);
-                }
-                if (url) {
-                    lines.push('  🔗 ' + url);
-                }
+                if (title) lines.push('• ' + title);
+                if (url) lines.push('  🔗 ' + url);
             }
 
-            if (results.length > 5) {
-                lines.push('… and ' + (results.length - 5) + ' more');
+            if (items.length > 5) {
+                lines.push('… and ' + (items.length - 5) + ' more');
             }
 
             lines.push('');
@@ -773,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (2-stage stepper + generate and search pipeline)');
+    console.log('✅ [PAGE] Nexa ready (2-stage stepper + Seeker pipeline)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
