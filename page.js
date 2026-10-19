@@ -104,17 +104,17 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — 2 stages matching the Seeker pipeline
+//  STEPPER — 3 stages matching the new pipeline
 // ──────────────────────────────────────────────────────────────
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
-    { id: 's2', label: 'Discovery' }
+    { id: 's2', label: 'Discovery' },
+    { id: 's3', label: 'Domain Finder' }
 ];
 
 var _stepperRow = null;
 
-// ── Live timer ──
 var _timerInterval = null;
 var _timerStart = 0;
 var _timerEl = null;
@@ -260,12 +260,6 @@ function updateStepperStage(stageId, state, extra) {
 
     if (labelEl && stageConfig) {
         labelEl.textContent = stageConfig.label;
-        if (extra && typeof extra.sublabel === 'string' && extra.sublabel.trim()) {
-            var sub = document.createElement('span');
-            sub.className = 'stepper-sublabel';
-            sub.textContent = extra.sublabel.trim();
-            labelEl.appendChild(sub);
-        }
     }
 }
 
@@ -352,7 +346,7 @@ function sendLeadMessage() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  LEAD STREAM — feeds the stepper with real backend events
+//  LEAD STREAM
 // ──────────────────────────────────────────────────────────────
 
 function streamLeadResponse(message) {
@@ -433,7 +427,7 @@ function streamLeadResponse(message) {
 
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s2'], opts);
+                    renderFinalReply(stages['s3'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 500);
@@ -456,10 +450,10 @@ function streamLeadResponse(message) {
 
         var secs = stopRunTimer();
 
-        if (stages['s2']) {
+        if (stages['s3']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s2'], opts);
+                    renderFinalReply(stages['s3'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 300);
@@ -475,85 +469,57 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER
+//  FINAL REPLY RENDER — reads from Finder's output
 // ──────────────────────────────────────────────────────────────
 //
-// stages['s2'] = { searches: [...], results: [...] }
+// stages['s3'] = { companies: [...], message: string|null }
 //
-// Seeker.js returns { searches, results } — not tavilyResults.
-// Each results entry is { search, response } — one per Tavily call.
+// Each company: { name, query, results: {...Tavily response...} }
 
-function renderFinalReply(discovery, opts) {
+function renderFinalReply(domain, opts) {
     var lines = [];
 
-    // ── Searches generated ──
-    var searches = [];
-    if (discovery && Array.isArray(discovery.searches)) {
-        searches = discovery.searches.filter(function(s) {
-            return typeof s === 'string' && s.trim();
-        });
+    // ── Fallback message ──
+    if (domain && typeof domain.message === 'string' && domain.message.trim()) {
+        appendLeadMsg('ai', '💬 ' + domain.message.trim(), opts);
+        return;
     }
 
-    if (searches.length > 0) {
-        lines.push('**🔎 SEARCHES GENERATED**');
-        lines.push('');
-        for (var i = 0; i < searches.length; i++) {
-            lines.push((i + 1) + '. ' + searches[i].trim());
+    var companies = Array.isArray(domain?.companies) ? domain.companies : [];
+
+    if (companies.length === 0) {
+        appendLeadMsg('ai', '⚠️ No company results were returned.', opts);
+        return;
+    }
+
+    lines.push('**🏢 COMPANIES DISCOVERED**');
+    lines.push('');
+
+    for (var i = 0; i < companies.length; i++) {
+        var c = companies[i] || {};
+        var name = c.name || ('Company ' + (i + 1));
+        var query = c.query || '';
+        var tavilyResults = Array.isArray(c.results?.results) ? c.results.results : [];
+
+        lines.push('**' + (i + 1) + '. ' + name + '**');
+        if (query) lines.push('🔎 Query: ' + query);
+        lines.push('📄 ' + tavilyResults.length + ' result(s)');
+
+        var top = tavilyResults.slice(0, 5);
+        for (var r = 0; r < top.length; r++) {
+            var item = top[r] || {};
+            var title = (typeof item.title === 'string' && item.title.trim()) ? item.title.trim() : null;
+            var url = (typeof item.url === 'string' && item.url.trim()) ? item.url.trim() : null;
+
+            if (title) lines.push('• ' + title);
+            if (url) lines.push('  🔗 ' + url);
         }
-        lines.push('');
-    }
 
-    // ── Results from each Tavily search ──
-    var results =
-        discovery && Array.isArray(discovery.results)
-            ? discovery.results
-            : [];
-
-    var searchEntries = results.filter(function(e) {
-        return e && e.response && Array.isArray(e.response.results);
-    });
-
-    var totalResults = 0;
-    for (var e = 0; e < searchEntries.length; e++) {
-        totalResults += searchEntries[e].response.results.length;
-    }
-
-    if (searchEntries.length > 0) {
-        lines.push('---');
-        lines.push('');
-        lines.push('**📦 SEARCH RESULTS**');
-        lines.push('');
-        lines.push('📊 ' + searchEntries.length + ' search(es) returned ' + totalResults + ' result(s)');
-        lines.push('');
-
-        for (var s = 0; s < searchEntries.length; s++) {
-            var entry = searchEntries[s];
-            var query = (typeof entry.search === 'string') ? entry.search : 'Search ' + (s + 1);
-            var items = Array.isArray(entry.response.results) ? entry.response.results : [];
-
-            lines.push('**' + (s + 1) + '. ' + query + '**');
-            lines.push('📄 ' + items.length + ' result(s)');
-
-            for (var r = 0; r < items.length && r < 5; r++) {
-                var item = items[r];
-                if (!item || typeof item !== 'object') continue;
-
-                var title = (typeof item.title === 'string' && item.title.trim()) ? item.title.trim() : null;
-                var url = (typeof item.url === 'string' && item.url.trim()) ? item.url.trim() : null;
-
-                if (title) lines.push('• ' + title);
-                if (url) lines.push('  🔗 ' + url);
-            }
-
-            if (items.length > 5) {
-                lines.push('… and ' + (items.length - 5) + ' more');
-            }
-
-            lines.push('');
+        if (tavilyResults.length > 5) {
+            lines.push('… and ' + (tavilyResults.length - 5) + ' more');
         }
-    } else {
+
         lines.push('');
-        lines.push('⚠️ No search results were returned.');
     }
 
     appendLeadMsg('ai', lines.join('\n'), opts);
@@ -769,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (2-stage stepper + Seeker pipeline)');
+    console.log('✅ [PAGE] Nexa ready (3-stage stepper + Seeker → Finder pipeline)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
