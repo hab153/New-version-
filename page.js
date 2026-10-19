@@ -104,14 +104,12 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — 4 stages matching the new pipeline
+//  STEPPER — 2 stages matching the new pipeline
 // ──────────────────────────────────────────────────────────────
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
-    { id: 's2', label: 'Generate Searches' },
-    { id: 's3', label: 'Search 1' },
-    { id: 's4', label: 'Search 2' }
+    { id: 's2', label: 'Discovery' }
 ];
 
 var _stepperRow = null;
@@ -435,7 +433,7 @@ function streamLeadResponse(message) {
 
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s2'], opts, stages['s3'], stages['s4']);
+                    renderFinalReply(stages['s2'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 500);
@@ -461,7 +459,7 @@ function streamLeadResponse(message) {
         if (stages['s2']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s2'], opts, stages['s3'], stages['s4']);
+                    renderFinalReply(stages['s2'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 300);
@@ -477,20 +475,21 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — builds a chat bubble from the new pipeline
+//  FINAL REPLY RENDER — builds a chat bubble from the 2-stage pipeline
 // ──────────────────────────────────────────────────────────────
 //
-// stages['s2'] = { searches: [...] }
-// stages['s3'] = { search, response }   (search 1)
-// stages['s4'] = { search, response }   (search 2)
+// stages['s2'] = { searches: [...], tavilyResults: [...] }
+//
+// tavilyResults is an array of { search, response } — one per Tavily
+// search that succeeded (0, 1, or 2 entries).
 
-function renderFinalReply(searchGeneration, opts, search1, search2) {
+function renderFinalReply(discovery, opts) {
     var lines = [];
 
     // ── Searches generated ──
     var searches = [];
-    if (searchGeneration && Array.isArray(searchGeneration.searches)) {
-        searches = searchGeneration.searches.filter(function(s) {
+    if (discovery && Array.isArray(discovery.searches)) {
+        searches = discovery.searches.filter(function(s) {
             return typeof s === 'string' && s.trim();
         });
     }
@@ -504,8 +503,13 @@ function renderFinalReply(searchGeneration, opts, search1, search2) {
         lines.push('');
     }
 
-    // ── Results from each search ──
-    var searchEntries = [search1, search2].filter(function(e) {
+    // ── Results from each Tavily search ──
+    var tavilyResults =
+        discovery && Array.isArray(discovery.tavilyResults)
+            ? discovery.tavilyResults
+            : [];
+
+    var searchEntries = tavilyResults.filter(function(e) {
         return e && e.response && Array.isArray(e.response.results);
     });
 
@@ -769,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (4-stage stepper + generate and search pipeline)');
+    console.log('✅ [PAGE] Nexa ready (2-stage stepper + generate and search pipeline)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
