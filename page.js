@@ -104,13 +104,14 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — 3 stages matching the new pipeline
+//  STEPPER — 4 stages matching the new pipeline
 // ──────────────────────────────────────────────────────────────
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
     { id: 's2', label: 'Discovery' },
-    { id: 's3', label: 'Domain Finder' }
+    { id: 's3', label: 'Domain Finder' },
+    { id: 's4', label: 'Contact Pages' }
 ];
 
 var _stepperRow = null;
@@ -427,7 +428,7 @@ function streamLeadResponse(message) {
 
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s3'], opts);
+                    renderFinalReply(stages['s4'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 500);
@@ -450,10 +451,10 @@ function streamLeadResponse(message) {
 
         var secs = stopRunTimer();
 
-        if (stages['s3']) {
+        if (stages['s4']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s3'], opts);
+                    renderFinalReply(stages['s4'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 300);
@@ -469,53 +470,48 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — reads from Finder's output
+//  FINAL REPLY RENDER — reads from ContactPages output
 // ──────────────────────────────────────────────────────────────
 //
-// stages['s3'] = { companies: [...], message: string|null }
+// stages['s4'] = { pages: [...], message: string|null }
 //
-// Each company: { name, query, results: {...Tavily response...} }
-//
-// All results are shown. Finder.js already filtered out social media
-// (LinkedIn, X, Facebook) before returning.
+// Each page: { name, domain, mapResponse: { results: [...] } }
 
-function renderFinalReply(domain, opts) {
+function renderFinalReply(contactPages, opts) {
     var lines = [];
 
     // ── Fallback message ──
-    if (domain && typeof domain.message === 'string' && domain.message.trim()) {
-        appendLeadMsg('ai', '💬 ' + domain.message.trim(), opts);
+    if (contactPages && typeof contactPages.message === 'string' && contactPages.message.trim()) {
+        appendLeadMsg('ai', '💬 ' + contactPages.message.trim(), opts);
         return;
     }
 
-    var companies = Array.isArray(domain?.companies) ? domain.companies : [];
+    var pages = Array.isArray(contactPages?.pages) ? contactPages.pages : [];
 
-    if (companies.length === 0) {
-        appendLeadMsg('ai', '⚠️ No company results were returned.', opts);
+    if (pages.length === 0) {
+        appendLeadMsg('ai', '⚠️ No company page results were returned.', opts);
         return;
     }
 
-    lines.push('**🏢 COMPANIES DISCOVERED**');
+    lines.push('**🏢 COMPANY PAGES DISCOVERED**');
     lines.push('');
 
-    for (var i = 0; i < companies.length; i++) {
-        var c = companies[i] || {};
-        var name = c.name || ('Company ' + (i + 1));
-        var query = c.query || '';
-        var tavilyResults = Array.isArray(c.results?.results) ? c.results.results : [];
+    for (var i = 0; i < pages.length; i++) {
+        var p = pages[i] || {};
+        var name = p.name || ('Company ' + (i + 1));
+        var domain = p.domain || '';
+        var urls = Array.isArray(p.mapResponse?.results) ? p.mapResponse.results : [];
 
         lines.push('**' + (i + 1) + '. ' + name + '**');
-        if (query) lines.push('🔎 Query: ' + query);
-        lines.push('📄 ' + tavilyResults.length + ' result(s)');
+        if (domain) lines.push('🌐 Domain: ' + domain);
+        lines.push('🔗 ' + urls.length + ' page URL(s) found');
+        lines.push('');
 
-        // Show ALL results — no truncation
-        for (var r = 0; r < tavilyResults.length; r++) {
-            var item = tavilyResults[r] || {};
-            var title = (typeof item.title === 'string' && item.title.trim()) ? item.title.trim() : null;
-            var url = (typeof item.url === 'string' && item.url.trim()) ? item.url.trim() : null;
-
-            if (title) lines.push('• ' + title);
-            if (url) lines.push('  🔗 ' + url);
+        for (var u = 0; u < urls.length; u++) {
+            var url = urls[u];
+            if (typeof url === 'string' && url.trim().length > 0) {
+                lines.push('  • ' + url.trim());
+            }
         }
 
         lines.push('');
@@ -734,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (3-stage stepper + Seeker → Finder pipeline)');
+    console.log('✅ [PAGE] Nexa ready (4-stage stepper + Seeker → Finder → ContactPages pipeline)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
