@@ -475,6 +475,9 @@ function streamLeadResponse(message) {
 // stages['s3'] = { companies: [...], message: string|null }
 //
 // Each company: { name, query, results: {...Tavily response...} }
+//
+// All results are shown. Finder.js already filtered out social media
+// (LinkedIn, X, Facebook) before returning.
 
 function renderFinalReply(domain, opts) {
     var lines = [];
@@ -505,18 +508,14 @@ function renderFinalReply(domain, opts) {
         if (query) lines.push('🔎 Query: ' + query);
         lines.push('📄 ' + tavilyResults.length + ' result(s)');
 
-        var top = tavilyResults.slice(0, 5);
-        for (var r = 0; r < top.length; r++) {
-            var item = top[r] || {};
+        // Show ALL results — no truncation
+        for (var r = 0; r < tavilyResults.length; r++) {
+            var item = tavilyResults[r] || {};
             var title = (typeof item.title === 'string' && item.title.trim()) ? item.title.trim() : null;
             var url = (typeof item.url === 'string' && item.url.trim()) ? item.url.trim() : null;
 
             if (title) lines.push('• ' + title);
             if (url) lines.push('  🔗 ' + url);
-        }
-
-        if (tavilyResults.length > 5) {
-            lines.push('… and ' + (tavilyResults.length - 5) + ' more');
         }
 
         lines.push('');
