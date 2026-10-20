@@ -104,14 +104,15 @@ function hideGuide() {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  STEPPER — 4 stages matching the new pipeline
+//  STEPPER — 5 stages matching the new pipeline
 // ──────────────────────────────────────────────────────────────
 
 var STEPPER_STAGES = [
     { id: 's1', label: 'Understanding' },
     { id: 's2', label: 'Discovery' },
     { id: 's3', label: 'Domain Finder' },
-    { id: 's4', label: 'Contact Pages' }
+    { id: 's4', label: 'Contact Pages' },
+    { id: 's5', label: 'Company Data' }
 ];
 
 var _stepperRow = null;
@@ -428,7 +429,7 @@ function streamLeadResponse(message) {
 
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s4'], opts);
+                    renderFinalReply(stages['s5'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 500);
@@ -451,10 +452,10 @@ function streamLeadResponse(message) {
 
         var secs = stopRunTimer();
 
-        if (stages['s4']) {
+        if (stages['s5']) {
             setTimeout(function() {
                 swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s4'], opts);
+                    renderFinalReply(stages['s5'], opts);
                     isTyping = false; updateLeadSend();
                 }, secs);
             }, 300);
@@ -470,54 +471,86 @@ function streamLeadResponse(message) {
 }
 
 // ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — reads from ContactPages output
+//  FINAL REPLY RENDER — reads from Searching's output
 // ──────────────────────────────────────────────────────────────
 //
-// stages['s4'] = { pages: [...], message: string|null }
+// stages['s5'] = { companies: [...], message: string|null }
 //
-// Each page: { name, domain, mapResponse: { results: [...] } }
+// Each company: { companyName, email, emailStatus,
+//                 companyInformation, informationStatus, phoneNumber }
+//
+// Renders exactly 4 labeled fields per company — nothing else.
 
-function renderFinalReply(contactPages, opts) {
-    var lines = [];
-
+function renderFinalReply(searchingOutput, opts) {
     // ── Fallback message ──
-    if (contactPages && typeof contactPages.message === 'string' && contactPages.message.trim()) {
-        appendLeadMsg('ai', '💬 ' + contactPages.message.trim(), opts);
+    if (
+        searchingOutput &&
+        typeof searchingOutput.message === 'string' &&
+        searchingOutput.message.trim()
+    ) {
+        appendLeadMsg('ai', '💬 ' + searchingOutput.message.trim(), opts);
         return;
     }
 
-    var pages = Array.isArray(contactPages?.pages) ? contactPages.pages : [];
+    var companies = Array.isArray(searchingOutput?.companies)
+        ? searchingOutput.companies
+        : [];
 
-    if (pages.length === 0) {
-        appendLeadMsg('ai', '⚠️ No company page results were returned.', opts);
+    if (companies.length === 0) {
+        appendLeadMsg('ai', '⚠️ No company data was returned.', opts);
         return;
     }
 
-    lines.push('**🏢 COMPANY PAGES DISCOVERED**');
-    lines.push('');
+    var blocks = [];
 
-    for (var i = 0; i < pages.length; i++) {
-        var p = pages[i] || {};
-        var name = p.name || ('Company ' + (i + 1));
-        var domain = p.domain || '';
-        var urls = Array.isArray(p.mapResponse?.results) ? p.mapResponse.results : [];
+    for (var i = 0; i < companies.length; i++) {
+        var c = companies[i] || {};
 
-        lines.push('**' + (i + 1) + '. ' + name + '**');
-        if (domain) lines.push('🌐 Domain: ' + domain);
-        lines.push('🔗 ' + urls.length + ' page URL(s) found');
-        lines.push('');
+        var name =
+            typeof c.companyName === 'string' && c.companyName.trim()
+                ? c.companyName.trim()
+                : 'Company ' + (i + 1);
 
-        for (var u = 0; u < urls.length; u++) {
-            var url = urls[u];
-            if (typeof url === 'string' && url.trim().length > 0) {
-                lines.push('  • ' + url.trim());
+        // ── Email ──
+        var emailDisplay = 'Not found';
+        if (c.email) {
+            if (c.emailStatus === 'predicted') {
+                emailDisplay = c.email + ' (predicted — not verified)';
+            } else {
+                emailDisplay = c.email;
             }
         }
 
-        lines.push('');
+        // ── Company information ──
+        var infoDisplay = 'Not available';
+        if (
+            typeof c.companyInformation === 'string' &&
+            c.companyInformation.trim()
+        ) {
+            infoDisplay =
+                c.informationStatus === 'estimated'
+                    ? c.companyInformation.trim() + ' (AI estimate)'
+                    : c.companyInformation.trim();
+        }
+
+        // ── Phone ──
+        var phoneDisplay =
+            typeof c.phoneNumber === 'string' && c.phoneNumber.trim()
+                ? c.phoneNumber.trim()
+                : 'Not found';
+
+        var block =
+            '**Company ' + (i + 1) + '**\n' +
+            '\n' +
+            'Company name: ' + name + '\n' +
+            'Company email: ' + emailDisplay + '\n' +
+            'Company phone number: ' + phoneDisplay + '\n' +
+            'Company information: ' + infoDisplay;
+
+        blocks.push(block);
     }
 
-    appendLeadMsg('ai', lines.join('\n'), opts);
+    appendLeadMsg('ai', blocks.join('\n\n'), opts);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -730,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.clearChat = clearChat;
     window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
 
-    console.log('✅ [PAGE] Nexa ready (4-stage stepper + Seeker → Finder → ContactPages pipeline)');
+    console.log('✅ [PAGE] Nexa ready (5-stage stepper + Seeker → Finder → ContactPages → Searching pipeline)');
 
     window.addEventListener('beforeunload', function() {
         if (statusInterval) clearInterval(statusInterval);
