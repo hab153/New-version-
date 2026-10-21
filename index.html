@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Skyline AA-1 – AI Sales & Lead Assistant</title>
-    <meta name="description" content="AI that finds leads, writes personalized emails, auto-replies, and follows up – all in one inbox. Start free.">
+    <title>Skyline – Research prospects, draft outreach, manage follow-ups</title>
+    <meta name="description" content="Skyline helps agencies research prospects, draft personalized outreach, and manage follow-ups from one workspace. Join the private beta.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* ============================================================
-           ✅ RESPONSIVE FIXES - Dynamic Scaling
-           ============================================================ */
-
         :root {
-            /* ─── Base colors ─── */
             --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
             --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
             --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0; --gold-mute: rgba(255,255,255,0.1); --gold-glow: rgba(255,255,255,0.15);
@@ -26,10 +21,8 @@
             --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --mono: 'Monaco', 'Menlo', monospace;
 
-            /* ─── Responsive scaling variables ─── */
             --scale-factor: clamp(0.85, 1.5vw, 1.15);
 
-            /* ─── Font sizes (scalable) ─── */
             --text-xs: clamp(0.5rem, 0.8vw, 0.7rem);
             --text-sm: clamp(0.6rem, 1vw, 0.8rem);
             --text-base: clamp(0.7rem, 1.2vw, 0.95rem);
@@ -40,7 +33,6 @@
             --text-4xl: clamp(1.5rem, 3.5vw, 2.5rem);
             --text-5xl: clamp(1.8rem, 4.5vw, 3.5rem);
 
-            /* ─── Spacing sizes (scalable) ─── */
             --space-xs: clamp(0.2rem, 0.4vw, 0.35rem);
             --space-sm: clamp(0.3rem, 0.6vw, 0.5rem);
             --space-md: clamp(0.4rem, 1vw, 0.75rem);
@@ -49,9 +41,10 @@
             --space-2xl: clamp(1.2rem, 3vw, 2.5rem);
             --space-3xl: clamp(1.8rem, 4vw, 3.5rem);
 
-            /* ─── Component sizes ─── */
             --icon-size: clamp(30px, 4vw, 42px);
             --card-radius: clamp(16px, 2.5vw, 24px);
+
+            --r-xs: 4px; --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
         }
 
         html { font-size: 16px; }
@@ -74,7 +67,6 @@
             radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%),
             radial-gradient(ellipse 80% 30% at 50% 50%, rgba(0,0,0,0.5) 0%, transparent 80%);
         }
-
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.55;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
@@ -87,195 +79,107 @@
             padding: 0 var(--space-lg);
             width: 100%;
             flex: 1;
+            position: relative;
+            z-index: 1;
         }
 
         /* ─── Navigation ─── */
         .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-lg) 0;
-            flex-wrap: wrap;
-            gap: var(--space-md);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-lg) 0; flex-wrap: wrap; gap: var(--space-md);
             border-bottom: 1px solid var(--br-dim);
-            position: sticky;
-            top: 0;
+            position: sticky; top: 0;
             background: rgba(10,10,10,0.95);
             backdrop-filter: blur(10px);
             z-index: 100;
         }
-
         .logo { display: flex; align-items: center; gap: var(--space-sm); }
         .logo-icon {
-            width: var(--icon-size);
-            height: var(--icon-size);
+            width: var(--icon-size); height: var(--icon-size);
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--br-dim);
             border-radius: var(--r-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             animation: pulse 2s infinite;
         }
-        .logo-icon svg {
-            width: clamp(16px, 2vw, 22px);
-            height: clamp(16px, 2vw, 22px);
-            stroke: var(--gold);
-            stroke-width: 1.8;
-        }
-        .logo-text {
-            font-size: clamp(16px, 2.2vw, 22px);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
+        .logo-icon svg { width: clamp(16px, 2vw, 22px); height: clamp(16px, 2vw, 22px); stroke: var(--gold); stroke-width: 1.8; }
+        .logo-text { font-size: clamp(16px, 2.2vw, 22px); font-weight: 700; letter-spacing: -0.02em; }
         .logo-text span { font-weight: 400; opacity: 0.7; }
 
         .nav-links { display: flex; gap: var(--space-xl); align-items: center; flex-wrap: wrap; }
-        .nav-links a {
-            color: var(--t2);
-            text-decoration: none;
-            font-size: var(--text-sm);
-            font-weight: 500;
-            transition: color 0.2s;
-        }
+        .nav-links a { color: var(--t2); text-decoration: none; font-size: var(--text-sm); font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: var(--t1); }
 
         .btn-outline {
-            background: transparent;
-            border: 1px solid var(--br-dim);
-            padding: var(--space-sm) var(--space-lg);
-            border-radius: 40px;
-            color: var(--t1);
-            font-weight: 500;
-            font-size: var(--text-sm);
-            transition: all 0.2s;
-            text-decoration: none;
+            background: transparent; border: 1px solid var(--br-dim);
+            padding: var(--space-sm) var(--space-lg); border-radius: 40px;
+            color: var(--t1); font-weight: 500; font-size: var(--text-sm);
+            transition: all 0.2s; text-decoration: none;
         }
         .btn-outline:hover { background: var(--br-dim); border-color: var(--gold); }
 
         /* ─── Hero ─── */
-        .hero {
-            text-align: center;
-            padding: var(--space-3xl) 0 var(--space-2xl);
-            position: relative;
-            overflow: hidden;
-        }
+        .hero { text-align: center; padding: var(--space-3xl) 0 var(--space-2xl); position: relative; overflow: hidden; }
         .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
             background: linear-gradient(90deg, transparent, var(--gold), transparent);
         }
-
         .hero h1 {
             font-size: clamp(28px, 5vw, 52px);
-            font-weight: 800;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
+            font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
             background: linear-gradient(135deg, #fff 0%, #aaa 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            max-width: 900px;
-            margin: 0 auto var(--space-lg);
-            opacity: 0;
-            transform: translateY(20px);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            max-width: 900px; margin: 0 auto var(--space-lg);
+            opacity: 0; transform: translateY(20px);
             animation: fadeInUp 0.8s ease-out forwards;
         }
-
         .hero p {
             font-size: clamp(16px, 1.8vw, 20px);
-            color: var(--t2);
-            max-width: 700px;
-            margin: 0 auto var(--space-xl);
-            opacity: 0;
-            transform: translateY(20px);
+            color: var(--t2); max-width: 700px; margin: 0 auto var(--space-xl);
+            opacity: 0; transform: translateY(20px);
             animation: fadeInUp 0.8s ease-out 0.2s forwards;
         }
-
         .hero-buttons {
-            display: flex;
-            gap: var(--space-md);
-            justify-content: center;
-            flex-wrap: wrap;
-            opacity: 0;
-            transform: translateY(20px);
+            display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;
+            opacity: 0; transform: translateY(20px);
             animation: fadeInUp 0.8s ease-out 0.4s forwards;
         }
-
         .btn-primary {
-            background: var(--gold);
-            color: #000;
-            padding: var(--space-md) var(--space-xl);
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: var(--text-base);
-            text-decoration: none;
-            display: inline-block;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-            border: none;
-            cursor: pointer;
+            background: var(--gold); color: #000;
+            padding: var(--space-md) var(--space-xl); border-radius: 40px;
+            font-weight: 600; font-size: var(--text-base); text-decoration: none;
+            display: inline-block; transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; overflow: hidden; border: none; cursor: pointer;
         }
         .btn-primary::before {
-            content: '';
-            position: absolute;
-            inset: 0;
+            content: ''; position: absolute; inset: 0;
             background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%);
             pointer-events: none;
         }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.15); }
 
         .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--br-dim);
-            color: var(--t1);
-            padding: var(--space-md) var(--space-xl);
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: var(--text-base);
-            text-decoration: none;
-            transition: all 0.2s;
-            display: inline-block;
+            background: transparent; border: 1px solid var(--br-dim);
+            color: var(--t1); padding: var(--space-md) var(--space-xl); border-radius: 40px;
+            font-weight: 500; font-size: var(--text-base); text-decoration: none;
+            transition: all 0.2s; display: inline-block;
         }
         .btn-secondary:hover { background: var(--br-dim); border-color: var(--gold); }
 
-        /* ─── Trust Badges ─── */
+        /* ─── Trust Badges (honest) ─── */
         .trust-badges {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-xl);
-            margin: var(--space-2xl) auto;
-            flex-wrap: wrap;
-            opacity: 0;
-            transform: translateY(20px);
+            display: flex; justify-content: center; gap: var(--space-xl);
+            margin: var(--space-2xl) auto; flex-wrap: wrap;
+            opacity: 0; transform: translateY(20px);
             animation: fadeInUp 0.8s ease-out 0.6s forwards;
         }
-        .badge {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            font-size: var(--text-sm);
-            color: var(--t2);
-        }
+        .badge { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--text-sm); color: var(--t2); }
         .badge-icon {
-            width: clamp(20px, 2.5vw, 28px);
-            height: clamp(20px, 2.5vw, 28px);
-            background: var(--br-dim);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: clamp(20px, 2.5vw, 28px); height: clamp(20px, 2.5vw, 28px);
+            background: var(--br-dim); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
         }
-        .badge-icon svg {
-            width: clamp(10px, 1.2vw, 14px);
-            height: clamp(10px, 1.2vw, 14px);
-            stroke: var(--gold);
-        }
+        .badge-icon svg { width: clamp(10px, 1.2vw, 14px); height: clamp(10px, 1.2vw, 14px); stroke: var(--gold); }
 
         /* ─── Features ─── */
         .features {
@@ -285,388 +189,215 @@
             gap: var(--space-xl);
         }
         .feature-card {
-            background: var(--card);
-            border: 1px solid var(--br-dim);
+            background: var(--surface); border: 1px solid var(--br-dim);
             border-radius: var(--card-radius);
             padding: var(--space-xl) var(--space-lg);
             transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
         .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--gold);
-            transform: scaleX(0);
-            transform-origin: left;
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--gold); transform: scaleX(0); transform-origin: left;
             transition: transform 0.3s ease;
         }
         .feature-card:hover::before { transform: scaleX(1); }
         .feature-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-
         .feature-icon {
-            width: clamp(40px, 5vw, 52px);
-            height: clamp(40px, 5vw, 52px);
+            width: clamp(40px, 5vw, 52px); height: clamp(40px, 5vw, 52px);
             background: rgba(255,255,255,0.05);
             border-radius: var(--r-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             margin-bottom: var(--space-lg);
         }
-        .feature-icon svg {
-            width: clamp(20px, 2.5vw, 26px);
-            height: clamp(20px, 2.5vw, 26px);
-            stroke: var(--gold);
-            stroke-width: 1.5;
-        }
-        .feature-card h3 {
-            font-size: clamp(16px, 2vw, 22px);
-            font-weight: 700;
-            margin-bottom: var(--space-sm);
-        }
-        .feature-card p {
-            color: var(--t2);
-            font-size: var(--text-sm);
-            line-height: 1.5;
-        }
+        .feature-icon svg { width: clamp(20px, 2.5vw, 26px); height: clamp(20px, 2.5vw, 26px); stroke: var(--gold); stroke-width: 1.5; }
+        .feature-card h3 { font-size: clamp(16px, 2vw, 22px); font-weight: 700; margin-bottom: var(--space-sm); }
+        .feature-card p { color: var(--t2); font-size: var(--text-sm); line-height: 1.55; }
 
-        /* ─── Testimonials ─── */
-        .testimonials {
-            padding: var(--space-2xl) 0;
-            text-align: center;
-        }
-        .testimonials h2 {
-            font-size: clamp(24px, 3vw, 34px);
-            font-weight: 700;
-        }
-        .testimonial-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(clamp(250px, 30vw, 320px), 1fr));
-            gap: var(--space-xl);
-            margin-top: var(--space-xl);
-        }
-        .testimonial-card {
-            background: var(--card);
-            border: 1px solid var(--br-dim);
-            border-radius: var(--card-radius);
-            padding: var(--space-xl);
-            text-align: left;
-        }
-        .testimonial-text {
-            font-style: italic;
-            color: var(--t1);
-            margin-bottom: var(--space-md);
-            position: relative;
-            padding-left: var(--space-lg);
+        /* ─── AI Disclaimer ─── */
+        .ai-disclaimer {
+            background: var(--raised);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fbbf24;
+            border-radius: var(--r-md);
+            padding: var(--space-md) var(--space-lg);
+            margin: var(--space-xl) 0;
             font-size: var(--text-sm);
-        }
-        .testimonial-text::before {
-            content: "\201C";
-            position: absolute;
-            left: 0;
-            top: -10px;
-            font-size: 60px;
-            color: var(--br-dim);
-            line-height: 1;
-        }
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-        }
-        .author-avatar {
-            width: clamp(36px, 4vw, 44px);
-            height: clamp(36px, 4vw, 44px);
-            border-radius: 50%;
-            background: var(--br-dim);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: var(--text-sm);
-        }
-        .author-info h4 {
-            font-size: var(--text-sm);
-            margin-bottom: 2px;
-        }
-        .author-info p {
-            font-size: var(--text-xs);
             color: var(--t2);
+            line-height: 1.6;
         }
+        .ai-disclaimer strong { color: var(--t1); display: block; margin-bottom: 4px; font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; }
 
         /* ─── Pricing ─── */
-        .pricing {
-            text-align: center;
-            padding: var(--space-2xl) 0 var(--space-3xl);
-        }
-        .pricing h2 {
-            font-size: clamp(24px, 3vw, 34px);
-            font-weight: 700;
-            margin-bottom: var(--space-md);
-        }
-        .pricing-sub {
-            color: var(--t2);
-            font-size: var(--text-base);
-            margin-bottom: var(--space-2xl);
-        }
-        .pricing-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: var(--space-xl);
-            position: relative;
-        }
+        .pricing { text-align: center; padding: var(--space-2xl) 0 var(--space-3xl); }
+        .pricing h2 { font-size: clamp(24px, 3vw, 34px); font-weight: 700; margin-bottom: var(--space-md); }
+        .pricing-sub { color: var(--t2); font-size: var(--text-base); margin-bottom: var(--space-md); }
+        .pricing-legal { color: var(--t3); font-size: var(--text-xs); margin-bottom: var(--space-2xl); max-width: 640px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+        .pricing-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-xl); position: relative; }
         .plan {
-            background: var(--card);
-            border: 1px solid var(--br-dim);
+            background: var(--surface); border: 1px solid var(--br-dim);
             border-radius: var(--card-radius);
             padding: var(--space-xl) var(--space-lg);
             width: clamp(240px, 30vw, 280px);
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-            flex: 1 1 240px;
-            max-width: 320px;
+            transition: all 0.2s; position: relative; overflow: hidden;
+            flex: 1 1 240px; max-width: 320px;
         }
         .popular-tag {
-            position: absolute;
-            top: -10px;
-            right: -30px;
-            background: var(--gold);
-            color: #000;
-            padding: 4px 30px;
-            font-size: var(--text-xs);
-            font-weight: 600;
+            position: absolute; top: -10px; right: -30px;
+            background: var(--gold); color: #000;
+            padding: 4px 30px; font-size: var(--text-xs); font-weight: 600;
             transform: rotate(45deg);
         }
-        .plan.popular {
-            border-color: var(--gold);
-            background: rgba(255,255,255,0.02);
-            transform: scale(1.05);
-            z-index: 10;
-        }
+        .plan.popular { border-color: var(--gold); background: rgba(255,255,255,0.02); transform: scale(1.05); z-index: 10; }
         .plan.popular:hover { transform: scale(1.07); }
-        .plan-name {
-            font-size: clamp(18px, 2.2vw, 26px);
-            font-weight: 700;
-            margin-bottom: var(--space-sm);
-        }
-        .plan-price {
-            font-size: clamp(28px, 3.5vw, 38px);
-            font-weight: 800;
-            margin: var(--space-md) 0;
-        }
-        .plan-price span {
-            font-size: var(--text-sm);
-            font-weight: 400;
-            color: var(--t2);
-        }
-        .plan-features {
-            list-style: none;
-            margin: var(--space-lg) 0 var(--space-xl);
-        }
-        .plan-features li {
-            margin: var(--space-md) 0;
-            font-size: var(--text-sm);
-            color: var(--t2);
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-        .plan-features li::before {
-            content: "✓";
-            color: var(--gold);
-            font-weight: bold;
-        }
+        .plan-name { font-size: clamp(18px, 2.2vw, 26px); font-weight: 700; margin-bottom: var(--space-sm); }
+        .plan-price { font-size: clamp(28px, 3.5vw, 38px); font-weight: 800; margin: var(--space-md) 0; }
+        .plan-price span { font-size: var(--text-sm); font-weight: 400; color: var(--t2); }
+        .plan-features { list-style: none; margin: var(--space-lg) 0 var(--space-xl); text-align: left; }
+        .plan-features li { margin: var(--space-md) 0; font-size: var(--text-sm); color: var(--t2); display: flex; align-items: flex-start; gap: var(--space-sm); }
+        .plan-features li::before { content: "✓"; color: var(--gold); font-weight: bold; flex-shrink: 0; }
         .plan-btn {
-            background: var(--br-dim);
-            border: none;
-            border-radius: 40px;
-            padding: var(--space-sm) var(--space-lg);
-            width: 100%;
-            font-weight: 600;
-            font-size: var(--text-sm);
-            cursor: pointer;
-            transition: background 0.2s;
-            color: var(--t1);
+            background: var(--br-dim); border: none; border-radius: 40px;
+            padding: var(--space-sm) var(--space-lg); width: 100%;
+            font-weight: 600; font-size: var(--text-sm);
+            cursor: pointer; transition: background 0.2s; color: var(--t1);
         }
         .plan-btn:hover { background: var(--gold); color: #000; }
+        .plan-btn-note { font-size: var(--text-xs); color: var(--t3); margin-top: var(--space-sm); line-height: 1.4; }
 
         /* ─── Signup Section ─── */
         .signup-section {
-            background: var(--card);
-            border: 1px solid var(--br-dim);
+            background: var(--surface); border: 1px solid var(--br-dim);
             border-radius: var(--card-radius);
             padding: var(--space-2xl) var(--space-xl);
             margin: var(--space-2xl) 0 var(--space-3xl);
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2xl);
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
+            display: flex; flex-wrap: wrap; gap: var(--space-2xl);
+            align-items: center; justify-content: space-between;
+            position: relative; overflow: hidden;
         }
         .signup-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 5px; height: 100%;
             background: linear-gradient(180deg, var(--gold), transparent);
         }
         .signup-text { flex: 1; min-width: 200px; }
-        .signup-text h2 {
-            font-size: clamp(22px, 3vw, 30px);
-            font-weight: 700;
-            margin-bottom: var(--space-md);
-        }
-        .signup-text p {
-            color: var(--t2);
-            font-size: var(--text-base);
-            margin-bottom: var(--space-md);
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--space-md);
-            margin-top: var(--space-md);
-        }
-        .stat-item { text-align: center; padding: var(--space-sm); }
-        .stat-value {
-            font-size: clamp(18px, 2.2vw, 24px);
-            font-weight: 700;
-            color: var(--gold);
-        }
-        .stat-label {
-            font-size: var(--text-xs);
-            color: var(--t2);
-        }
+        .signup-text h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 700; margin-bottom: var(--space-md); }
+        .signup-text p { color: var(--t2); font-size: var(--text-base); margin-bottom: var(--space-md); }
 
-        .signup-form {
-            flex: 1;
-            min-width: clamp(220px, 35vw, 320px);
+        /* Honest trust list (replaces fake stats) */
+        .trust-list {
+            list-style: none;
+            margin: var(--space-md) 0 0 0;
+            padding: 0;
         }
-        .form-field {
-            margin-bottom: var(--space-md);
-            position: relative;
-        }
-        .form-field input {
-            width: 100%;
-            padding: var(--space-md) var(--space-md);
-            background: var(--raised);
-            border: 1px solid var(--br-dim);
-            border-radius: var(--r-md);
-            color: var(--t1);
-            font-family: inherit;
-            font-size: var(--text-sm);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-field input:focus {
-            border-color: var(--gold);
-            background: rgba(255,255,255,0.03);
-        }
-        .password-strength {
-            height: 4px;
-            background: var(--br-dim);
-            border-radius: 2px;
-            margin-top: var(--space-sm);
-            overflow: hidden;
-        }
-        .strength-meter {
-            height: 100%;
-            width: 0;
-            background: var(--rose);
-            transition: width 0.3s, background 0.3s;
-        }
-
-        .checkbox-row {
+        .trust-list li {
             display: flex;
             align-items: flex-start;
-            gap: var(--space-md);
-            margin: var(--space-md) 0;
+            gap: var(--space-sm);
             font-size: var(--text-sm);
             color: var(--t2);
-            cursor: pointer;
+            margin-bottom: var(--space-sm);
+        }
+        .trust-list li::before {
+            content: "✓";
+            color: var(--gold);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .signup-form { flex: 1; min-width: clamp(220px, 35vw, 320px); }
+        .form-field { margin-bottom: var(--space-md); position: relative; }
+        .form-field input {
+            width: 100%; padding: var(--space-md) var(--space-md);
+            background: var(--raised); border: 1px solid var(--br-dim);
+            border-radius: var(--r-md); color: var(--t1);
+            font-family: inherit; font-size: var(--text-sm);
+            outline: none; transition: border-color 0.2s;
+        }
+        .form-field input:focus { border-color: var(--gold); background: rgba(255,255,255,0.03); }
+        .field-error { color: var(--rose); font-size: var(--text-xs); margin-top: 4px; display: none; }
+
+        .password-strength {
+            height: 4px; background: var(--br-dim); border-radius: 2px;
+            margin-top: var(--space-sm); overflow: hidden;
+        }
+        .strength-meter { height: 100%; width: 0; background: var(--rose); transition: width 0.3s, background 0.3s; }
+
+        /* Checkboxes */
+        .checkbox-row {
+            display: flex; align-items: flex-start; gap: var(--space-md);
+            margin: var(--space-md) 0;
+            font-size: var(--text-sm); color: var(--t2); cursor: pointer;
         }
         .checkbox-row input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            pointer-events: none;
+            position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
         }
         .checkbox-custom {
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            border: 2px solid rgba(255,255,255,0.25);
-            border-radius: var(--r-xs);
+            width: 20px; height: 20px; min-width: 20px;
+            border: 2px solid rgba(255,255,255,0.25); border-radius: var(--r-xs);
             background: var(--raised);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0; margin-top: 1px;
         }
-        .checkbox-row input:checked + .checkbox-custom {
-            background: var(--gold);
-            border-color: var(--gold);
-        }
+        .checkbox-row input:checked + .checkbox-custom { background: var(--gold); border-color: var(--gold); }
         .checkbox-row input:checked + .checkbox-custom::after {
-            content: "✓";
-            color: #000;
-            font-size: var(--text-sm);
-            font-weight: 700;
-            line-height: 1;
+            content: "✓"; color: #000;
+            font-size: var(--text-sm); font-weight: 700; line-height: 1;
         }
         .checkbox-row:hover .checkbox-custom { border-color: var(--gold); }
-        .checkbox-row label {
-            cursor: pointer;
-            user-select: none;
-            line-height: 1.5;
-        }
-        .checkbox-row label a {
-            color: var(--gold);
-            text-decoration: underline;
-            transition: opacity 0.2s;
-        }
+        .checkbox-row label { cursor: pointer; user-select: none; line-height: 1.5; }
+        .checkbox-row label a { color: var(--gold); text-decoration: underline; transition: opacity 0.2s; }
         .checkbox-row label a:hover { opacity: 0.7; }
+        .checkbox-row.optional { opacity: 0.85; }
+        .checkbox-row.optional label { font-size: var(--text-xs); }
+
+        /* Data notice */
+        .data-notice {
+            background: var(--raised);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-sm);
+            padding: var(--space-sm) var(--space-md);
+            margin: var(--space-md) 0;
+            font-size: var(--text-xs);
+            color: var(--t3);
+            line-height: 1.55;
+        }
+        .data-notice a { color: var(--t2); text-decoration: underline; }
 
         .error-message {
-            display: none;
-            background: var(--rose-dim);
-            border-radius: var(--r-md);
-            padding: var(--space-md);
-            margin-top: var(--space-md);
-            color: var(--rose);
-            font-size: var(--text-sm);
+            display: none; background: var(--rose-dim);
+            border-radius: var(--r-md); padding: var(--space-md); margin-top: var(--space-md);
+            color: var(--rose); font-size: var(--text-sm);
         }
         .success-message {
-            display: none;
-            background: var(--sage-dim);
-            border-radius: var(--r-md);
-            padding: var(--space-md);
-            margin-top: var(--space-md);
-            color: var(--sage);
-            font-size: var(--text-sm);
+            display: none; background: var(--sage-dim);
+            border-radius: var(--r-md); padding: var(--space-md); margin-top: var(--space-md);
+            color: var(--sage); font-size: var(--text-sm);
         }
 
+        /* ─── Footer ─── */
         .footer {
             text-align: center;
             padding: var(--space-xl) 0;
             border-top: 1px solid var(--br-dim);
             color: var(--t2);
             font-size: var(--text-xs);
+            margin-top: var(--space-xl);
         }
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a {
+            color: var(--t2);
+            text-decoration: none;
+            font-size: var(--text-xs);
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--t1); text-decoration: underline; }
+        .footer-copy { color: var(--t3); font-size: var(--text-xs); }
 
         /* ─── Animations ─── */
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
@@ -676,24 +407,17 @@
             100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
         }
 
-        /* ============================================================
-           ✅ RESPONSIVE BREAKPOINTS
-           ============================================================ */
-
-        /* ─── Tablets ─── */
+        /* ─── Responsive ─── */
         @media (max-width: 768px) {
             .hero h1 { font-size: clamp(24px, 5vw, 34px); }
             .signup-section { flex-direction: column; padding: var(--space-xl) var(--space-lg); }
             .nav-links { display: none; }
-            .stats-grid { grid-template-columns: 1fr; gap: var(--space-xs); }
             .plan.popular { transform: scale(1); }
             .plan.popular:hover { transform: scale(1); }
             .trust-badges { gap: var(--space-md); }
             .hero { padding: var(--space-xl) 0 var(--space-lg); }
             .features { padding: var(--space-xl) 0; gap: var(--space-lg); }
         }
-
-        /* ─── Large Phones (Pro Max, 6.7"+) ─── */
         @media (min-width: 430px) and (max-width: 599px) {
             html { font-size: 17px; }
             .container { padding: 0 var(--space-md); }
@@ -702,12 +426,9 @@
             .signup-section { padding: var(--space-lg) var(--space-md); }
             .signup-form { min-width: 100%; }
             .features { grid-template-columns: 1fr; }
-            .testimonial-grid { grid-template-columns: 1fr; }
             .pricing-grid { flex-direction: column; align-items: center; }
             .plan { width: 100%; max-width: 100%; }
         }
-
-        /* ─── Standard Phones (6.1") ─── */
         @media (min-width: 375px) and (max-width: 429px) {
             html { font-size: 16px; }
             .container { padding: 0 var(--space-sm); }
@@ -721,16 +442,12 @@
             .signup-section { padding: var(--space-md); }
             .signup-text h2 { font-size: clamp(20px, 4vw, 24px); }
             .features { grid-template-columns: 1fr; padding: var(--space-lg) 0; gap: var(--space-md); }
-            .testimonial-grid { grid-template-columns: 1fr; }
             .pricing-grid { flex-direction: column; align-items: center; }
             .plan { width: 100%; max-width: 100%; padding: var(--space-lg); }
             .trust-badges { flex-direction: column; align-items: center; gap: var(--space-sm); }
-            .stats-grid { grid-template-columns: 1fr; }
             .footer { padding: var(--space-md) 0; }
             .form-field input { font-size: var(--text-sm); padding: var(--space-sm) var(--space-md); }
         }
-
-        /* ─── Small Phones (iPhone SE, 4.7") ─── */
         @media (max-width: 374px) {
             html { font-size: 14px; }
             .container { padding: 0 var(--space-xs); }
@@ -747,23 +464,17 @@
             .signup-text h2 { font-size: clamp(18px, 4vw, 20px); }
             .features { grid-template-columns: 1fr; padding: var(--space-md) 0; gap: var(--space-sm); }
             .feature-card { padding: var(--space-md); }
-            .testimonial-grid { grid-template-columns: 1fr; }
-            .testimonial-card { padding: var(--space-md); }
             .pricing-grid { flex-direction: column; align-items: center; }
             .plan { width: 100%; max-width: 100%; padding: var(--space-md); }
             .plan-name { font-size: 18px; }
             .plan-price { font-size: 28px; }
             .trust-badges { flex-direction: column; align-items: center; gap: var(--space-xs); }
-            .stats-grid { grid-template-columns: 1fr; gap: var(--space-xs); }
-            .stat-value { font-size: 18px; }
             .footer { padding: var(--space-sm) 0; font-size: var(--text-xs); }
             .form-field { margin-bottom: var(--space-sm); }
             .form-field input { font-size: var(--text-sm); padding: var(--space-xs) var(--space-sm); }
             .checkbox-row { font-size: var(--text-xs); }
             .checkbox-custom { width: 16px; height: 16px; min-width: 16px; }
         }
-
-        /* ─── Landscape Mode ─── */
         @media (max-height: 500px) and (orientation: landscape) {
             .hero { padding: var(--space-lg) 0 var(--space-md); }
             .hero h1 { font-size: clamp(20px, 3.5vw, 28px); }
@@ -774,7 +485,6 @@
             .pricing { padding: var(--space-md) 0 var(--space-lg); }
             .pricing-grid { gap: var(--space-md); }
             .plan { padding: var(--space-md); }
-            .testimonial-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
         }
     </style>
 </head>
@@ -791,31 +501,30 @@
         </div>
         <div class="nav-links">
             <a href="#features">Features</a>
-            <a href="#testimonials">Testimonials</a>
             <a href="#pricing">Pricing</a>
             <a href="#signup" class="btn-outline">Get Started</a>
         </div>
     </nav>
 
     <div class="hero">
-        <h1>AI That Finds Leads, Writes Emails & Auto-Replies While You Sleep</h1>
-        <p>Your autonomous sales assistant – lead generation, smart inbox, auto-follow‑ups. Start free, upgrade when you grow.</p>
+        <h1>Find Better Prospects. Write Better Outreach. Follow Up Automatically.</h1>
+        <p>Skyline helps agencies research prospects, draft personalized outreach, and manage follow-ups from one workspace.</p>
         <div class="hero-buttons">
-            <a href="#signup" class="btn-primary">Start Free →</a>
+            <a href="#signup" class="btn-primary">Join the Beta →</a>
             <a href="#features" class="btn-secondary">See how it works</a>
         </div>
         <div class="trust-badges">
             <div class="badge">
                 <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg></div>
-                <span>Used by 5,000+ businesses</span>
+                <span>Built for agencies and growth teams</span>
             </div>
             <div class="badge">
                 <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg></div>
-                <span>99.9% uptime</span>
+                <span>Join the Skyline private beta</span>
             </div>
             <div class="badge">
                 <div class="badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg></div>
-                <span>Enterprise security</span>
+                <span>Early users help shape the product</span>
             </div>
         </div>
     </div>
@@ -824,66 +533,74 @@
         <div class="feature-card">
             <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
             <h3>Lead Generation</h3>
-            <p>Describe your ideal customer – industry, location, job title. AI finds real contacts and drafts personalised outreach emails.</p>
+            <p>Describe your ideal customer and Skyline helps you research relevant business prospects and prepare personalized outreach drafts.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <h3>Smart Inbox</h3>
-            <p>All conversations in one place. AI suggests replies, auto‑replies based on your instructions, and learns your tone.</p>
+            <p>Manage conversations in one place and use AI to draft reply suggestions based on your instructions.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-            <h3>Auto Follow‑ups</h3>
-            <p>Set delays (1–7 days or custom). AI automatically sends follow‑up emails. Never lose a lead again.</p>
+            <h3>Auto Follow-ups</h3>
+            <p>Create follow-up sequences that you control. Review messages and stop automation at any time.</p>
         </div>
     </div>
 
-    <div id="testimonials" class="testimonials">
-        <h2>Trusted by Growth Teams</h2>
-        <div class="testimonial-grid">
-            <div class="testimonial-card">
-                <div class="testimonial-text">"Skyline AA-1 has completely transformed our lead generation process. We've increased our response rate by 40%."</div>
-                <div class="testimonial-author"><div class="author-avatar">SJ</div><div class="author-info"><h4>Sarah Johnson</h4><p>Head of Sales, TechCorp</p></div></div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-text">"The AI-powered follow-ups have saved us hours each week while significantly improving our conversion rates."</div>
-                <div class="testimonial-author"><div class="author-avatar">MR</div><div class="author-info"><h4>Michael Rodriguez</h4><p>Growth Manager, StartupX</p></div></div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-text">"We've reduced our customer acquisition cost by 35% since implementing Skyline AA-1 into our workflow."</div>
-                <div class="testimonial-author"><div class="author-avatar">EP</div><div class="author-info"><h4>Emma Patel</h4><p>CMO, ScaleFast</p></div></div>
-            </div>
-        </div>
+    <div class="ai-disclaimer">
+        <strong>⚠ AI Disclaimer</strong>
+        AI-generated research, recommendations, and messages may be inaccurate. Review content before relying on it or sending it. Skyline does not guarantee leads, replies, or sales.
     </div>
 
     <div id="pricing" class="pricing">
         <h2>Simple, transparent pricing</h2>
         <p class="pricing-sub">All plans include daily resets. No hidden fees.</p>
+        <p class="pricing-legal">
+            Paid plans renew automatically each month until cancelled. You can cancel any time from your account settings.
+            Daily usage limits reset at 00:00 UTC and apply per workspace. When a limit is reached, features remain available again after reset.
+            Payment is processed securely by Flutterwave. See our
+            <a href="refunds.html" style="color:var(--t2); text-decoration:underline;">Refund and Cancellation Policy</a> for details.
+        </p>
         <div class="pricing-grid">
             <div class="plan">
                 <div class="plan-name">Free</div>
                 <div class="plan-price">$0<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>10 chats / day</li><li>5 emails / day</li><li>3 AI hints / day</li><li>5 suggest follow‑ups / day</li><li>No auto‑reply / auto‑follow‑up</li>
+                    <li>10 chats / day</li>
+                    <li>5 emails / day</li>
+                    <li>3 AI hints / day</li>
+                    <li>5 suggested follow-ups / day</li>
+                    <li>No auto-reply / auto-follow-up</li>
                 </ul>
                 <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
+                <div class="plan-btn-note">No card required.</div>
             </div>
             <div class="plan popular">
                 <div class="popular-tag">POPULAR</div>
                 <div class="plan-name">Go</div>
                 <div class="plan-price">$49<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>50 chats / day</li><li>25 emails / day</li><li>20 AI hints / day</li><li>30 suggest follow‑ups / day</li><li>Auto‑reply (20/day) &amp; Auto‑follow-up (15/day)</li>
+                    <li>50 chats / day</li>
+                    <li>25 emails / day</li>
+                    <li>20 AI hints / day</li>
+                    <li>30 suggested follow-ups / day</li>
+                    <li>Auto-reply (20/day) &amp; auto-follow-up (15/day)</li>
                 </ul>
-                <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
+                <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Choose Go</button>
+                <div class="plan-btn-note">Card required. Renews monthly until cancelled.</div>
             </div>
             <div class="plan">
                 <div class="plan-name">Pro</div>
                 <div class="plan-price">$89<span>/mo</span></div>
                 <ul class="plan-features">
-                    <li>150 chats / day</li><li>100 emails / day</li><li>300 AI hints / day</li><li>200 suggest follow‑ups / day</li><li>Auto‑reply (100/day) &amp; Auto‑follow-up (100/day)</li>
+                    <li>150 chats / day</li>
+                    <li>100 emails / day</li>
+                    <li>300 AI hints / day</li>
+                    <li>200 suggested follow-ups / day</li>
+                    <li>Auto-reply (100/day) &amp; auto-follow-up (100/day)</li>
                 </ul>
-                <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Start Free</button>
+                <button class="plan-btn" onclick="document.getElementById('signup').scrollIntoView({behavior:'smooth'})">Choose Pro</button>
+                <div class="plan-btn-note">Card required. Renews monthly until cancelled.</div>
             </div>
         </div>
     </div>
@@ -891,27 +608,66 @@
     <div id="signup" class="signup-section">
         <div class="signup-text">
             <h2>Get started for free</h2>
-            <p>No credit card required. Upgrade anytime.</p>
-            <div class="stats-grid">
-                <div class="stat-item"><div class="stat-value">10m+</div><div class="stat-label">Active Users</div></div>
-                <div class="stat-item"><div class="stat-value">99.9%</div><div class="stat-label">Uptime</div></div>
-                <div class="stat-item"><div class="stat-value">24/7</div><div class="stat-label">Support</div></div>
-            </div>
+            <p>No credit card required on the Free plan. Upgrade any time.</p>
+            <ul class="trust-list">
+                <li>Built for agencies and growth teams</li>
+                <li>Join the Skyline private beta</li>
+                <li>Early users help shape the product</li>
+            </ul>
         </div>
         <div class="signup-form">
-            <form id="signupForm">
-                <div class="form-field"><input type="text" id="username" placeholder="Username" required></div>
-                <div class="form-field"><input type="email" id="email" placeholder="Email address" required></div>
+            <form id="signupForm" novalidate>
                 <div class="form-field">
-                    <input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required>
+                    <input type="text" id="username" placeholder="Username" required autocomplete="username">
+                    <div class="field-error" id="usernameError"></div>
+                </div>
+                <div class="form-field">
+                    <input type="email" id="email" placeholder="Email address" required autocomplete="email">
+                    <div class="field-error" id="emailError"></div>
+                </div>
+                <div class="form-field">
+                    <input type="password" id="password" placeholder="Password (min 8 characters)" minlength="8" required autocomplete="new-password">
                     <div class="password-strength"><div id="strengthMeter" class="strength-meter"></div></div>
+                    <div class="field-error" id="passwordError"></div>
                 </div>
-                <div class="form-field"><input type="password" id="confirmPassword" placeholder="Confirm password" required></div>
+                <div class="form-field">
+                    <input type="password" id="confirmPassword" placeholder="Confirm password" required autocomplete="new-password">
+                    <div class="field-error" id="confirmError"></div>
+                </div>
+
+                <!-- Terms + Privacy (required) -->
                 <div class="checkbox-row">
-                    <input type="checkbox" id="privacyPolicy" required>
+                    <input type="checkbox" id="termsConsent" required>
                     <span class="checkbox-custom"></span>
-                    <label for="privacyPolicy">I agree to the <a href="Privacy.html" target="_blank">Privacy Policy</a></label>
+                    <label for="termsConsent">
+                        I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a>
+                        and acknowledge the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.
+                    </label>
                 </div>
+
+                <!-- Age confirmation (required) -->
+                <div class="checkbox-row">
+                    <input type="checkbox" id="ageConfirm" required>
+                    <span class="checkbox-custom"></span>
+                    <label for="ageConfirm">I confirm that I am 18 years or older.</label>
+                </div>
+
+                <!-- Marketing (optional — NOT pre-checked) -->
+                <div class="checkbox-row optional">
+                    <input type="checkbox" id="marketingConsent">
+                    <span class="checkbox-custom"></span>
+                    <label for="marketingConsent">
+                        I would like to receive Skyline product updates and marketing emails. <em>(Optional)</em>
+                    </label>
+                </div>
+
+                <!-- Data processing notice -->
+                <div class="data-notice">
+                    Skyline processes account information, lead data, chat content, email content, and usage information to provide the service.
+                    Some information may be processed by service providers such as OpenAI, Nylas, MongoDB Atlas, Render, and Flutterwave.
+                    See our <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> for details.
+                </div>
+
                 <button type="submit" class="btn-primary" style="width:100%; background:white; color:black;">Sign Up →</button>
                 <div id="errorMessage" class="error-message"></div>
                 <div id="successMessage" class="success-message"></div>
@@ -923,7 +679,17 @@
             </p>
         </div>
     </div>
-    <div class="footer">© 2025 Skyline AA-1 – Autonomous Sales Assistant. All rights reserved.</div>
+
+    <div class="footer">
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="refunds.html">Refund and Cancellation</a>
+            <a href="acceptable-use.html">Acceptable Use</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 Skyline AI. All rights reserved.</div>
+    </div>
 </div>
 
 <script>
@@ -944,41 +710,64 @@
         else strengthMeter.style.background = 'var(--sage)';
     });
 
-    const emailInput = document.getElementById('email');
-    const emailValidation = document.getElementById('emailValidation');
-    emailInput.addEventListener('blur', function() {
-        const email = this.value;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (email && !emailRegex.test(email)) {
-            emailValidation.textContent = 'Please enter a valid email address';
-            emailValidation.style.display = 'block';
-        } else { emailValidation.style.display = 'none'; }
-    });
-
     const form = document.getElementById('signupForm');
     const errorDiv = document.getElementById('errorMessage');
     const successDiv = document.getElementById('successMessage');
+
+    function setFieldError(id, msg) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.style.display = msg ? 'block' : 'none';
+    }
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         errorDiv.style.display = 'none';
         successDiv.style.display = 'none';
+        ['usernameError', 'emailError', 'passwordError', 'confirmError'].forEach(id => setFieldError(id, ''));
+
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirm = document.getElementById('confirmPassword').value;
-        const privacy = document.getElementById('privacyPolicy').checked;
-        if (!username || !email || !password || !confirm) { showError("All fields are required."); return; }
-        if (password !== confirm) { showError("Passwords do not match."); return; }
-        if (password.length < 8) { showError("Password must be at least 8 characters."); return; }
-        if (!privacy) { showError("You must agree to the Privacy Policy."); return; }
+        const terms = document.getElementById('termsConsent').checked;
+        const age = document.getElementById('ageConfirm').checked;
+        const marketing = document.getElementById('marketingConsent').checked;
+
+        // Field-by-field validation for better UX
+        let hasErr = false;
+        if (!username) { setFieldError('usernameError', 'Username is required.'); hasErr = true; }
+        else if (username.length < 3) { setFieldError('usernameError', 'Username must be at least 3 characters.'); hasErr = true; }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) { setFieldError('emailError', 'Email is required.'); hasErr = true; }
+        else if (!emailRegex.test(email)) { setFieldError('emailError', 'Please enter a valid email address.'); hasErr = true; }
+
+        if (!password) { setFieldError('passwordError', 'Password is required.'); hasErr = true; }
+        else if (password.length < 8) { setFieldError('passwordError', 'Password must be at least 8 characters.'); hasErr = true; }
+
+        if (!confirm) { setFieldError('confirmError', 'Please confirm your password.'); hasErr = true; }
+        else if (password !== confirm) { setFieldError('confirmError', 'Passwords do not match.'); hasErr = true; }
+
+        if (hasErr) { showError("Please fix the fields above."); return; }
+        if (!terms) { showError("You must agree to the Terms of Service and Privacy Policy."); return; }
+        if (!age) { showError("You must confirm you are 18 years or older."); return; }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = "Creating account...";
         try {
             const res = await fetch('https://skylineapp-backend-file.onrender.com/api/auth/register', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username, email, password,
+                    marketingConsent: marketing,
+                    termsConsentAt: new Date().toISOString(),
+                    ageConfirmed: true
+                })
             });
             const data = await res.json();
             if (res.ok) {
@@ -990,12 +779,27 @@
                     showSuccess("Account created successfully! Redirecting to login...");
                     setTimeout(() => { window.location.href = "login.html"; }, 2000);
                 }
-            } else { showError(DOMPurify.sanitize(data.message || "Signup failed. Try a different email.")); }
-        } catch (err) { showError("Network error. Please try again."); }
-        finally { submitBtn.disabled = false; submitBtn.textContent = originalText; }
+            } else {
+                showError(DOMPurify.sanitize(data.message || "Signup failed. Try a different email."));
+            }
+        } catch (err) {
+            showError("Network error. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
     });
-    function showError(msg) { errorDiv.textContent = DOMPurify.sanitize(msg); errorDiv.style.display = 'block'; successDiv.style.display = 'none'; }
-    function showSuccess(msg) { successDiv.textContent = DOMPurify.sanitize(msg); successDiv.style.display = 'block'; errorDiv.style.display = 'none'; }
+
+    function showError(msg) {
+        errorDiv.textContent = DOMPurify.sanitize(msg);
+        errorDiv.style.display = 'block';
+        successDiv.style.display = 'none';
+    }
+    function showSuccess(msg) {
+        successDiv.textContent = DOMPurify.sanitize(msg);
+        successDiv.style.display = 'block';
+        errorDiv.style.display = 'none';
+    }
 </script>
 </body>
-   </html>
+                </html>
