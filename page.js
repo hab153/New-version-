@@ -480,6 +480,9 @@ function streamLeadResponse(message) {
 //                 companyInformation, informationStatus, phoneNumber }
 //
 // Renders exactly 4 labeled fields per company — nothing else.
+//
+// Missing email shows a next-step message (option C).
+// Missing phone shows a next-step message (option G).
 
 function renderFinalReply(searchingOutput, opts) {
     // ── Fallback message ──
@@ -511,15 +514,11 @@ function renderFinalReply(searchingOutput, opts) {
                 ? c.companyName.trim()
                 : 'Company ' + (i + 1);
 
-        // ── Email ──
-        var emailDisplay = 'Not found';
-        if (c.email) {
-            if (c.emailStatus === 'predicted') {
-                emailDisplay = c.email + ' (predicted — not verified)';
-            } else {
-                emailDisplay = c.email;
-            }
-        }
+        // ── Email (Option C) ──
+        var emailDisplay =
+            typeof c.email === 'string' && c.email.trim()
+                ? c.email.trim()
+                : 'No publicly available email found — try the contact page or phone number';
 
         // ── Company information ──
         var infoDisplay = 'Not available';
@@ -533,11 +532,11 @@ function renderFinalReply(searchingOutput, opts) {
                     : c.companyInformation.trim();
         }
 
-        // ── Phone ──
+        // ── Phone (Option G) ──
         var phoneDisplay =
             typeof c.phoneNumber === 'string' && c.phoneNumber.trim()
                 ? c.phoneNumber.trim()
-                : 'Not found';
+                : 'Not publicly listed — try their website contact form';
 
         var block =
             '**Company ' + (i + 1) + '**\n' +
