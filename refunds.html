@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund and Cancellation Policy – Skyline AI</title>
+    <meta name="description" content="Skyline AI Refund and Cancellation Policy — how cancellations, renewals, refunds, and payment disputes work.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+            --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+            --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0;
+            --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
+            --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+
+            --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'Monaco', 'Menlo', monospace;
+
+            --text-xs: clamp(0.7rem, 0.8vw, 0.8rem);
+            --text-sm: clamp(0.8rem, 1vw, 0.9rem);
+            --text-base: clamp(0.9rem, 1.2vw, 1rem);
+            --text-lg: clamp(1rem, 1.5vw, 1.15rem);
+            --text-xl: clamp(1.15rem, 2vw, 1.4rem);
+            --text-2xl: clamp(1.5rem, 2.5vw, 1.9rem);
+            --text-3xl: clamp(2rem, 4vw, 3rem);
+
+            --space-xs: clamp(0.25rem, 0.4vw, 0.4rem);
+            --space-sm: clamp(0.4rem, 0.6vw, 0.6rem);
+            --space-md: clamp(0.6rem, 1vw, 0.9rem);
+            --space-lg: clamp(0.9rem, 1.5vw, 1.2rem);
+            --space-xl: clamp(1.2rem, 2vw, 1.8rem);
+            --space-2xl: clamp(1.8rem, 3vw, 3rem);
+
+            --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: var(--text-base);
+            line-height: 1.7;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                        radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        .wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 var(--space-lg); }
+
+        /* ── Nav ── */
+        .nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-lg) 0;
+            border-bottom: 1px solid var(--br-dim);
+            position: sticky; top: 0;
+            background: rgba(10,10,10,0.9);
+            backdrop-filter: blur(14px);
+            z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; color: var(--t1); }
+        .brand-mark {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-md);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-mark svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 1.8; }
+        .brand-name { font-size: clamp(1rem, 2vw, 1.15rem); font-weight: 700; letter-spacing: -0.02em; }
+        .brand-name span { font-weight: 400; opacity: 0.7; }
+
+        .nav-back {
+            font-size: var(--text-sm);
+            color: var(--t2);
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: #fff; }
+
+        /* ── Header ── */
+        .doc-header { padding: var(--space-2xl) 0 var(--space-xl); }
+        .doc-eyebrow {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em;
+            text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
+        }
+        .doc-header h1 {
+            font-family: var(--display);
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+        }
+        .doc-meta {
+            font-family: var(--mono); font-size: var(--text-xs); color: var(--t3);
+            display: flex; flex-wrap: wrap; gap: var(--space-md);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .doc-meta span strong { color: var(--t2); font-weight: 500; }
+
+        /* ── Content ── */
+        .doc-body { padding: var(--space-lg) 0 var(--space-2xl); }
+        .doc-body p { margin-bottom: var(--space-md); color: var(--t2); }
+        .doc-body strong { color: var(--t1); font-weight: 600; }
+        .doc-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.2s; }
+        .doc-body a:hover { opacity: 0.7; }
+
+        .doc-body h2 {
+            font-family: var(--display);
+            font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+            font-weight: 700;
+            color: var(--t1);
+            margin: var(--space-2xl) 0 var(--space-md);
+            letter-spacing: -0.01em;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--br-dim);
+        }
+
+        .doc-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: var(--space-md);
+        }
+        .doc-body ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            color: var(--t2);
+        }
+        .doc-body ul li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: var(--t3);
+        }
+
+        .contact-box {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fff;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-sm);
+            color: var(--t2);
+        }
+        .contact-box strong { color: var(--t1); }
+
+        .top-link {
+            display: inline-block;
+            margin-top: var(--space-xl);
+            font-size: var(--text-sm);
+            color: var(--t3);
+            text-decoration: none;
+            font-family: var(--mono);
+            letter-spacing: 0.04em;
+        }
+        .top-link:hover { color: #fff; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--br-dim);
+            padding: var(--space-xl) 0;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a {
+            color: var(--t2); text-decoration: none;
+            font-size: var(--text-xs);
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .footer-links a.active { color: #fff; }
+        .footer-copy { color: var(--t4); font-size: var(--text-xs); font-family: var(--mono); }
+
+        @media (max-width: 480px) {
+            .wrap { padding: 0 var(--space-md); }
+            .doc-meta { flex-direction: column; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="nav">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </span>
+            <span class="brand-name">Skyline<span>AI</span></span>
+        </a>
+        <a href="index.html" class="nav-back">← Back to home</a>
+    </nav>
+
+    <header class="doc-header">
+        <div class="doc-eyebrow">Legal · Refund &amp; Cancellation</div>
+        <h1>Refund and Cancellation Policy</h1>
+        <div class="doc-meta">
+            <span><strong>Effective:</strong> 21 October 2026</span>
+            <span><strong>Last updated:</strong> 21 October 2026</span>
+        </div>
+    </header>
+
+    <main class="doc-body">
+
+        <p>
+            This Refund and Cancellation Policy explains how cancellation, subscription renewal, refunds, duplicate charges, failed payments, and payment disputes work for Skyline AI (“Skyline,” “we,” “us,” or “our”).
+        </p>
+        <p>
+            Skyline AI is an online software service operated by <strong>Habeebullah</strong> in <strong>Nigeria</strong>.
+        </p>
+
+        <div class="contact-box">
+            <strong>Billing and refund contact:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <p>
+            This policy should be read together with our <a href="terms.html">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a>.
+        </p>
+
+        <h2>1. Free plan</h2>
+        <p>
+            Skyline may offer a free plan with limited features and usage allowances.
+        </p>
+        <p>
+            The free plan does not require a payment and therefore does not create a payment to refund. Free-plan limits, features, and availability may change as Skyline develops.
+        </p>
+        <p>
+            You may stop using the free plan at any time. Skyline may suspend or close a free account if it is inactive, abused, used for spam, or violates the Terms of Service.
+        </p>
+
+        <h2>2. Paid subscriptions</h2>
+        <p>
+            Skyline may offer paid monthly plans. The applicable price, currency, features, limits, and billing period will be shown at checkout before you complete a purchase.
+        </p>
+        <p>
+            Unless the checkout page states otherwise, a paid subscription renews automatically at the end of each billing period until it is cancelled.
+        </p>
+        <p>
+            Flutterwave or another payment provider processes payments on Skyline’s behalf. Skyline does not store full card numbers or CVV codes.
+        </p>
+
+        <h2>3. How to cancel</h2>
+        <p>
+            You may cancel your paid subscription through the cancellation control provided in your Skyline account or by contacting:
+        </p>
+        <div class="contact-box">
+            <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+        <p>
+            When contacting us, use the email address connected to your Skyline account and include your account email and, if available, your transaction reference. Do not send your full card number, CVV, password, or other payment-secret information.
+        </p>
+        <p>
+            Cancellation stops future renewal. Unless we state otherwise or applicable law requires a different result, you may continue using paid features until the end of the current paid billing period.
+        </p>
+        <p>
+            Cancellation does not automatically create a refund for a billing period that has already started.
+        </p>
+
+        <h2>4. Refunds generally</h2>
+        <p>
+            Payments are generally non-refundable after a paid billing period begins, except where a refund is required by law or where one of the circumstances below applies.
+        </p>
+        <p>We may consider a refund for:</p>
+        <ul>
+            <li>a duplicate charge;</li>
+            <li>a payment that was processed after a valid cancellation was completed;</li>
+            <li>an unauthorized payment, after reasonable verification;</li>
+            <li>a significant technical failure that prevented reasonable use of the paid service; or</li>
+            <li>another situation where fairness or applicable law requires a refund.</li>
+        </ul>
+        <p>Refunds are not normally provided for:</p>
+        <ul>
+            <li>unused time after a customer chooses to stop using the service;</li>
+            <li>a failure to cancel before the next renewal;</li>
+            <li>a change of mind after using the paid features;</li>
+            <li>inaccurate, incomplete, or outdated lead information where the service was otherwise available;</li>
+            <li>AI output that the customer did not review or chose not to use;</li>
+            <li>emails that recipients did not open or answer; or</li>
+            <li>account suspension caused by violation of the Terms of Service or Acceptable Use Policy.</li>
+        </ul>
+        <p>
+            These exclusions do not remove any refund, cancellation, or consumer rights that cannot legally be excluded.
+        </p>
+
+        <h2>5. How to request a refund</h2>
+        <p>To request a refund, email:</p>
+        <div class="contact-box">
+            <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+        <p>Include:</p>
+        <ul>
+            <li>the email address connected to your Skyline account;</li>
+            <li>the date and amount of the charge;</li>
+            <li>the Flutterwave transaction reference, if available;</li>
+            <li>the reason for the request; and</li>
+            <li>any relevant information needed to investigate the issue.</li>
+        </ul>
+        <p>
+            Do not send full card numbers, CVV codes, passwords, or API keys.
+        </p>
+        <p>
+            We may ask for additional information to verify the account and payment. We will review requests fairly and may ask questions about account usage, cancellation timing, or technical problems.
+        </p>
+
+        <h2>6. Refund decisions and processing</h2>
+        <p>
+            If a refund is approved, Skyline will initiate it through the applicable payment provider or payment method used for the transaction.
+        </p>
+        <p>
+            The time for the refund to appear depends on Flutterwave, the card network, the bank, and the customer’s financial institution. Skyline cannot guarantee an exact number of days for the funds to appear after a refund has been initiated.
+        </p>
+        <p>
+            Some refunds may be returned in the settlement currency or converted by the payment provider or financial institution. Currency-conversion rates and bank charges may affect the amount received.
+        </p>
+
+        <h2>7. Failed payments and renewal problems</h2>
+        <p>
+            If a renewal payment fails, is reversed, or cannot be confirmed, Skyline may:
+        </p>
+        <ul>
+            <li>restrict or suspend paid features;</li>
+            <li>request updated payment information;</li>
+            <li>retry the payment through the payment provider where permitted; or</li>
+            <li>cancel the subscription after reasonable notice.</li>
+        </ul>
+        <p>
+            If you believe you were charged incorrectly, contact us promptly at <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a> so we can review the transaction.
+        </p>
+
+        <h2>8. Chargebacks and payment disputes</h2>
+        <p>
+            Please contact Skyline first when you believe a charge is incorrect, duplicated, unauthorized, or related to a technical problem. We will try to investigate and resolve legitimate issues.
+        </p>
+        <p>
+            A payment dispute or chargeback may result in a temporary account review, suspension, or loss of paid access while the transaction is investigated. This does not prevent you from exercising rights available through your bank, card issuer, payment provider, or applicable law.
+        </p>
+
+        <h2>9. Account deletion and subscriptions</h2>
+        <p>
+            Deleting your Skyline account does not necessarily cancel a paid subscription automatically unless the application clearly confirms that cancellation has occurred.
+        </p>
+        <p>
+            Before deleting an account, cancel any active subscription or contact <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a> and request confirmation that future renewals have been stopped.
+        </p>
+        <p>
+            Skyline may retain limited payment, accounting, tax, fraud-prevention, security, dispute, or legal records after account deletion where retention is required or reasonably necessary. See the <a href="privacy.html">Privacy Policy</a> for more information.
+        </p>
+
+        <h2>10. Changes to plans and prices</h2>
+        <p>
+            Skyline may change its plan features, limits, prices, or billing structure as the service develops.
+        </p>
+        <p>
+            Where required by applicable law, we will provide notice of a material price change before it applies to a renewal. You may cancel before the new price applies if you do not wish to continue.
+        </p>
+
+        <h2>11. Contact</h2>
+        <p>For cancellation, refund, billing, or payment questions, contact:</p>
+        <div class="contact-box">
+            <strong>Skyline AI</strong><br>
+            <strong>Operator:</strong> Habeebullah<br>
+            <strong>Country:</strong> Nigeria<br>
+            <strong>Email:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <a href="#top" class="top-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="refunds.html" class="active">Refund and Cancellation</a>
+            <a href="acceptable-use.html">Acceptable Use</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 Skyline AI. All rights reserved.</div>
+    </footer>
+
+</div>
+</body>
+  </html>
