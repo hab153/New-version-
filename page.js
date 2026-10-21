@@ -1,777 +1,665 @@
-// ============================================================
-// page.js - Skyline · Nexa Business Agent
-// ============================================================
+// ────────────────────────────────────────────────────────────────
+// Searching.js — Company Data Extraction and Lead Generation
+// ────────────────────────────────────────────────────────────────
+'use strict';
 
-const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-const token = localStorage.getItem('token');
-if (!token) window.location.href = 'login.html';
+const OpenAI = require('openai');
 
-// ── STATE ─
-let currentMode = 'lead';
-let currentSessionId = new URLSearchParams(window.location.search).get('session');
-let conversationHistory = [];
-let isTyping = false;
-let currentGeneratedLeads = [];
-let statusInterval = null;
-let assistantSessionId = null;
-let assistantConversationHistory = [];
+// ────────────────────────────────────────────────────────────────
+// CONFIGURATION
+// ────────────────────────────────────────────────────────────────
 
-var _cachedPlan = null;
-var _cachedPlanTime = 0;
-var _cachedStatus = null;
-var _cachedStatusTime = 0;
-var CACHE_TTL = 60000;
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
-// ── STREAM STATE ─
-var _activeEventSource = null;
-var _runCounter = 0;
+const MODEL = 'gpt-4o-mini';
+const MAX_AI_ATTEMPTS = 4;
+const MAX_EXTRACT_ATTEMPTS = 4;
+const MAX_SEARCH_FALLBACK_ATTEMPTS = 4;
 
-// ──────────────────────────────────────────────────────────────
-//  UTIL
-// ──────────────────────────────────────────────────────────────
+const MAX_CONTENT_CHARS = 120000;
 
-function esc(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function now() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-function scrollDown(container) { if (container) container.scrollTop = container.scrollHeight; }
+const TAVILY_EXTRACT_ENDPOINT = 'https://api.tavily.com/extract';
+const TAVILY_SEARCH_ENDPOINT = 'https://api.tavily.com/search';
 
-function showToast(message, type, duration) {
-    type = type || 'info'; duration = duration || 4000;
-    var existing = document.querySelector('.toast-msg');
-    if (existing) existing.remove();
-    var toast = document.createElement('div');
-    toast.className = 'toast-msg';
-    toast.textContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(message) : esc(message);
-    var colors = {
-        success: { bg: 'rgba(102,221,153,0.10)', border: 'rgba(102,221,153,0.5)', text: '#66dd99' },
-        error:   { bg: 'rgba(255,85,85,0.10)',   border: 'rgba(255,85,85,0.5)',   text: '#ff5555' },
-        warning: { bg: 'rgba(255,170,0,0.10)',   border: 'rgba(255,170,0,0.5)',   text: '#ffaa00' },
-        info:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.2)', text: '#f5f5f5' }
-    };
-    var color = colors[type] || colors.info;
-    Object.assign(toast.style, {
-        background: color.bg, border: '1px solid ' + color.border, color: color.text
-    });
-    document.body.appendChild(toast);
-    setTimeout(function() { toast.remove(); }, duration);
-}
+const TAVILY_EXTRACT_PARAMS = {
+    extract_depth: 'advanced',
+    format: 'markdown',
+    timeout: 60,
+    include_usage: true,
+    query: 'contact email phone number address company information',
+    chunks_per_source: 5,
+};
 
-function formatAI(text) {
-    if (!text) return '';
-    var s = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(text) : esc(text);
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    s = s.replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, function(m) { return '<ul class="ai-ul">' + m + '</ul>'; });
-    s = s.replace(/\n/g, '<br>');
-    return s;
-}
+const TAVILY_SEARCH_FALLBACK_PARAMS = {
+    search_depth: 'advanced',
+    max_results: 5,
+    include_raw_content: true,
+    include_answer: false,
+    include_favicon: false,
+    topic: 'general',
+};
 
-function avatarFor(role) { return role === 'ai' ? 'N' : 'ME'; }
+const FALLBACK_MESSAGE =
+    'Our server is currently experiencing high traffic. Please try again shortly.';
 
-// ──────────────────────────────────────────────────────────────
-//  MODE SWITCHING
-// ──────────────────────────────────────────────────────────────
-function switchMode(mode) {
-    if (mode === currentMode) return;
-    currentMode = mode;
-    document.getElementById('leadModeBtn').classList.toggle('active', mode === 'lead');
-    document.getElementById('assistantModeBtn').classList.toggle('active', mode === 'assistant');
-    document.getElementById('leadModeContainer').classList.toggle('active', mode === 'lead');
-    document.getElementById('assistantModeContainer').classList.toggle('active', mode === 'assistant');
-    document.querySelector('.topbar-label').textContent = mode === 'lead' ? 'Lead Search' : 'Assistant Chat';
-}
+// ────────────────────────────────────────────────────────────────
+// REGEX PRE-SCAN FOR CONTACT CANDIDATES
+// ────────────────────────────────────────────────────────────────
 
-// ──────────────────────────────────────────────────────────────
-//  GUIDE MODAL
-// ──────────────────────────────────────────────────────────────
-function showGuide() {
-    var m = document.getElementById('guideModal');
-    if (!m) return;
-    m.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-function hideGuide() {
-    var m = document.getElementById('guideModal');
-    if (!m) return;
-    m.style.display = 'none';
-    document.body.style.overflow = '';
-    setTimeout(function() {
-        var inp = currentMode === 'lead' ? leadMsgInput : assistantMsgInput;
-        if (inp) inp.focus();
-    }, 120);
-}
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 
-// ──────────────────────────────────────────────────────────────
-//  STEPPER — 5 stages matching the new pipeline
-// ──────────────────────────────────────────────────────────────
-
-var STEPPER_STAGES = [
-    { id: 's1', label: 'Understanding' },
-    { id: 's2', label: 'Discovery' },
-    { id: 's3', label: 'Domain Finder' },
-    { id: 's4', label: 'Contact Pages' },
-    { id: 's5', label: 'Company Data' }
+const PHONE_REGEXES = [
+    /\+?\d{1,3}[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/g,
+    /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}/g,
+    /\d{3}[-.\s]\d{3}[-.\s]\d{4}/g,
 ];
 
-var _stepperRow = null;
+const EMAIL_BLACKLIST_SUBSTRINGS = [
+    'example.com',
+    'sentry.io',
+    'wixpress.com',
+    'placeholder',
+    'your-email',
+    'youremail',
+    'your.name',
+    'name@',
+    'email@',
+    'domain.com',
+];
 
-var _timerInterval = null;
-var _timerStart = 0;
-var _timerEl = null;
+const PHONE_BLACKLIST_SUBSTRINGS = [
+    '000-000-0000',
+    '123-456-7890',
+    '111-111-1111',
+];
 
-function elapsedSeconds() {
-    return _timerStart ? Math.floor((Date.now() - _timerStart) / 1000) : 0;
-}
+function scanForContactCandidates(content) {
+    if (typeof content !== 'string' || content.length === 0) {
+        return { emails: [], phones: [] };
+    }
 
-function renderTimer(seconds) {
-    if (_timerEl) _timerEl.textContent = '⏱️ ' + seconds + 's';
-}
+    const emailSet = new Set();
+    const rawEmails = content.match(EMAIL_REGEX) || [];
 
-function startRunTimer(el) {
-    stopRunTimer();
-    _timerEl = el;
-    _timerStart = Date.now();
-    renderTimer(0);
-    _timerInterval = setInterval(function() {
-        renderTimer(elapsedSeconds());
-    }, 1000);
-}
+    for (const raw of rawEmails) {
+        const email = raw.trim().toLowerCase();
 
-function stopRunTimer() {
-    var secs = elapsedSeconds();
-    if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
-    _timerStart = 0;
-    return secs;
-}
+        if (email.length > 80) continue;
 
-function buildStepperStagesHTML() {
-    var html = '';
-    for (var i = 0; i < STEPPER_STAGES.length; i++) {
-        var stage = STEPPER_STAGES[i];
-        var isLast = i === STEPPER_STAGES.length - 1;
+        const isBlacklisted = EMAIL_BLACKLIST_SUBSTRINGS.some((b) =>
+            email.includes(b)
+        );
+        if (isBlacklisted) continue;
 
-        html += '<div class="stepper-stage waiting" data-stage="' + stage.id + '">';
-        html +=   '<div class="stepper-icon">';
-        html +=     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">';
-        html +=       '<circle cx="12" cy="12" r="8"/>';
-        html +=     '</svg>';
-        html +=   '</div>';
-        html +=   '<div class="stepper-label">' + stage.label + '</div>';
-        if (!isLast) {
-            html += '<div class="stepper-connector"></div>';
+        emailSet.add(email);
+        if (emailSet.size >= 10) break;
+    }
+
+    const phoneSet = new Set();
+
+    for (const regex of PHONE_REGEXES) {
+        const matches = content.match(regex) || [];
+
+        for (const raw of matches) {
+            const phone = raw.trim();
+
+            if (phone.includes('@')) continue;
+
+            const digitCount = (phone.match(/\d/g) || []).length;
+            if (digitCount < 10 || digitCount > 15) continue;
+
+            const isBlacklisted = PHONE_BLACKLIST_SUBSTRINGS.some((b) =>
+                phone.includes(b)
+            );
+            if (isBlacklisted) continue;
+
+            phoneSet.add(phone);
+            if (phoneSet.size >= 10) break;
         }
-        html += '</div>';
-    }
-    return html;
-}
 
-function showStepper() {
-    if (_stepperRow && _stepperRow.parentNode) _stepperRow.parentNode.removeChild(_stepperRow);
-
-    var row = document.createElement('div');
-    row.className = 'msg-row ai stepper-row';
-    row.setAttribute('aria-live', 'polite');
-    row.innerHTML =
-        '<div class="av">N</div>' +
-        '<div class="bubble-wrap">' +
-            '<div class="bubble stepper-bubble">' +
-                '<div class="stepper-head">' +
-                    '<span class="stepper-title">Nexa is working…</span>' +
-                    '<span class="stepper-timer">⏱️ 0s</span>' +
-                '</div>' +
-                '<div class="stepper">' + buildStepperStagesHTML() + '</div>' +
-            '</div>' +
-        '</div>';
-
-    leadMsgContainer.appendChild(row);
-    _stepperRow = row;
-
-    startRunTimer(row.querySelector('.stepper-timer'));
-    scrollDown(leadChatArea);
-}
-
-function hideStepper() {
-    stopRunTimer();
-    if (_stepperRow && _stepperRow.parentNode) _stepperRow.parentNode.removeChild(_stepperRow);
-    _stepperRow = null;
-}
-
-function swapStepperWithReply(runId, renderFn, seconds) {
-    if (runId !== _runCounter) return;
-
-    var row = _stepperRow;
-    _stepperRow = null;
-
-    var opts = {};
-    if (typeof seconds === 'number') opts.duration = seconds;
-
-    if (!row || !row.parentNode) {
-        renderFn(opts);
-        return;
+        if (phoneSet.size >= 10) break;
     }
 
-    row.classList.add('fade-out');
-    setTimeout(function() {
-        if (runId !== _runCounter) {
-            if (row.parentNode) row.parentNode.removeChild(row);
-            return;
-        }
-        opts.replaceEl = row;
-        renderFn(opts);
-    }, 300);
+    return {
+        emails: Array.from(emailSet),
+        phones: Array.from(phoneSet),
+    };
 }
 
-function updateStepperStage(stageId, state, extra) {
-    if (!_stepperRow) return;
+// ────────────────────────────────────────────────────────────────
+// AI INSTRUCTIONS
+// ────────────────────────────────────────────────────────────────
 
-    var stageEl = _stepperRow.querySelector('.stepper-stage[data-stage="' + stageId + '"]');
-    if (!stageEl) return;
+const SYSTEM_INSTRUCTIONS = `
+You are given the extracted content from several pages of a single
+company's official website, plus a list of contact-data candidates
+that were pre-scanned from that content using regular expressions.
 
-    stageEl.className = 'stepper-stage ' + state;
+Your task is to identify four pieces of information about the company:
 
-    var icon = stageEl.querySelector('.stepper-icon');
-    var labelEl = stageEl.querySelector('.stepper-label');
-    var stageConfig = null;
-    for (var i = 0; i < STEPPER_STAGES.length; i++) {
-        if (STEPPER_STAGES[i].id === stageId) { stageConfig = STEPPER_STAGES[i]; break; }
-    }
+1. Company name
+2. Company email address
+3. Company information (a short description)
+4. Company phone number
 
-    if (icon) {
-        if (state === 'processing') {
-            icon.innerHTML =
-                '<svg class="spinner" viewBox="0 0 24 24" fill="none" width="14" height="14">' +
-                '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>' +
-                '<path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>' +
-                '</svg>';
-        } else if (state === 'completed') {
-            icon.innerHTML =
-                '<svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">' +
-                '<polyline points="20 6 9 17 4 12"/></svg>';
-        } else if (state === 'failed') {
-            icon.innerHTML =
-                '<svg class="cross" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">' +
-                '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-        } else {
-            icon.innerHTML =
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">' +
-                '<circle cx="12" cy="12" r="8"/></svg>';
-        }
-    }
+Read all the extracted content carefully. The pages belong to one
+company. Do not mix in information about any other company.
 
-    if (labelEl && stageConfig) {
-        labelEl.textContent = stageConfig.label;
-    }
+Pre-scanned candidates:
+
+The pre-scanned email list contains every literal email address that
+appears in the content. The pre-scanned phone list contains every
+literal phone number that appears in the content.
+
+These are literal matches from the content — not predictions.
+
+Rules:
+
+Company name:
+- Return the official name of the company as it appears on its own
+  website.
+- If the name cannot be identified, return null.
+
+Company email:
+- If a pre-scanned email candidate exists and belongs to the company's
+  own domain, return it and set emailStatus to "verified".
+- If a pre-scanned email candidate exists but belongs to a third-party
+  domain (a vendor, a webmail, a different company), do not return it.
+  Prefer a candidate on the company's own domain if one exists.
+- If no pre-scanned email candidate belongs to the company's own
+  domain, return null and set emailStatus to "not_found".
+- Never predict, guess, or invent an email address.
+- Never return an email address that does not appear literally in the
+  pre-scanned candidates.
+
+Company information:
+- If the content describes the company, write a short description
+  based only on that content, and set informationStatus to "verified".
+- If the content does not describe the company but a tentative summary
+  is reasonable, write a short tentative description, and set
+  informationStatus to "estimated".
+- Do not invent specific facts.
+
+Company phone number:
+- If a pre-scanned phone candidate exists and is plausible for the
+  company, return it.
+- If no pre-scanned phone candidate exists, return null.
+- Never guess or invent a phone number.
+
+Return only valid JSON using exactly this format:
+
+{
+  "companyName": "the official company name or null",
+  "email": "the email address or null",
+  "emailStatus": "verified" | "not_found",
+  "companyInformation": "short description",
+  "informationStatus": "verified" | "estimated",
+  "phoneNumber": "the phone number or null"
 }
 
-// ──────────────────────────────────────────────────────────────
-//  LEAD MODE
-// ──────────────────────────────────────────────────────────────
-var leadMsgContainer = document.getElementById('leadMsgContainer');
-var leadChatArea = document.getElementById('leadChatArea');
-var leadMsgInput = document.getElementById('leadMsgInput');
-var leadSendBtn = document.getElementById('leadSendBtn');
-var leadCharCount = document.getElementById('leadCharCount');
+Do not explain your answer.
+Do not add extra fields.
+`;
 
-function appendLeadMsg(role, content, opts) {
-    opts = opts || {};
-    var row = document.createElement('div');
-    row.className = 'msg-row ' + role;
-    var displayContent = content;
-    if (typeof content === 'string') {
+// ────────────────────────────────────────────────────────────────
+// TAVILY EXTRACT — BATCH REQUEST WITH RETRIES
+// ────────────────────────────────────────────────────────────────
+
+async function runTavilyExtract(urls) {
+    const apiKey = process.env.TAVILY_API_KEY;
+
+    if (!apiKey) {
+        console.error('[Searching] TAVILY_API_KEY is not set');
+        return null;
+    }
+
+    if (!Array.isArray(urls) || urls.length === 0) {
+        console.warn('[Searching] No URLs to extract');
+        return null;
+    }
+
+    for (let attempt = 1; attempt <= MAX_EXTRACT_ATTEMPTS; attempt++) {
+        const startMs = Date.now();
+
+        console.log(
+            `[Searching] Extract attempt ${attempt}/${MAX_EXTRACT_ATTEMPTS} for ${urls.length} URL(s)`
+        );
+
         try {
-            var parsed = JSON.parse(content);
-            if (parsed.ambiguities && parsed.ambiguities.length > 0) {
-                displayContent = buildClarificationDisplay(parsed);
-            }
-        } catch (e) {}
-    }
-    var formattedContent = role === 'ai'
-        ? formatAI(displayContent)
-        : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(displayContent) : esc(displayContent));
+            const response = await fetch(TAVILY_EXTRACT_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify({
+                    urls,
+                    ...TAVILY_EXTRACT_PARAMS,
+                }),
+            });
 
-    var durationHTML = (typeof opts.duration === 'number')
-        ? '<span class="reply-duration">Completed in ' + opts.duration + 's</span> · '
-        : '';
+            const elapsedMs = Date.now() - startMs;
 
-    row.innerHTML = '<div class="av">' + avatarFor(role) + '</div>' +
-                    '<div class="bubble-wrap"><div class="bubble">' + formattedContent + '</div>' +
-                    '<div class="msg-time">' + durationHTML + now() + '</div></div>';
+            console.log(
+                `[Searching] Extract HTTP status: ${response.status} (${elapsedMs}ms)`
+            );
 
-    if (opts.replaceEl && opts.replaceEl.parentNode === leadMsgContainer) {
-        leadMsgContainer.replaceChild(row, opts.replaceEl);
-    } else {
-        leadMsgContainer.appendChild(row);
-    }
-    scrollDown(leadChatArea);
-}
-
-function buildClarificationDisplay(parsed) {
-    if (!parsed.ambiguities || parsed.ambiguities.length === 0) {
-        return 'I understood your request. What would you like me to do?';
-    }
-    var msg = '⚠️ **I need a bit more clarity:**\n\n';
-    parsed.ambiguities.forEach(function(amb) {
-        msg += '• **' + amb.field + '**: ' + amb.issue + '\n';
-        if (amb.candidates && amb.candidates.length > 0) {
-            msg += '  → Options: ' + amb.candidates.join(' | ') + '\n';
-        }
-        msg += '\n';
-    });
-    msg += 'Please provide more details so I can help you better.';
-    return msg;
-}
-
-function updateLeadSend() { leadSendBtn.disabled = !leadMsgInput.value.trim() || isTyping; }
-
-leadMsgInput.addEventListener('input', function() {
-    leadMsgInput.style.height = 'auto';
-    leadMsgInput.style.height = Math.min(leadMsgInput.scrollHeight, 130) + 'px';
-    updateLeadSend();
-    leadCharCount.textContent = leadMsgInput.value.length || '';
-});
-leadMsgInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        if (!leadSendBtn.disabled) sendLeadMessage();
-    }
-});
-leadSendBtn.addEventListener('click', sendLeadMessage);
-
-function sendLeadMessage() {
-    var text = leadMsgInput.value.trim();
-    if (!text || isTyping) return;
-    appendLeadMsg('user', text);
-    leadMsgInput.value = ''; leadMsgInput.style.height = 'auto'; updateLeadSend();
-    streamLeadResponse(text);
-}
-
-// ──────────────────────────────────────────────────────────────
-//  LEAD STREAM
-// ──────────────────────────────────────────────────────────────
-
-function streamLeadResponse(message) {
-    isTyping = true; updateLeadSend();
-
-    if (_activeEventSource) {
-        try { _activeEventSource.close(); } catch (e) {}
-        _activeEventSource = null;
-    }
-
-    var runId = ++_runCounter;
-
-    showStepper();
-
-    var url = BACKEND + '/api/stream/pipeline'
-        + '?message=' + encodeURIComponent(message)
-        + '&token=' + encodeURIComponent(token);
-
-    var stages = {};
-
-    var es;
-    try {
-        es = new EventSource(url);
-    } catch (e) {
-        stopRunTimer();
-        swapStepperWithReply(runId, function(opts) {
-            appendLeadMsg('ai', '🔌 Could not open a live connection. Please try again.', opts);
-            isTyping = false; updateLeadSend();
-        });
-        return;
-    }
-
-    _activeEventSource = es;
-
-    es.addEventListener('stage', function(event) {
-        if (runId !== _runCounter) return;
-
-        var payload;
-        try { payload = JSON.parse(event.data); } catch (e) { return; }
-        if (!payload || !payload.stage) return;
-
-        var stageId = payload.stage;
-        var stageData = payload.data || {};
-        var status = stageData.status;
-
-        console.log('[SSE] Stage event:', stageId, status);
-
-        if (status === 'completed' && stageData.data) {
-            stages[stageId] = stageData.data;
-        }
-
-        if (stageId === 'error') {
-            try { es.close(); } catch (e) {}
-            _activeEventSource = null;
-            stopRunTimer();
-
-            if (_stepperRow) {
-                var processing = _stepperRow.querySelectorAll('.stepper-stage.processing');
-                for (var i = 0; i < processing.length; i++) {
-                    processing[i].className = 'stepper-stage failed';
-                }
+            if (!response.ok) {
+                const errorBody = await response.text().catch(() => '');
+                console.error(
+                    `[Searching] Extract failed with status ${response.status}: ${errorBody}`
+                );
+                continue;
             }
 
-            setTimeout(function() {
-                swapStepperWithReply(runId, function(opts) {
-                    appendLeadMsg('ai', '⚠️ Something went wrong while processing your request. Please try again.', opts);
-                    isTyping = false; updateLeadSend();
-                });
-            }, 900);
-            return;
+            const extractResponse = await response.json();
+
+            console.log(
+                '[Searching] Extract response — successful:',
+                Array.isArray(extractResponse.results)
+                    ? extractResponse.results.length
+                    : 0,
+                'failed:',
+                Array.isArray(extractResponse.failed_results)
+                    ? extractResponse.failed_results.length
+                    : 0
+            );
+
+            return extractResponse;
+        } catch (error) {
+            const elapsedMs = Date.now() - startMs;
+            console.error(
+                `[Searching] Extract attempt ${attempt} failed (${elapsedMs}ms):`,
+                error && error.message ? error.message : error
+            );
         }
+    }
 
-        if (stageId === 'done') {
-            try { es.close(); } catch (e) {}
-            _activeEventSource = null;
-
-            var secs = stopRunTimer();
-
-            setTimeout(function() {
-                swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s5'], opts);
-                    isTyping = false; updateLeadSend();
-                }, secs);
-            }, 500);
-            return;
-        }
-
-        if (status === 'processing') {
-            updateStepperStage(stageId, 'processing');
-        } else if (status === 'completed') {
-            updateStepperStage(stageId, 'completed');
-        }
-    });
-
-    es.addEventListener('error', function() {
-        if (_activeEventSource !== es) return;
-        if (runId !== _runCounter) return;
-
-        try { es.close(); } catch (e) {}
-        _activeEventSource = null;
-
-        var secs = stopRunTimer();
-
-        if (stages['s5']) {
-            setTimeout(function() {
-                swapStepperWithReply(runId, function(opts) {
-                    renderFinalReply(stages['s5'], opts);
-                    isTyping = false; updateLeadSend();
-                }, secs);
-            }, 300);
-        } else {
-            setTimeout(function() {
-                swapStepperWithReply(runId, function(opts) {
-                    appendLeadMsg('ai', '🔌 Connection lost — please try again.', opts);
-                    isTyping = false; updateLeadSend();
-                });
-            }, 300);
-        }
-    });
+    console.warn('[Searching] All Extract attempts failed');
+    return null;
 }
 
-// ──────────────────────────────────────────────────────────────
-//  FINAL REPLY RENDER — reads from Searching's output
-// ──────────────────────────────────────────────────────────────
-//
-// stages['s5'] = { companies: [...], message: string|null }
-//
-// Each company: { companyName, email, emailStatus,
-//                 companyInformation, informationStatus, phoneNumber }
-//
-// Renders exactly 4 labeled fields per company — nothing else.
+// ────────────────────────────────────────────────────────────────
+// TAVILY SEARCH FALLBACK
+// ────────────────────────────────────────────────────────────────
 
-function renderFinalReply(searchingOutput, opts) {
-    // ── Fallback message ──
+async function runTavilySearchFallback(domain) {
+    const apiKey = process.env.TAVILY_API_KEY;
+
+    if (!apiKey) {
+        console.error('[Searching] TAVILY_API_KEY is not set');
+        return null;
+    }
+
+    if (!domain || typeof domain !== 'string' || domain.trim().length === 0) {
+        console.warn('[Searching] No domain for Search fallback');
+        return null;
+    }
+
+    for (let attempt = 1; attempt <= MAX_SEARCH_FALLBACK_ATTEMPTS; attempt++) {
+        const startMs = Date.now();
+
+        console.log(
+            `[Searching] Search fallback attempt ${attempt}/${MAX_SEARCH_FALLBACK_ATTEMPTS} for: ${domain}`
+        );
+
+        try {
+            const query = `site:${new URL(domain).hostname} contact email phone`;
+
+            const response = await fetch(TAVILY_SEARCH_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify({
+                    query,
+                    ...TAVILY_SEARCH_FALLBACK_PARAMS,
+                }),
+            });
+
+            const elapsedMs = Date.now() - startMs;
+
+            console.log(
+                `[Searching] Search fallback HTTP status: ${response.status} (${elapsedMs}ms)`
+            );
+
+            if (!response.ok) {
+                const errorBody = await response.text().catch(() => '');
+                console.error(
+                    `[Searching] Search fallback failed with status ${response.status}: ${errorBody}`
+                );
+                continue;
+            }
+
+            const searchResponse = await response.json();
+
+            console.log(
+                '[Searching] Search fallback response — results:',
+                Array.isArray(searchResponse.results)
+                    ? searchResponse.results.length
+                    : 0
+            );
+
+            return searchResponse;
+        } catch (error) {
+            const elapsedMs = Date.now() - startMs;
+            console.error(
+                `[Searching] Search fallback attempt ${attempt} failed (${elapsedMs}ms):`,
+                error && error.message ? error.message : error
+            );
+        }
+    }
+
+    console.warn('[Searching] All Search fallback attempts failed');
+    return null;
+}
+
+// ────────────────────────────────────────────────────────────────
+// AI EXTRACTION — ONE CALL PER COMPANY
+// ────────────────────────────────────────────────────────────────
+
+async function extractCompanyData(companyName, rawContent) {
+    const candidates = scanForContactCandidates(rawContent);
+
+    console.log(
+        `[Searching] Pre-scan candidates for ${companyName} — emails: ${candidates.emails.length}, phones: ${candidates.phones.length}`
+    );
+    if (candidates.emails.length > 0) {
+        console.log('[Searching]   email candidates:', candidates.emails);
+    }
+    if (candidates.phones.length > 0) {
+        console.log('[Searching]   phone candidates:', candidates.phones);
+    }
+
+    const content =
+        rawContent.length > MAX_CONTENT_CHARS
+            ? rawContent.slice(0, MAX_CONTENT_CHARS)
+            : rawContent;
+
+    for (let attempt = 1; attempt <= MAX_AI_ATTEMPTS; attempt++) {
+        console.log(
+            `[Searching] AI attempt ${attempt}/${MAX_AI_ATTEMPTS} for: ${companyName}`
+        );
+
+        try {
+            const completion = await openai.chat.completions.create({
+                model: MODEL,
+                temperature: 0,
+                response_format: { type: 'json_object' },
+                messages: [
+                    { role: 'system', content: SYSTEM_INSTRUCTIONS },
+                    {
+                        role: 'user',
+                        content:
+                            `Company hint: ${companyName}\n\n` +
+                            `Pre-scanned email candidates:\n` +
+                            (candidates.emails.length > 0
+                                ? candidates.emails.map((e) => `- ${e}`).join('\n')
+                                : '(none)') +
+                            `\n\nPre-scanned phone candidates:\n` +
+                            (candidates.phones.length > 0
+                                ? candidates.phones.map((p) => `- ${p}`).join('\n')
+                                : '(none)') +
+                            `\n\nExtracted content:\n${content}`,
+                    },
+                ],
+            });
+
+            const output = completion.choices?.[0]?.message?.content;
+            console.log('[Searching] AI raw response:', output);
+
+            if (!output) {
+                console.error('[Searching] AI returned empty content');
+                continue;
+            }
+
+            const parsed = JSON.parse(output);
+
+            const companyNameOut =
+                typeof parsed?.companyName === 'string' &&
+                parsed.companyName.trim().length > 0
+                    ? parsed.companyName.trim()
+                    : null;
+
+            const email =
+                typeof parsed?.email === 'string' &&
+                parsed.email.trim().length > 0
+                    ? parsed.email.trim()
+                    : null;
+
+            const emailStatus = email ? 'verified' : 'not_found';
+
+            const companyInformation =
+                typeof parsed?.companyInformation === 'string'
+                    ? parsed.companyInformation.trim()
+                    : '';
+
+            const rawInfoStatus = parsed?.informationStatus;
+            const informationStatus =
+                rawInfoStatus === 'verified' || rawInfoStatus === 'estimated'
+                    ? rawInfoStatus
+                    : 'verified';
+
+            // phoneNumber returns null when no phone was found. The
+            // display layer decides how to phrase it for the user.
+            const phoneNumber =
+                typeof parsed?.phoneNumber === 'string' &&
+                parsed.phoneNumber.trim().length > 0
+                    ? parsed.phoneNumber.trim()
+                    : null;
+
+            return {
+                companyName: companyNameOut,
+                email,
+                emailStatus,
+                companyInformation,
+                informationStatus,
+                phoneNumber,
+            };
+        } catch (error) {
+            console.error(
+                `[Searching] AI attempt ${attempt} failed:`,
+                error && error.message ? error.message : error
+            );
+        }
+    }
+
+    console.warn('[Searching] All AI attempts failed for:', companyName);
+    return null;
+}
+
+// ────────────────────────────────────────────────────────────────
+// SEARCHING REQUEST — MAIN FUNCTION
+// ────────────────────────────────────────────────────────────────
+
+async function searchingRequest(contactPagesOutput) {
+    const startedAt = Date.now();
+    console.log('[Searching] Started');
+
     if (
-        searchingOutput &&
-        typeof searchingOutput.message === 'string' &&
-        searchingOutput.message.trim()
+        !contactPagesOutput ||
+        typeof contactPagesOutput !== 'object' ||
+        typeof contactPagesOutput.message === 'string'
     ) {
-        appendLeadMsg('ai', '💬 ' + searchingOutput.message.trim(), opts);
-        return;
+        console.warn(
+            '[Searching] ContactPages output is a fallback message. Returning it.'
+        );
+
+        return {
+            message:
+                (contactPagesOutput && contactPagesOutput.message) ||
+                FALLBACK_MESSAGE,
+        };
     }
 
-    var companies = Array.isArray(searchingOutput?.companies)
-        ? searchingOutput.companies
+    const pages = Array.isArray(contactPagesOutput.pages)
+        ? contactPagesOutput.pages
         : [];
 
+    if (pages.length === 0) {
+        console.warn(
+            '[Searching] No companies to process. Returning friendly message.'
+        );
+
+        return {
+            message: FALLBACK_MESSAGE,
+        };
+    }
+
+    const companies = [];
+
+    for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        const companyStart = Date.now();
+
+        const name =
+            typeof page.name === 'string' && page.name.trim().length > 0
+                ? page.name.trim()
+                : `Company ${i + 1}`;
+
+        console.log(
+            `[Searching] Processing company ${i + 1}/${pages.length}: ${name}`
+        );
+
+        const urls = Array.isArray(page?.mapResponse?.results)
+            ? page.mapResponse.results.filter(
+                  (u) => typeof u === 'string' && u.trim().length > 0
+              )
+            : [];
+
+        let combinedContent = '';
+        let usedSearchFallback = false;
+
+        if (urls.length > 0) {
+            const extractResponse = await runTavilyExtract(urls);
+
+            if (extractResponse) {
+                const successfulResults = Array.isArray(extractResponse.results)
+                    ? extractResponse.results
+                    : [];
+
+                const failedCount = Array.isArray(
+                    extractResponse.failed_results
+                )
+                    ? extractResponse.failed_results.length
+                    : 0;
+
+                if (failedCount > 0) {
+                    console.warn(
+                        `[Searching] ${failedCount} URL(s) failed to extract for ${name} — running Search fallback`
+                    );
+
+                    const searchFallback = await runTavilySearchFallback(
+                        page.domain
+                    );
+
+                    if (searchFallback) {
+                        usedSearchFallback = true;
+
+                        const searchResults = Array.isArray(
+                            searchFallback.results
+                        )
+                            ? searchFallback.results
+                            : [];
+
+                        for (const r of searchResults) {
+                            const raw =
+                                typeof r.raw_content === 'string'
+                                    ? r.raw_content
+                                    : '';
+                            if (raw.trim().length > 0) {
+                                combinedContent += `\n\n----- ${r.url || 'search result'} -----\n${raw}`;
+                            }
+                        }
+                    }
+                }
+
+                for (const r of successfulResults) {
+                    const raw =
+                        typeof r.raw_content === 'string' ? r.raw_content : '';
+                    if (raw.trim().length > 0) {
+                        combinedContent += `\n\n----- ${r.url || 'page'} -----\n${raw}`;
+                    }
+                }
+            }
+        } else {
+            console.warn(
+                `[Searching] No URLs for ${name} — running Search fallback`
+            );
+
+            const searchFallback = await runTavilySearchFallback(page.domain);
+
+            if (searchFallback) {
+                usedSearchFallback = true;
+
+                const searchResults = Array.isArray(searchFallback.results)
+                    ? searchFallback.results
+                    : [];
+
+                for (const r of searchResults) {
+                    const raw =
+                        typeof r.raw_content === 'string' ? r.raw_content : '';
+                    if (raw.trim().length > 0) {
+                        combinedContent += `\n\n----- ${r.url || 'search result'} -----\n${raw}`;
+                    }
+                }
+            }
+        }
+
+        if (combinedContent.trim().length === 0) {
+            console.warn(
+                `[Searching] No usable content for ${name} — skipping`
+            );
+            continue;
+        }
+
+        const record = await extractCompanyData(name, combinedContent);
+
+        if (!record) {
+            console.warn(
+                `[Searching] AI extraction failed for ${name} — skipping`
+            );
+            continue;
+        }
+
+        if (!record.companyName) {
+            record.companyName = name;
+        }
+
+        companies.push(record);
+
+        console.log(
+            `[Searching] Company ${i + 1} completed (${Date.now() - companyStart}ms)${usedSearchFallback ? ' [used Search fallback]' : ''}`
+        );
+    }
+
     if (companies.length === 0) {
-        appendLeadMsg('ai', '⚠️ No company data was returned.', opts);
-        return;
+        const elapsed = Date.now() - startedAt;
+        console.warn(
+            `[Searching] No companies succeeded (${elapsed}ms). Returning friendly message.`
+        );
+
+        return {
+            message: FALLBACK_MESSAGE,
+        };
     }
 
-    var blocks = [];
+    const elapsed = Date.now() - startedAt;
 
-    for (var i = 0; i < companies.length; i++) {
-        var c = companies[i] || {};
+    console.log(
+        `[Searching] Finished — ${companies.length}/${pages.length} companies succeeded in ${elapsed}ms`
+    );
 
-        var name =
-            typeof c.companyName === 'string' && c.companyName.trim()
-                ? c.companyName.trim()
-                : 'Company ' + (i + 1);
-
-        // ── Email ──
-        var emailDisplay = 'Not found';
-        if (c.email) {
-            if (c.emailStatus === 'predicted') {
-                emailDisplay = c.email + ' (predicted — not verified)';
-            } else {
-                emailDisplay = c.email;
-            }
-        }
-
-        // ── Company information ──
-        var infoDisplay = 'Not available';
-        if (
-            typeof c.companyInformation === 'string' &&
-            c.companyInformation.trim()
-        ) {
-            infoDisplay =
-                c.informationStatus === 'estimated'
-                    ? c.companyInformation.trim() + ' (AI estimate)'
-                    : c.companyInformation.trim();
-        }
-
-        // ── Phone ──
-        var phoneDisplay =
-            typeof c.phoneNumber === 'string' && c.phoneNumber.trim()
-                ? c.phoneNumber.trim()
-                : 'Not found';
-
-        var block =
-            '**Company ' + (i + 1) + '**\n' +
-            '\n' +
-            'Company name: ' + name + '\n' +
-            'Company email: ' + emailDisplay + '\n' +
-            'Company phone number: ' + phoneDisplay + '\n' +
-            'Company information: ' + infoDisplay;
-
-        blocks.push(block);
-    }
-
-    appendLeadMsg('ai', blocks.join('\n\n'), opts);
+    return {
+        companies,
+    };
 }
 
-// ──────────────────────────────────────────────────────────────
-//  ASSISTANT MODE
-// ──────────────────────────────────────────────────────────────
-var assistantMsgContainer = document.getElementById('assistantMsgContainer');
-var assistantChatArea = document.getElementById('assistantChatArea');
-var assistantMsgInput = document.getElementById('assistantMsgInput');
-var assistantSendBtn = document.getElementById('assistantSendBtn');
-var assistantCharCount = document.getElementById('assistantCharCount');
+// ────────────────────────────────────────────────────────────────
+// EXPORTS
+// ────────────────────────────────────────────────────────────────
 
-function appendAssistantMsg(role, content) {
-    var row = document.createElement('div');
-    row.className = 'msg-row ' + role;
-    var displayContent = role === 'ai'
-        ? formatAI(content)
-        : ((typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(content) : esc(content));
-    row.innerHTML = '<div class="av">' + avatarFor(role) + '</div>' +
-                    '<div class="bubble-wrap"><div class="bubble">' + displayContent + '</div>' +
-                    '<div class="msg-time">' + now() + '</div></div>';
-    assistantMsgContainer.appendChild(row);
-    scrollDown(assistantChatArea);
-}
-
-function showAssistantTyping(label) {
-    label = label || 'Nexa is thinking…';
-    var row = document.getElementById('assistantTypingRow');
-    if (row) { var lbl = row.querySelector('.t-label'); if (lbl) lbl.textContent = label; scrollDown(assistantChatArea); return; }
-    row = document.createElement('div');
-    row.className = 'typing-row'; row.id = 'assistantTypingRow';
-    row.innerHTML = '<div class="av">N</div>' +
-                    '<div class="typing-bubble"><span class="t-label">' + esc(label) + '</span>' +
-                    '<div class="t-dots"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>';
-    assistantMsgContainer.appendChild(row);
-    scrollDown(assistantChatArea);
-}
-function hideAssistantTyping() { var r = document.getElementById('assistantTypingRow'); if (r) r.remove(); }
-function updateAssistantSend() { assistantSendBtn.disabled = !assistantMsgInput.value.trim() || isTyping; }
-
-assistantMsgInput.addEventListener('input', function() {
-    assistantMsgInput.style.height = 'auto';
-    assistantMsgInput.style.height = Math.min(assistantMsgInput.scrollHeight, 130) + 'px';
-    updateAssistantSend();
-    assistantCharCount.textContent = assistantMsgInput.value.length || '';
-});
-assistantMsgInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        if (!assistantSendBtn.disabled) sendAssistantMessage();
-    }
-});
-assistantSendBtn.addEventListener('click', sendAssistantMessage);
-
-function sendAssistantMessage() {
-    var text = assistantMsgInput.value.trim();
-    if (!text || isTyping) return;
-    appendAssistantMsg('user', text);
-    assistantMsgInput.value = ''; assistantMsgInput.style.height = 'auto'; updateAssistantSend();
-    fetchAssistantResponse(text);
-}
-
-function fetchAssistantResponse(message) {
-    isTyping = true; updateAssistantSend(); showAssistantTyping('Nexa is thinking…');
-    fetch(BACKEND + '/api/assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ message: message, sessionId: assistantSessionId })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        hideAssistantTyping();
-        if (data.sessionId) assistantSessionId = data.sessionId;
-        appendAssistantMsg('ai', data.response || "I couldn't process that. Please try again.");
-    })
-    .catch(function() {
-        hideAssistantTyping();
-        appendAssistantMsg('ai', '🔌 Connection error — check your network and try again.');
-    })
-    .finally(function() { isTyping = false; updateAssistantSend(); });
-}
-
-// ──────────────────────────────────────────────────────────────
-//  LOAD SESSION
-// ──────────────────────────────────────────────────────────────
-function loadLeadSession() {
-    if (!currentSessionId) return Promise.resolve();
-    return fetch(BACKEND + '/api/history/' + currentSessionId, { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(msgs) {
-        if (msgs && msgs.length) {
-            leadMsgContainer.innerHTML = '';
-            for (var i = 0; i < msgs.length; i++) {
-                var role = msgs[i].role === 'ai' ? 'ai' : 'user';
-                appendLeadMsg(role, msgs[i].content);
-                conversationHistory.push({ role: role === 'ai' ? 'assistant' : 'user', content: msgs[i].content });
-            }
-            scrollDown(leadChatArea);
-        }
-    }).catch(function() {});
-}
-
-// ──────────────────────────────────────────────────────────────
-//  PLAN + STATUS (cached)
-// ──────────────────────────────────────────────────────────────
-function checkPlan() {
-    var t = Date.now();
-    var chip = document.getElementById('planChip');
-    if (_cachedPlan && (t - _cachedPlanTime) < CACHE_TTL) {
-        chip.className = 'plan-chip ' + _cachedPlan;
-        chip.textContent = _cachedPlan === 'go' ? 'GO' : _cachedPlan === 'pro' ? 'PRO' : 'FREE';
-        return Promise.resolve();
-    }
-    return fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) {
-        if (user && chip) {
-            var p = user.subscriptionTier || 'free';
-            _cachedPlan = p; _cachedPlanTime = Date.now();
-            chip.className = 'plan-chip ' + p;
-            chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-        }
-    }).catch(function() {});
-}
-
-function updateStatus() {
-    var t = Date.now();
-    if (_cachedStatus && (t - _cachedStatusTime) < CACHE_TTL) { applyStatus(_cachedStatus); return Promise.resolve(); }
-    return fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(data) { if (data) { _cachedStatus = data; _cachedStatusTime = Date.now(); applyStatus(data); } })
-    .catch(function() { var txt = document.getElementById('statusText'); if (txt) txt.textContent = '⚠️ Status unknown'; });
-}
-function applyStatus(data) {
-    var bar = document.getElementById('statusBar'); var txt = document.getElementById('statusText');
-    if (!bar || !txt) return;
-    if (data.connected && !data.isExpired) { bar.className = 'status-bar connected'; txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected'; }
-    else if (data.connected && data.isExpired) { bar.className = 'status-bar disconnected'; txt.textContent = '⚠️ Session expired — Reconnect in Dashboard'; }
-    else { bar.className = 'status-bar disconnected'; txt.textContent = '❌ No email connected — Connect in Dashboard'; }
-}
-
-// ──────────────────────────────────────────────────────────────
-//  CLEAR / NEW CHAT
-// ──────────────────────────────────────────────────────────────
-function clearChat() {
-    _runCounter++;
-
-    if (_activeEventSource) {
-        try { _activeEventSource.close(); } catch (e) {}
-        _activeEventSource = null;
-    }
-
-    hideStepper();
-    isTyping = false;
-    updateLeadSend();
-
-    leadMsgContainer.innerHTML = ''; conversationHistory = []; currentGeneratedLeads = []; currentSessionId = null;
-    assistantMsgContainer.innerHTML = '';
-    assistantMsgContainer.innerHTML =
-        '<div class="msg-row ai"><div class="av">N</div>' +
-        '<div class="bubble-wrap"><div class="bubble">👋 Hi, I\'m <strong>Nexa</strong> — your business assistant. Ask me anything about your business, leads, or strategy.</div>' +
-        '<div class="msg-time">Just now</div></div></div>';
-    assistantSessionId = null; assistantConversationHistory = [];
-    _cachedPlan = null; _cachedPlanTime = 0; _cachedStatus = null; _cachedStatusTime = 0;
-
-    var url = new URL(window.location); url.searchParams.delete('session'); window.history.pushState({}, '', url);
-
-    showGuide();
-}
-
-// ──────────────────────────────────────────────────────────────
-//  INIT
-// ──────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-    var newBtn = document.getElementById('newChatBtn');
-    var clrBtn = document.getElementById('clearSessionBtn');
-    if (newBtn) newBtn.addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
-    if (clrBtn) clrBtn.addEventListener('click', function(e) { e.preventDefault(); clearChat(); });
-
-    var okayBtn = document.getElementById('guideOkayBtn');
-    if (okayBtn) okayBtn.addEventListener('click', hideGuide);
-
-    Promise.all([checkPlan(), updateStatus()]).catch(function() {});
-    statusInterval = setInterval(updateStatus, 120000);
-
-    var targetForm = document.getElementById('targetForm');
-    if (targetForm) {
-        targetForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var industry = (document.getElementById('industry') || {}).value || '';
-            var region = (document.getElementById('region') || {}).value || '';
-            var companySize = (document.getElementById('companySize') || {}).value || '';
-            var jobTitle = (document.getElementById('jobTitle') || {}).value || '';
-            var msg = 'Find me ' + jobTitle + 's in the ' + industry + ' industry, located in ' + region + '. Company size: ' + companySize + '.';
-            var wz = document.getElementById('setupWizard');
-            if (wz) wz.style.display = 'none';
-            appendLeadMsg('user', msg); streamLeadResponse(msg);
-        });
-    }
-
-    if (currentSessionId) {
-        hideGuide();
-        loadLeadSession();
-    } else {
-        showGuide();
-    }
-
-    switchMode('lead');
-
-    window.switchMode = switchMode;
-    window.clearChat = clearChat;
-    window.sendAllEmails = function() { showToast('Send all emails function', 'info', 2000); };
-
-    console.log('✅ [PAGE] Nexa ready (5-stage stepper + Seeker → Finder → ContactPages → Searching pipeline)');
-
-    window.addEventListener('beforeunload', function() {
-        if (statusInterval) clearInterval(statusInterval);
-        stopRunTimer();
-
-        if (_activeEventSource) {
-            try { _activeEventSource.close(); } catch (e) {}
-            _activeEventSource = null;
-        }
-    });
-});
+module.exports = searchingRequest;
