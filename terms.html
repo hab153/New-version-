@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service – Skyline AI</title>
+    <meta name="description" content="Skyline AI Terms of Service — the agreement governing your use of Skyline.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+            --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+            --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0;
+            --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
+            --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+
+            --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'Monaco', 'Menlo', monospace;
+
+            --text-xs: clamp(0.7rem, 0.8vw, 0.8rem);
+            --text-sm: clamp(0.8rem, 1vw, 0.9rem);
+            --text-base: clamp(0.9rem, 1.2vw, 1rem);
+            --text-lg: clamp(1rem, 1.5vw, 1.15rem);
+            --text-xl: clamp(1.15rem, 2vw, 1.4rem);
+            --text-2xl: clamp(1.5rem, 2.5vw, 1.9rem);
+            --text-3xl: clamp(2rem, 4vw, 3rem);
+
+            --space-xs: clamp(0.25rem, 0.4vw, 0.4rem);
+            --space-sm: clamp(0.4rem, 0.6vw, 0.6rem);
+            --space-md: clamp(0.6rem, 1vw, 0.9rem);
+            --space-lg: clamp(0.9rem, 1.5vw, 1.2rem);
+            --space-xl: clamp(1.2rem, 2vw, 1.8rem);
+            --space-2xl: clamp(1.8rem, 3vw, 3rem);
+
+            --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: var(--text-base);
+            line-height: 1.7;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                        radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        .wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 var(--space-lg); }
+
+        /* ── Nav ── */
+        .nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-lg) 0;
+            border-bottom: 1px solid var(--br-dim);
+            position: sticky; top: 0;
+            background: rgba(10,10,10,0.9);
+            backdrop-filter: blur(14px);
+            z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; color: var(--t1); }
+        .brand-mark {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-md);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-mark svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 1.8; }
+        .brand-name { font-size: clamp(1rem, 2vw, 1.15rem); font-weight: 700; letter-spacing: -0.02em; }
+        .brand-name span { font-weight: 400; opacity: 0.7; }
+
+        .nav-back {
+            font-size: var(--text-sm);
+            color: var(--t2);
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: #fff; }
+
+        /* ── Header ── */
+        .doc-header { padding: var(--space-2xl) 0 var(--space-xl); }
+        .doc-eyebrow {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em;
+            text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
+        }
+        .doc-header h1 {
+            font-family: var(--display);
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+        }
+        .doc-meta {
+            font-family: var(--mono); font-size: var(--text-xs); color: var(--t3);
+            display: flex; flex-wrap: wrap; gap: var(--space-md);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .doc-meta span strong { color: var(--t2); font-weight: 500; }
+
+        /* ── Content ── */
+        .doc-body { padding: var(--space-lg) 0 var(--space-2xl); }
+        .doc-body p { margin-bottom: var(--space-md); color: var(--t2); }
+        .doc-body strong { color: var(--t1); font-weight: 600; }
+        .doc-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.2s; }
+        .doc-body a:hover { opacity: 0.7; }
+
+        .doc-body h2 {
+            font-family: var(--display);
+            font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+            font-weight: 700;
+            color: var(--t1);
+            margin: var(--space-2xl) 0 var(--space-md);
+            letter-spacing: -0.01em;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--br-dim);
+        }
+
+        .doc-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: var(--space-md);
+        }
+        .doc-body ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            color: var(--t2);
+        }
+        .doc-body ul li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: var(--t3);
+        }
+
+        .contact-box {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fff;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-sm);
+            color: var(--t2);
+        }
+        .contact-box strong { color: var(--t1); }
+
+        .top-link {
+            display: inline-block;
+            margin-top: var(--space-xl);
+            font-size: var(--text-sm);
+            color: var(--t3);
+            text-decoration: none;
+            font-family: var(--mono);
+            letter-spacing: 0.04em;
+        }
+        .top-link:hover { color: #fff; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--br-dim);
+            padding: var(--space-xl) 0;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a {
+            color: var(--t2); text-decoration: none;
+            font-size: var(--text-xs);
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .footer-links a.active { color: #fff; }
+        .footer-copy { color: var(--t4); font-size: var(--text-xs); font-family: var(--mono); }
+
+        @media (max-width: 480px) {
+            .wrap { padding: 0 var(--space-md); }
+            .doc-meta { flex-direction: column; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="nav">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </span>
+            <span class="brand-name">Skyline<span>AI</span></span>
+        </a>
+        <a href="index.html" class="nav-back">← Back to home</a>
+    </nav>
+
+    <header class="doc-header">
+        <div class="doc-eyebrow">Legal · Terms</div>
+        <h1>Terms of Service</h1>
+        <div class="doc-meta">
+            <span><strong>Effective:</strong> 21 October 2026</span>
+            <span><strong>Last updated:</strong> 21 October 2026</span>
+        </div>
+    </header>
+
+    <main class="doc-body">
+
+        <p>
+            These Terms of Service (“Terms”) govern your access to and use of Skyline AI (“Skyline,” “we,” “us,” or “our”), an online software service operated by <strong>Habeebullah</strong> in <strong>Nigeria</strong>.
+        </p>
+        <p>
+            Skyline provides lead-research, AI, email-drafting, inbox, and follow-up tools for businesses, agencies, and other professional users.
+        </p>
+
+        <div class="contact-box">
+            <strong>Contact:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <p>
+            By creating an account or using Skyline, you agree to these Terms and acknowledge our <a href="privacy.html">Privacy Policy</a>. If you do not agree, do not create an account or use Skyline.
+        </p>
+
+        <h2>1. Eligibility</h2>
+        <p>
+            You must be at least <strong>18 years old</strong> and legally able to enter into these Terms to use Skyline.
+        </p>
+        <p>By creating an account, you confirm that:</p>
+        <ul>
+            <li>you meet the minimum age requirement;</li>
+            <li>the information you provide is accurate and current;</li>
+            <li>you have authority to use any business, email, lead, or contact information you submit;</li>
+            <li>you will comply with applicable laws; and</li>
+            <li>you will use Skyline only for lawful business purposes.</li>
+        </ul>
+        <p>
+            Skyline is intended for business and professional use and is not directed to children.
+        </p>
+
+        <h2>2. The Skyline service</h2>
+        <p>Skyline may provide features including:</p>
+        <ul>
+            <li>lead and company research;</li>
+            <li>prospect discovery;</li>
+            <li>AI chat and research assistance;</li>
+            <li>email drafting;</li>
+            <li>reply suggestions;</li>
+            <li>inbox and conversation management;</li>
+            <li>follow-up planning;</li>
+            <li>user-enabled automated replies; and</li>
+            <li>user-enabled automated follow-ups.</li>
+        </ul>
+        <p>
+            Features, limits, providers, and availability may change as Skyline develops.
+        </p>
+        <p>
+            Skyline does not promise that it will find a particular number of leads, identify a particular person, produce a meeting, generate revenue, increase response rates, reduce acquisition costs, or produce any particular business result.
+        </p>
+
+        <h2>3. Beta service</h2>
+        <p>
+            Skyline is currently provided as a beta service. During the beta period, Skyline may:
+        </p>
+        <ul>
+            <li>contain errors or inaccuracies;</li>
+            <li>be unavailable from time to time;</li>
+            <li>change or remove features;</li>
+            <li>have limited support;</li>
+            <li>experience interruptions caused by third-party providers; or</li>
+            <li>be discontinued or substantially changed.</li>
+        </ul>
+        <p>
+            You should keep independent copies of important business, lead, email, and customer information. Skyline should not be your only system for important sales or communication records during the beta.
+        </p>
+
+        <h2>4. Account registration and security</h2>
+        <p>
+            You must provide accurate information when creating an account and keep that information updated.
+        </p>
+        <p>You are responsible for:</p>
+        <ul>
+            <li>protecting your password and account credentials;</li>
+            <li>keeping your connected email account secure;</li>
+            <li>all activity under your account, unless it resulted from Skyline’s proven security failure;</li>
+            <li>notifying Skyline promptly if you suspect unauthorized access; and</li>
+            <li>not sharing or transferring your account in a way that violates these Terms.</li>
+        </ul>
+        <p>
+            You must not create accounts using false identities, disposable information intended to evade enforcement, or another person’s information without permission.
+        </p>
+
+        <h2>5. Connecting an email account</h2>
+        <p>
+            Skyline may allow you to connect Gmail, Outlook, or another supported email account through an integration provider such as Nylas.
+        </p>
+        <p>When you connect an account:</p>
+        <ul>
+            <li>you authorize Skyline to access the permissions shown during the connection process;</li>
+            <li>you confirm that you have authority to connect and use that email account;</li>
+            <li>Skyline may process email information needed to provide the features you request;</li>
+            <li>you remain responsible for the account and messages sent from it; and</li>
+            <li>you may disconnect the account through the available Skyline controls or by contacting support.</li>
+        </ul>
+        <p>
+            You must not connect another person’s email account without proper authority. You must not use Skyline to access email accounts unlawfully or to bypass an email provider’s security or usage rules.
+        </p>
+
+        <h2>6. AI features and generated content</h2>
+        <p>
+            Skyline uses third-party AI services, including OpenAI, to provide selected features.
+        </p>
+        <p>
+            AI-generated content may be inaccurate, incomplete, outdated, misleading, or inappropriate. You must review all AI-generated research, lead information, classifications, drafts, replies, follow-ups, and recommendations before relying on them or sending them.
+        </p>
+        <p>You are responsible for:</p>
+        <ul>
+            <li>checking names, companies, addresses, claims, and contact details;</li>
+            <li>checking that a message is appropriate for its recipient;</li>
+            <li>checking that a message is truthful and not misleading;</li>
+            <li>checking that the message complies with applicable law; and</li>
+            <li>deciding whether and when to send a message.</li>
+        </ul>
+        <p>
+            Skyline does not provide legal, tax, financial, privacy, anti-spam, or regulatory advice. You should obtain professional advice where appropriate.
+        </p>
+
+        <h2>7. Lead and company information</h2>
+        <p>
+            Lead and company information may come from public sources, user-provided information, research services, search tools, and AI-assisted research. It may be incomplete, outdated, inaccurate, duplicated, incorrectly matched, or unavailable.
+        </p>
+        <p>
+            You must independently verify information before relying on it or contacting a person.
+        </p>
+        <p>
+            You are responsible for ensuring that you have a lawful basis or other appropriate permission to collect, use, store, and contact people using the information you obtain through Skyline.
+        </p>
+
+        <h2>8. Email, outreach, and anti-spam rules</h2>
+        <p>
+            You are solely responsible for messages sent through your account and for ensuring that your outreach complies with the laws and rules applicable to you and your recipients.
+        </p>
+        <p>You must:</p>
+        <ul>
+            <li>use accurate sender and business information;</li>
+            <li>use truthful subject lines and message content;</li>
+            <li>identify yourself or your business appropriately;</li>
+            <li>respect unsubscribe and stop-contact requests;</li>
+            <li>maintain and follow applicable suppression lists;</li>
+            <li>stop contacting recipients who opt out;</li>
+            <li>review AI-generated messages before sending them when review is available; and</li>
+            <li>comply with applicable privacy, anti-spam, email-marketing, advertising, telecommunications, and consumer-protection rules.</li>
+        </ul>
+        <p>You must not use Skyline to:</p>
+        <ul>
+            <li>send spam or bulk messages without proper permission or lawful basis;</li>
+            <li>hide or falsify the sender’s identity;</li>
+            <li>use deceptive subject lines or claims;</li>
+            <li>impersonate another person or organization;</li>
+            <li>continue contacting someone after a valid stop-contact request;</li>
+            <li>send phishing, malware, scams, threats, harassment, or abusive content;</li>
+            <li>promote unlawful products or services;</li>
+            <li>unlawfully process sensitive personal information;</li>
+            <li>unlawfully scrape, buy, or use personal data;</li>
+            <li>target people in a discriminatory or abusive way; or</li>
+            <li>evade the rules of an email provider, payment provider, or applicable law.</li>
+        </ul>
+        <p>
+            Skyline may pause or restrict email features when we detect suspected spam, abuse, unusual activity, high complaint rates, or security risk.
+        </p>
+
+        <h2>9. Automated replies and follow-ups</h2>
+        <p>
+            Skyline may offer user-enabled automated replies or follow-ups.
+        </p>
+        <p>You are responsible for:</p>
+        <ul>
+            <li>the instructions and rules you configure;</li>
+            <li>the recipients selected;</li>
+            <li>the timing and content of automated messages;</li>
+            <li>monitoring the automation;</li>
+            <li>ensuring that automation remains lawful and appropriate; and</li>
+            <li>stopping automation when it is no longer appropriate or a recipient opts out.</li>
+        </ul>
+        <p>
+            Skyline does not guarantee that automated messages will be delivered, opened, answered, or converted into business.
+        </p>
+        <p>
+            Skyline may limit, pause, or disable automation to protect users, recipients, email providers, or the service.
+        </p>
+
+        <h2>10. Acceptable use</h2>
+        <p>You must not use Skyline to:</p>
+        <ul>
+            <li>violate any law, regulation, court order, or third-party right;</li>
+            <li>commit fraud, theft, deception, or financial crime;</li>
+            <li>send phishing or malicious content;</li>
+            <li>access accounts or systems without authorization;</li>
+            <li>distribute malware or harmful code;</li>
+            <li>harass, threaten, stalk, or abuse another person;</li>
+            <li>discriminate unlawfully;</li>
+            <li>process information in a way that violates privacy rights;</li>
+            <li>impersonate a person, company, or government authority;</li>
+            <li>sell or promote illegal goods or services;</li>
+            <li>interfere with Skyline’s operation or security;</li>
+            <li>test, scan, or attack Skyline without written permission;</li>
+            <li>reverse engineer or copy Skyline except where the law permits it;</li>
+            <li>bypass usage limits or payment controls;</li>
+            <li>create multiple accounts to abuse free features;</li>
+            <li>resell access without written permission;</li>
+            <li>use automated means to overload the service; or</li>
+            <li>use the service for a purpose that creates unreasonable risk to Skyline, users, recipients, or third parties.</li>
+        </ul>
+
+        <h2>11. Plans, usage limits, and fair use</h2>
+        <p>
+            Skyline may offer free and paid plans with different limits for chats, emails, AI features, suggestions, replies, and follow-ups.
+        </p>
+        <p>
+            The limits shown on the pricing page or inside the application form part of the applicable plan description. Limits may reset daily, monthly, or according to the schedule shown for the relevant plan.
+        </p>
+        <p>
+            You must not bypass, manipulate, or abuse plan limits. Skyline may restrict or suspend an account that attempts to evade limits or create unreasonable service load.
+        </p>
+        <p>
+            We may change plan features or limits. If a change materially reduces a paid service, we will provide notice where required by law.
+        </p>
+
+        <h2>12. Payments and subscriptions</h2>
+        <p>
+            Paid features may be purchased through Flutterwave or another payment provider shown at checkout.
+        </p>
+        <p>
+            Before completing a purchase, the price, currency, billing period, and applicable plan details will be shown to you.
+        </p>
+        <p>If you purchase a recurring subscription:</p>
+        <ul>
+            <li>you authorize the applicable payment provider to charge the selected payment method for each billing period;</li>
+            <li>the subscription renews until cancelled, unless the checkout terms state otherwise;</li>
+            <li>you are responsible for keeping billing information current;</li>
+            <li>failed or reversed payments may result in restricted or suspended paid access; and</li>
+            <li>taxes, bank charges, currency-conversion charges, or payment-provider charges may apply where required or disclosed.</li>
+        </ul>
+        <p>
+            Skyline does not store full card numbers or CVV codes. Payment information is processed by the payment provider under its applicable terms and privacy policy.
+        </p>
+
+        <h2>13. Cancellation and refunds</h2>
+        <p>
+            You may cancel a subscription using the cancellation control provided by Skyline or by contacting <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>.
+        </p>
+        <p>Unless the checkout page or Refund and Cancellation Policy says otherwise:</p>
+        <ul>
+            <li>cancellation stops future renewal;</li>
+            <li>access may continue until the end of the paid billing period; and</li>
+            <li>cancellation does not automatically create a refund for time already used.</li>
+        </ul>
+        <p>
+            Refunds, payment reversals, duplicate charges, failed payments, and chargebacks are handled according to the applicable <a href="refunds.html">Refund and Cancellation Policy</a>, the checkout terms, and the payment provider’s procedures.
+        </p>
+        <p>
+            We may suspend access when a payment is reversed, disputed, fraudulent, or otherwise not successfully completed.
+        </p>
+
+        <h2>14. Intellectual property</h2>
+        <p>
+            Skyline and its licensors own or control the Skyline website, application, software, design, branding, logos, documentation, and other service materials, except for User Content described below.
+        </p>
+        <p>
+            Subject to these Terms, Skyline grants you a limited, non-exclusive, non-transferable, revocable right to use the service for your internal lawful business purposes during the period your account is active.
+        </p>
+        <p>
+            You must not copy, sell, rent, sublicense, distribute, modify, reverse engineer, or create derivative works from Skyline except where applicable law does not permit that restriction.
+        </p>
+
+        <h2>15. User Content</h2>
+        <p>
+            “User Content” means information, text, chats, prompts, lead lists, email content, files, instructions, and other material that you submit to or create through Skyline.
+        </p>
+        <p>
+            You retain your rights in User Content to the extent you own those rights. You grant Skyline a limited permission to host, copy, transmit, process, modify, and display User Content only as reasonably necessary to:
+        </p>
+        <ul>
+            <li>provide and operate the requested Skyline features;</li>
+            <li>process AI, email, hosting, storage, and payment-related functions;</li>
+            <li>maintain security and prevent abuse;</li>
+            <li>provide support;</li>
+            <li>comply with law; and</li>
+            <li>enforce these Terms.</li>
+        </ul>
+        <p>
+            You confirm that you have the rights and permissions needed for Skyline to process the User Content you submit. You must not submit content that violates another person’s rights or applicable law.
+        </p>
+        <p>
+            Skyline does not claim ownership of your private business content merely because you use the service.
+        </p>
+
+        <h2>16. Feedback</h2>
+        <p>
+            If you voluntarily provide suggestions, ideas, bug reports, or other feedback, you allow Skyline to use that feedback to operate and improve the service without owing you compensation, unless we agree otherwise in writing.
+        </p>
+
+        <h2>17. Third-party services</h2>
+        <p>
+            Skyline depends on third-party services, which may include OpenAI, Nylas, Flutterwave, MongoDB Atlas, Render, Vercel, email providers, hosting providers, and research or infrastructure providers.
+        </p>
+        <p>
+            Third-party services may have separate terms, policies, outages, limitations, or changes. Skyline is not responsible for a third-party service to the extent the issue is outside Skyline’s reasonable control.
+        </p>
+        <p>
+            You are responsible for complying with the terms of third-party accounts and services that you connect to Skyline.
+        </p>
+
+        <h2>18. Availability and changes</h2>
+        <p>
+            Skyline is provided on an “as available” and “as is” basis during the beta. We do not promise continuous availability, a particular response time, a particular uptime percentage, or uninterrupted operation.
+        </p>
+        <p>
+            Maintenance, security events, provider outages, internet failures, software errors, and other events may temporarily affect the service.
+        </p>
+        <p>
+            We may modify, suspend, or discontinue all or part of Skyline. Where required by law, we will provide appropriate notice.
+        </p>
+
+        <h2>19. Suspension and termination</h2>
+        <p>
+            You may stop using Skyline at any time and may request account deletion as described in the Privacy Policy.
+        </p>
+        <p>We may suspend or terminate access, with or without notice where reasonably necessary, if:</p>
+        <ul>
+            <li>you violate these Terms or another Skyline policy;</li>
+            <li>you use the service for spam, abuse, fraud, or unlawful activity;</li>
+            <li>your account creates a security or service risk;</li>
+            <li>you fail to pay a valid amount due;</li>
+            <li>a payment is reversed or disputed;</li>
+            <li>a law-enforcement or legal obligation requires action; or</li>
+            <li>continued access could harm Skyline, users, recipients, providers, or third parties.</li>
+        </ul>
+        <p>
+            After termination, you may lose access to the service and User Content. Data will be handled according to the Privacy Policy, including applicable retention exceptions.
+        </p>
+
+        <h2>20. Disclaimers</h2>
+        <p>
+            To the maximum extent permitted by applicable law, Skyline is provided without warranties that the service will be:
+        </p>
+        <ul>
+            <li>uninterrupted;</li>
+            <li>error-free;</li>
+            <li>secure at all times;</li>
+            <li>accurate or complete;</li>
+            <li>compatible with every device or provider; or</li>
+            <li>suitable for your particular business purpose.</li>
+        </ul>
+        <p>Skyline does not guarantee:</p>
+        <ul>
+            <li>the accuracy or availability of leads;</li>
+            <li>email delivery;</li>
+            <li>inbox or provider compatibility;</li>
+            <li>recipient responses;</li>
+            <li>meetings, customers, revenue, or sales;</li>
+            <li>uninterrupted automation; or</li>
+            <li>any particular business outcome.</li>
+        </ul>
+        <p>
+            Skyline is not legal, tax, financial, privacy, email-compliance, or professional marketing advice.
+        </p>
+        <p>
+            Nothing in these Terms excludes a warranty or legal right that cannot lawfully be excluded.
+        </p>
+
+        <h2>21. Limitation of liability</h2>
+        <p>
+            To the maximum extent permitted by applicable law, Skyline and its operator will not be liable for indirect, incidental, special, consequential, exemplary, or punitive losses, or for loss of profits, revenue, business opportunities, goodwill, or data arising from or related to your use of Skyline.
+        </p>
+        <p>This includes losses related to:</p>
+        <ul>
+            <li>inaccurate AI output or lead information;</li>
+            <li>messages sent by you or through your account;</li>
+            <li>email delivery or recipient actions;</li>
+            <li>automated replies or follow-ups;</li>
+            <li>third-party outages;</li>
+            <li>payment-provider issues;</li>
+            <li>account suspension permitted under these Terms; or</li>
+            <li>beta-service interruptions.</li>
+        </ul>
+        <p>
+            Nothing in these Terms limits liability that cannot legally be limited under applicable law, including liability for fraud or intentional misconduct where such limitation is prohibited.
+        </p>
+        <p>
+            Before public paid launch, this section should be reviewed by a qualified Nigerian lawyer and adapted to the required legal standard.
+        </p>
+
+        <h2>22. Your responsibility for claims</h2>
+        <p>
+            To the extent permitted by law, you are responsible for claims, losses, liabilities, and reasonable costs arising from:
+        </p>
+        <ul>
+            <li>your User Content;</li>
+            <li>your messages and outreach;</li>
+            <li>your use of lead or contact data;</li>
+            <li>your violation of these Terms;</li>
+            <li>your violation of law or a third party’s rights; or</li>
+            <li>activity conducted through your account.</li>
+        </ul>
+        <p>
+            This section does not apply to the extent a claim was caused by Skyline’s own unlawful conduct or cannot legally be allocated to you.
+        </p>
+
+        <h2>23. Governing law and disputes</h2>
+        <p>
+            These Terms are governed by the laws of Nigeria, except to the extent mandatory consumer or privacy laws in your location apply differently.
+        </p>
+        <p>
+            Before starting formal proceedings, you and Skyline should try in good faith to resolve a dispute by contacting <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a> and describing the issue.
+        </p>
+        <p>
+            Unless mandatory law requires another forum, disputes that cannot be resolved informally may be brought before a court with appropriate jurisdiction in Nigeria.
+        </p>
+
+        <h2>24. Changes to these Terms</h2>
+        <p>
+            We may update these Terms when Skyline’s features, pricing, providers, security requirements, or legal obligations change.
+        </p>
+        <p>
+            We will update the “Last updated” date. Where required, we will provide additional notice or request acceptance of the updated Terms. If you continue using Skyline after an update becomes effective, your continued use may constitute acceptance to the extent permitted by law.
+        </p>
+
+        <h2>25. General provisions</h2>
+        <p>
+            If a court finds part of these Terms unenforceable, the remaining sections will continue to apply to the extent permitted by law.
+        </p>
+        <p>
+            If Skyline does not immediately enforce a provision, that does not waive the right to enforce it later.
+        </p>
+        <p>
+            You may not transfer your account or rights under these Terms without Skyline’s written permission. Skyline may transfer its rights and obligations as part of a merger, acquisition, financing, restructuring, or sale of assets.
+        </p>
+        <p>
+            These Terms, the Privacy Policy, and any additional policies or plan terms referenced here form the agreement between you and Skyline concerning the service.
+        </p>
+
+        <h2>26. Contact</h2>
+        <p>For questions about these Terms, contact:</p>
+        <div class="contact-box">
+            <strong>Skyline AI</strong><br>
+            <strong>Operator:</strong> Habeebullah<br>
+            <strong>Country:</strong> Nigeria<br>
+            <strong>Email:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <a href="#top" class="top-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html" class="active">Terms of Service</a>
+            <a href="refunds.html">Refund and Cancellation</a>
+            <a href="acceptable-use.html">Acceptable Use</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 Skyline AI. All rights reserved.</div>
+    </footer>
+
+</div>
+</body>
+  </html>
