@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy – Skyline AI</title>
+    <meta name="description" content="Skyline AI Privacy Policy — what information we collect, how we use it, and your rights.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+            --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+            --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0;
+            --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
+            --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+
+            --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'Monaco', 'Menlo', monospace;
+
+            --text-xs: clamp(0.7rem, 0.8vw, 0.8rem);
+            --text-sm: clamp(0.8rem, 1vw, 0.9rem);
+            --text-base: clamp(0.9rem, 1.2vw, 1rem);
+            --text-lg: clamp(1rem, 1.5vw, 1.15rem);
+            --text-xl: clamp(1.15rem, 2vw, 1.4rem);
+            --text-2xl: clamp(1.5rem, 2.5vw, 1.9rem);
+            --text-3xl: clamp(2rem, 4vw, 3rem);
+
+            --space-xs: clamp(0.25rem, 0.4vw, 0.4rem);
+            --space-sm: clamp(0.4rem, 0.6vw, 0.6rem);
+            --space-md: clamp(0.6rem, 1vw, 0.9rem);
+            --space-lg: clamp(0.9rem, 1.5vw, 1.2rem);
+            --space-xl: clamp(1.2rem, 2vw, 1.8rem);
+            --space-2xl: clamp(1.8rem, 3vw, 3rem);
+
+            --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: var(--text-base);
+            line-height: 1.7;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                        radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        .wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 var(--space-lg); }
+
+        /* ── Nav ── */
+        .nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-lg) 0;
+            border-bottom: 1px solid var(--br-dim);
+            position: sticky; top: 0;
+            background: rgba(10,10,10,0.9);
+            backdrop-filter: blur(14px);
+            z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; color: var(--t1); }
+        .brand-mark {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-md);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-mark svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 1.8; }
+        .brand-name { font-size: clamp(1rem, 2vw, 1.15rem); font-weight: 700; letter-spacing: -0.02em; }
+        .brand-name span { font-weight: 400; opacity: 0.7; }
+
+        .nav-back {
+            font-size: var(--text-sm);
+            color: var(--t2);
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: #fff; }
+
+        /* ── Header ── */
+        .doc-header { padding: var(--space-2xl) 0 var(--space-xl); }
+        .doc-eyebrow {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em;
+            text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
+        }
+        .doc-header h1 {
+            font-family: var(--display);
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+        }
+        .doc-meta {
+            font-family: var(--mono); font-size: var(--text-xs); color: var(--t3);
+            display: flex; flex-wrap: wrap; gap: var(--space-md);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .doc-meta span strong { color: var(--t2); font-weight: 500; }
+
+        /* ── Content ── */
+        .doc-body { padding: var(--space-lg) 0 var(--space-2xl); }
+        .doc-body p { margin-bottom: var(--space-md); color: var(--t2); }
+        .doc-body strong { color: var(--t1); font-weight: 600; }
+        .doc-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.2s; }
+        .doc-body a:hover { opacity: 0.7; }
+
+        .doc-body h2 {
+            font-family: var(--display);
+            font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+            font-weight: 700;
+            color: var(--t1);
+            margin: var(--space-2xl) 0 var(--space-md);
+            letter-spacing: -0.01em;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .doc-body h3 {
+            font-family: var(--ui);
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            font-weight: 600;
+            color: var(--t1);
+            margin: var(--space-xl) 0 var(--space-sm);
+            letter-spacing: -0.01em;
+        }
+
+        .doc-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: var(--space-md);
+        }
+        .doc-body ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            color: var(--t2);
+        }
+        .doc-body ul li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: var(--t3);
+        }
+
+        /* Callout box for privacy contact */
+        .contact-box {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fff;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-sm);
+            color: var(--t2);
+        }
+        .contact-box strong { color: var(--t1); }
+
+        /* Back to top */
+        .top-link {
+            display: inline-block;
+            margin-top: var(--space-xl);
+            font-size: var(--text-sm);
+            color: var(--t3);
+            text-decoration: none;
+            font-family: var(--mono);
+            letter-spacing: 0.04em;
+        }
+        .top-link:hover { color: #fff; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--br-dim);
+            padding: var(--space-xl) 0;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a {
+            color: var(--t2); text-decoration: none;
+            font-size: var(--text-xs);
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .footer-links a.active { color: #fff; }
+        .footer-copy { color: var(--t4); font-size: var(--text-xs); font-family: var(--mono); }
+
+        @media (max-width: 480px) {
+            .wrap { padding: 0 var(--space-md); }
+            .doc-meta { flex-direction: column; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="nav">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </span>
+            <span class="brand-name">Skyline<span>AI</span></span>
+        </a>
+        <a href="index.html" class="nav-back">← Back to home</a>
+    </nav>
+
+    <header class="doc-header">
+        <div class="doc-eyebrow">Legal · Privacy</div>
+        <h1>Privacy Policy</h1>
+        <div class="doc-meta">
+            <span><strong>Effective:</strong> 21 October 2026</span>
+            <span><strong>Last updated:</strong> 21 October 2026</span>
+        </div>
+    </header>
+
+    <main class="doc-body">
+
+        <p>
+            Skyline AI (“Skyline,” “we,” “us,” or “our”) is an online software service operated by <strong>Habeebullah</strong>, based in <strong>Nigeria</strong>. Skyline helps businesses and agencies research prospects, prepare sales outreach, manage conversations, and organize follow-ups.
+        </p>
+        <p>
+            This Privacy Policy explains what information Skyline collects, how we use it, which service providers help us operate the service, and the choices available to users.
+        </p>
+
+        <div class="contact-box">
+            <strong>Privacy contact:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <p>
+            Skyline is currently in beta. Some features, providers, and data practices may change as the service develops. When they change materially, we will update this Privacy Policy.
+        </p>
+
+        <h2>1. Information we collect</h2>
+
+        <h3>Account information</h3>
+        <p>When you create a Skyline account, we may collect:</p>
+        <ul>
+            <li>username;</li>
+            <li>email address;</li>
+            <li>password credential;</li>
+            <li>account settings;</li>
+            <li>age eligibility information; and</li>
+            <li>information needed to authenticate and protect your account.</li>
+        </ul>
+        <p>
+            Skyline does not store passwords in readable form. Passwords are intended to be protected using secure one-way hashing, such as bcrypt.
+        </p>
+
+        <h3>Chat and AI information</h3>
+        <p>
+            We collect and store chats, prompts, instructions, messages, and other content that you submit to Skyline’s AI and chat features. This may include business information, sales plans, lead-research instructions, email drafts, and conversation history.
+        </p>
+
+        <h3>Lead and business information</h3>
+        <p>Skyline may process information about businesses, prospects, and contacts, including:</p>
+        <ul>
+            <li>company names;</li>
+            <li>websites;</li>
+            <li>industries;</li>
+            <li>locations;</li>
+            <li>names and job titles;</li>
+            <li>business email addresses;</li>
+            <li>public business information;</li>
+            <li>research results;</li>
+            <li>lead notes and qualification information;</li>
+            <li>outreach drafts; and</li>
+            <li>sales-workflow information.</li>
+        </ul>
+        <p>
+            Lead information may come from public sources, search or research services, user-provided information, and AI-assisted research. Skyline does not guarantee that lead information is complete, current, or accurate.
+        </p>
+        <p>
+            Do not use Skyline to collect or upload sensitive personal information unless it is necessary, lawful, and appropriate for your use of the service.
+        </p>
+
+        <h3>Email information</h3>
+        <p>
+            If you connect an email account through Skyline or Nylas, Skyline may process the information necessary to provide the email features you authorize. This may include:
+        </p>
+        <ul>
+            <li>email-account information;</li>
+            <li>message content;</li>
+            <li>sender and recipient information;</li>
+            <li>message dates and metadata;</li>
+            <li>drafts;</li>
+            <li>replies; and</li>
+            <li>conversation history.</li>
+        </ul>
+        <p>
+            Skyline may use this information to provide a smart inbox, prepare email drafts, suggest replies, manage approved outreach, and organize follow-ups.
+        </p>
+        <p>
+            Skyline is intended to request only the permissions needed for the email features being used. Users should review the permissions shown during email connection before authorizing access.
+        </p>
+
+        <h3>Payment and subscription information</h3>
+        <p>If you purchase a paid plan, Skyline may receive and store information such as:</p>
+        <ul>
+            <li>selected plan;</li>
+            <li>subscription status;</li>
+            <li>payment status;</li>
+            <li>transaction reference;</li>
+            <li>billing and renewal information;</li>
+            <li>refund information; and</li>
+            <li>chargeback or dispute information.</li>
+        </ul>
+        <p>
+            Flutterwave processes payment transactions on our behalf. Skyline does not intentionally store full card numbers, CVV codes, or other raw payment-card credentials.
+        </p>
+
+        <h3>Usage and technical information</h3>
+        <p>We may collect information needed to operate and protect Skyline, including:</p>
+        <ul>
+            <li>feature usage;</li>
+            <li>account activity;</li>
+            <li>plan and usage limits;</li>
+            <li>lead-search usage;</li>
+            <li>AI usage;</li>
+            <li>error reports;</li>
+            <li>security events;</li>
+            <li>IP address;</li>
+            <li>browser and device information; and</li>
+            <li>technical logs.</li>
+        </ul>
+
+        <h3>Browser storage</h3>
+        <p>
+            Skyline currently uses browser local storage for application and session-related information. Skyline does not currently use advertising cookies as part of the beta service.
+        </p>
+        <p>
+            If we add analytics, advertising pixels, cookies, or similar tracking technologies, we will update this Privacy Policy and provide any notices or choices required by applicable law.
+        </p>
+
+        <h2>2. How we use information</h2>
+        <p>We use information to:</p>
+        <ul>
+            <li>create and manage accounts;</li>
+            <li>authenticate users;</li>
+            <li>provide lead discovery and business research;</li>
+            <li>provide chat and AI features;</li>
+            <li>prepare outreach drafts and reply suggestions;</li>
+            <li>provide email and inbox features authorized by users;</li>
+            <li>manage follow-ups and user-enabled automation;</li>
+            <li>process subscriptions, payments, renewals, refunds, and plan limits;</li>
+            <li>send account, security, billing, and support messages;</li>
+            <li>prevent fraud, abuse, spam, and unauthorized access;</li>
+            <li>diagnose errors and improve reliability;</li>
+            <li>respond to support, deletion, and data requests;</li>
+            <li>enforce our Terms of Service and Acceptable Use Policy; and</li>
+            <li>comply with legal obligations.</li>
+        </ul>
+        <p>Skyline does not sell user information as a data-broker product.</p>
+
+        <h2>3. AI processing</h2>
+        <p>
+            Skyline uses AI to process selected chats, prompts, lead-research instructions, company information, email content, and related context when needed to provide the feature requested by the user.
+        </p>
+        <p>
+            <strong>OpenAI</strong> processes selected content on Skyline’s behalf. Skyline intends to use customer content only to provide the requested Skyline feature, maintain security, provide support, and operate the service. Skyline does not intentionally use private customer content to train its own AI models.
+        </p>
+        <p>
+            AI output may be inaccurate, incomplete, or inappropriate. Users must review AI-generated research, lead information, messages, replies, and recommendations before relying on them or sending them to another person.
+        </p>
+        <p>
+            Skyline does not guarantee leads, contact details, replies, sales, revenue, conversion rates, or business results.
+        </p>
+
+        <h2>4. Automated emails and follow-ups</h2>
+        <p>
+            Skyline may provide features that draft replies, suggest follow-ups, or send follow-up messages when the user enables the relevant feature.
+        </p>
+        <p>Users are responsible for:</p>
+        <ul>
+            <li>reviewing and approving messages where approval is required;</li>
+            <li>ensuring that sender and business information is accurate;</li>
+            <li>complying with privacy, anti-spam, email-marketing, advertising, and telecommunications laws;</li>
+            <li>respecting unsubscribe and stop-contact requests; and</li>
+            <li>stopping automation when a recipient requests no further contact.</li>
+        </ul>
+        <p>
+            Users can contact Skyline at <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a> if they need help stopping an automated feature.
+        </p>
+
+        <h2>5. Service providers</h2>
+        <p>
+            Skyline uses third-party providers to operate the service. These providers may process information on Skyline’s behalf, according to the services they provide and their applicable terms and privacy policies.
+        </p>
+        <p>Current providers include:</p>
+        <ul>
+            <li><strong>OpenAI</strong> — selected AI processing;</li>
+            <li><strong>Nylas</strong> — email-account connection and email-related processing;</li>
+            <li><strong>Flutterwave</strong> — payment and subscription processing;</li>
+            <li><strong>MongoDB Atlas</strong> — database storage; and</li>
+            <li><strong>Render</strong> — backend hosting and application infrastructure.</li>
+        </ul>
+        <p>
+            Skyline’s public website may be hosted through <strong>Vercel</strong>. Vercel may process ordinary website request and hosting information when you visit the website.
+        </p>
+        <p>
+            We may also disclose information when reasonably necessary to comply with law, respond to a lawful request, prevent fraud or abuse, protect safety and security, enforce our agreements, or support a merger, acquisition, financing, or sale of assets.
+        </p>
+
+        <h2>6. International processing and storage</h2>
+        <p>
+            Skyline operates from Nigeria, but its service providers may process information outside Nigeria. Skyline currently expects important application and database infrastructure to use United States-based cloud infrastructure, including MongoDB Atlas and Render, subject to the regions configured for the production service.
+        </p>
+        <p>
+            OpenAI, Nylas, Flutterwave, Vercel, and other providers may process information in other countries. By using Skyline, you understand that information may be transferred to and processed outside the country where you live.
+        </p>
+
+        <h2>7. Data retention</h2>
+        <p>
+            Skyline retains account information while an account is active or for as long as reasonably necessary to provide the service, maintain security, prevent abuse, comply with legal obligations, resolve disputes, and enforce agreements.
+        </p>
+        <p>
+            During the beta, chats, leads, and related account content may remain available until the user deletes the content or account. Skyline intends to provide account-deletion and content-deletion controls as the product develops.
+        </p>
+        <p>
+            Export files are intended to remain available for up to seven days after they are created. After seven days, export files should be deleted unless they must be retained for security, legal, or support reasons.
+        </p>
+        <p>
+            Some information may remain temporarily in backups, technical logs, payment records, accounting records, fraud-prevention systems, dispute records, or legal files. Those records may be retained for the period reasonably necessary or required by law.
+        </p>
+
+        <h2>8. Account deletion and data requests</h2>
+        <p>
+            Users may request account deletion through Skyline’s account-deletion feature, currently identified as <code style="background:var(--raised);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:0.9em;color:var(--t2);">delete-account.html</code>, or by contacting <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>.
+        </p>
+        <p>
+            When an account is deleted, Skyline intends to delete or anonymize the associated account profile, chats, leads, email-related data, and other user content, subject to technical limitations and the retention exceptions described in this Privacy Policy.
+        </p>
+        <p>
+            Some information may be retained when necessary for payment reconciliation, tax or accounting records, fraud prevention, security, dispute handling, legal compliance, or the establishment or defense of legal claims.
+        </p>
+        <p>
+            Users may also request access to, correction of, or an export of applicable personal information. We may ask for information needed to verify the requester’s identity.
+        </p>
+
+        <h2>9. Children</h2>
+        <p>
+            Skyline is intended for adults and business users. Users must be at least <strong>18 years old</strong> to create a Skyline account.
+        </p>
+        <p>
+            Skyline is not directed to children under 13. We do not knowingly permit children under 13 to create accounts. If we learn that a child under 13 has provided personal information without the required authorization, we will take reasonable steps to delete it.
+        </p>
+        <p>
+            If you believe a child has created a Skyline account, contact <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>.
+        </p>
+
+        <h2>10. Security</h2>
+        <p>Skyline uses security measures intended to protect information, including:</p>
+        <ul>
+            <li>HTTPS;</li>
+            <li>secure password hashing;</li>
+            <li>authentication controls;</li>
+            <li>rate limiting;</li>
+            <li>access controls; and</li>
+            <li>protections against unauthorized requests.</li>
+        </ul>
+        <p>
+            No online service is completely secure. Users must protect their account credentials and should contact Skyline promptly if they suspect unauthorized access.
+        </p>
+
+        <h2>11. Marketing and service communications</h2>
+        <p>
+            Skyline may send necessary service communications, including account verification, password-reset, security, billing, support, and operational messages.
+        </p>
+        <p>
+            If Skyline sends marketing messages, those messages should include an appropriate way to opt out where required by law. Opting out of marketing does not necessarily stop essential service communications.
+        </p>
+
+        <h2>12. User responsibilities</h2>
+        <p>Users must:</p>
+        <ul>
+            <li>provide accurate account information;</li>
+            <li>protect their login credentials;</li>
+            <li>use only lead and contact information they are permitted to use;</li>
+            <li>review AI-generated content before using or sending it;</li>
+            <li>comply with applicable privacy, email, advertising, anti-spam, and communications laws; and</li>
+            <li>respect unsubscribe and stop-contact requests.</li>
+        </ul>
+        <p>
+            Users must not use Skyline for fraud, deception, harassment, unlawful surveillance, harmful spam, illegal products or services, false affiliations, or unlawful activity.
+        </p>
+
+        <h2>13. Privacy rights</h2>
+        <p>
+            Depending on where you live and which laws apply, you may have rights to request access, correction, deletion, portability, restriction, or objection to certain processing. You may also have the right to withdraw consent where applicable and complain to a relevant data-protection authority.
+        </p>
+        <p>To make a privacy request, contact:</p>
+        <div class="contact-box">
+            <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+        <p>We may need to verify your identity before completing a request.</p>
+
+        <h2>14. Changes to this Privacy Policy</h2>
+        <p>
+            We may update this Privacy Policy when Skyline’s services, providers, data practices, or legal obligations change.
+        </p>
+        <p>
+            We will update the “Last updated” date when changes are made. Where required, we will provide additional notice or request consent.
+        </p>
+
+        <h2>15. Contact</h2>
+        <p>For privacy questions, deletion requests, data-export requests, or privacy complaints, contact:</p>
+        <div class="contact-box">
+            <strong>Skyline AI</strong><br>
+            <strong>Operator:</strong> Habeebullah<br>
+            <strong>Country:</strong> Nigeria<br>
+            <strong>Email:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <a href="#top" class="top-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="privacy.html" class="active">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="refunds.html">Refund and Cancellation</a>
+            <a href="acceptable-use.html">Acceptable Use</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 Skyline AI. All rights reserved.</div>
+    </footer>
+
+</div>
+</body>
+  </html>
