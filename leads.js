@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Update results count in toolbar
+        const countEl = document.getElementById('resultsCount');
+        if (countEl) countEl.textContent = `${leadsData.length} prospects found`;
+
         leadsData.forEach((lead, index) => {
             const card = document.createElement('div');
             card.className = 'lead-card';
