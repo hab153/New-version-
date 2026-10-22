@@ -14,6 +14,7 @@ const plusBtn = document.getElementById('plusBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
+const planCardTitle = document.querySelector('.plan-card .card-title'); // Targeting the Free Plan card title
 
 // ── 1. Plus Button: Refresh Page ──
 if (plusBtn) {
@@ -139,6 +140,9 @@ if (customerDescription && charCounter) {
         const currentLength = this.value.length;
         charCounter.textContent = `${currentLength}/500`;
         charCounter.style.color = currentLength >= 450 ? '#ff5555' : '#92939D';
+        
+        // Update Find Prospects Button State
+        updateFindProspectsButton(currentLength > 0);
     });
 }
 
@@ -153,9 +157,27 @@ suggestionChips.forEach(chip => {
     });
 });
 
-// ── 5. Fixed Mini-Panel & Streaming Logic ──
+// ── 5. Find Prospects Button Logic ──
 
-// Stage Mapping
+function updateFindProspectsButton(hasText) {
+    if (!findProspectsBtn) return;
+    
+    if (hasText) {
+        findProspectsBtn.style.opacity = '1';
+        findProspectsBtn.style.cursor = 'pointer';
+        findProspectsBtn.style.pointerEvents = 'auto';
+    } else {
+        findProspectsBtn.style.opacity = '0.5';
+        findProspectsBtn.style.cursor = 'default';
+        findProspectsBtn.style.pointerEvents = 'none';
+    }
+}
+
+// Initialize button state
+updateFindProspectsButton(false);
+
+// ── 6. Fixed Mini-Panel & Streaming Logic ──
+
 const STAGE_NAMES = {
     's1': 'Understanding your target',
     's2': 'Finding relevant companies',
@@ -169,7 +191,6 @@ let _runCounter = 0;
 let _stageData = {};
 
 function createMiniPanel() {
-    // Remove existing panel if any
     const existing = document.getElementById('stageMiniPanel');
     if (existing) existing.remove();
 
@@ -177,19 +198,16 @@ function createMiniPanel() {
     panel.id = 'stageMiniPanel';
     panel.className = 'stage-mini-panel';
     
-    // Header
     const header = document.createElement('div');
     header.className = 'panel-header';
     header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">⏱️ 0s</span>';
     panel.appendChild(header);
 
-    // Scrollable Content
     const content = document.createElement('div');
     content.className = 'panel-content';
     content.id = 'stagePanelContent';
     panel.appendChild(content);
 
-    // Insert after the input wrapper
     const inputWrapper = document.querySelector('.input-wrapper');
     if (inputWrapper && inputWrapper.parentNode) {
         inputWrapper.parentNode.insertBefore(panel, inputWrapper.nextSibling);
@@ -214,11 +232,9 @@ function updateStageInPanel(stageId, status) {
             <div class="stage-label">${label}</div>
         `;
         content.appendChild(stageEl);
-        // Auto-scroll to bottom if user hasn't scrolled up manually
         content.scrollTop = content.scrollHeight;
     }
 
-    // Update State
     stageEl.className = `stage-item ${status}`;
     const iconContainer = stageEl.querySelector('.stage-icon');
     
@@ -246,7 +262,11 @@ function streamLeadResponse(message) {
     _stageData = {};
     createMiniPanel();
 
-    // Timer Logic
+    // Update Button to "Searching..."
+    const originalBtnContent = findProspectsBtn.innerHTML;
+    findProspectsBtn.innerHTML = '<span>Searching...</span>';
+    findProspectsBtn.disabled = true;
+
     let startTime = Date.now();
     const timerEl = document.querySelector('.panel-timer');
     const timerInterval = setInterval(() => {
@@ -276,6 +296,10 @@ function streamLeadResponse(message) {
                 es.close();
                 _activeEventSource = null;
                 
+                // Restore Button
+                findProspectsBtn.innerHTML = originalBtnContent;
+                findProspectsBtn.disabled = false;
+                
                 setTimeout(() => {
                     removeMiniPanel();
                     if (stageId === 'done') {
@@ -291,20 +315,22 @@ function streamLeadResponse(message) {
             clearInterval(timerInterval);
             es.close();
             _activeEventSource = null;
+            findProspectsBtn.innerHTML = originalBtnContent;
+            findProspectsBtn.disabled = false;
             showToast('Connection lost during search.', 'error');
             removeMiniPanel();
         });
 
     } catch (e) {
         clearInterval(timerInterval);
+        findProspectsBtn.innerHTML = originalBtnContent;
+        findProspectsBtn.disabled = false;
         showToast('Could not start search engine.', 'error');
         removeMiniPanel();
     }
 }
 
 function renderFinalResults(data) {
-    // For now, just show a success toast. 
-    // In a full implementation, this would populate a results grid.
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
     console.log('Final Data:', data);
@@ -320,6 +346,61 @@ if (findProspectsBtn) {
         }
         streamLeadResponse(query);
     });
+}
+
+// ── 7. Plan Skeleton Loading Logic ──
+
+var _cachedPlan = null;
+var _cachedPlanTime = 0;
+var CACHE_TTL = 60000;
+
+function checkPlan() {
+    if (!token) return;
+    
+    const t = Date.now();
+    // Use skeleton initially
+    if (planCardTitle) {
+        planCardTitle.classList.add('skel');
+        planCardTitle.textContent = '\u00A0'; // Non-breaking space for skeleton width
+    }
+
+    // Check cache first
+    if (_cachedPlan && (t - _cachedPlanTime) < CACHE_TTL) {
+        updatePlanUI(_cachedPlan);
+        return Promise.resolve();
+    }
+
+    return fetch(`${BACKEND}/api/users/me`, { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(user) {
+        if (user) {
+            var p = user.subscriptionTier || 'free';
+            _cachedPlan = p; 
+            _cachedPlanTime = Date.now();
+            updatePlanUI(p);
+        }
+    })
+    .catch(function(err) {
+        console.error('Plan check failed:', err);
+        if (planCardTitle) {
+            planCardTitle.classList.remove('skel');
+            planCardTitle.textContent = 'Free plan'; // Fallback
+        }
+    });
+}
+
+function updatePlanUI(plan) {
+    if (!planCardTitle) return;
+    
+    planCardTitle.classList.remove('skel');
+    
+    let displayText = 'Free plan';
+    if (plan === 'go') displayText = 'Go plan';
+    if (plan === 'pro') displayText = 'Pro plan';
+    
+    planCardTitle.textContent = displayText;
 }
 
 // ── Utility: Toast Notification ──
@@ -366,5 +447,6 @@ function showToast(message, type, duration) {
 document.addEventListener('DOMContentLoaded', function() {
     handleOAuthRedirect();
     checkEmailStatus();
+    checkPlan(); // Start plan loading with skeleton
     console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
 });
