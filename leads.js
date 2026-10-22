@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Dynamic rendering from localStorage & Details Modal
+// UPDATED: Robust Modal Handling & Dynamic Rendering
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const warningStrip = document.getElementById('warningStrip');
     
     // Modal Elements
-    const detailsModal = document.getElementById('detailsModal');
     const modalOverlay = document.getElementById('modalOverlay');
+    const detailsModal = document.getElementById('detailsModal');
     const closeModalBtn = document.getElementById('closeModal');
     const modalContent = document.getElementById('modalContent');
 
@@ -34,14 +34,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── 2. Render Lead Cards Dynamically ──
     function renderLeads() {
         if (!leadsList) return;
-        leadsList.innerHTML = ''; // Clear hardcoded examples
+        leadsList.innerHTML = ''; 
 
         if (leadsData.length === 0) {
             leadsList.innerHTML = '<div style="text-align:center; padding:40px; color:#9697A1;">No leads found. Try a new search.</div>';
             return;
         }
 
-        // Update results count in toolbar
+        // Update results count
         const countEl = document.getElementById('resultsCount');
         if (countEl) countEl.textContent = `${leadsData.length} prospects found`;
 
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.className = 'lead-card';
             card.setAttribute('data-id', index);
             
-            // Determine confidence badge based on email status
+            // Determine confidence badge
             let badgeClass = 'low';
             let badgeText = 'Needs verification';
             if (lead.emailStatus === 'verified') {
@@ -87,73 +87,79 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="card-right">
-                    <button class="view-btn">
+                    <button class="view-btn" data-index="${index}">
                         More
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
                 </div>
             `;
 
-            // Add click event for details
-            const viewBtn = card.querySelector('.view-btn');
-            viewBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openDetailsModal(lead);
-            });
-            
-            // Also allow clicking the whole card to open details
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.checkbox-wrapper') && !e.target.closest('.view-btn')) {
-                    openDetailsModal(lead);
-                }
-            });
-
             leadsList.appendChild(card);
         });
 
-        // Re-initialize selection logic for new elements
         initSelectionLogic();
     }
 
-    // ── 3. Details Modal Logic ──
-    function openDetailsModal(lead) {
-        if (!detailsModal || !modalContent) return;
+    // ── 3. Details Modal Logic (Fixed) ──
+    function openDetailsModal(index) {
+        const lead = leadsData[index];
+        if (!lead || !modalOverlay || !modalContent) {
+            console.error('Modal elements or lead data not found.');
+            return;
+        }
 
-        const phone = lead.phoneNumber || 'Not publicly listed — try their website contact form';
+        const phone = lead.phoneNumber || 'Not publicly listed';
         const info = lead.companyInformation || 'No additional information available.';
         const email = lead.email || 'No email found';
 
         modalContent.innerHTML = `
-            <h2 style="margin-bottom:16px; color:white;">${lead.companyName}</h2>
+            <h2 style="margin-bottom:16px; color:white; font-size:1.2rem;">${lead.companyName}</h2>
             
-            <div style="margin-bottom:12px;">
+            <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #2D2F33;">
                 <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Email Address</div>
-                <div style="color:white; font-size:1rem;">${email}</div>
-                <div style="color:${lead.emailStatus === 'verified' ? '#22C55E' : '#FFAA00'}; font-size:0.75rem; margin-top:2px;">
+                <div style="color:white; font-size:1rem; word-break:break-all;">${email}</div>
+                <div style="color:${lead.emailStatus === 'verified' ? '#22C55E' : '#FFAA00'}; font-size:0.75rem; margin-top:4px;">
                     Status: ${lead.emailStatus || 'unknown'}
                 </div>
             </div>
 
-            <div style="margin-bottom:12px;">
+            <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #2D2F33;">
                 <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Phone Number</div>
                 <div style="color:white; font-size:1rem;">${phone}</div>
             </div>
 
-            <div style="margin-bottom:12px;">
+            <div>
                 <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Company Information</div>
-                <div style="color:white; font-size:0.9rem; line-height:1.5;">${info}</div>
+                <div style="color:white; font-size:0.9rem; line-height:1.6;">${info}</div>
             </div>
         `;
 
-        detailsModal.style.display = 'flex';
+        modalOverlay.style.display = 'flex';
     }
 
     function closeModal() {
-        if (detailsModal) detailsModal.style.display = 'none';
+        if (modalOverlay) modalOverlay.style.display = 'none';
     }
 
+    // Event Listeners for Modal
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
-    if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) closeModal();
+        });
+    }
+
+    // Global Click Handler for "More" buttons (Delegation)
+    if (leadsList) {
+        leadsList.addEventListener('click', function(e) {
+            const viewBtn = e.target.closest('.view-btn');
+            if (viewBtn) {
+                e.stopPropagation();
+                const index = viewBtn.getAttribute('data-index');
+                openDetailsModal(index);
+            }
+        });
+    }
 
     // ── 4. Selection Logic ──
     function initSelectionLogic() {
@@ -219,9 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.disabled) return;
             const selectedIds = Array.from(document.querySelectorAll('.lead-checkbox:checked'))
                 .map(cb => cb.closest('.lead-card').getAttribute('data-id'));
-            
-            console.log('[ACTION] Saving leads:', selectedIds);
-            alert(`Saving ${selectedIds.length} leads to your database...`);
+            alert(`Saving ${selectedIds.length} leads...`);
         });
     }
 
@@ -230,13 +234,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.disabled) return;
             const selectedIds = Array.from(document.querySelectorAll('.lead-checkbox:checked'))
                 .map(cb => cb.closest('.lead-card').getAttribute('data-id'));
-            
-            console.log('[ACTION] Drafting outreach for:', selectedIds);
-            alert(`Starting outreach draft for ${selectedIds.length} leads...`);
+            alert(`Drafting outreach for ${selectedIds.length} leads...`);
         });
     }
 
     // Initial Render
     renderLeads();
-    console.log('✅ [LEADS.JS] Lead Results Page Ready with Dynamic Data');
 });
