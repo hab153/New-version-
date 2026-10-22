@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceptable Use and Email Outreach Policy – Skyline AI</title>
+    <meta name="description" content="Skyline AI Acceptable Use and Email Outreach Policy — how Skyline may be used, and what is prohibited.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+            --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+            --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0;
+            --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
+            --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+
+            --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'Monaco', 'Menlo', monospace;
+
+            --text-xs: clamp(0.7rem, 0.8vw, 0.8rem);
+            --text-sm: clamp(0.8rem, 1vw, 0.9rem);
+            --text-base: clamp(0.9rem, 1.2vw, 1rem);
+            --text-lg: clamp(1rem, 1.5vw, 1.15rem);
+            --text-xl: clamp(1.15rem, 2vw, 1.4rem);
+            --text-2xl: clamp(1.5rem, 2.5vw, 1.9rem);
+            --text-3xl: clamp(2rem, 4vw, 3rem);
+
+            --space-xs: clamp(0.25rem, 0.4vw, 0.4rem);
+            --space-sm: clamp(0.4rem, 0.6vw, 0.6rem);
+            --space-md: clamp(0.6rem, 1vw, 0.9rem);
+            --space-lg: clamp(0.9rem, 1.5vw, 1.2rem);
+            --space-xl: clamp(1.2rem, 2vw, 1.8rem);
+            --space-2xl: clamp(1.8rem, 3vw, 3rem);
+
+            --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: var(--text-base);
+            line-height: 1.7;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                        radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        .wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 var(--space-lg); }
+
+        /* ── Nav ── */
+        .nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-lg) 0;
+            border-bottom: 1px solid var(--br-dim);
+            position: sticky; top: 0;
+            background: rgba(10,10,10,0.9);
+            backdrop-filter: blur(14px);
+            z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; color: var(--t1); }
+        .brand-mark {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-md);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-mark svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 1.8; }
+        .brand-name { font-size: clamp(1rem, 2vw, 1.15rem); font-weight: 700; letter-spacing: -0.02em; }
+        .brand-name span { font-weight: 400; opacity: 0.7; }
+
+        .nav-back {
+            font-size: var(--text-sm);
+            color: var(--t2);
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: #fff; }
+
+        /* ── Header ── */
+        .doc-header { padding: var(--space-2xl) 0 var(--space-xl); }
+        .doc-eyebrow {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em;
+            text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
+        }
+        .doc-header h1 {
+            font-family: var(--display);
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+        }
+        .doc-meta {
+            font-family: var(--mono); font-size: var(--text-xs); color: var(--t3);
+            display: flex; flex-wrap: wrap; gap: var(--space-md);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .doc-meta span strong { color: var(--t2); font-weight: 500; }
+
+        /* ── Content ── */
+        .doc-body { padding: var(--space-lg) 0 var(--space-2xl); }
+        .doc-body p { margin-bottom: var(--space-md); color: var(--t2); }
+        .doc-body strong { color: var(--t1); font-weight: 600; }
+        .doc-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.2s; }
+        .doc-body a:hover { opacity: 0.7; }
+
+        .doc-body h2 {
+            font-family: var(--display);
+            font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+            font-weight: 700;
+            color: var(--t1);
+            margin: var(--space-2xl) 0 var(--space-md);
+            letter-spacing: -0.01em;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--br-dim);
+        }
+
+        .doc-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: var(--space-md);
+        }
+        .doc-body ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            color: var(--t2);
+        }
+        .doc-body ul li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: var(--t3);
+        }
+
+        .contact-box {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fff;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-sm);
+            color: var(--t2);
+        }
+        .contact-box strong { color: var(--t1); }
+
+        .top-link {
+            display: inline-block;
+            margin-top: var(--space-xl);
+            font-size: var(--text-sm);
+            color: var(--t3);
+            text-decoration: none;
+            font-family: var(--mono);
+            letter-spacing: 0.04em;
+        }
+        .top-link:hover { color: #fff; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--br-dim);
+            padding: var(--space-xl) 0;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a {
+            color: var(--t2); text-decoration: none;
+            font-size: var(--text-xs);
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .footer-links a.active { color: #fff; }
+        .footer-copy { color: var(--t4); font-size: var(--text-xs); font-family: var(--mono); }
+
+        @media (max-width: 480px) {
+            .wrap { padding: 0 var(--space-md); }
+            .doc-meta { flex-direction: column; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="nav">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </span>
+            <span class="brand-name">Skyline<span>AI</span></span>
+        </a>
+        <a href="index.html" class="nav-back">← Back to home</a>
+    </nav>
+
+    <header class="doc-header">
+        <div class="doc-eyebrow">Legal · Acceptable Use</div>
+        <h1>Acceptable Use and Email Outreach Policy</h1>
+        <div class="doc-meta">
+            <span><strong>Effective:</strong> 22 October 2026</span>
+            <span><strong>Last updated:</strong> 22 October 2026</span>
+        </div>
+    </header>
+
+    <main class="doc-body">
+
+        <p>
+            This Acceptable Use and Email Outreach Policy explains how Skyline AI (“Skyline,” “we,” “us,” or “our”) may be used. It applies to Skyline accounts, lead research, AI features, connected email accounts, email drafts, automated replies, follow-ups, and other outreach activity.
+        </p>
+        <p>
+            Skyline AI is an online service operated by <strong>Habeebullah</strong> in <strong>Nigeria</strong>.
+        </p>
+
+        <div class="contact-box">
+            <strong>Contact:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <p>
+            This Policy forms part of Skyline’s <a href="terms.html">Terms of Service</a>. If you violate this Policy, we may limit, pause, suspend, or terminate your access.
+        </p>
+
+        <h2>1. Use Skyline lawfully</h2>
+        <p>
+            You may use Skyline only for lawful business and professional purposes. You are responsible for understanding and following the laws that apply to you, your business, your recipients, and the countries where your messages are sent.
+        </p>
+        <p>
+            Depending on your activity and recipient location, these rules may include privacy, data-protection, electronic-communications, anti-spam, advertising, consumer-protection, intellectual-property, and telecommunications laws.
+        </p>
+        <p>
+            Skyline does not provide legal or compliance advice. If you are unsure whether a campaign or message is lawful, obtain advice from a qualified professional before sending it.
+        </p>
+
+        <h2>2. Accurate identity and truthful messages</h2>
+        <p>When using Skyline for outreach, you must:</p>
+        <ul>
+            <li>use accurate sender and business information;</li>
+            <li>identify yourself or your organization honestly;</li>
+            <li>use truthful subject lines;</li>
+            <li>avoid deceptive claims, offers, or testimonials;</li>
+            <li>make clear why you are contacting the recipient where appropriate;</li>
+            <li>provide a valid way for recipients to contact you; and</li>
+            <li>ensure that your messages are relevant and appropriate for the recipient.</li>
+        </ul>
+        <p>
+            You must not impersonate another person, company, government body, or organization.
+        </p>
+
+        <h2>3. Permission to use data</h2>
+        <p>
+            You may use only lead, company, contact, and email information that you are legally permitted to collect and use.
+        </p>
+        <p>
+            You must not upload, search for, buy, scrape, or use personal information when doing so would violate a person’s rights, a website’s rules, an email provider’s rules, or applicable law.
+        </p>
+        <p>
+            You must not use Skyline to unlawfully collect or process sensitive personal information, including health, financial, biometric, precise-location, political, religious, or other highly sensitive information.
+        </p>
+        <p>
+            You are responsible for verifying that your lead sources are lawful and that your intended outreach has an appropriate legal basis or permission.
+        </p>
+
+        <h2>4. Unsubscribe and stop-contact requests</h2>
+        <p>
+            You must respect requests from recipients who do not want further communication.
+        </p>
+        <p>You must:</p>
+        <ul>
+            <li>provide an appropriate unsubscribe or opt-out method where required;</li>
+            <li>process opt-out requests promptly;</li>
+            <li>maintain a suppression or do-not-contact list;</li>
+            <li>stop automated follow-ups for a recipient who opts out;</li>
+            <li>avoid re-adding an opted-out recipient without a lawful and documented reason; and</li>
+            <li>ensure that future campaigns check the relevant suppression list.</li>
+        </ul>
+        <p>
+            You must not continue contacting a recipient after they clearly request no further contact, except where a separate lawful communication is required and permitted.
+        </p>
+
+        <h2>5. Spam and bulk outreach</h2>
+        <p>
+            You must not use Skyline to send spam or unwanted bulk messages.
+        </p>
+        <p>You must not send campaigns that are:</p>
+        <ul>
+            <li>deceptive;</li>
+            <li>irrelevant or indiscriminate;</li>
+            <li>sent to purchased lists without appropriate permission or lawful basis;</li>
+            <li>sent to scraped personal addresses in violation of applicable rules;</li>
+            <li>sent repeatedly after non-response without considering recipient expectations;</li>
+            <li>designed to hide the scale or origin of the campaign; or</li>
+            <li>likely to cause unreasonable complaints, bounces, abuse reports, or damage to recipients or email providers.</li>
+        </ul>
+        <p>
+            Skyline may limit sending volume, review unusual activity, or pause campaigns where we detect a high risk of spam or abuse.
+        </p>
+
+        <h2>6. Automated replies and follow-ups</h2>
+        <p>If you enable automatic replies or follow-ups, you must:</p>
+        <ul>
+            <li>review and configure the instructions carefully;</li>
+            <li>monitor the automation;</li>
+            <li>verify that messages are appropriate for the recipient;</li>
+            <li>stop automation when a recipient opts out or the conversation changes;</li>
+            <li>avoid sending repeated or misleading messages; and</li>
+            <li>disable automation if it produces errors, unsafe content, or unintended messages.</li>
+        </ul>
+        <p>
+            You remain responsible for messages sent through your account, including messages generated or scheduled by AI.
+        </p>
+        <p>
+            Skyline may pause or disable automation to protect recipients, users, email providers, or the service.
+        </p>
+
+        <h2>7. AI-generated content</h2>
+        <p>
+            AI-generated content must be reviewed before it is relied upon or sent, unless the user has deliberately enabled an automated feature and has implemented appropriate monitoring.
+        </p>
+        <p>You must check:</p>
+        <ul>
+            <li>names and job titles;</li>
+            <li>company details;</li>
+            <li>claims and statistics;</li>
+            <li>pricing and offers;</li>
+            <li>links and attachments;</li>
+            <li>tone and language;</li>
+            <li>recipient relevance; and</li>
+            <li>legal and regulatory requirements.</li>
+        </ul>
+        <p>
+            Do not rely on AI-generated content as legal, medical, financial, employment, or regulatory advice.
+        </p>
+
+        <h2>8. Prohibited content and activity</h2>
+        <p>You must not use Skyline to create, send, store, or distribute content that:</p>
+        <ul>
+            <li>promotes fraud, scams, phishing, or identity theft;</li>
+            <li>contains malware, harmful code, or malicious links;</li>
+            <li>threatens, harasses, stalks, or abuses another person;</li>
+            <li>promotes violence, terrorism, or criminal activity;</li>
+            <li>unlawfully discriminates against a person or group;</li>
+            <li>impersonates a person or organization;</li>
+            <li>makes knowingly false or misleading claims;</li>
+            <li>promotes unlawful goods or services;</li>
+            <li>unlawfully sells or distributes controlled substances;</li>
+            <li>unlawfully promotes weapons or violent services;</li>
+            <li>exploits or targets children;</li>
+            <li>unlawfully collects sensitive personal information;</li>
+            <li>violates intellectual-property, confidentiality, or publicity rights; or</li>
+            <li>violates any applicable law or regulation.</li>
+        </ul>
+
+        <h2>9. Account and system abuse</h2>
+        <p>You must not:</p>
+        <ul>
+            <li>access another user’s account or data without authorization;</li>
+            <li>share credentials in a way that creates a security risk;</li>
+            <li>create multiple accounts to evade limits or enforcement;</li>
+            <li>bypass free-plan or paid-plan limits;</li>
+            <li>use bots or scripts to overload Skyline;</li>
+            <li>probe, scan, or attack Skyline or its infrastructure;</li>
+            <li>attempt to discover, extract, or misuse source code, secrets, or credentials;</li>
+            <li>interfere with security, authentication, rate limits, or access controls;</li>
+            <li>reverse engineer Skyline except where applicable law permits it;</li>
+            <li>resell or sublicense Skyline without written permission; or</li>
+            <li>use Skyline to test attacks against another service without authorization.</li>
+        </ul>
+
+        <h2>10. Connected email accounts</h2>
+        <p>
+            You may connect only email accounts that you own or are authorized to administer.
+        </p>
+        <p>You must not use Skyline to:</p>
+        <ul>
+            <li>access another person’s mailbox without permission;</li>
+            <li>evade an email provider’s suspension or enforcement;</li>
+            <li>send messages that violate the connected provider’s rules;</li>
+            <li>conceal the true sender of a message; or</li>
+            <li>continue using a connected account after authorization has been withdrawn.</li>
+        </ul>
+        <p>
+            Disconnect a mailbox immediately if you no longer have permission to use it or if you believe it has been compromised.
+        </p>
+
+        <h2>11. Lead accuracy and verification</h2>
+        <p>
+            Lead and company information may be incomplete, outdated, duplicated, or inaccurate. You must verify important information before relying on it or contacting a person.
+        </p>
+        <p>
+            You must not claim that Skyline verified a person’s identity, consent, employment, interest, or authority unless you independently verified it.
+        </p>
+        <p>
+            You must not use a lead’s information for a purpose that is unrelated to the reason it was collected or that violates applicable law.
+        </p>
+
+        <h2>12. Financial, regulated, and sensitive campaigns</h2>
+        <p>
+            Do not use Skyline for regulated or high-risk campaigns unless you have obtained appropriate professional advice and implemented the required controls.
+        </p>
+        <p>Examples may include campaigns relating to:</p>
+        <ul>
+            <li>financial products or investments;</li>
+            <li>loans or credit;</li>
+            <li>insurance;</li>
+            <li>medical or health services;</li>
+            <li>employment decisions;</li>
+            <li>housing;</li>
+            <li>legal services;</li>
+            <li>political activities;</li>
+            <li>gambling;</li>
+            <li>adult services; or</li>
+            <li>products or services subject to special advertising rules.</li>
+        </ul>
+        <p>
+            Skyline may restrict these uses even where they are not expressly prohibited by law.
+        </p>
+
+        <h2>13. Reporting abuse or security issues</h2>
+        <p>
+            If you believe Skyline is being used for spam, fraud, unauthorized access, or another violation of this Policy, report it to:
+        </p>
+        <div class="contact-box">
+            <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+        <p>
+            Include the relevant account or message information, but do not send passwords, API keys, card numbers, CVV codes, or other secrets.
+        </p>
+        <p>
+            If your own account may be compromised, change your password, disconnect affected email accounts if possible, stop automation, and contact Skyline immediately.
+        </p>
+
+        <h2>14. Monitoring and enforcement</h2>
+        <p>
+            To protect users, recipients, providers, and Skyline, we may monitor service activity for security, fraud prevention, spam prevention, abuse detection, usage enforcement, and compliance with this Policy.
+        </p>
+        <p>We may take action including:</p>
+        <ul>
+            <li>warning the user;</li>
+            <li>limiting lead or email volume;</li>
+            <li>pausing campaigns or automation;</li>
+            <li>requiring additional verification;</li>
+            <li>blocking content or recipients;</li>
+            <li>suspending an account;</li>
+            <li>terminating an account;</li>
+            <li>removing data or content where permitted; or</li>
+            <li>reporting suspected unlawful activity to an appropriate authority.</li>
+        </ul>
+        <p>
+            We may take action without advance notice where necessary to prevent harm, protect security, comply with law, or stop active abuse.
+        </p>
+
+        <h2>15. Policy changes</h2>
+        <p>
+            We may update this Policy when Skyline’s features, providers, risks, or legal obligations change. We will update the “Last updated” date and provide additional notice where required.
+        </p>
+
+        <h2>16. Contact</h2>
+        <p>For questions about this Policy or to report abuse, contact:</p>
+        <div class="contact-box">
+            <strong>Skyline AI</strong><br>
+            <strong>Operator:</strong> Habeebullah<br>
+            <strong>Country:</strong> Nigeria<br>
+            <strong>Email:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <a href="#top" class="top-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="refunds.html">Refund and Cancellation</a>
+            <a href="acceptable-use.html" class="active">Acceptable Use</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 Skyline AI. All rights reserved.</div>
+    </footer>
+
+</div>
+</body>
+  </html>
