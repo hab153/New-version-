@@ -293,8 +293,10 @@ function streamLeadResponse(message) {
                 findProspectsBtn.innerHTML = originalBtnContent;
                 findProspectsBtn.disabled = false;
                 
+                // ✅ FIX: Always refresh limits, regardless of success/failure
                 setTimeout(() => {
                     removeMiniPanel();
+                    checkPlan(); 
                     if (stageId === 'done') {
                         renderFinalResults(_stageData['s5']);
                     } else {
@@ -312,6 +314,9 @@ function streamLeadResponse(message) {
             findProspectsBtn.disabled = false;
             showToast('Connection lost during search.', 'error');
             removeMiniPanel();
+            
+            // ✅ FIX: Refresh limits on error too
+            checkPlan();
         });
 
     } catch (e) {
@@ -326,9 +331,6 @@ function streamLeadResponse(message) {
 function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
-    
-    // ✅ FORCE REFRESH LIMITS AFTER SEARCH
-    checkPlan();
 }
 
 if (findProspectsBtn) {
