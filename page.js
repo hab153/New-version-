@@ -15,13 +15,157 @@ const deleteBtn = document.getElementById('deleteBtn');
 const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
 
+// ── 1. Plus Button: Refresh Page ──
+if (plusBtn) {
+    plusBtn.addEventListener('click', function() {
+        window.location.reload();
+    });
+}
+
+// ── 2. Delete Button: Clear Input (New Start) ──
+if (deleteBtn) {
+    deleteBtn.addEventListener('click', function() {
+        if (customerDescription) {
+            if (customerDescription.value.length > 0) {
+                // Optional: Confirm before clearing if there is text
+                // if (confirm('Clear current description?')) { ... }
+                customerDescription.value = '';
+                customerDescription.dispatchEvent(new Event('input'));
+                showToast('Input cleared', 'info');
+            }
+        }
+    });
+}
+
+// ── 3. Connect Email Logic (Matches dashboard.html) ──
+
+// Check if we returned from Nylas OAuth
+function handleOAuthRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const nylasSuccess = params.get('nylas');
+    
+    if (nylasSuccess === 'success') {
+        showToast('✅ Email account connected successfully!', 'success', 6000);
+        updateEmailUI(true, 'Connected');
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (nylasSuccess === 'error') {
+        const errorMsg = params.get('error') || 'Unknown error';
+        showToast(`❌ Connection failed: ${decodeURIComponent(errorMsg)}`, 'error', 6000);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+// Update UI based on connection status
+function updateEmailUI(isConnected, emailOrStatus) {
+    if (!emailBanner || !connectEmailBtn) return;
+
+    if (isConnected) {
+        emailBanner.classList.remove('disconnected');
+        emailBanner.classList.add('connected');
+        
+        // Update Banner Text
+        const title = emailBanner.querySelector('.banner-title');
+        const desc = emailBanner.querySelector('.banner-desc');
+        if (title) title.textContent = 'Email Connected';
+        if (desc) desc.textContent = typeof emailOrStatus === 'string' ? emailOrStatus : 'Connected successfully';
+
+        // Update Button
+        connectEmailBtn.innerHTML = '<span>Manage</span>';
+        connectEmailBtn.onclick = () => {
+            // Placeholder for managing email settings
+            showToast('Email settings coming soon', 'info');
+        };
+    } else {
+        emailBanner.classList.add('disconnected');
+        emailBanner.classList.remove('connected');
+        
+        const title = emailBanner.querySelector('.banner-title');
+        const desc = emailBanner.querySelector('.banner-desc');
+        if (title) title.textContent = 'No email connected';
+        if (desc) desc.textContent = 'Connect Gmail or Outlook to unlock inbox and follow-up features';
+
+        // Reset Button to Connect Action
+        connectEmailBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span>Connect email</span>
+        `;
+        connectEmailBtn.onclick = connectEmail;
+    }
+}
+
+// Fetch Status from Backend
+async function checkEmailStatus() {
+    if (!token) return;
+    
+    try {
+        const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) throw new Error('Status check failed');
+
+        const data = await res.json();
+        
+        if (data.connected && !data.isExpired) {
+            updateEmailUI(true, data.email || 'Connected');
+        } else {
+            updateEmailUI(false);
+        }
+    } catch (err) {
+        console.error('Email status error:', err);
+        updateEmailUI(false);
+    }
+}
+
+// Initiate Connection
+async function connectEmail() {
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const btn = connectEmailBtn;
+    const originalContent = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span>Connecting...</span>';
+
+    try {
+        const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
+            method: 'GET',
+            headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) throw new Error('Failed to get connection URL');
+
+        const data = await res.json();
+
+        if (data.url) {
+            // Fix any HTML entity issues in URL if present
+            let redirectUrl = data.url.replace(/&amp;/g, '&');
+            window.location.href = redirectUrl;
+        } else {
+            throw new Error('No URL received');
+        }
+
+    } catch (error) {
+        console.error('Connection error:', error);
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        showToast('❌ Could not start connection process', 'error');
+    }
+}
+
 // ── Character Counter Logic ──
 if (customerDescription && charCounter) {
     customerDescription.addEventListener('input', function() {
         const currentLength = this.value.length;
         charCounter.textContent = `${currentLength}/500`;
         
-        // Optional: Change color if near limit
         if (currentLength >= 450) {
             charCounter.style.color = '#ff5555';
         } else {
@@ -36,16 +180,13 @@ suggestionChips.forEach(chip => {
         const text = this.getAttribute('data-text');
         if (customerDescription && text) {
             customerDescription.value = text;
-            // Trigger input event to update counter
             customerDescription.dispatchEvent(new Event('input'));
             customerDescription.focus();
         }
     });
 });
 
-// ── Button Placeholders ──
-
-// Find Prospects Button
+// ── Find Prospects Button ──
 if (findProspectsBtn) {
     findProspectsBtn.addEventListener('click', function() {
         const query = customerDescription ? customerDescription.value.trim() : '';
@@ -53,90 +194,13 @@ if (findProspectsBtn) {
             showToast('Please describe your ideal customer first.', 'warning');
             return;
         }
-        // Placeholder for future backend integration
         showToast('Searching for prospects...', 'info');
         console.log('[Lead Discovery] Query:', query);
+        // Future: Integrate with streamPipeline here
     });
 }
 
-// Plus Button (New Chat/Lead)
-if (plusBtn) {
-    plusBtn.addEventListener('click', function() {
-        // Placeholder: Could open a modal or redirect to a new lead form
-        showToast('Create new lead feature coming soon.', 'info');
-    });
-}
-
-// Delete Button (Clear Input)
-if (deleteBtn) {
-    deleteBtn.addEventListener('click', function() {
-        if (customerDescription) {
-            if (customerDescription.value.length > 0) {
-                if (confirm('Are you sure you want to clear the description?')) {
-                    customerDescription.value = '';
-                    customerDescription.dispatchEvent(new Event('input'));
-                }
-            }
-        }
-    });
-}
-
-// Connect Email Button
-if (connectEmailBtn) {
-    connectEmailBtn.addEventListener('click', function() {
-        // Redirect to Nylas auth endpoint
-        window.location.href = `${BACKEND}/api/auth/nylas/connect`;
-    });
-}
-
-// ── Existing Backend Integration (Preserved) ──
-
-// Check User Plan and Status
-function checkDashboardStatus() {
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Check Email Connection Status
-    fetch(`${BACKEND}/api/auth/nylas/status`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.connected && !data.isExpired) {
-            // Update UI to show connected state
-            if (emailBanner) {
-                emailBanner.classList.remove('disconnected');
-                emailBanner.classList.add('connected');
-                emailBanner.querySelector('.banner-title').textContent = 'Email Connected';
-                emailBanner.querySelector('.banner-desc').textContent = data.email || 'Connected successfully';
-                connectEmailBtn.innerHTML = '<span>Manage</span>';
-                connectEmailBtn.onclick = () => window.location.href = 'settings.html';
-            }
-        }
-    })
-    .catch(err => console.error('Status check failed:', err));
-
-    // Check User Plan (for the Free Plan card)
-    fetch(`${BACKEND}/api/users/me`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-    })
-    .then(res => res.json())
-    .then(user => {
-        // Update plan card if needed based on user.subscriptionTier
-        console.log('User plan:', user.subscriptionTier);
-    })
-    .catch(err => console.error('User fetch failed:', err));
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    checkDashboardStatus();
-    console.log('✅ [PAGE] Lead Discovery Dashboard UI Ready');
-});
-
-// Utility: Toast Notification (from previous implementation)
+// ── Utility: Toast Notification ──
 function showToast(message, type, duration) {
     type = type || 'info'; 
     duration = duration || 4000;
@@ -175,3 +239,10 @@ function showToast(message, type, duration) {
     document.body.appendChild(toast);
     setTimeout(function() { toast.remove(); }, duration);
 }
+
+// ── Initialize ──
+document.addEventListener('DOMContentLoaded', function() {
+    handleOAuthRedirect();
+    checkEmailStatus();
+    console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
+});
