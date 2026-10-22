@@ -1,0 +1,621 @@
+/* ── RESET & BASE ── */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-main: #0B0C0D;
+    --bg-card: #101112;
+    --bg-input: #141518;
+    --bg-header: #0B0C0D;
+    
+    --text-primary: #F5F5F7;
+    --text-secondary: #9697A1;
+    --text-dark: #0B0C0D;
+    
+    --border-subtle: #2D2F33;
+    --border-focus: #4A4C52;
+    
+    --btn-primary: #F1F2F5;
+    --btn-hover: #E0E0E0;
+    
+    --accent-green: #22C55E;
+    --accent-amber: #F59E0B;
+    --accent-red: #EF4444;
+    --accent-blue: #3B82F6;
+    
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 999px;
+}
+
+html {
+    font-size: 16px;
+    height: 100%;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── 3. MOBILE STATUS BAR ── */
+.status-bar {
+    height: 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    background-color: var(--bg-main);
+}
+
+.status-icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* ── 4. SKYLINE AI HEADER ── */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--bg-header);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.logo-mark {
+    width: 36px;
+    height: 36px;
+    background-color: #FFFFFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background-color: var(--border-subtle);
+    color: var(--text-primary);
+}
+
+/* ── PAGE CONTAINER ── */
+.page-container {
+    flex: 1;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--space-md);
+    padding-bottom: 180px; /* Space for bulk panel + nav */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* ── 5. LEAD RESULTS TITLE ROW ── */
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.back-btn {
+    width: 36px;
+    height: 36px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ── 6. SEARCH QUERY FIELD ── */
+.search-field {
+    position: relative;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-field input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    width: 100%;
+    outline: none;
+}
+
+/* ── 7. RESULTS COUNT, FILTERS, AND SORTING ── */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.results-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.pill-btn {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pill-btn:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+/* ── 8. LEAD RESULTS LIST ── */
+.leads-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.lead-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    display: flex;
+    gap: var(--space-md);
+    position: relative;
+    transition: border-color 0.2s;
+}
+
+.lead-card:hover {
+    border-color: var(--border-focus);
+}
+
+.card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Custom Checkbox */
+.checkbox-wrapper {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.lead-checkbox {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.custom-checkbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background-color: #FFFFFF;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+    transition: transform 0.1s;
+}
+
+.lead-checkbox:not(:checked) + .custom-checkbox {
+    background-color: transparent;
+    border: 2px solid var(--border-subtle);
+}
+
+.lead-checkbox:not(:checked) + .custom-checkbox svg {
+    display: none;
+}
+
+.company-logo {
+    width: 48px;
+    height: 48px;
+    background-color: #1A1B1E;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-center {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.company-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.company-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.info-row.verified span { color: var(--accent-green); }
+.info-row.email span { color: var(--text-secondary); }
+.info-row.research span { color: var(--accent-blue); }
+
+.confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 6px;
+    width: fit-content;
+}
+
+.confidence-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.confidence-badge.high {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #4ADE80;
+}
+.confidence-badge.high .dot { background-color: #4ADE80; }
+
+.confidence-badge.medium {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #FCD34D;
+}
+.confidence-badge.medium .dot { background-color: #FCD34D; }
+
+.confidence-badge.low {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #F87171;
+}
+.confidence-badge.low .dot { background-color: #F87171; }
+
+.card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-md);
+}
+
+.menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.view-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-btn:hover {
+    border-color: var(--text-secondary);
+    background-color: rgba(255,255,255,0.05);
+}
+
+/* ── 10. BULK-ACTION PANEL ── */
+.bulk-panel {
+    position: fixed;
+    bottom: 70px; /* Above nav */
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 568px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+}
+
+.bulk-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.master-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.master-check {
+    width: 24px;
+    height: 24px;
+    background-color: #FFFFFF;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+}
+
+.select-count {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.bulk-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.action-btn.primary {
+    background-color: var(--btn-primary);
+    color: var(--text-dark);
+}
+
+.action-btn.secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+}
+
+.warning-strip {
+    background-color: rgba(255, 170, 0, 0.05);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.close-warning {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+/* ── 11. FIVE-ITEM BOTTOM NAVIGATION ── */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background-color: var(--bg-main);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-secondary);
+    gap: 4px;
+    flex: 1;
+    height: 100%;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.nav-item svg {
+    stroke: currentColor;
+    transition: stroke 0.2s;
+}
+
+.nav-item span {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+/* Active State */
+.nav-item.active {
+    color: var(--text-primary);
+}
+
+.active-icon-bg {
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    width: 44px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.active-icon-bg svg {
+    stroke: var(--text-dark);
+}
+
+/* Notification Badge */
+.nav-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.nav-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    border: 1.5px solid var(--bg-main);
+}
+
+/* ── RESPONSIVE ADJUSTMENTS ── */
+@media (max-width: 380px) {
+    .brand-name { font-size: 1rem; }
+    .pill-btn span:last-child { display: none; } /* Hide "Best match" text on very small screens if needed */
+    .bulk-main { flex-direction: column; align-items: stretch; }
+    .bulk-buttons { justify-content: space-between; }
+  }
