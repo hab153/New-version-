@@ -43,7 +43,7 @@ function handleOAuthRedirect() {
     
     if (nylasSuccess === 'success') {
         showToast('✅ Email account connected successfully!', 'success', 6000);
-        updateEmailUI(true, 'Connected');
+        setConnectedState(); // Use the same function as dashboard.html
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (nylasSuccess === 'error') {
         const errorMsg = params.get('error') || 'Unknown error';
@@ -52,19 +52,31 @@ function handleOAuthRedirect() {
     }
 }
 
-function updateEmailUI(isConnected, emailOrStatus) {
-    if (!emailBanner || !connectEmailBtn) return;
-
-    if (isConnected) {
+// ── Set button to connected state (Matches dashboard.html) ──
+function setConnectedState() {
+    if (!connectEmailBtn) return;
+    
+    connectEmailBtn.innerText = '✅ Connected';
+    connectEmailBtn.classList.add('connected');
+    connectEmailBtn.disabled = false;
+    
+    // Update Banner UI
+    if (emailBanner) {
         emailBanner.classList.remove('disconnected');
         emailBanner.classList.add('connected');
         
         const title = emailBanner.querySelector('.banner-title');
         const desc = emailBanner.querySelector('.banner-desc');
         if (title) title.textContent = 'Email Connected';
-        if (desc) desc.textContent = typeof emailOrStatus === 'string' ? emailOrStatus : 'Connected successfully';
+        if (desc) desc.textContent = 'Your email is ready for outreach';
+    }
+}
 
-        connectEmailBtn.innerHTML = '<span>Manage</span>';
+function updateEmailUI(isConnected, emailOrStatus) {
+    if (!emailBanner || !connectEmailBtn) return;
+
+    if (isConnected) {
+        setConnectedState();
         connectEmailBtn.onclick = () => showToast('Email settings coming soon', 'info');
     } else {
         emailBanner.classList.add('disconnected');
@@ -79,6 +91,8 @@ function updateEmailUI(isConnected, emailOrStatus) {
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             <span>Connect email</span>
         `;
+        connectEmailBtn.classList.remove('connected');
+        connectEmailBtn.disabled = false;
         connectEmailBtn.onclick = connectEmail;
     }
 }
@@ -91,6 +105,7 @@ async function checkEmailStatus() {
         });
         if (!res.ok) throw new Error('Status check failed');
         const data = await res.json();
+        
         if (data.connected && !data.isExpired) {
             updateEmailUI(true, data.email || 'Connected');
         } else {
