@@ -1,6 +1,6 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: Reads remainingLimits from SSE done event
+// UPDATED: Redirects to leads.html with data on completion
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -364,8 +364,22 @@ function streamLeadResponse(message) {
 }
 
 function renderFinalResults(data) {
-    const count = data?.companies?.length || 0;
-    showToast(`Search complete! Found ${count} prospects.`, 'success');
+    const companies = data?.companies || [];
+    const count = companies.length;
+    
+    if (count > 0) {
+        // ⭐ Store the lead data in localStorage to pass to leads.html
+        localStorage.setItem('skyline_leads_data', JSON.stringify(companies));
+        
+        showToast(`Search complete! Found ${count} prospects. Redirecting...`, 'success');
+        
+        // ⭐ Redirect to leads.html after a short delay
+        setTimeout(() => {
+            window.location.href = 'leads.html';
+        }, 1500);
+    } else {
+        showToast('Search complete but no prospects found.', 'warning');
+    }
 }
 
 if (findProspectsBtn) {
