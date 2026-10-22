@@ -143,11 +143,13 @@ if (customerDescription && charCounter) {
     });
 }
 
+// Fix for Suggestion Chips
 suggestionChips.forEach(chip => {
     chip.addEventListener('click', function() {
         const text = this.getAttribute('data-text');
         if (customerDescription && text) {
             customerDescription.value = text;
+            // Trigger input event to update counter and button state
             customerDescription.dispatchEvent(new Event('input'));
             customerDescription.focus();
         }
@@ -159,15 +161,24 @@ suggestionChips.forEach(chip => {
 function updateFindProspectsButton(hasText) {
     if (!findProspectsBtn) return;
     if (hasText) {
+        // Active State: White background, clickable
         findProspectsBtn.style.opacity = '1';
         findProspectsBtn.style.cursor = 'pointer';
         findProspectsBtn.style.pointerEvents = 'auto';
+        findProspectsBtn.style.backgroundColor = 'var(--btn-primary)';
+        findProspectsBtn.style.color = 'var(--text-dark)';
     } else {
+        // Inactive State: Dimmed, not clickable
         findProspectsBtn.style.opacity = '0.5';
         findProspectsBtn.style.cursor = 'default';
         findProspectsBtn.style.pointerEvents = 'none';
+        // Optional: Make it look slightly different when disabled
+        findProspectsBtn.style.backgroundColor = '#303137'; 
+        findProspectsBtn.style.color = '#92939D';
     }
 }
+
+// Initialize button state on load
 updateFindProspectsButton(false);
 
 // ── 6. Fixed Mini-Panel & Streaming Logic ──
