@@ -360,6 +360,7 @@ function checkPlan() {
             planCardStats.innerHTML = `
                 <div class="stat-row skel skel-bar"></div>
                 <div class="stat-row skel skel-bar"></div>
+                <div class="stat-row skel skel-bar"></div>
             `;
         }
     }
@@ -387,7 +388,7 @@ function checkPlan() {
     })
     .catch(function(err) {
         console.error('Plan check failed:', err);
-        updatePlanUI('free', { emails: 0, chats: 0 }); 
+        updatePlanUI('free', { emails: 0, research: 0, chats: 0 }); 
     });
 }
 
@@ -404,8 +405,9 @@ function updatePlanUI(plan, limits) {
     
     planCardTitle.textContent = displayText;
 
-    // Use real limits from backend, or fallback to 0 if not provided
+    // Use real limits from backend
     const emailLimit = limits?.emails || 0;
+    const researchLimit = limits?.research || 0;
     const chatLimit = limits?.chats || 0;
 
     // Restore Real Stats Content with Dynamic Numbers
@@ -414,6 +416,11 @@ function updatePlanUI(plan, limits) {
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
             <span class="stat-value">${emailLimit}</span>
             <span class="stat-label">emails left today</span>
+        </div>
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span class="stat-value">${researchLimit}</span>
+            <span class="stat-label">research left today</span>
         </div>
         <div class="stat-row">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
