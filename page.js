@@ -1,5 +1,6 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
+// UPDATED: Reads remainingLimits from SSE done event
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -16,6 +17,14 @@ const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
 const planCardTitle = document.querySelector('.plan-card .card-title');
 const planCardStats = document.querySelector('.plan-card .card-stats');
+
+// ⭐ Cache for limits (used when reading from SSE)
+let _cachedLimits = {
+    emails: 0,
+    research: 0,
+    chats: 0,
+    tier: 'free'
+};
 
 // ── 1. Plus Button: Refresh Page ──
 if (plusBtn) {
@@ -163,7 +172,7 @@ function updateFindProspectsButton(hasText) {
 }
 updateFindProspectsButton(false);
 
-// ── 5. Fixed Mini-Panel & Streaming Logic ──
+// ── 5. Mini-Panel & Streaming ──
 const STAGE_NAMES = {
     's1': 'Understanding your target',
     's2': 'Finding relevant companies',
@@ -238,6 +247,29 @@ function removeMiniPanel() {
     if (panel) panel.remove();
 }
 
+// ⭐ NEW: Handle limits received from SSE done event
+function handleLimitsFromSSE(remainingLimits) {
+    if (!remainingLimits) {
+        console.log('⚠️ [LIMITS] No remainingLimits in SSE event');
+        return;
+    }
+
+    console.log('⭐ [LIMITS] Received from SSE:', remainingLimits);
+
+    // Update cached limits
+    _cachedLimits.research = remainingLimits.remaining ?? _cachedLimits.research;
+    _cachedLimits.tier = remainingLimits.tier ?? _cachedLimits.tier;
+
+    // Update UI directly — no API call needed
+    updatePlanUI(_cachedLimits.tier, {
+        emails: _cachedLimits.emails,
+        research: remainingLimits.remaining,
+        chats: _cachedLimits.chats
+    });
+
+    console.log('✅ [LIMITS] UI updated: research =', remainingLimits.remaining);
+}
+
 function streamLeadResponse(message) {
     if (_activeEventSource) {
         try { _activeEventSource.close(); } catch (e) {}
@@ -266,7 +298,15 @@ function streamLeadResponse(message) {
 
         es.addEventListener('stage', function(event) {
             if (runId !== _runCounter) return;
-            const payload = JSON.parse(event.data);
+
+            let payload;
+            try {
+                payload = JSON.parse(event.data);
+            } catch (parseErr) {
+                console.error('❌ [SSE] Parse error:', parseErr);
+                return;
+            }
+
             if (!payload || !payload.stage) return;
 
             const stageId = payload.stage;
@@ -274,6 +314,11 @@ function streamLeadResponse(message) {
 
             if (status) updateStageInPanel(stageId, status);
             if (payload.data?.data) _stageData[stageId] = payload.data.data;
+
+            // ⭐ If this event carries remainingLimits, update UI immediately
+            if (payload.data?.remainingLimits) {
+                handleLimitsFromSSE(payload.data.remainingLimits);
+            }
 
             if (stageId === 'done' || stageId === 'error') {
                 clearInterval(timerInterval);
@@ -283,13 +328,11 @@ function streamLeadResponse(message) {
                 findProspectsBtn.innerHTML = originalBtnContent;
                 findProspectsBtn.disabled = false;
 
-                // ✅ FIX: Always refresh limits after stream ends (success OR error)
                 setTimeout(() => {
                     removeMiniPanel();
-                    checkPlan(); // ← Refreshes limits
 
                     if (stageId === 'done') {
-                        renderFinalResults(_stageData['s5']);
+                        renderFinalResults(payload.data?.data || _stageData['s5']);
                     } else {
                         showToast('Pipeline encountered an error.', 'error');
                     }
@@ -306,7 +349,7 @@ function streamLeadResponse(message) {
             showToast('Connection lost during search.', 'error');
             removeMiniPanel();
 
-            // ✅ FIX: Refresh limits on error too
+            // ⭐ Fallback: refresh from API on connection error
             checkPlan();
         });
 
@@ -336,7 +379,7 @@ if (findProspectsBtn) {
     });
 }
 
-// ── 6. Plan Loading Logic ──
+// ── 6. Plan Loading ──
 function checkPlan() {
     if (!token) return;
 
@@ -355,16 +398,22 @@ function checkPlan() {
         }
     }
 
-    // ✅ Force fresh fetch every time (no cache)
     return fetch(`${BACKEND}/api/users/me`, {
         headers: { 'Authorization': 'Bearer ' + token },
-        cache: 'no-store' // ✅ Prevent browser caching
+        cache: 'no-store'
     })
     .then(function(res) { return res.ok ? res.json() : null; })
     .then(function(user) {
         if (user) {
             var p = user.subscriptionTier || 'free';
             var limits = user.remainingLimits || { emails: 0, research: 0, chats: 0 };
+
+            // ⭐ Store in cache
+            _cachedLimits.emails = limits.emails ?? 0;
+            _cachedLimits.research = limits.research ?? 0;
+            _cachedLimits.chats = limits.chats ?? 0;
+            _cachedLimits.tier = p;
+
             updatePlanUI(p, limits);
         }
     })
@@ -408,7 +457,7 @@ function updatePlanUI(plan, limits) {
     `;
 }
 
-// ── Utility: Toast Notification ──
+// ── Utility: Toast ──
 function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 4000;
@@ -452,6 +501,6 @@ function showToast(message, type, duration) {
 document.addEventListener('DOMContentLoaded', function() {
     handleOAuthRedirect();
     checkEmailStatus();
-    checkPlan();
+    checkPlan();  // Only ONCE on page load
     console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
 });
