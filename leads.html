@@ -63,7 +63,7 @@
 
         <!-- 7. Results Count, Filters, and Sorting -->
         <div class="toolbar">
-            <span class="results-count">24 prospects found</span>
+            <span class="results-count" id="resultsCount">0 prospects found</span>
             <div class="toolbar-actions">
                 <button class="pill-btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="14" x2="23" y2="14"/></svg>
@@ -77,138 +77,9 @@
             </div>
         </div>
 
-        <!-- 8. Lead Results List -->
+        <!-- 8. Lead Results List (Dynamic Content) -->
         <div class="leads-list" id="leadsList">
-            
-            <!-- Lead Card 1: Northstar Creative -->
-            <div class="lead-card" data-id="1">
-                <div class="card-left">
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" checked class="lead-checkbox">
-                        <span class="custom-checkbox">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                    </label>
-                    <div class="company-logo">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2-6.3z"/></svg>
-                    </div>
-                </div>
-                <div class="card-center">
-                    <h3 class="company-name">Northstar Creative</h3>
-                    <p class="company-meta">Marketing Agency · Lagos</p>
-                    
-                    <div class="info-row verified">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        <span>Verified business email</span>
-                    </div>
-                    
-                    <div class="info-row email">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9697A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <span>hello@northstarcreative.example</span>
-                    </div>
-
-                    <div class="confidence-badge medium">
-                        <span class="dot"></span>
-                        <span>Medium confidence</span>
-                    </div>
-                </div>
-                <div class="card-right">
-                    <button class="menu-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                    </button>
-                    <button class="view-btn">
-                        View
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Lead Card 2: Brightline Media -->
-            <div class="lead-card" data-id="2">
-                <div class="card-left">
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" checked class="lead-checkbox">
-                        <span class="custom-checkbox">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                    </label>
-                    <div class="company-logo">
-                        <span style="color: #3B82F6; font-weight: 700; font-size: 18px;">B</span>
-                    </div>
-                </div>
-                <div class="card-center">
-                    <h3 class="company-name">Brightline Media</h3>
-                    <p class="company-meta">Digital Marketing · Lagos</p>
-                    
-                    <div class="info-row verified">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        <span>Business email found</span>
-                    </div>
-                    
-                    <div class="info-row email">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9697A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <span>team@brightlinemedia.example</span>
-                    </div>
-
-                    <div class="confidence-badge high">
-                        <span class="dot"></span>
-                        <span>High confidence</span>
-                    </div>
-                </div>
-                <div class="card-right">
-                    <button class="menu-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                    </button>
-                    <button class="view-btn">
-                        View
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Lead Card 3: Growth Harbor -->
-            <div class="lead-card" data-id="3">
-                <div class="card-left">
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" checked class="lead-checkbox">
-                        <span class="custom-checkbox">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                    </label>
-                    <div class="company-logo">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 12l5-5"/><path d="M2 12l5 5"/></svg>
-                    </div>
-                </div>
-                <div class="card-center">
-                    <h3 class="company-name">Growth Harbor</h3>
-                    <p class="company-meta">Brand Strategy · Ikeja</p>
-                    
-                    <div class="info-row research">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span>Website research available</span>
-                    </div>
-                    
-                    <div class="info-row email">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9697A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        <span>Contact details to review</span>
-                    </div>
-
-                    <div class="confidence-badge low">
-                        <span class="dot"></span>
-                        <span>Needs verification</span>
-                    </div>
-                </div>
-                <div class="card-right">
-                    <button class="menu-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                    </button>
-                    <button class="view-btn">
-                        View
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </div>
-            </div>
-
+            <!-- Cards will be injected here by leads.js -->
         </div>
     </div>
 
@@ -216,19 +87,19 @@
     <div class="bulk-panel" id="bulkPanel">
         <div class="bulk-main">
             <label class="master-select">
-                <input type="checkbox" id="selectAll" checked>
+                <input type="checkbox" id="selectAll">
                 <span class="custom-checkbox master-check">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </span>
-                <span class="select-count">3 selected</span>
+                <span class="select-count">0 selected</span>
             </label>
             
             <div class="bulk-buttons">
-                <button class="action-btn primary">
+                <button class="action-btn primary" disabled>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Save leads
                 </button>
-                <button class="action-btn secondary">
+                <button class="action-btn secondary" disabled>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     Draft outreach
                 </button>
@@ -273,6 +144,18 @@
         </a>
     </nav>
 
+    <!-- Details Modal -->
+    <div class="modal-overlay" id="modalOverlay" style="display: none;">
+        <div class="modal-content" id="detailsModal">
+            <button class="close-modal" id="closeModal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div id="modalContent">
+                <!-- Dynamic content goes here -->
+            </div>
+        </div>
+    </div>
+
     <script src="leads.js"></script>
 </body>
-  </html>
+                </html>
