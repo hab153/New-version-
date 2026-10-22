@@ -344,7 +344,7 @@ if (findProspectsBtn) {
     });
 }
 
-// ── 7. Plan Loading Logic (NO CACHE) ──
+// ── 7. Plan Loading Logic (NO CACHE + ANTI-CACHE URL) ──
 
 function checkPlan() {
     if (!token) return;
@@ -365,9 +365,15 @@ function checkPlan() {
         }
     }
 
-    // ✅ Always fetch from server, no cache
-    return fetch(`${BACKEND}/api/users/me`, { 
-        headers: { 'Authorization': 'Bearer ' + token } 
+    // ✅ Add timestamp to prevent browser caching
+    const noCacheUrl = `${BACKEND}/api/users/me?t=${Date.now()}`;
+
+    return fetch(noCacheUrl, { 
+        headers: { 
+            'Authorization': 'Bearer ' + token,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+        } 
     })
     .then(function(res) { return res.ok ? res.json() : null; })
     .then(function(user) {
