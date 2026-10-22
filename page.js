@@ -24,25 +24,22 @@ if (plusBtn) {
     });
 }
 
-// ── 2. Delete Button: Clear Input (New Start) ──
+// ── 2. Delete Button: Clear Input ──
 if (deleteBtn) {
     deleteBtn.addEventListener('click', function() {
-        if (customerDescription) {
-            if (customerDescription.value.length > 0) {
-                customerDescription.value = '';
-                customerDescription.dispatchEvent(new Event('input'));
-                showToast('Input cleared', 'info');
-            }
+        if (customerDescription && customerDescription.value.length > 0) {
+            customerDescription.value = '';
+            customerDescription.dispatchEvent(new Event('input'));
+            showToast('Input cleared', 'info');
         }
     });
 }
 
 // ── 3. Connect Email Logic ──
-
 function handleOAuthRedirect() {
     const params = new URLSearchParams(window.location.search);
     const nylasSuccess = params.get('nylas');
-    
+
     if (nylasSuccess === 'success') {
         showToast('✅ Email account connected successfully!', 'success', 6000);
         updateEmailUI(true, 'Connected');
@@ -60,7 +57,7 @@ function updateEmailUI(isConnected, emailOrStatus) {
     if (isConnected) {
         emailBanner.classList.remove('disconnected');
         emailBanner.classList.add('connected');
-        
+
         const title = emailBanner.querySelector('.banner-title');
         const desc = emailBanner.querySelector('.banner-desc');
         if (title) title.textContent = 'Email Connected';
@@ -71,7 +68,7 @@ function updateEmailUI(isConnected, emailOrStatus) {
     } else {
         emailBanner.classList.add('disconnected');
         emailBanner.classList.remove('connected');
-        
+
         const title = emailBanner.querySelector('.banner-title');
         const desc = emailBanner.querySelector('.banner-desc');
         if (title) title.textContent = 'No email connected';
@@ -105,10 +102,7 @@ async function checkEmailStatus() {
 }
 
 async function connectEmail() {
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!token) { window.location.href = 'login.html'; return; }
     const btn = connectEmailBtn;
     const originalContent = btn.innerHTML;
     btn.disabled = true;
@@ -122,8 +116,7 @@ async function connectEmail() {
         if (!res.ok) throw new Error('Failed to get connection URL');
         const data = await res.json();
         if (data.url) {
-            let redirectUrl = data.url.replace(/&amp;/g, '&');
-            window.location.href = redirectUrl;
+            window.location.href = data.url.replace(/&amp;/g, '&');
         } else {
             throw new Error('No URL received');
         }
@@ -156,8 +149,6 @@ suggestionChips.forEach(chip => {
     });
 });
 
-// ── 5. Find Prospects Button Logic ──
-
 function updateFindProspectsButton(hasText) {
     if (!findProspectsBtn) return;
     if (hasText) {
@@ -172,8 +163,7 @@ function updateFindProspectsButton(hasText) {
 }
 updateFindProspectsButton(false);
 
-// ── 6. Fixed Mini-Panel & Streaming Logic ──
-
+// ── 5. Fixed Mini-Panel & Streaming Logic ──
 const STAGE_NAMES = {
     's1': 'Understanding your target',
     's2': 'Finding relevant companies',
@@ -193,7 +183,7 @@ function createMiniPanel() {
     const panel = document.createElement('div');
     panel.id = 'stageMiniPanel';
     panel.className = 'stage-mini-panel';
-    
+
     const header = document.createElement('div');
     header.className = 'panel-header';
     header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">⏱️ 0s</span>';
@@ -233,7 +223,7 @@ function updateStageInPanel(stageId, status) {
 
     stageEl.className = `stage-item ${status}`;
     const iconContainer = stageEl.querySelector('.stage-icon');
-    
+
     if (status === 'processing') {
         iconContainer.innerHTML = `<svg class="spinner" viewBox="0 0 24 24" fill="none" width="14" height="14"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
     } else if (status === 'completed') {
@@ -289,14 +279,15 @@ function streamLeadResponse(message) {
                 clearInterval(timerInterval);
                 es.close();
                 _activeEventSource = null;
-                
+
                 findProspectsBtn.innerHTML = originalBtnContent;
                 findProspectsBtn.disabled = false;
-                
-                // ✅ FIX: Always refresh limits, regardless of success/failure
+
+                // ✅ FIX: Always refresh limits after stream ends (success OR error)
                 setTimeout(() => {
                     removeMiniPanel();
-                    checkPlan(); 
+                    checkPlan(); // ← Refreshes limits
+
                     if (stageId === 'done') {
                         renderFinalResults(_stageData['s5']);
                     } else {
@@ -314,7 +305,7 @@ function streamLeadResponse(message) {
             findProspectsBtn.disabled = false;
             showToast('Connection lost during search.', 'error');
             removeMiniPanel();
-            
+
             // ✅ FIX: Refresh limits on error too
             checkPlan();
         });
@@ -325,6 +316,7 @@ function streamLeadResponse(message) {
         findProspectsBtn.disabled = false;
         showToast('Could not start search engine.', 'error');
         removeMiniPanel();
+        checkPlan();
     }
 }
 
@@ -344,12 +336,10 @@ if (findProspectsBtn) {
     });
 }
 
-// ── 7. Plan Loading Logic (NO CACHE + ANTI-CACHE URL) ──
-
+// ── 6. Plan Loading Logic ──
 function checkPlan() {
     if (!token) return;
-    
-    // 1. Show Skeleton Immediately
+
     if (planCardTitle) {
         planCardTitle.classList.add('skel');
         planCardTitle.textContent = '\u00A0';
@@ -365,49 +355,40 @@ function checkPlan() {
         }
     }
 
-    // ✅ Add timestamp to prevent browser caching
-    const noCacheUrl = `${BACKEND}/api/users/me?t=${Date.now()}`;
-
-    return fetch(noCacheUrl, { 
-        headers: { 
-            'Authorization': 'Bearer ' + token,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-        } 
+    // ✅ Force fresh fetch every time (no cache)
+    return fetch(`${BACKEND}/api/users/me`, {
+        headers: { 'Authorization': 'Bearer ' + token },
+        cache: 'no-store' // ✅ Prevent browser caching
     })
     .then(function(res) { return res.ok ? res.json() : null; })
     .then(function(user) {
         if (user) {
             var p = user.subscriptionTier || 'free';
-            var limits = user.remainingLimits || {};
+            var limits = user.remainingLimits || { emails: 0, research: 0, chats: 0 };
             updatePlanUI(p, limits);
         }
     })
     .catch(function(err) {
         console.error('Plan check failed:', err);
-        updatePlanUI('free', { emails: 0, research: 0, chats: 0 }); 
+        updatePlanUI('free', { emails: 0, research: 0, chats: 0 });
     });
 }
 
 function updatePlanUI(plan, limits) {
     if (!planCardTitle || !planCardStats) return;
-    
-    // Remove Skeleton Classes
+
     planCardTitle.classList.remove('skel');
     planCardStats.classList.remove('skel-active');
-    
+
     let displayText = 'Free plan';
     if (plan === 'go') displayText = 'Go plan';
     if (plan === 'pro') displayText = 'Pro plan';
-    
     planCardTitle.textContent = displayText;
 
-    // Use real limits from backend
-    const emailLimit = limits?.emails || 0;
-    const researchLimit = limits?.research || 0;
-    const chatLimit = limits?.chats || 0;
+    const emailLimit    = limits?.emails   ?? 0;
+    const researchLimit = limits?.research ?? 0;
+    const chatLimit     = limits?.chats    ?? 0;
 
-    // Restore Real Stats Content with Dynamic Numbers
     planCardStats.innerHTML = `
         <div class="stat-row">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
@@ -429,32 +410,32 @@ function updatePlanUI(plan, limits) {
 
 // ── Utility: Toast Notification ──
 function showToast(message, type, duration) {
-    type = type || 'info'; 
+    type = type || 'info';
     duration = duration || 4000;
     var existing = document.querySelector('.toast-msg');
     if (existing) existing.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'toast-msg';
     toast.textContent = message;
-    
+
     var colors = {
         success: { bg: 'rgba(102,221,153,0.10)', border: 'rgba(102,221,153,0.5)', text: '#66dd99' },
         error:   { bg: 'rgba(255,85,85,0.10)',   border: 'rgba(255,85,85,0.5)',   text: '#ff5555' },
         warning: { bg: 'rgba(255,170,0,0.10)',   border: 'rgba(255,170,0,0.5)',   text: '#ffaa00' },
         info:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.2)', text: '#f5f5f5' }
     };
-    
+
     var color = colors[type] || colors.info;
     Object.assign(toast.style, {
-        background: color.bg, 
-        border: '1px solid ' + color.border, 
+        background: color.bg,
+        border: '1px solid ' + color.border,
         color: color.text,
-        position: 'fixed', 
-        top: '20px', 
-        left: '50%', 
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
         transform: 'translateX(-50%)',
-        padding: '12px 24px', 
+        padding: '12px 24px',
         borderRadius: '10px',
         fontFamily: 'Inter, sans-serif',
         fontSize: '14px',
@@ -462,7 +443,7 @@ function showToast(message, type, duration) {
         zIndex: '9999',
         backdropFilter: 'blur(10px)'
     });
-    
+
     document.body.appendChild(toast);
     setTimeout(function() { toast.remove(); }, duration);
 }
