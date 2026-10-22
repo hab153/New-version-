@@ -1,0 +1,102 @@
+/* limit-monitor.css */
+#limit-monitor-container {
+    background: #141518;
+    border: 1px solid #303137;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.lm-header {
+    color: #F5F5F7;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lm-row {
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.lm-label {
+    font-size: 12px;
+    color: #92939D;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+/* The "Blood Bar" Container */
+.lm-bar-bg {
+    width: 100%;
+    height: 28px;
+    background: #0B0C0E; /* Very dark background for the empty part */
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #303137;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* The "Blood" Fill */
+.lm-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff5555 0%, #ff8888 100%); /* Red gradient */
+    border-radius: 14px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 0 10px rgba(255, 85, 85, 0.3);
+}
+
+/* Green state for high limits */
+.lm-bar-fill.high {
+    background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+/* Yellow state for medium limits */
+.lm-bar-fill.medium {
+    background: linear-gradient(90deg, #EAB308 0%, #FACC15 100%);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+}
+
+/* The Number Inside the Bar */
+.lm-count {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.lm-skeleton {
+    height: 28px;
+    background: #1f2024;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
