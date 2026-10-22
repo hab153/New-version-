@@ -326,6 +326,10 @@ function streamLeadResponse(message) {
 function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
+    
+    // ✅ FORCE REFRESH LIMITS AFTER SEARCH
+    _cachedPlan = null; 
+    checkPlan();
 }
 
 if (findProspectsBtn) {
