@@ -1,324 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Skyline · Nexa</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Skyline AI · Lead Discovery</title>
 
-<link rel="preconnect" href="https://skylineapp-backend-file.onrender.com" crossorigin />
-<link rel="dns-prefetch" href="https://skylineapp-backend-file.onrender.com" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
-
-<link rel="stylesheet" href="page.css" />
-
-<style>
-    /* Nav badge */
-    .nav-item .icon-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
-    .nav-badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background-color: #ff4d4d; border-radius: 50%; border: 1.5px solid #121212; z-index: 10; pointer-events: none; box-shadow: 0 0 4px rgba(255,77,77,0.6); animation: subtle-pulse 2s infinite ease-in-out; }
-    @keyframes subtle-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-
-    /* Plan chip skeleton */
-    .plan-chip.skeleton {
-        background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 75%) !important;
-        background-size: 200% 100% !important;
-        animation: chipShimmer 1.5s ease-in-out infinite !important;
-        color: transparent !important;
-        border-color: transparent !important;
-        min-width: 40px;
-    }
-    @keyframes chipShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-    /* Status bar skeleton */
-    .status-bar.skeleton .status-pip { visibility: hidden; }
-    .status-bar.skeleton #statusText {
-        background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
-        background-size: 200% 100%;
-        animation: chipShimmer 1.5s ease-in-out infinite;
-        color: transparent !important;
-        border-radius: 4px;
-        padding: 2px 60px;
-    }
-</style>
+    <!-- Existing Styles (Will be overridden/extended by new page.css) -->
+    <link rel="stylesheet" href="page.css" />
 </head>
 <body>
 
-<!-- ─── TOP BAR ─── -->
-<header class="topbar">
-    <div class="brand">
-        <div class="brand-mark">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
+    <!-- Main Content Container -->
+    <main class="dashboard-container">
+        
+        <!-- 3. Header -->
+        <header class="top-header">
+            <div class="brand-section">
+                <div class="logo-mark">
+                    <!-- Pulse/Heartbeat Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0C0E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-name">Skyline AI</h1>
+                    <span class="brand-subtitle">LEAD DISCOVERY</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="plusBtn" aria-label="Add New">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+                <button class="icon-btn" id="deleteBtn" aria-label="Delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 4. Email Connection Banner -->
+        <!-- Note: ID retained for existing JS logic if needed, but structure updated -->
+        <div id="emailBanner" class="email-banner disconnected">
+            <div class="banner-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <div class="banner-content">
+                <h3 class="banner-title">No email connected</h3>
+                <p class="banner-desc">Connect Gmail or Outlook to unlock inbox and follow-up features</p>
+            </div>
+            <button class="connect-btn" id="connectEmailBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                <span>Connect email</span>
+            </button>
         </div>
-        <div class="brand-text">
-            <span class="brand-name">Sky<em>line</em></span>
-            <span class="brand-sub">AA-1 · Agent</span>
-        </div>
-        <div id="planChip" class="plan-chip free skeleton">FREE</div>
-    </div>
-    <div class="topbar-center">
-        <div class="pulse-ring"></div>
-        <span class="topbar-label">Lead Search</span>
-    </div>
-    <div class="topbar-right">
-        <button class="icon-btn" id="newChatBtn" data-tip="New" aria-label="New chat">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+
+        <!-- 5. Main Lead Discovery Section -->
+        <section class="discovery-section">
+            <h2 class="section-heading">Find your next customers</h2>
+            <p class="section-subtitle">Describe the businesses or people you want to reach</p>
+
+            <div class="input-wrapper">
+                <div class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <textarea 
+                    id="customerDescription" 
+                    class="description-input" 
+                    placeholder="Describe your ideal customer..." 
+                    maxlength="500"
+                    rows="4"
+                ></textarea>
+                <div class="char-counter" id="charCounter">0/500</div>
+            </div>
+
+            <div class="suggestion-chips">
+                <button class="chip-btn" data-text="SaaS companies in the US">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
+                    <span>SaaS companies in the US</span>
+                </button>
+                <button class="chip-btn" data-text="Marketing agencies in Lagos">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>Marketing agencies in Lagos</span>
+                </button>
+                <button class="chip-btn" data-text="E-commerce founders in the UK">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span>E-commerce founders in the UK</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 6. Primary Find Prospects Button -->
+        <button class="find-prospects-btn" id="findProspectsBtn">
+            <div class="btn-left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B0C0E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                <span>Find prospects</span>
+            </div>
+            <div class="btn-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B0C0E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
         </button>
-        <button class="icon-btn" id="clearSessionBtn" data-tip="Clear" aria-label="Clear session">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
-        </button>
-    </div>
-</header>
 
-<!-- ─── STATUS BAR ─── -->
-<div id="statusBar" class="status-bar skeleton">
-    <span class="status-pip"></span>
-    <span id="statusText">Checking email connection…</span>
-</div>
-
-<!-- ─── REPLY NOTIFICATION ─── -->
-<div id="replyNotif" class="reply-notif" onclick="window.location.href='dashboard.html'">
-    ↑ New reply detected — tap to open Dashboard
-</div>
-
-<!-- ─── GUIDE MODAL ─── -->
-<div id="guideModal" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
-    <div class="guide-card">
-        <div class="guide-shimmer"></div>
-        <div class="guide-body">
-            <div class="guide-top">
-                <div class="guide-mark">💡</div>
-                <div>
-                    <div class="guide-eyebrow">SKYLINE · FIELD GUIDE</div>
-                    <h2 class="guide-title" id="guideTitle">Make your request <em>clear</em> for better lead results</h2>
-                    <p class="guide-sub">For the best results, try to include:</p>
+        <!-- 7. Lower Dashboard Cards -->
+        <section class="dashboard-cards">
+            <!-- Left Card: Free Plan -->
+            <div class="card plan-card">
+                <div class="card-header">
+                    <div class="icon-circle purple">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>
+                    </div>
+                    <span class="card-title">Free plan</span>
+                    <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div class="card-stats">
+                    <div class="stat-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        <span class="stat-value">5</span>
+                        <span class="stat-label">emails left today</span>
+                    </div>
+                    <div class="stat-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="stat-value">10</span>
+                        <span class="stat-label">chats left today</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="guide-grid">
-                <div class="g-item"><span class="g-ico">🎯</span><div><b>Target</b><i>who you want to find</i></div></div>
-                <div class="g-item"><span class="g-ico">📌</span><div><b>Problem</b><i>what they may need</i></div></div>
-                <div class="g-item"><span class="g-ico">💡</span><div><b>Intent</b><i>what to find out or accomplish</i></div></div>
-                <div class="g-item"><span class="g-ico">📍</span><div><b>Location</b><i>where they should be</i></div></div>
-                <div class="g-item"><span class="g-ico">🏭</span><div><b>Industry</b><i>type of organization</i></div></div>
-                <div class="g-item"><span class="g-ico">✅</span><div><b>Qualification</b><i>requirements they must meet</i></div></div>
-                <div class="g-item"><span class="g-ico">📡</span><div><b>Signal</b><i>evidence supporting the need</i></div></div>
-                <div class="g-item"><span class="g-ico">🔢</span><div><b>Quantity</b><i>how many leads you want</i></div></div>
-                <div class="g-item"><span class="g-ico">📋</span><div><b>Information</b><i>details Skyline should collect</i></div></div>
-                <div class="g-item"><span class="g-ico">🚫</span><div><b>Exclusion</b><i>who or what to leave out</i></div></div>
-                <div class="g-item"><span class="g-ico">📎</span><div><b>Constraint</b><i>special rules to follow</i></div></div>
-            </div>
-
-            <div class="guide-example">
-                <div class="ge-label">Example request</div>
-                <p>“Find 200 healthcare companies in Chicago that may need MRI equipment. Focus on hospitals hiring radiology staff, with revenue above $10M. Exclude government-owned facilities, avoid duplicates, and provide the company name, email, phone, and short information.”</p>
-            </div>
-
-            <button class="guide-okay" id="guideOkayBtn" type="button">
-                <span>Okay, got it</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ─── MODE SELECTOR ─── -->
-<div class="mode-selector">
-    <button class="mode-btn lead-mode active" id="leadModeBtn" onclick="switchMode('lead')">
-        <span class="mode-icon">⚡</span>
-        <span class="mode-label">Lead</span>
-    </button>
-    <button class="mode-btn assistant-mode" id="assistantModeBtn" onclick="switchMode('assistant')">
-        <span class="mode-icon">🤖</span>
-        <span class="mode-label">Assistant</span>
-    </button>
-</div>
-
-<!-- ─── LEAD MODE CONTAINER ─── -->
-<div class="mode-container active" id="leadModeContainer">
-
-    <div class="chat-area active" id="leadChatArea">
-        <div id="leadMsgContainer"></div>
-    </div>
-
-    <div id="reviewPanel" style="display:none;"></div>
-
-    <div class="input-bar" id="leadInputBar">
-        <div class="input-shell">
-            <textarea class="msg-ta" id="leadMsgInput" rows="1" placeholder="Ask Nexa…" aria-label="Message Nexa"></textarea>
-            <button class="send-btn" id="leadSendBtn" disabled aria-label="Send">
-                <svg class="send-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                <svg class="stop-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#ff4d4d" stroke="none"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
-            </button>
-        </div>
-        <div class="input-foot">
-            <span class="input-tag">Nexa · Lead Search</span>
-            <span class="char-ct" id="leadCharCount"></span>
-        </div>
-    </div>
-</div>
-
-<!-- ─── ASSISTANT MODE CONTAINER ─── -->
-<div class="mode-container" id="assistantModeContainer">
-    <div class="chat-area active" id="assistantChatArea">
-        <div id="assistantMsgContainer">
-            <div class="msg-row ai">
-                <div class="av">N</div>
-                <div class="bubble-wrap">
-                    <div class="bubble">👋 Hi, I'm <strong>Nexa</strong> — your business assistant. Ask me anything about your business, leads, or strategy.</div>
-                    <div class="msg-time">Just now</div>
+            <!-- Right Card: Automation -->
+            <div class="card automation-card">
+                <div class="card-header">
+                    <div class="icon-circle green">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </div>
+                    <span class="card-title">Automation: Off</span>
+                    <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
+                <p class="card-desc">Enable automation to send outreach and follow-ups automatically.</p>
+                <button class="manage-btn">Manage</button>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div class="input-bar" id="assistantInputBar">
-        <div class="input-shell">
-            <textarea class="msg-ta" id="assistantMsgInput" rows="1" placeholder="Ask Nexa…" aria-label="Message Nexa"></textarea>
-            <button class="send-btn" id="assistantSendBtn" disabled aria-label="Send">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d0a04" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            </button>
-        </div>
-        <div class="input-foot">
-            <span class="input-tag">Nexa · Assistant</span>
-            <span class="char-ct" id="assistantCharCount"></span>
-        </div>
-    </div>
-</div>
+    </main>
 
-<!-- ─── BOTTOM NAV ─── -->
-<nav class="bottom-nav" aria-label="Main navigation">
-    <a href="page.html" class="nav-item nav-home active" aria-label="Home">
-        <div class="home-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </div>
-    </a>
-    <a href="history.html" class="nav-item" aria-label="History">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <polyline points="12 7 12 12 15 15"/>
-            <path d="M3.05 11a9 9 0 1 0 .5-3"/>
-            <polyline points="3 4 3 11 10 11"/>
-        </svg>
-    </a>
-    <a href="notifications.html" class="nav-item" id="navNotifBtn" aria-label="Notifications">
-        <div class="icon-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            <div class="nav-badge"></div>
-        </div>
-    </a>
-    <a href="dashboard.html" class="nav-item" aria-label="Dashboard">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-    </a>
-</nav>
+    <!-- 8. Fixed Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="page.html" class="nav-item active">
+            <div class="nav-icon-bg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B0C0E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="nav-label">Home</span>
+        </a>
+        <a href="leads.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span class="nav-label">Leads</span>
+        </a>
+        <a href="inbox.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span class="nav-label">Inbox</span>
+        </a>
+        <a href="notifications.html" class="nav-item">
+            <div class="nav-icon-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <div class="nav-badge"></div>
+            </div>
+            <span class="nav-label">Alerts</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span class="nav-label">Settings</span>
+        </a>
+    </nav>
 
-<!-- ✅ INSTANT CACHE LOADER -->
-<script>
-(function() {
-    var BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    var CACHE_TTL = 300000;
-    var token = localStorage.getItem('token');
-    var chip = document.getElementById('planChip');
-    var bar = document.getElementById('statusBar');
-    var txt = document.getElementById('statusText');
-
-    try {
-        var planRaw = localStorage.getItem('skyline_plan');
-        if (planRaw) {
-            var planCache = JSON.parse(planRaw);
-            if (Date.now() - planCache.timestamp < CACHE_TTL && chip) {
-                var p = planCache.tier || 'free';
-                chip.className = 'plan-chip ' + p;
-                chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-            }
-        }
-    } catch(e) {}
-
-    try {
-        var connRaw = localStorage.getItem('skyline_connection');
-        if (connRaw) {
-            var connCache = JSON.parse(connRaw);
-            if (Date.now() - connCache.timestamp < CACHE_TTL && bar && txt) {
-                bar.classList.remove('skeleton');
-                if (connCache.connected && !connCache.isExpired) {
-                    bar.className = 'status-bar connected';
-                    txt.textContent = connCache.email ? '✅ Connected as ' + connCache.email : '✅ Email connected';
-                } else if (connCache.connected && connCache.isExpired) {
-                    bar.className = 'status-bar disconnected';
-                    txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
-                } else {
-                    bar.className = 'status-bar disconnected';
-                    txt.textContent = '❌ No email connected — Connect in Dashboard';
-                }
-            }
-        }
-    } catch(e) {}
-
-    if (!token) return;
-
-    fetch(BACKEND + '/api/users/me', { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) {
-        if (user && chip) {
-            var p = user.subscriptionTier || 'free';
-            localStorage.setItem('skyline_plan', JSON.stringify({ tier: p, timestamp: Date.now() }));
-            chip.className = 'plan-chip ' + p;
-            chip.textContent = p === 'go' ? 'GO' : p === 'pro' ? 'PRO' : 'FREE';
-        }
-    }).catch(function() {
-        if (chip) chip.classList.remove('skeleton');
-    });
-
-    fetch(BACKEND + '/api/auth/nylas/status', { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(data) {
-        if (data && bar && txt) {
-            localStorage.setItem('skyline_connection', JSON.stringify({
-                connected: data.connected, isExpired: data.isExpired,
-                email: data.email || '', timestamp: Date.now()
-            }));
-            bar.classList.remove('skeleton');
-            if (data.connected && !data.isExpired) {
-                bar.className = 'status-bar connected';
-                txt.textContent = data.email ? '✅ Connected as ' + data.email : '✅ Email connected';
-            } else if (data.connected && data.isExpired) {
-                bar.className = 'status-bar disconnected';
-                txt.textContent = '⚠️ Session expired — Reconnect in Dashboard';
-            } else {
-                bar.className = 'status-bar disconnected';
-                txt.textContent = '❌ No email connected — Connect in Dashboard';
-            }
-        }
-    }).catch(function() {
-        if (bar) bar.classList.remove('skeleton');
-    });
-
-    setTimeout(function() {
-        if (chip) chip.classList.remove('skeleton');
-        if (bar) bar.classList.remove('skeleton');
-    }, 10000);
-})();
-</script>
-
-<script src="session-check.js"></script>
-<script src="page.js"></script>
+    <!-- Scripts -->
+    <script src="session-check.js"></script>
+    <script src="page.js"></script>
 </body>
-    </html>
+                            </html>
