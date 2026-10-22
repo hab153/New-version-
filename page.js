@@ -327,9 +327,8 @@ function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
     
-    // ✅ FORCE REFRESH LIMITS AFTER SEARCH
-    _cachedPlan = null; 
-    checkPlan();
+    // ✅ FORCE REFRESH LIMITS AFTER SEARCH (Bypass Cache)
+    checkPlan(true);
 }
 
 if (findProspectsBtn) {
@@ -349,7 +348,7 @@ var _cachedPlan = null;
 var _cachedPlanTime = 0;
 var CACHE_TTL = 60000;
 
-function checkPlan() {
+function checkPlan(forceRefresh = false) {
     if (!token) return;
     
     // 1. Show Skeleton Immediately
@@ -359,7 +358,6 @@ function checkPlan() {
     }
     if (planCardStats) {
         planCardStats.classList.add('skel-active');
-        // Inject skeleton bars if they don't exist
         if (!planCardStats.querySelector('.skel-bar')) {
             planCardStats.innerHTML = `
                 <div class="stat-row skel skel-bar"></div>
@@ -370,7 +368,9 @@ function checkPlan() {
     }
 
     const t = Date.now();
-    if (_cachedPlan && (t - _cachedPlanTime) < CACHE_TTL) {
+    
+    // ✅ If forceRefresh is true, ignore cache and fetch from server
+    if (!forceRefresh && _cachedPlan && (t - _cachedPlanTime) < CACHE_TTL) {
         updatePlanUI(_cachedPlan.tier, _cachedPlan.limits);
         return Promise.resolve();
     }
