@@ -14,6 +14,8 @@ const plusBtn = document.getElementById('plusBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
+const planCardTitle = document.querySelector('.plan-card .card-title');
+const planCardStats = document.querySelector('.plan-card .card-stats');
 
 // ── 1. Plus Button: Refresh Page ──
 if (plusBtn) {
@@ -43,7 +45,7 @@ function handleOAuthRedirect() {
     
     if (nylasSuccess === 'success') {
         showToast('✅ Email account connected successfully!', 'success', 6000);
-        setConnectedState(); // Use the same function as dashboard.html
+        updateEmailUI(true, 'Connected');
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (nylasSuccess === 'error') {
         const errorMsg = params.get('error') || 'Unknown error';
@@ -52,31 +54,19 @@ function handleOAuthRedirect() {
     }
 }
 
-// ── Set button to connected state (Matches dashboard.html) ──
-function setConnectedState() {
-    if (!connectEmailBtn) return;
-    
-    connectEmailBtn.innerText = '✅ Connected';
-    connectEmailBtn.classList.add('connected');
-    connectEmailBtn.disabled = false;
-    
-    // Update Banner UI
-    if (emailBanner) {
+function updateEmailUI(isConnected, emailOrStatus) {
+    if (!emailBanner || !connectEmailBtn) return;
+
+    if (isConnected) {
         emailBanner.classList.remove('disconnected');
         emailBanner.classList.add('connected');
         
         const title = emailBanner.querySelector('.banner-title');
         const desc = emailBanner.querySelector('.banner-desc');
         if (title) title.textContent = 'Email Connected';
-        if (desc) desc.textContent = 'Your email is ready for outreach';
-    }
-}
+        if (desc) desc.textContent = typeof emailOrStatus === 'string' ? emailOrStatus : 'Connected successfully';
 
-function updateEmailUI(isConnected, emailOrStatus) {
-    if (!emailBanner || !connectEmailBtn) return;
-
-    if (isConnected) {
-        setConnectedState();
+        connectEmailBtn.innerHTML = '<span>Manage</span>';
         connectEmailBtn.onclick = () => showToast('Email settings coming soon', 'info');
     } else {
         emailBanner.classList.add('disconnected');
@@ -91,8 +81,6 @@ function updateEmailUI(isConnected, emailOrStatus) {
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             <span>Connect email</span>
         `;
-        connectEmailBtn.classList.remove('connected');
-        connectEmailBtn.disabled = false;
         connectEmailBtn.onclick = connectEmail;
     }
 }
@@ -105,7 +93,6 @@ async function checkEmailStatus() {
         });
         if (!res.ok) throw new Error('Status check failed');
         const data = await res.json();
-        
         if (data.connected && !data.isExpired) {
             updateEmailUI(true, data.email || 'Connected');
         } else {
@@ -158,13 +145,11 @@ if (customerDescription && charCounter) {
     });
 }
 
-// Fix for Suggestion Chips
 suggestionChips.forEach(chip => {
     chip.addEventListener('click', function() {
         const text = this.getAttribute('data-text');
         if (customerDescription && text) {
             customerDescription.value = text;
-            // Trigger input event to update counter and button state
             customerDescription.dispatchEvent(new Event('input'));
             customerDescription.focus();
         }
@@ -176,24 +161,15 @@ suggestionChips.forEach(chip => {
 function updateFindProspectsButton(hasText) {
     if (!findProspectsBtn) return;
     if (hasText) {
-        // Active State: White background, clickable
         findProspectsBtn.style.opacity = '1';
         findProspectsBtn.style.cursor = 'pointer';
         findProspectsBtn.style.pointerEvents = 'auto';
-        findProspectsBtn.style.backgroundColor = 'var(--btn-primary)';
-        findProspectsBtn.style.color = 'var(--text-dark)';
     } else {
-        // Inactive State: Dimmed, not clickable
         findProspectsBtn.style.opacity = '0.5';
         findProspectsBtn.style.cursor = 'default';
         findProspectsBtn.style.pointerEvents = 'none';
-        // Optional: Make it look slightly different when disabled
-        findProspectsBtn.style.backgroundColor = '#303137'; 
-        findProspectsBtn.style.color = '#92939D';
     }
 }
-
-// Initialize button state on load
 updateFindProspectsButton(false);
 
 // ── 6. Fixed Mini-Panel & Streaming Logic ──
@@ -350,6 +326,9 @@ function streamLeadResponse(message) {
 function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
+    
+    // ✅ FORCE REFRESH LIMITS AFTER SEARCH
+    checkPlan();
 }
 
 if (findProspectsBtn) {
@@ -361,6 +340,83 @@ if (findProspectsBtn) {
         }
         streamLeadResponse(query);
     });
+}
+
+// ── 7. Plan Loading Logic (NO CACHE) ──
+
+function checkPlan() {
+    if (!token) return;
+    
+    // 1. Show Skeleton Immediately
+    if (planCardTitle) {
+        planCardTitle.classList.add('skel');
+        planCardTitle.textContent = '\u00A0';
+    }
+    if (planCardStats) {
+        planCardStats.classList.add('skel-active');
+        if (!planCardStats.querySelector('.skel-bar')) {
+            planCardStats.innerHTML = `
+                <div class="stat-row skel skel-bar"></div>
+                <div class="stat-row skel skel-bar"></div>
+                <div class="stat-row skel skel-bar"></div>
+            `;
+        }
+    }
+
+    // ✅ Always fetch from server, no cache
+    return fetch(`${BACKEND}/api/users/me`, { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(user) {
+        if (user) {
+            var p = user.subscriptionTier || 'free';
+            var limits = user.remainingLimits || {};
+            updatePlanUI(p, limits);
+        }
+    })
+    .catch(function(err) {
+        console.error('Plan check failed:', err);
+        updatePlanUI('free', { emails: 0, research: 0, chats: 0 }); 
+    });
+}
+
+function updatePlanUI(plan, limits) {
+    if (!planCardTitle || !planCardStats) return;
+    
+    // Remove Skeleton Classes
+    planCardTitle.classList.remove('skel');
+    planCardStats.classList.remove('skel-active');
+    
+    let displayText = 'Free plan';
+    if (plan === 'go') displayText = 'Go plan';
+    if (plan === 'pro') displayText = 'Pro plan';
+    
+    planCardTitle.textContent = displayText;
+
+    // Use real limits from backend
+    const emailLimit = limits?.emails || 0;
+    const researchLimit = limits?.research || 0;
+    const chatLimit = limits?.chats || 0;
+
+    // Restore Real Stats Content with Dynamic Numbers
+    planCardStats.innerHTML = `
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span class="stat-value">${emailLimit}</span>
+            <span class="stat-label">emails left today</span>
+        </div>
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span class="stat-value">${researchLimit}</span>
+            <span class="stat-label">research left today</span>
+        </div>
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span class="stat-value">${chatLimit}</span>
+            <span class="stat-label">chats left today</span>
+        </div>
+    `;
 }
 
 // ── Utility: Toast Notification ──
@@ -407,5 +463,6 @@ function showToast(message, type, duration) {
 document.addEventListener('DOMContentLoaded', function() {
     handleOAuthRedirect();
     checkEmailStatus();
+    checkPlan();
     console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
 });
