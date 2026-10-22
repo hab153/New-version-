@@ -14,8 +14,6 @@ const plusBtn = document.getElementById('plusBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
-const planCardTitle = document.querySelector('.plan-card .card-title');
-const planCardStats = document.querySelector('.plan-card .card-stats');
 
 // ── 1. Plus Button: Refresh Page ──
 if (plusBtn) {
@@ -326,9 +324,6 @@ function streamLeadResponse(message) {
 function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
-    
-    // ✅ FORCE REFRESH LIMITS AFTER SEARCH
-    checkPlan();
 }
 
 if (findProspectsBtn) {
@@ -340,83 +335,6 @@ if (findProspectsBtn) {
         }
         streamLeadResponse(query);
     });
-}
-
-// ── 7. Plan Loading Logic (NO CACHE) ──
-
-function checkPlan() {
-    if (!token) return;
-    
-    // 1. Show Skeleton Immediately
-    if (planCardTitle) {
-        planCardTitle.classList.add('skel');
-        planCardTitle.textContent = '\u00A0';
-    }
-    if (planCardStats) {
-        planCardStats.classList.add('skel-active');
-        if (!planCardStats.querySelector('.skel-bar')) {
-            planCardStats.innerHTML = `
-                <div class="stat-row skel skel-bar"></div>
-                <div class="stat-row skel skel-bar"></div>
-                <div class="stat-row skel skel-bar"></div>
-            `;
-        }
-    }
-
-    // ✅ Always fetch from server, no cache
-    return fetch(`${BACKEND}/api/users/me`, { 
-        headers: { 'Authorization': 'Bearer ' + token } 
-    })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) {
-        if (user) {
-            var p = user.subscriptionTier || 'free';
-            var limits = user.remainingLimits || {};
-            updatePlanUI(p, limits);
-        }
-    })
-    .catch(function(err) {
-        console.error('Plan check failed:', err);
-        updatePlanUI('free', { emails: 0, research: 0, chats: 0 }); 
-    });
-}
-
-function updatePlanUI(plan, limits) {
-    if (!planCardTitle || !planCardStats) return;
-    
-    // Remove Skeleton Classes
-    planCardTitle.classList.remove('skel');
-    planCardStats.classList.remove('skel-active');
-    
-    let displayText = 'Free plan';
-    if (plan === 'go') displayText = 'Go plan';
-    if (plan === 'pro') displayText = 'Pro plan';
-    
-    planCardTitle.textContent = displayText;
-
-    // Use real limits from backend
-    const emailLimit = limits?.emails || 0;
-    const researchLimit = limits?.research || 0;
-    const chatLimit = limits?.chats || 0;
-
-    // Restore Real Stats Content with Dynamic Numbers
-    planCardStats.innerHTML = `
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            <span class="stat-value">${emailLimit}</span>
-            <span class="stat-label">emails left today</span>
-        </div>
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span class="stat-value">${researchLimit}</span>
-            <span class="stat-label">research left today</span>
-        </div>
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span class="stat-value">${chatLimit}</span>
-            <span class="stat-label">chats left today</span>
-        </div>
-    `;
 }
 
 // ── Utility: Toast Notification ──
@@ -463,6 +381,5 @@ function showToast(message, type, duration) {
 document.addEventListener('DOMContentLoaded', function() {
     handleOAuthRedirect();
     checkEmailStatus();
-    checkPlan();
     console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
 });
