@@ -14,7 +14,8 @@ const plusBtn = document.getElementById('plusBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
-const planCardTitle = document.querySelector('.plan-card .card-title'); // Targeting the Free Plan card title
+const planCardTitle = document.querySelector('.plan-card .card-title');
+const planCardStats = document.querySelector('.plan-card .card-stats');
 
 // ── 1. Plus Button: Refresh Page ──
 if (plusBtn) {
@@ -36,7 +37,7 @@ if (deleteBtn) {
     });
 }
 
-// ── 3. Connect Email Logic (Matches dashboard.html) ──
+// ── 3. Connect Email Logic ──
 
 function handleOAuthRedirect() {
     const params = new URLSearchParams(window.location.search);
@@ -140,8 +141,6 @@ if (customerDescription && charCounter) {
         const currentLength = this.value.length;
         charCounter.textContent = `${currentLength}/500`;
         charCounter.style.color = currentLength >= 450 ? '#ff5555' : '#92939D';
-        
-        // Update Find Prospects Button State
         updateFindProspectsButton(currentLength > 0);
     });
 }
@@ -161,7 +160,6 @@ suggestionChips.forEach(chip => {
 
 function updateFindProspectsButton(hasText) {
     if (!findProspectsBtn) return;
-    
     if (hasText) {
         findProspectsBtn.style.opacity = '1';
         findProspectsBtn.style.cursor = 'pointer';
@@ -172,8 +170,6 @@ function updateFindProspectsButton(hasText) {
         findProspectsBtn.style.pointerEvents = 'none';
     }
 }
-
-// Initialize button state
 updateFindProspectsButton(false);
 
 // ── 6. Fixed Mini-Panel & Streaming Logic ──
@@ -262,7 +258,6 @@ function streamLeadResponse(message) {
     _stageData = {};
     createMiniPanel();
 
-    // Update Button to "Searching..."
     const originalBtnContent = findProspectsBtn.innerHTML;
     findProspectsBtn.innerHTML = '<span>Searching...</span>';
     findProspectsBtn.disabled = true;
@@ -288,7 +283,6 @@ function streamLeadResponse(message) {
             const status = payload.data?.status;
 
             if (status) updateStageInPanel(stageId, status);
-            
             if (payload.data?.data) _stageData[stageId] = payload.data.data;
 
             if (stageId === 'done' || stageId === 'error') {
@@ -296,7 +290,6 @@ function streamLeadResponse(message) {
                 es.close();
                 _activeEventSource = null;
                 
-                // Restore Button
                 findProspectsBtn.innerHTML = originalBtnContent;
                 findProspectsBtn.disabled = false;
                 
@@ -333,10 +326,8 @@ function streamLeadResponse(message) {
 function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
-    console.log('Final Data:', data);
 }
 
-// ── Find Prospects Button Action ──
 if (findProspectsBtn) {
     findProspectsBtn.addEventListener('click', function() {
         const query = customerDescription ? customerDescription.value.trim() : '';
@@ -357,14 +348,23 @@ var CACHE_TTL = 60000;
 function checkPlan() {
     if (!token) return;
     
-    const t = Date.now();
-    // Use skeleton initially
+    // 1. Show Skeleton Immediately
     if (planCardTitle) {
         planCardTitle.classList.add('skel');
-        planCardTitle.textContent = '\u00A0'; // Non-breaking space for skeleton width
+        planCardTitle.textContent = '\u00A0';
+    }
+    if (planCardStats) {
+        planCardStats.classList.add('skel-active');
+        // Inject skeleton bars if they don't exist
+        if (!planCardStats.querySelector('.skel-bar')) {
+            planCardStats.innerHTML = `
+                <div class="stat-row skel skel-bar"></div>
+                <div class="stat-row skel skel-bar"></div>
+            `;
+        }
     }
 
-    // Check cache first
+    const t = Date.now();
     if (_cachedPlan && (t - _cachedPlanTime) < CACHE_TTL) {
         updatePlanUI(_cachedPlan);
         return Promise.resolve();
@@ -384,23 +384,36 @@ function checkPlan() {
     })
     .catch(function(err) {
         console.error('Plan check failed:', err);
-        if (planCardTitle) {
-            planCardTitle.classList.remove('skel');
-            planCardTitle.textContent = 'Free plan'; // Fallback
-        }
+        updatePlanUI('free'); 
     });
 }
 
 function updatePlanUI(plan) {
-    if (!planCardTitle) return;
+    if (!planCardTitle || !planCardStats) return;
     
+    // Remove Skeleton Classes
     planCardTitle.classList.remove('skel');
+    planCardStats.classList.remove('skel-active');
     
     let displayText = 'Free plan';
     if (plan === 'go') displayText = 'Go plan';
     if (plan === 'pro') displayText = 'Pro plan';
     
     planCardTitle.textContent = displayText;
+
+    // Restore Real Stats Content
+    planCardStats.innerHTML = `
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span class="stat-value">5</span>
+            <span class="stat-label">emails left today</span>
+        </div>
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span class="stat-value">10</span>
+            <span class="stat-label">chats left today</span>
+        </div>
+    `;
 }
 
 // ── Utility: Toast Notification ──
@@ -447,6 +460,6 @@ function showToast(message, type, duration) {
 document.addEventListener('DOMContentLoaded', function() {
     handleOAuthRedirect();
     checkEmailStatus();
-    checkPlan(); // Start plan loading with skeleton
+    checkPlan();
     console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
 });
