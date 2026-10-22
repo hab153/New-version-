@@ -327,8 +327,8 @@ function renderFinalResults(data) {
     const count = data?.companies?.length || 0;
     showToast(`Search complete! Found ${count} prospects.`, 'success');
     
-    // ✅ FORCE REFRESH LIMITS AFTER SEARCH (Bypass Cache)
-    checkPlan(true);
+    // ✅ FORCE REFRESH LIMITS AFTER SEARCH
+    checkPlan();
 }
 
 if (findProspectsBtn) {
@@ -342,13 +342,9 @@ if (findProspectsBtn) {
     });
 }
 
-// ── 7. Plan Skeleton Loading Logic ──
+// ── 7. Plan Loading Logic (NO CACHE) ──
 
-var _cachedPlan = null;
-var _cachedPlanTime = 0;
-var CACHE_TTL = 60000;
-
-function checkPlan(forceRefresh = false) {
+function checkPlan() {
     if (!token) return;
     
     // 1. Show Skeleton Immediately
@@ -367,14 +363,7 @@ function checkPlan(forceRefresh = false) {
         }
     }
 
-    const t = Date.now();
-    
-    // ✅ If forceRefresh is true, ignore cache and fetch from server
-    if (!forceRefresh && _cachedPlan && (t - _cachedPlanTime) < CACHE_TTL) {
-        updatePlanUI(_cachedPlan.tier, _cachedPlan.limits);
-        return Promise.resolve();
-    }
-
+    // ✅ Always fetch from server, no cache
     return fetch(`${BACKEND}/api/users/me`, { 
         headers: { 'Authorization': 'Bearer ' + token } 
     })
@@ -383,10 +372,6 @@ function checkPlan(forceRefresh = false) {
         if (user) {
             var p = user.subscriptionTier || 'free';
             var limits = user.remainingLimits || {};
-            
-            _cachedPlan = { tier: p, limits: limits }; 
-            _cachedPlanTime = Date.now();
-            
             updatePlanUI(p, limits);
         }
     })
