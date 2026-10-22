@@ -262,6 +262,7 @@ body {
     gap: var(--space-md);
     position: relative;
     transition: border-color 0.2s;
+    cursor: pointer;
 }
 
 .lead-card:hover {
@@ -281,6 +282,7 @@ body {
     width: 24px;
     height: 24px;
     cursor: pointer;
+    z-index: 10;
 }
 
 .lead-checkbox {
@@ -289,7 +291,7 @@ body {
     width: 100%;
     height: 100%;
     cursor: pointer;
-    z-index: 2;
+    z-index: 20;
 }
 
 .custom-checkbox {
@@ -612,10 +614,57 @@ body {
     border: 1.5px solid var(--bg-main);
 }
 
+/* ── DETAILS MODAL ── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.close-modal {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-modal:hover {
+    color: var(--text-primary);
+}
+
 /* ── RESPONSIVE ADJUSTMENTS ── */
 @media (max-width: 380px) {
     .brand-name { font-size: 1rem; }
     .pill-btn span:last-child { display: none; } /* Hide "Best match" text on very small screens if needed */
     .bulk-main { flex-direction: column; align-items: stretch; }
     .bulk-buttons { justify-content: space-between; }
-  }
+        }
