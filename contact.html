@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact – Skyline AI</title>
+    <meta name="description" content="Contact Skyline AI — general support, privacy requests, billing and refunds, security reports, and abuse reports.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --void: #0a0a0a; --base: #121212; --surface: #1a1a1a; --raised: #242424; --hover: #2d2d2d;
+            --br-dim: rgba(255,255,255,0.06); --br-md: rgba(255,255,255,0.12); --br-hi: rgba(255,255,255,0.18);
+            --gold: #ffffff; --gold-bright: #f0f0f0; --gold-pale: #e0e0e0;
+            --sage: #66dd99; --rose: #ff5555; --sky: #66ddff;
+            --t1: #f5f5f5; --t2: #b0b0b0; --t3: #707070; --t4: #505050;
+
+            --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'Monaco', 'Menlo', monospace;
+
+            --text-xs: clamp(0.7rem, 0.8vw, 0.8rem);
+            --text-sm: clamp(0.8rem, 1vw, 0.9rem);
+            --text-base: clamp(0.9rem, 1.2vw, 1rem);
+            --text-lg: clamp(1rem, 1.5vw, 1.15rem);
+            --text-xl: clamp(1.15rem, 2vw, 1.4rem);
+            --text-2xl: clamp(1.5rem, 2.5vw, 1.9rem);
+            --text-3xl: clamp(2rem, 4vw, 3rem);
+
+            --space-xs: clamp(0.25rem, 0.4vw, 0.4rem);
+            --space-sm: clamp(0.4rem, 0.6vw, 0.6rem);
+            --space-md: clamp(0.6rem, 1vw, 0.9rem);
+            --space-lg: clamp(0.9rem, 1.5vw, 1.2rem);
+            --space-xl: clamp(1.2rem, 2vw, 1.8rem);
+            --space-2xl: clamp(1.8rem, 3vw, 3rem);
+
+            --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--t1);
+            font-family: var(--ui);
+            font-size: var(--text-base);
+            line-height: 1.7;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                        radial-gradient(ellipse 40% 60% at 90% 100%, rgba(94,154,184,0.03) 0%, transparent 55%);
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        .wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 var(--space-lg); }
+
+        /* ── Nav ── */
+        .nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-lg) 0;
+            border-bottom: 1px solid var(--br-dim);
+            position: sticky; top: 0;
+            background: rgba(10,10,10,0.9);
+            backdrop-filter: blur(14px);
+            z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: var(--space-sm); text-decoration: none; color: var(--t1); }
+        .brand-mark {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-md);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-mark svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 1.8; }
+        .brand-name { font-size: clamp(1rem, 2vw, 1.15rem); font-weight: 700; letter-spacing: -0.02em; }
+        .brand-name span { font-weight: 400; opacity: 0.7; }
+
+        .nav-back {
+            font-size: var(--text-sm);
+            color: var(--t2);
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: color 0.2s;
+        }
+        .nav-back:hover { color: #fff; }
+
+        /* ── Header ── */
+        .doc-header { padding: var(--space-2xl) 0 var(--space-xl); }
+        .doc-eyebrow {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em;
+            text-transform: uppercase; color: var(--t3); margin-bottom: 12px;
+        }
+        .doc-header h1 {
+            font-family: var(--display);
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+        }
+        .doc-meta {
+            font-family: var(--mono); font-size: var(--text-xs); color: var(--t3);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--br-dim);
+        }
+
+        /* ── Content ── */
+        .doc-body { padding: var(--space-lg) 0 var(--space-2xl); }
+        .doc-body p { margin-bottom: var(--space-md); color: var(--t2); }
+        .doc-body strong { color: var(--t1); font-weight: 600; }
+        .doc-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.2s; }
+        .doc-body a:hover { opacity: 0.7; }
+
+        .doc-body h2 {
+            font-family: var(--display);
+            font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+            font-weight: 700;
+            color: var(--t1);
+            margin: var(--space-2xl) 0 var(--space-md);
+            letter-spacing: -0.01em;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--br-dim);
+        }
+        .doc-body h3 {
+            font-family: var(--ui);
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            font-weight: 600;
+            color: var(--t1);
+            margin: var(--space-xl) 0 var(--space-sm);
+            letter-spacing: -0.01em;
+        }
+
+        .doc-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: var(--space-md);
+        }
+        .doc-body ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            color: var(--t2);
+        }
+        .doc-body ul li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: var(--t3);
+        }
+
+        /* Email callout */
+        .email-box {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fff;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-base);
+            color: var(--t2);
+        }
+        .email-box strong { color: var(--t1); }
+        .email-box a {
+            font-family: var(--mono);
+            font-size: var(--text-sm);
+            color: #fff;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 6px;
+            padding: 6px 12px;
+            background: var(--raised);
+            border: 1px solid var(--br-md);
+            border-radius: var(--r-sm);
+            transition: all 0.2s;
+        }
+        .email-box a:hover {
+            background: var(--hover);
+            border-color: var(--br-hi);
+            opacity: 1;
+        }
+
+        /* Subject code */
+        .code-block {
+            background: var(--raised);
+            border: 1px solid var(--br-dim);
+            border-radius: var(--r-sm);
+            padding: var(--space-sm) var(--space-md);
+            margin: var(--space-sm) 0 var(--space-md);
+            font-family: var(--mono);
+            font-size: var(--text-sm);
+            color: #d4d4d4;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .contact-box {
+            background: var(--surface);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fff;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-sm);
+            color: var(--t2);
+        }
+        .contact-box strong { color: var(--t1); }
+
+        /* Notice */
+        .notice-box {
+            background: var(--raised);
+            border: 1px solid var(--br-md);
+            border-left: 3px solid #fbbf24;
+            border-radius: var(--r-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            font-size: var(--text-sm);
+            color: var(--t2);
+            line-height: 1.65;
+        }
+        .notice-box strong { color: var(--t1); }
+
+        .top-link {
+            display: inline-block;
+            margin-top: var(--space-xl);
+            font-size: var(--text-sm);
+            color: var(--t3);
+            text-decoration: none;
+            font-family: var(--mono);
+            letter-spacing: 0.04em;
+        }
+        .top-link:hover { color: #fff; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--br-dim);
+            padding: var(--space-xl) 0;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+        .footer-links a {
+            color: var(--t2); text-decoration: none;
+            font-size: var(--text-xs);
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        .footer-links a.active { color: #fff; }
+        .footer-copy { color: var(--t4); font-size: var(--text-xs); font-family: var(--mono); }
+
+        @media (max-width: 480px) {
+            .wrap { padding: 0 var(--space-md); }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav class="nav">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </span>
+            <span class="brand-name">Skyline<span>AI</span></span>
+        </a>
+        <a href="index.html" class="nav-back">← Back to home</a>
+    </nav>
+
+    <header class="doc-header">
+        <div class="doc-eyebrow">Support · Contact</div>
+        <h1>Contact Skyline AI</h1>
+        <div class="doc-meta">
+            <span>Operator: Habeebullah · Country: Nigeria</span>
+        </div>
+    </header>
+
+    <main class="doc-body">
+
+        <p>
+            <strong>Skyline AI</strong> is an online software service operated by <strong>Habeebullah</strong> in <strong>Nigeria</strong>.
+        </p>
+        <p>
+            We help businesses and agencies research prospects, prepare outreach, manage conversations, and organize follow-ups.
+        </p>
+
+        <h2>Contact email</h2>
+        <p>
+            For general questions, account help, privacy requests, billing questions, refund requests, or security reports, email:
+        </p>
+        <div class="email-box">
+            <strong>skylineaa1company@gmail.com</strong>
+            <br>
+            <a href="mailto:skylineaa1company@gmail.com">Send email →</a>
+        </div>
+        <p>
+            Please write a clear subject line so we can direct your request correctly.
+        </p>
+
+        <h2>Choose a subject</h2>
+
+        <h3>General support</h3>
+        <p>Use the subject:</p>
+        <div class="code-block">Support – [short description]</div>
+        <p>
+            Include the email address connected to your Skyline account and a clear description of the problem. Do not include your password, API keys, card number, CVV, or other secrets.
+        </p>
+
+        <h3>Privacy and data requests</h3>
+        <p>Use the subject:</p>
+        <div class="code-block">Privacy Request – [access, correction, export, or deletion]</div>
+        <p>
+            You may contact us to request account deletion, access to applicable personal information, correction of information, or a data export. We may ask you to verify your identity before completing a request.
+        </p>
+        <p>
+            See our <a href="privacy.html">Privacy Policy</a> for more information.
+        </p>
+
+        <h3>Billing, cancellation, and refunds</h3>
+        <p>Use the subject:</p>
+        <div class="code-block">Billing or Refund – [short description]</div>
+        <p>Include:</p>
+        <ul>
+            <li>the email address connected to your Skyline account;</li>
+            <li>the date and amount of the charge;</li>
+            <li>the plan involved; and</li>
+            <li>the payment or transaction reference, if available.</li>
+        </ul>
+        <p>
+            Never send a full card number, CVV, password, or payment secret by email.
+        </p>
+        <p>
+            See our <a href="refunds.html">Refund and Cancellation Policy</a> for more information.
+        </p>
+
+        <h3>Security report</h3>
+        <p>Use the subject:</p>
+        <div class="code-block">Security Report – [short description]</div>
+        <p>
+            Tell us what happened, which Skyline page or feature was involved, how the issue can be reproduced, and when you discovered it. Do not publicly disclose a serious vulnerability before giving us a reasonable opportunity to investigate.
+        </p>
+        <p>
+            If you believe your account is compromised, change your password, disconnect affected email accounts, stop automation if possible, and contact us immediately.
+        </p>
+
+        <h3>Abuse, spam, or unwanted outreach</h3>
+        <p>Use the subject:</p>
+        <div class="code-block">Abuse Report – [short description]</div>
+        <p>
+            If Skyline was used to send unwanted, deceptive, abusive, or unlawful outreach, provide the relevant sender information, message details, and dates where available. Do not send sensitive information that is not necessary for us to investigate.
+        </p>
+        <p>
+            See our <a href="acceptable-use.html">Acceptable Use Policy</a> for the rules that apply to Skyline outreach.
+        </p>
+
+        <h2>Helpful links</h2>
+        <ul>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="refunds.html">Refund and Cancellation Policy</a></li>
+            <li><a href="acceptable-use.html">Acceptable Use and Email Outreach Policy</a></li>
+        </ul>
+
+        <h2>Important notice</h2>
+        <div class="notice-box">
+            Skyline is currently a beta service. Some features may change, be unavailable, or require additional investigation. We do not promise a specific response time unless a separate written agreement says otherwise.
+            <br><br>
+            For urgent account-security or active email-abuse issues, put <strong>URGENT</strong> at the beginning of the subject line.
+        </div>
+
+        <h2>Contact details</h2>
+        <div class="contact-box">
+            <strong>Skyline AI</strong><br>
+            <strong>Operator:</strong> Habeebullah<br>
+            <strong>Country:</strong> Nigeria<br>
+            <strong>Email:</strong> <a href="mailto:skylineaa1company@gmail.com">skylineaa1company@gmail.com</a>
+        </div>
+
+        <a href="#top" class="top-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Back to top</a>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="refunds.html">Refund and Cancellation</a>
+            <a href="acceptable-use.html">Acceptable Use</a>
+            <a href="contact.html" class="active">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 Skyline AI. All rights reserved.</div>
+    </footer>
+
+</div>
+</body>
+  </html>
