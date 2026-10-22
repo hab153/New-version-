@@ -60,7 +60,7 @@ body {
 .dashboard-container {
     flex: 1;
     width: 100%;
-    max-width: 864px; /* Reference width but responsive */
+    max-width: 864px;
     margin: 0 auto;
     padding: var(--space-md) var(--space-md) calc(var(--nav-h) + var(--space-lg)) var(--space-md);
     display: flex;
@@ -257,7 +257,7 @@ body {
     font-size: 1rem;
     resize: none;
     outline: none;
-    padding-left: 28px; /* Space for icon */
+    padding-left: 28px;
     min-height: 100px;
 }
 
@@ -277,12 +277,12 @@ body {
     display: flex;
     gap: var(--space-sm);
     overflow-x: auto;
-    padding-bottom: 4px; /* For scrollbar clearance if any */
-    scrollbar-width: none; /* Firefox */
+    padding-bottom: 4px;
+    scrollbar-width: none;
 }
 
 .suggestion-chips::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
+    display: none;
 }
 
 .chip-btn {
@@ -324,7 +324,7 @@ body {
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.1s, background-color 0.2s;
+    transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
     margin-top: var(--space-sm);
 }
 
@@ -466,7 +466,7 @@ body {
     justify-content: space-around;
     align-items: center;
     z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom); /* Mobile safe area */
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .nav-item {
@@ -535,6 +535,54 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   SKELETON LOADING SYSTEM
+   ══════════════════════════════════════════════════════════════ */
+
+.skel {
+    background: linear-gradient(90deg, #141518 25%, #1f2024 50%, #141518 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+    color: transparent !important;
+    pointer-events: none;
+    user-select: none;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Plan Card Specific Skeletons */
+.plan-card .card-title.skel {
+    height: 18px;
+    width: 80px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.plan-card .card-stats.skel-active .stat-row {
+    display: none;
+}
+
+.stat-row.skel-bar {
+    height: 14px;
+    width: 100%;
+    margin-bottom: 8px;
+    display: block;
+    background: linear-gradient(90deg, #141518 25%, #1f2024 50%, #141518 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skel, .stat-row.skel-bar {
+        animation: none;
+        background: #1f2024;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
    FIXED MINI-PANEL FOR STAGES
    ══════════════════════════════════════════════════════════════ */
 
@@ -587,7 +635,6 @@ body {
     gap: 6px;
 }
 
-/* Custom Scrollbar for Panel */
 .panel-content::-webkit-scrollbar {
     width: 4px;
 }
@@ -651,7 +698,6 @@ body {
     color: var(--accent-red);
 }
 
-/* Spinner Animation */
 .spinner {
     animation: stageSpin 1s linear infinite;
 }
@@ -659,7 +705,6 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* Check Animation */
 .check {
     animation: stagePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -673,11 +718,9 @@ body {
     .dashboard-container {
         padding-top: var(--space-xl);
     }
-    
     .section-heading {
         font-size: 2rem;
     }
-    
     .email-banner {
         padding: var(--space-lg);
     }
@@ -687,17 +730,14 @@ body {
     .brand-name {
         font-size: 1.1rem;
     }
-    
     .connect-btn span {
-        display: none; /* Show only icon on very small screens if needed */
+        display: none;
     }
-    
     .connect-btn {
         padding: 8px;
     }
-    
     .chip-btn {
         font-size: 0.8rem;
         padding: 6px 12px;
     }
-        }
+                          }
