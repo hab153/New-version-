@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Fixed Filtering, Status Labels, and Faster Saving
+// UPDATED: Fixed Filtering, Status Labels, Faster Saving & Batch Send
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -75,23 +75,14 @@ document.addEventListener('DOMContentLoaded', function() {
         leadsList.innerHTML = ''; 
 
         let displayLeads = [];
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         if (currentFilter === 'all') {
             displayLeads = [...allLeadsData];
         } else if (currentFilter === 'saved') {
-            // Show only leads that exist in savedLeadsEmails
             displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
         } else if (currentFilter === 'recent') {
             // Show leads found in last 30 days AND not saved
-            displayLeads = allLeadsData.filter(lead => {
-                // If no date exists, we assume it's recent for now, or check if it's NOT saved
-                // To strictly follow "Recent", we usually need a timestamp. 
-                // For now, we'll show unsaved leads as recent if they don't have an old date.
-                const isSaved = savedLeadsEmails.has(lead.email);
-                return !isSaved; 
-            });
+            displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email));
         }
 
         if (displayLeads.length === 0) {
@@ -99,19 +90,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Update results count
         const countEl = document.getElementById('resultsCount');
         if (countEl) countEl.textContent = `${displayLeads.length} prospects found`;
 
         displayLeads.forEach((lead, index) => {
-            // Find original index in allLeadsData for reference
             const originalIndex = allLeadsData.indexOf(lead);
             
             const card = document.createElement('div');
             card.className = 'lead-card';
             card.setAttribute('data-index', originalIndex);
             
-            // Determine confidence badge
             let badgeClass = 'low';
             let badgeText = 'Needs verification';
             if (lead.emailStatus === 'verified') {
@@ -122,9 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 badgeText = 'Medium confidence';
             }
 
-            // Check if saved
             const isSaved = savedLeadsEmails.has(lead.email);
-            // ✅ FIX 2: Status label is now in card-right, next to More button
             const statusLabel = isSaved 
                 ? `<span class="status-label saved">Saved</span>` 
                 : `<span class="status-label recent">Recent</span>`;
@@ -181,20 +167,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         modalContent.innerHTML = `
             <h2 style="margin-bottom:16px; color:white; font-size:1.2rem;">${lead.companyName}</h2>
-            
             <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #2D2F33;">
                 <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Email Address</div>
                 <div style="color:white; font-size:1rem; word-break:break-all;">${email}</div>
-                <div style="color:${lead.emailStatus === 'verified' ? '#22C55E' : '#FFAA00'}; font-size:0.75rem; margin-top:4px;">
-                    Status: ${lead.emailStatus || 'unknown'}
-                </div>
+                <div style="color:${lead.emailStatus === 'verified' ? '#22C55E' : '#FFAA00'}; font-size:0.75rem; margin-top:4px;">Status: ${lead.emailStatus || 'unknown'}</div>
             </div>
-
             <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #2D2F33;">
                 <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Phone Number</div>
                 <div style="color:white; font-size:1rem;">${phone}</div>
             </div>
-
             <div>
                 <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Company Information</div>
                 <div style="color:white; font-size:0.9rem; line-height:1.6;">${info}</div>
@@ -215,12 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Global Click Handler for Card Details
     if (leadsList) {
         leadsList.addEventListener('click', function(e) {
-            // Ignore if clicking checkbox or view button
             if (e.target.closest('.checkbox-wrapper') || e.target.closest('.view-btn')) return;
-            
             const card = e.target.closest('.lead-card');
             if (card) {
                 const index = parseInt(card.getAttribute('data-index'));
@@ -295,10 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function startPress(e) {
         const card = e.currentTarget;
         selectedLeadIndex = parseInt(card.getAttribute('data-index'));
-        
         longPressTimer = setTimeout(() => {
             showContextMenu(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY);
-        }, 600); // 600ms for long press
+        }, 600);
     }
 
     function cancelPress() {
@@ -311,19 +288,16 @@ document.addEventListener('DOMContentLoaded', function() {
         contextMenu.style.display = 'block';
     }
 
-    // Hide context menu on click elsewhere
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.context-menu')) {
             contextMenu.style.display = 'none';
         }
     });
 
-    // Pin Lead
     if (pinLeadBtn) {
         pinLeadBtn.addEventListener('click', function() {
             if (selectedLeadIndex !== null) {
                 const lead = allLeadsData[selectedLeadIndex];
-                // Move to top of array
                 allLeadsData.splice(selectedLeadIndex, 1);
                 allLeadsData.unshift(lead);
                 renderLeads();
@@ -332,18 +306,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Delete Lead
     if (deleteLeadBtn) {
         deleteLeadBtn.addEventListener('click', async function() {
             if (selectedLeadIndex !== null && token) {
                 const lead = allLeadsData[selectedLeadIndex];
-                
-                // Remove from UI
                 allLeadsData.splice(selectedLeadIndex, 1);
                 renderLeads();
                 contextMenu.style.display = 'none';
 
-                // Remove from Backend if saved
                 try {
                     await fetch(`${BACKEND}/api/leads/${lead.email}`, {
                         method: 'DELETE',
@@ -379,12 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
         item.addEventListener('click', function() {
             const value = this.getAttribute('data-value');
             currentFilter = value;
-            
-            // Update UI
             dropdownItems.forEach(i => i.classList.remove('active'));
             this.classList.add('active');
             currentFilterSpan.textContent = this.textContent;
-            
             renderLeads();
             filterDropdown.classList.remove('show');
         });
@@ -405,16 +372,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 leadsToSave.push(allLeadsData[index]);
             });
 
-            // ✅ FIX 3: Update UI immediately for speed perception
             saveBtnText.textContent = 'Saving...';
             saveLeadsBtn.disabled = true;
 
-            // Add to local set immediately so UI updates
+            // Update UI immediately
             leadsToSave.forEach(l => savedLeadsEmails.add(l.email));
-            renderLeads(); // Re-render to show "Saved" tags immediately
+            renderLeads();
 
             try {
-                // Send to backend in background
                 await fetch(`${BACKEND}/api/leads/save`, {
                     method: 'POST',
                     headers: { 
@@ -423,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({ leads: leadsToSave })
                 });
-                
                 saveBtnText.textContent = 'Saved';
                 setTimeout(() => { saveBtnText.textContent = 'Save leads'; }, 2000);
             } catch (e) {
@@ -435,7 +399,65 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 8. Warning Strip Dismissal ──
+    // ── 8. Draft Outreach (Batch Send) ──
+    if (draftOutreachBtn) {
+        draftOutreachBtn.addEventListener('click', async function() {
+            if (this.disabled || !token) return;
+
+            const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
+            if (selectedCards.length === 0) return;
+
+            const leadsToSend = [];
+            selectedCards.forEach(cb => {
+                const card = cb.closest('.lead-card');
+                const index = parseInt(card.getAttribute('data-index'));
+                const lead = allLeadsData[index];
+                
+                // Format for backend
+                leadsToSend.push({
+                    name: lead.companyName,
+                    email: lead.email,
+                    company: lead.companyName,
+                    messages: [{
+                        subject: 'Partnership Inquiry',
+                        body: `Hi ${lead.companyName},\n\nI came across your company and was impressed by your work. I'd love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`
+                    }]
+                });
+            });
+
+            const originalText = draftOutreachBtn.innerHTML;
+            draftOutreachBtn.innerHTML = '<span>Sending...</span>';
+            draftOutreachBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ leads: leadsToSend })
+                });
+
+                if (res.ok) {
+                    alert('Outreach sent successfully!');
+                    // Uncheck all after sending
+                    document.querySelectorAll('.lead-checkbox:checked').forEach(cb => cb.checked = false);
+                    initSelectionLogic(); // Reset button states
+                } else {
+                    alert('Failed to send outreach.');
+                }
+            } catch (e) {
+                console.error('Send error:', e);
+                alert('Network error while sending.');
+            } finally {
+                draftOutreachBtn.innerHTML = originalText;
+                draftOutreachBtn.disabled = false;
+            }
+        });
+    }
+
+    // ── 9. Warning Strip Dismissal ──
     if (closeWarningBtn && warningStrip) {
         closeWarningBtn.addEventListener('click', function() {
             warningStrip.style.display = 'none';
