@@ -709,7 +709,7 @@ body {
     cursor: pointer;
 }
 
-/* ─ 11. FIVE-ITEM BOTTOM NAVIGATION ── */
+/* ─ 11. FIVE-ITEM BOTTOM NAVIGATION ─ */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -1150,6 +1150,23 @@ body {
     color: var(--text-secondary);
 }
 
+/* ✅ Spinner for Loading State */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 .draft-list-container {
     background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
@@ -1399,106 +1416,6 @@ body {
     border-color: var(--text-secondary);
     transform: translateY(-1px);
 }
-
-/* ══════════════════════════════════════════
-   AI SUGGESTIONS MODAL
-   ══════════════════════════════════════════ */
-
-.ai-suggestions-modal {
-    max-width: 700px;
-    max-height: 80vh;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.ai-modal-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
-.ai-modal-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.ai-suggestions-list {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-right: 4px;
-}
-
-.ai-suggestion-card {
-    background-color: var(--bg-input);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 16px;
-}
-
-.ai-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.ai-card-company {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-}
-
-.ai-card-email {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.ai-card-message {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.ai-modal-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 8px;
-}
-
-.btn-primary, .btn-secondary {
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-}
-
-.btn-primary {
-    background-color: #8B5CF6;
-    color: white;
-}
-
-.btn-primary:hover { background-color: #7C3AED; }
-
-.btn-secondary {
-    background-color: transparent;
-    border: 1px solid var(--border-subtle);
-    color: var(--text-primary);
-}
-
-.btn-secondary:hover { background-color: rgba(255,255,255,0.05); }
 
 /* ══════════════════════════════════════════
    SCHEDULE OUTREACH MODAL
