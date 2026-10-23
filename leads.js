@@ -1,11 +1,11 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Direct AI Suggestion Update (Subject + Body)
+// UPDATED: Bulletproof AI Suggestion via Attached DOM References
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // ── DOM Elements ──
+    // ─ DOM Elements ──
     const leadsList = document.getElementById('leadsList');
     const selectAllCheckbox = document.getElementById('selectAll');
     const selectCountSpan = document.querySelector('.select-count');
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initLongPressLogic();
     }
 
-    // ── 5. Details Modal Logic ──
+    // ─ 5. Details Modal Logic ──
     function openDetailsModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !modalOverlay || !modalContent) return;
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectionState();
     }
 
-    // ─ 10. Long Press Logic ──
+    // ─ 10. Long Press Logic ─
     function initLongPressLogic() {
         const cards = document.querySelectorAll('.lead-card');
         cards.forEach(card => {
@@ -730,6 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ✅ BULLETPROOF: ATTACH DRAFT OBJECT DIRECTLY TO INPUT ELEMENTS AT CREATION
     function openReviewSheet() {
         const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
         if (selectedCards.length === 0) return;
@@ -749,14 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const defaultSubject = 'Partnership Inquiry';
             const defaultBody = 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User';
 
-            reviewDrafts.push({
-                id: draftId,
-                lead: lead,
-                subject: defaultSubject,
-                body: defaultBody,
-                approved: true
-            });
-
+            // Create the row element FIRST so we can grab inputs before appending
             const row = document.createElement('div');
             row.className = 'draft-row';
             row.setAttribute('data-draft-id', draftId);
@@ -795,6 +789,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
+
+            // ✅ GRAB ACTUAL DOM ELEMENTS BEFORE APPENDING
+            const subjectInput = row.querySelector('.subject-input');
+            const messageTextarea = row.querySelector('.message-input');
+
+            // Create draft object
+            const draftObj = {
+                id: draftId,
+                lead: lead,
+                subject: defaultSubject,
+                body: defaultBody,
+                approved: true
+            };
+
+            // ✅ ATTACH DRAFT OBJECT DIRECTLY TO INPUT ELEMENTS
+            // This creates an unbreakable link between UI and state
+            subjectInput._draftRef = draftObj;
+            messageTextarea._draftRef = draftObj;
+
+            // Push to state array
+            reviewDrafts.push(draftObj);
 
             draftListContainer.appendChild(row);
         });
@@ -1229,9 +1244,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ════════════════════════════════════════
+    // ✅ BULLETPROOF: USE ATTACHED DOM REFERENCES FOR AI UPDATE
     // ═════════════════════════════════════════
-    // ✅ FIXED: DIRECT AI SUGGESTION UPDATE (ROBUST)
-    // ══════════════════════════════════════════
 
     if (aiSuggestBtn) {
         aiSuggestBtn.addEventListener('click', async function() {
@@ -1241,7 +1256,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Show loading state directly on the button
             const originalBtnHTML = aiSuggestBtn.innerHTML;
             aiSuggestBtn.disabled = true;
             aiSuggestBtn.innerHTML = '<span class="spinner"></span> Generating...';
@@ -1270,28 +1284,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || 'Failed to generate suggestions');
                 }
 
-                // ✅ DIRECTLY UPDATE THE REVIEW SHEET FIELDS
+                // ✅ UPDATE USING ATTACHED _draftRef REFERENCES - ZERO QUERY SELECTORS
                 let updatedCount = 0;
                 
-                // We loop through the data.suggestions and find the matching draft in our state
                 data.suggestions.forEach(suggestion => {
                     const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
                     
-                    // Only proceed if we found the draft AND the API returned valid subject/body
                     if (draft && suggestion.subject && suggestion.body) {
-                        
-                        // 1. Update internal state immediately
+                        // Update internal state
                         draft.subject = suggestion.subject;
                         draft.body = suggestion.body;
                         
-                        // 2. SAFELY find and update the ACTUAL DOM elements inside the modal
-                        // We use the unique data-draft-id to guarantee we hit the right input
-                        const subjectInput = document.querySelector(`input.subject-input[data-draft-id="${draft.id}"]`);
-                        const messageTextarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
+                        // ✅ FIND INPUTS BY CHECKING THEIR ATTACHED _draftRef PROPERTY
+                        // No string matching, no ID comparison, no timing issues
+                        const subjectInput = Array.from(document.querySelectorAll('.subject-input'))
+                            .find(input => input._draftRef === draft);
+                            
+                        const messageTextarea = Array.from(document.querySelectorAll('.message-input'))
+                            .find(textarea => textarea._draftRef === draft);
                         
                         if (subjectInput) {
                             subjectInput.value = suggestion.subject;
-                            // Dispatching an 'input' event ensures any other listeners (like validation) know it changed
                             subjectInput.dispatchEvent(new Event('input', { bubbles: true }));
                         }
                         
@@ -1304,19 +1317,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Update status to show remaining calls
                 if (aiSuggestStatus) {
                     aiSuggestStatus.textContent = `${data.remainingCalls} suggestions remaining today`;
                 }
 
                 if (updatedCount > 0) {
-                    // Optional: Brief visual feedback that update happened
-                    aiSuggestBtn.style.backgroundColor = '#22C55E'; // Green flash
+                    aiSuggestBtn.style.backgroundColor = '#22C55E'; 
                     setTimeout(() => {
-                        aiSuggestBtn.style.backgroundColor = ''; // Reset
+                        aiSuggestBtn.style.backgroundColor = ''; 
                     }, 600);
                 } else {
-                    console.warn('AI suggestions received but no matching DOM elements found to update.');
+                    console.warn('AI suggestions received but no matching attached DOM references found.');
                 }
 
             } catch (err) {
@@ -1324,7 +1335,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(err.message || 'Failed to generate AI suggestions.');
                 if (aiSuggestStatus) aiSuggestStatus.textContent = 'Generation failed. Try again.';
             } finally {
-                // Restore button state
                 aiSuggestBtn.disabled = false;
                 aiSuggestBtn.innerHTML = originalBtnHTML;
             }
