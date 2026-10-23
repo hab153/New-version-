@@ -55,25 +55,6 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── 3. MOBILE STATUS BAR ── */
-.status-bar {
-    height: 44px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: white;
-    background-color: var(--bg-main);
-}
-
-.status-icons {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-}
-
 /* ── 4. SKYLINE AI HEADER ── */
 .app-header {
     display: flex;
@@ -224,6 +205,7 @@ body {
 .toolbar-actions {
     display: flex;
     gap: var(--space-sm);
+    align-items: center;
 }
 
 .pill-btn {
@@ -246,6 +228,47 @@ body {
     color: var(--text-primary);
 }
 
+/* ✅ NEW: Dropdown Styles */
+.dropdown-wrapper {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    width: 120px;
+    z-index: 50;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    display: none;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--border-subtle);
+    color: var(--text-primary);
+}
+
+.dropdown-item.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
 /* ── 8. LEAD RESULTS LIST ── */
 .leads-list {
     display: flex;
@@ -263,6 +286,7 @@ body {
     position: relative;
     transition: border-color 0.2s;
     cursor: pointer;
+    user-select: none; /* Prevent text selection during long press */
 }
 
 .lead-card:hover {
@@ -397,6 +421,26 @@ body {
     color: #F87171;
 }
 .confidence-badge.low .dot { background-color: #F87171; }
+
+/* ✅ NEW: Status Label (Saved/Recent) */
+.status-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.status-label.saved {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #60A5FA;
+}
+
+.status-label.recent {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #FCD34D;
+}
 
 .card-right {
     display: flex;
@@ -623,7 +667,7 @@ body {
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
-    z-index: 9999; /* Very high z-index to ensure it's on top */
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -668,10 +712,41 @@ body {
     color: var(--text-primary);
 }
 
+/* ✅ NEW: Context Menu */
+.context-menu {
+    position: fixed;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    width: 140px;
+    z-index: 9998;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.context-item {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.context-item:hover {
+    background-color: var(--border-subtle);
+}
+
+.context-item.delete {
+    color: var(--accent-red);
+}
+
 /* ── RESPONSIVE ADJUSTMENTS ── */
 @media (max-width: 380px) {
     .brand-name { font-size: 1rem; }
-    .pill-btn span:last-child { display: none; } /* Hide "Best match" text on very small screens if needed */
+    .pill-btn span:last-child { display: none; }
     .bulk-main { flex-direction: column; align-items: stretch; }
     .bulk-buttons { justify-content: space-between; }
-        }
+    }
