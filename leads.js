@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: AI Suggestions (Subject + Body), Fixed Send All Drafts Flow
+// UPDATED: Direct AI Suggestion Update (Subject + Body)
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -49,11 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ✅ NEW: AI Suggestion Elements
     const aiSuggestBtn = document.getElementById('aiSuggestBtn');
     const aiSuggestStatus = document.getElementById('aiSuggestStatus');
-    const aiSuggestionsOverlay = document.getElementById('aiSuggestionsOverlay');
-    const closeAiSuggestions = document.getElementById('closeAiSuggestions');
-    const cancelAiSuggestions = document.getElementById('cancelAiSuggestions');
-    const applyAiSuggestions = document.getElementById('applyAiSuggestions');
-    const aiSuggestionsList = document.getElementById('aiSuggestionsList');
 
     // Send All Drafts + Schedule Elements
     const sendAllDraftsWrapper = document.getElementById('sendAllDraftsWrapper');
@@ -99,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCardActionIndex = null;
     let isLoading = true;
     let scheduleContext = { type: '', leads: [] }; // 'review', 'single', 'all'
-    let pendingAiSuggestions = []; // Holds fetched suggestions before applying
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -619,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 11. Filter Dropdown Logic ──
+    // ─ 11. Filter Dropdown Logic ──
     if (filterDropdownBtn) {
         filterDropdownBtn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1000,7 +994,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 14. Send All Drafts Button (FIXED: Opens Review Sheet) ──
+    // ── 14. Send All Drafts Button (FIXED: Opens Review Sheet) ─
     if (sendAllDraftsBtn) {
         sendAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
@@ -1236,10 +1230,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═════════════════════════════════════════
-    // ✅ NEW: AI SUGGESTION LOGIC (SUBJECT + BODY)
+    // ✅ FIXED: DIRECT AI SUGGESTION UPDATE
     // ══════════════════════════════════════════
 
-    // AI Suggestion Button Handler
     if (aiSuggestBtn) {
         aiSuggestBtn.addEventListener('click', async function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
@@ -1248,8 +1241,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // Show loading state directly on the button
+            const originalBtnHTML = aiSuggestBtn.innerHTML;
             aiSuggestBtn.disabled = true;
-            aiSuggestStatus.textContent = 'Generating suggestions...';
+            aiSuggestBtn.innerHTML = '<span class="spinner"></span> Generating...';
+            
+            if (aiSuggestStatus) aiSuggestStatus.textContent = 'Working on personalized messages...';
 
             try {
                 const res = await fetch(BACKEND + '/api/ai/suggest-outreach', {
@@ -1273,87 +1270,55 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || 'Failed to generate suggestions');
                 }
 
-                pendingAiSuggestions = data.suggestions;
-                renderAiSuggestionsModal(pendingAiSuggestions);
-                aiSuggestionsOverlay.style.display = 'flex';
-                aiSuggestStatus.textContent = `${data.remainingCalls} suggestions remaining today`;
+                // ✅ DIRECTLY UPDATE THE REVIEW SHEET FIELDS
+                let updatedCount = 0;
+                data.suggestions.forEach(suggestion => {
+                    const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
+                    if (draft && suggestion.subject && suggestion.body) {
+                        // 1. Update internal state
+                        draft.subject = suggestion.subject;
+                        draft.body = suggestion.body;
+                        
+                        // 2. Find and update the actual DOM inputs in the review sheet
+                        const subjectInput = document.querySelector(`input.subject-input[data-draft-id="${draft.id}"]`);
+                        const messageTextarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
+                        
+                        if (subjectInput) {
+                            subjectInput.value = suggestion.subject;
+                            // Trigger input event so validation/state updates if needed
+                            subjectInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        
+                        if (messageTextarea) {
+                            messageTextarea.value = suggestion.body;
+                            messageTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        
+                        updatedCount++;
+                    }
+                });
+
+                // Update status to show remaining calls
+                if (aiSuggestStatus) {
+                    aiSuggestStatus.textContent = `${data.remainingCalls} suggestions remaining today`;
+                }
+
+                if (updatedCount > 0) {
+                    // Optional: Brief visual feedback that update happened
+                    aiSuggestBtn.style.backgroundColor = '#22C55E'; // Green flash
+                    setTimeout(() => {
+                        aiSuggestBtn.style.backgroundColor = ''; // Reset
+                    }, 600);
+                }
 
             } catch (err) {
                 console.error('AI Suggestion Error:', err);
                 alert(err.message || 'Failed to generate AI suggestions.');
-                aiSuggestStatus.textContent = '';
+                if (aiSuggestStatus) aiSuggestStatus.textContent = 'Generation failed. Try again.';
             } finally {
+                // Restore button state
                 aiSuggestBtn.disabled = false;
-            }
-        });
-    }
-
-    // Render AI Suggestions Modal
-    function renderAiSuggestionsModal(suggestions) {
-        if (!aiSuggestionsList) return;
-        aiSuggestionsList.innerHTML = '';
-
-        suggestions.forEach((s, idx) => {
-            const card = document.createElement('div');
-            card.className = 'ai-suggestion-card';
-            // Display both subject and body in the preview card
-            card.innerHTML = `
-                <div class="ai-card-header">
-                    <span class="ai-card-company">${s.companyName}</span>
-                    <span class="ai-card-email">${s.email}</span>
-                </div>
-                <div class="ai-card-subject-preview"><strong>Subject:</strong> ${s.subject}</div>
-                <div class="ai-card-message">${s.body}</div>
-            `;
-            aiSuggestionsList.appendChild(card);
-        });
-    }
-
-    // Close / Cancel AI Suggestions Modal
-    function closeAiModal() {
-        if (aiSuggestionsOverlay) aiSuggestionsOverlay.style.display = 'none';
-        pendingAiSuggestions = [];
-    }
-
-    if (closeAiSuggestions) closeAiSuggestions.addEventListener('click', closeAiModal);
-    if (cancelAiSuggestions) cancelAiSuggestions.addEventListener('click', closeAiModal);
-    if (aiSuggestionsOverlay) {
-        aiSuggestionsOverlay.addEventListener('click', function(e) {
-            if (e.target === aiSuggestionsOverlay) closeAiModal();
-        });
-    }
-
-    // ✅ Apply AI Suggestions to BOTH Subject and Message
-    if (applyAiSuggestions) {
-        applyAiSuggestions.addEventListener('click', function() {
-            if (!pendingAiSuggestions || pendingAiSuggestions.length === 0) return;
-
-            let appliedCount = 0;
-
-            pendingAiSuggestions.forEach(suggestion => {
-                const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
-                if (draft && suggestion.subject && suggestion.body) {
-                    // Update internal state
-                    draft.subject = suggestion.subject;
-                    draft.body = suggestion.body;
-                    
-                    // Update DOM elements in the review sheet
-                    const subjectInput = document.querySelector(`input.subject-input[data-draft-id="${draft.id}"]`);
-                    const messageTextarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
-                    
-                    if (subjectInput) subjectInput.value = suggestion.subject;
-                    if (messageTextarea) messageTextarea.value = suggestion.body;
-                    
-                    appliedCount++;
-                }
-            });
-
-            closeAiModal();
-            
-            if (appliedCount > 0) {
-                alert(`AI suggestions applied to ${appliedCount} draft${appliedCount !== 1 ? 's' : ''}! Review before sending.`);
-            } else {
-                alert('No matching drafts found for the generated suggestions.');
+                aiSuggestBtn.innerHTML = originalBtnHTML;
             }
         });
     }
