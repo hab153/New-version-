@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: AI Suggestions, Fixed Send All Drafts Flow
+// UPDATED: AI Suggestions (Subject + Body), Fixed Send All Drafts Flow
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 7. Draft View Modal ──
+    // ── 7. Draft View Modal ─
     function openDraftViewModal(lead) {
         if (!lead || !draftViewOverlay) return;
 
@@ -496,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 9. Selection Logic ──
+    // ── 9. Selection Logic ─
     function initSelectionLogic() {
         const leadCheckboxes = document.querySelectorAll('.lead-checkbox');
         
@@ -1236,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═════════════════════════════════════════
-    // ✅ NEW: AI SUGGESTION LOGIC
+    // ✅ NEW: AI SUGGESTION LOGIC (SUBJECT + BODY)
     // ══════════════════════════════════════════
 
     // AI Suggestion Button Handler
@@ -1296,12 +1296,14 @@ document.addEventListener('DOMContentLoaded', function() {
         suggestions.forEach((s, idx) => {
             const card = document.createElement('div');
             card.className = 'ai-suggestion-card';
+            // Display both subject and body in the preview card
             card.innerHTML = `
                 <div class="ai-card-header">
                     <span class="ai-card-company">${s.companyName}</span>
                     <span class="ai-card-email">${s.email}</span>
                 </div>
-                <div class="ai-card-message">${s.suggestedMessage}</div>
+                <div class="ai-card-subject-preview"><strong>Subject:</strong> ${s.subject}</div>
+                <div class="ai-card-message">${s.body}</div>
             `;
             aiSuggestionsList.appendChild(card);
         });
@@ -1321,27 +1323,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Apply AI Suggestions to Drafts
+    // ✅ Apply AI Suggestions to BOTH Subject and Message
     if (applyAiSuggestions) {
         applyAiSuggestions.addEventListener('click', function() {
             if (!pendingAiSuggestions || pendingAiSuggestions.length === 0) return;
 
-            // Map suggestions back to reviewDrafts by email
+            let appliedCount = 0;
+
             pendingAiSuggestions.forEach(suggestion => {
                 const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
-                if (draft) {
-                    draft.body = suggestion.suggestedMessage;
+                if (draft && suggestion.subject && suggestion.body) {
+                    // Update internal state
+                    draft.subject = suggestion.subject;
+                    draft.body = suggestion.body;
                     
-                    // Update the textarea in the DOM if it exists
-                    const textarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
-                    if (textarea) {
-                        textarea.value = suggestion.suggestedMessage;
-                    }
+                    // Update DOM elements in the review sheet
+                    const subjectInput = document.querySelector(`input.subject-input[data-draft-id="${draft.id}"]`);
+                    const messageTextarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
+                    
+                    if (subjectInput) subjectInput.value = suggestion.subject;
+                    if (messageTextarea) messageTextarea.value = suggestion.body;
+                    
+                    appliedCount++;
                 }
             });
 
             closeAiModal();
-            alert('AI suggestions applied to your drafts!');
+            
+            if (appliedCount > 0) {
+                alert(`AI suggestions applied to ${appliedCount} draft${appliedCount !== 1 ? 's' : ''}! Review before sending.`);
+            } else {
+                alert('No matching drafts found for the generated suggestions.');
+            }
         });
     }
 
