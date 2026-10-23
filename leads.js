@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Fixed Filtering, Status Labels, Faster Saving & Batch Send
+// UPDATED: Review Modal, Collapsible Editor & Batch Send
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectCountSpan = document.querySelector('.select-count');
     const saveLeadsBtn = document.querySelector('.action-btn.primary');
     const saveBtnText = document.getElementById('saveBtnText');
-    const draftOutreachBtn = document.querySelector('.action-btn.secondary');
+    const sendBtn = document.getElementById('sendBtn'); // ✅ NEW: Send Button
     const closeWarningBtn = document.getElementById('closeWarning');
     const warningStrip = document.getElementById('warningStrip');
     
@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const detailsModal = document.getElementById('detailsModal');
     const closeModalBtn = document.getElementById('closeModal');
     const modalContent = document.getElementById('modalContent');
+
+    // Review Sheet Elements
+    const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
+    const draftListContainer = document.getElementById('draftListContainer');
+    const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
+    const sendApprovedBtn = document.getElementById('sendApprovedBtn');
+    const draftCountsEl = document.getElementById('draftCounts');
 
     // Filter & Context Menu Elements
     const filterDropdownBtn = document.getElementById('filterDropdownBtn');
@@ -30,18 +37,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteLeadBtn = document.getElementById('deleteLeadBtn');
 
     // State
-    let allLeadsData = []; // Holds all leads from localStorage
-    let savedLeadsEmails = new Set(); // Holds emails of saved leads for fast lookup
+    let allLeadsData = []; 
+    let savedLeadsEmails = new Set(); 
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
+    let reviewDrafts = []; // Holds data for the review modal
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
     // ── 1. Load Data ──
     async function initData() {
-        // Load from LocalStorage (Recent Search)
         try {
             const storedData = localStorage.getItem('skyline_leads_data');
             if (storedData) {
@@ -51,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to parse local lead data:', e);
         }
 
-        // Load Saved Leads from Backend
         if (token) {
             try {
                 const res = await fetch(`${BACKEND}/api/leads/saved`, {
@@ -81,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (currentFilter === 'saved') {
             displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
         } else if (currentFilter === 'recent') {
-            // Show leads found in last 30 days AND not saved
             displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email));
         }
 
@@ -235,9 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveLeadsBtn.disabled = !hasSelection;
                 saveLeadsBtn.style.opacity = hasSelection ? '1' : '0.5';
             }
-            if (draftOutreachBtn) {
-                draftOutreachBtn.disabled = !hasSelection;
-                draftOutreachBtn.style.opacity = hasSelection ? '1' : '0.5';
+            if (sendBtn) {
+                sendBtn.disabled = !hasSelection;
+                sendBtn.style.opacity = hasSelection ? '1' : '0.5';
             }
         }
 
@@ -357,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ── 7. Save Leads Backend Integration (Optimized) ──
+    // ── 7. Save Leads Backend Integration ──
     if (saveLeadsBtn) {
         saveLeadsBtn.addEventListener('click', async function() {
             if (this.disabled || !token) return;
@@ -375,7 +380,6 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtnText.textContent = 'Saving...';
             saveLeadsBtn.disabled = true;
 
-            // Update UI immediately
             leadsToSave.forEach(l => savedLeadsEmails.add(l.email));
             renderLeads();
 
@@ -399,35 +403,200 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 8. Draft Outreach (Batch Send) ──
-    if (draftOutreachBtn) {
-        draftOutreachBtn.addEventListener('click', async function() {
-            if (this.disabled || !token) return;
+    // ── 8. Review Outreach Modal Logic ──
+    
+    // Helper to toggle editor visibility
+    function toggleEditor(btn) {
+        const editor = btn.closest('.draft-row').querySelector('.draft-editor');
+        const arrow = btn.querySelector('svg');
+        
+        if (editor.style.display === 'none' || !editor.style.display) {
+            editor.style.display = 'block';
+            // Rotate arrow up
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            editor.style.display = 'none';
+            // Rotate arrow down
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    }
 
+    function openReviewSheet() {
+        const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
+        if (selectedCards.length === 0) return;
+
+        reviewDrafts = [];
+        draftListContainer.innerHTML = '';
+
+        selectedCards.forEach(cb => {
+            const card = cb.closest('.lead-card');
+            const index = parseInt(card.getAttribute('data-index'));
+            const lead = allLeadsData[index];
+
+            if (!lead.email) return; // Skip if no email (should be caught by validation earlier)
+
+            const draftId = Date.now() + Math.random().toString(36).substr(2, 9);
+            
+            // Default message template
+            const defaultSubject = `Partnership Inquiry`;
+            const defaultBody = `Hi ${lead.companyName},\n\nI came across your company and was impressed by your work. I'd love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`;
+
+            reviewDrafts.push({
+                id: draftId,
+                lead: lead,
+                subject: defaultSubject,
+                body: defaultBody,
+                approved: false
+            });
+
+            const row = document.createElement('div');
+            row.className = 'draft-row';
+            row.setAttribute('data-draft-id', draftId);
+
+            row.innerHTML = `
+                <div class="draft-header">
+                    <label class="draft-checkbox-wrapper">
+                        <input type="checkbox" class="draft-checkbox" checked>
+                        <span class="custom-checkbox draft-check">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </label>
+                    <div class="draft-logo">
+                        <span style="font-weight:700; font-size:16px; color:white;">${lead.companyName ? lead.companyName.charAt(0).toUpperCase() : '?'}</span>
+                    </div>
+                    <div class="draft-info">
+                        <div class="draft-company">${lead.companyName || 'Unknown'}</div>
+                        <div class="draft-email">${lead.email}</div>
+                    </div>
+                    <div class="draft-status-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Needs review</span>
+                    </div>
+                    <button class="expand-editor-btn" onclick="window.toggleEditor(this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+                <div class="draft-editor" style="display: none;">
+                    <div class="editor-field">
+                        <label>Subject</label>
+                        <input type="text" class="subject-input" value="${defaultSubject}" data-draft-id="${draftId}">
+                    </div>
+                    <div class="editor-field">
+                        <label>Message</label>
+                        <textarea class="message-input" data-draft-id="${draftId}">${defaultBody}</textarea>
+                    </div>
+                </div>
+            `;
+
+            draftListContainer.appendChild(row);
+        });
+
+        // Update counts
+        if (draftCountsEl) {
+            draftCountsEl.textContent = `${reviewDrafts.length} drafts created · 0 sent`;
+        }
+
+        // Reset send button
+        if (sendApprovedBtn) {
+            sendApprovedBtn.disabled = true;
+            sendApprovedBtn.classList.add('disabled');
+        }
+
+        reviewSheetOverlay.style.display = 'flex';
+    }
+
+    // Event listener for the new Send button in bulk panel
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function() {
+            // Validation: Check for missing emails
             const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
-            if (selectedCards.length === 0) return;
-
-            const leadsToSend = [];
+            const missingEmails = [];
+            
             selectedCards.forEach(cb => {
                 const card = cb.closest('.lead-card');
                 const index = parseInt(card.getAttribute('data-index'));
                 const lead = allLeadsData[index];
-                
-                // Format for backend
-                leadsToSend.push({
-                    name: lead.companyName,
-                    email: lead.email,
-                    company: lead.companyName,
-                    messages: [{
-                        subject: 'Partnership Inquiry',
-                        body: `Hi ${lead.companyName},\n\nI came across your company and was impressed by your work. I'd love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`
-                    }]
-                });
+                if (!lead.email) {
+                    missingEmails.push(lead.companyName || 'Unknown Company');
+                }
             });
 
-            const originalText = draftOutreachBtn.innerHTML;
-            draftOutreachBtn.innerHTML = '<span>Sending...</span>';
-            draftOutreachBtn.disabled = true;
+            if (missingEmails.length > 0) {
+                alert(`Cannot send to the following companies because they are missing email addresses:\n\n- ${missingEmails.join('\n- ')}\n\nPlease unmark them or add their emails.`);
+                return;
+            }
+
+            openReviewSheet();
+        });
+    }
+
+    // Close Review Sheet
+    if (closeReviewSheetBtn) {
+        closeReviewSheetBtn.addEventListener('click', function() {
+            reviewSheetOverlay.style.display = 'none';
+        });
+    }
+
+    // Handle Draft Checkbox Changes
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('draft-checkbox')) {
+            const row = e.target.closest('.draft-row');
+            const draftId = row.getAttribute('data-draft-id');
+            const draft = reviewDrafts.find(d => d.id === draftId);
+            if (draft) {
+                draft.approved = e.target.checked;
+            }
+            
+            // Enable send button if at least one is checked
+            const anyChecked = document.querySelectorAll('.draft-checkbox:checked').length > 0;
+            if (sendApprovedBtn) {
+                sendApprovedBtn.disabled = !anyChecked;
+                if (anyChecked) sendApprovedBtn.classList.remove('disabled');
+                else sendApprovedBtn.classList.add('disabled');
+            }
+        }
+    });
+
+    // Handle Input Changes in Editor
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('subject-input') || e.target.classList.contains('message-input')) {
+            const draftId = e.target.getAttribute('data-draft-id');
+            const draft = reviewDrafts.find(d => d.id === draftId);
+            if (draft) {
+                if (e.target.classList.contains('subject-input')) {
+                    draft.subject = e.target.value;
+                } else {
+                    draft.body = e.target.value;
+                }
+            }
+        }
+    });
+
+    // Make toggleEditor global for inline onclick
+    window.toggleEditor = toggleEditor;
+
+    // Send Approved Emails
+    if (sendApprovedBtn) {
+        sendApprovedBtn.addEventListener('click', async function() {
+            if (this.disabled) return;
+
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) return;
+
+            const originalText = sendApprovedBtn.innerHTML;
+            sendApprovedBtn.innerHTML = '<span>Sending...</span>';
+            sendApprovedBtn.disabled = true;
+
+            // Format for backend
+            const leadsToSend = approvedDrafts.map(d => ({
+                name: d.lead.companyName,
+                email: d.lead.email,
+                company: d.lead.companyName,
+                messages: [{
+                    subject: d.subject,
+                    body: d.body
+                }]
+            }));
 
             try {
                 const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
@@ -440,19 +609,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (res.ok) {
-                    alert('Outreach sent successfully!');
-                    // Uncheck all after sending
+                    alert(`Successfully sent to ${leadsToSend.length} leads!`);
+                    reviewSheetOverlay.style.display = 'none';
+                    // Uncheck main checkboxes
                     document.querySelectorAll('.lead-checkbox:checked').forEach(cb => cb.checked = false);
-                    initSelectionLogic(); // Reset button states
+                    initSelectionLogic();
                 } else {
-                    alert('Failed to send outreach.');
+                    alert('Failed to send some emails.');
                 }
             } catch (e) {
                 console.error('Send error:', e);
                 alert('Network error while sending.');
             } finally {
-                draftOutreachBtn.innerHTML = originalText;
-                draftOutreachBtn.disabled = false;
+                sendApprovedBtn.innerHTML = originalText;
+                sendApprovedBtn.disabled = false;
             }
         });
     }
