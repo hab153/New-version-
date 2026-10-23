@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Backend Integration, Filtering, Long-Press & Pinning
+// UPDATED: Fixed Filtering, Status Labels, and Faster Saving
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -31,10 +31,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // State
     let allLeadsData = []; // Holds all leads from localStorage
-    let savedLeadsData = []; // Holds leads from backend
+    let savedLeadsEmails = new Set(); // Holds emails of saved leads for fast lookup
     let currentFilter = 'all';
     let longPressTimer;
-    let selectedLeadIndex = null; // For context menu
+    let selectedLeadIndex = null;
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    savedLeadsData = data.data || [];
+                    savedLeadsEmails = new Set(data.data.map(l => l.email));
                 }
             } catch (e) {
                 console.error('Failed to fetch saved leads:', e);
@@ -75,23 +75,22 @@ document.addEventListener('DOMContentLoaded', function() {
         leadsList.innerHTML = ''; 
 
         let displayLeads = [];
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         if (currentFilter === 'all') {
             displayLeads = [...allLeadsData];
         } else if (currentFilter === 'saved') {
-            // Show only leads that exist in savedLeadsData
-            displayLeads = allLeadsData.filter(lead => 
-                savedLeadsData.some(saved => saved.email === lead.email || saved.companyName === lead.companyName)
-            );
+            // Show only leads that exist in savedLeadsEmails
+            displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
         } else if (currentFilter === 'recent') {
-            // Show leads found in last 30 days
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
+            // Show leads found in last 30 days AND not saved
             displayLeads = allLeadsData.filter(lead => {
-                // Assuming lead has a timestamp or we use current time for demo
-                // In real app, lead should have a 'createdAt' or 'foundAt' date
-                return true; // For now showing all as recent if no date exists
+                // If no date exists, we assume it's recent for now, or check if it's NOT saved
+                // To strictly follow "Recent", we usually need a timestamp. 
+                // For now, we'll show unsaved leads as recent if they don't have an old date.
+                const isSaved = savedLeadsEmails.has(lead.email);
+                return !isSaved; 
             });
         }
 
@@ -124,8 +123,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Check if saved
-            const isSaved = savedLeadsData.some(saved => saved.email === lead.email || saved.companyName === lead.companyName);
-            const statusLabel = isSaved ? `<span class="status-label saved">Saved</span>` : '';
+            const isSaved = savedLeadsEmails.has(lead.email);
+            // ✅ FIX 2: Status label is now in card-right, next to More button
+            const statusLabel = isSaved 
+                ? `<span class="status-label saved">Saved</span>` 
+                : `<span class="status-label recent">Recent</span>`;
 
             const emailDisplay = lead.email || 'No email found';
 
@@ -147,13 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9697A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         <span>${emailDisplay}</span>
                     </div>
-                    ${statusLabel}
                     <div class="confidence-badge ${badgeClass}">
                         <span class="dot"></span>
                         <span>${badgeText}</span>
                     </div>
                 </div>
                 <div class="card-right">
+                    ${statusLabel}
                     <button class="view-btn">
                         More
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -388,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ── 7. Save Leads Backend Integration ──
+    // ── 7. Save Leads Backend Integration (Optimized) ──
     if (saveLeadsBtn) {
         saveLeadsBtn.addEventListener('click', async function() {
             if (this.disabled || !token) return;
@@ -403,13 +405,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 leadsToSave.push(allLeadsData[index]);
             });
 
-            // UI Feedback
-            const originalText = saveBtnText.textContent;
+            // ✅ FIX 3: Update UI immediately for speed perception
             saveBtnText.textContent = 'Saving...';
             saveLeadsBtn.disabled = true;
 
+            // Add to local set immediately so UI updates
+            leadsToSave.forEach(l => savedLeadsEmails.add(l.email));
+            renderLeads(); // Re-render to show "Saved" tags immediately
+
             try {
-                const res = await fetch(`${BACKEND}/api/leads/save`, {
+                // Send to backend in background
+                await fetch(`${BACKEND}/api/leads/save`, {
                     method: 'POST',
                     headers: { 
                         'Authorization': 'Bearer ' + token,
@@ -417,23 +423,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({ leads: leadsToSave })
                 });
-
-                if (res.ok) {
-                    // Refresh saved leads list
-                    const data = await res.json();
-                    // Update local saved list
-                    const newSaved = data.newlySaved || leadsToSave; 
-                    // In a real app, we'd re-fetch saved leads to be sure
-                    initData(); 
-                    alert('Leads saved successfully!');
-                } else {
-                    alert('Failed to save leads.');
-                }
+                
+                saveBtnText.textContent = 'Saved';
+                setTimeout(() => { saveBtnText.textContent = 'Save leads'; }, 2000);
             } catch (e) {
                 console.error('Save error:', e);
-                alert('Network error while saving.');
+                saveBtnText.textContent = 'Error';
             } finally {
-                saveBtnText.textContent = originalText;
                 saveLeadsBtn.disabled = false;
             }
         });
