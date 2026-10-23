@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Skeleton Loading, Draft System, Combined Status Labels
+// UPDATED: Skeleton Loading, Draft System, Schedule Outreach
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftEditSubject = document.getElementById('draftEditSubject');
     const draftEditMessage = document.getElementById('draftEditMessage');
     const draftSendBtn = document.getElementById('draftSendBtn');
+    const draftScheduleBtn = document.getElementById('draftScheduleBtn');
 
     // Review Sheet Elements
     const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
@@ -42,11 +43,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
     const sendApprovedBtn = document.getElementById('sendApprovedBtn');
     const draftMessageBtn = document.getElementById('draftMessageBtn');
+    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
     const draftCountsEl = document.getElementById('draftCounts');
 
-    // Send All Drafts Elements
+    // Send All Drafts + Schedule Elements
     const sendAllDraftsWrapper = document.getElementById('sendAllDraftsWrapper');
     const sendAllDraftsBtn = document.getElementById('sendAllDraftsBtn');
+    const scheduleAllDraftsBtn = document.getElementById('scheduleAllDraftsBtn');
+
+    // Schedule Outreach Modal Elements
+    const scheduleOverlay = document.getElementById('scheduleOverlay');
+    const closeScheduleSheetBtn = document.getElementById('closeScheduleSheet');
+    const scheduleCancelBtn = document.getElementById('scheduleCancelBtn');
+    const scheduleConfirmBtn = document.getElementById('scheduleConfirmBtn');
+    const scheduleEmailCount = document.getElementById('scheduleEmailCount');
+    const summaryEmailCount = document.getElementById('summaryEmailCount');
+    const scheduleConfirmText = document.getElementById('scheduleConfirmText');
+    const selectedDateText = document.getElementById('selectedDateText');
+    const selectedTimeText = document.getElementById('selectedTimeText');
+    const selectedTimezoneText = document.getElementById('selectedTimezoneText');
+    const selectedPaceText = document.getElementById('selectedPaceText');
+    const scheduleDateInput = document.getElementById('scheduleDateInput');
+    const scheduleTimeInput = document.getElementById('scheduleTimeInput');
+    const scheduleTimezoneSelect = document.getElementById('scheduleTimezoneSelect');
+    const schedulePaceSelect = document.getElementById('schedulePaceSelect');
+    const ruleStopReply = document.getElementById('ruleStopReply');
+    const ruleStopUnsubscribe = document.getElementById('ruleStopUnsubscribe');
+    const ruleSkipMissing = document.getElementById('ruleSkipMissing');
 
     // Filter & Context Menu Elements
     const filterDropdownBtn = document.getElementById('filterDropdownBtn');
@@ -66,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let reviewDrafts = [];
     let currentCardActionIndex = null;
     let isLoading = true;
+    let scheduleContext = { type: '', leads: [] }; // 'review', 'single', 'all'
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -73,9 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── 1. Load Data with Progressive Loading ──
     async function initData() {
         isLoading = true;
-        renderSkeletons(5); // Show 5 skeleton cards immediately
+        renderSkeletons(5);
 
-        // Load from LocalStorage (Recent Search)
         try {
             const storedData = localStorage.getItem('skyline_leads_data');
             if (storedData) {
@@ -85,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to parse local lead data:', e);
         }
 
-        // Load Saved Leads from Backend
         if (token) {
             try {
                 const res = await fetch(`${BACKEND}/api/leads/saved`, {
@@ -100,7 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Load Drafted Messages from Backend
         if (token) {
             try {
                 const res = await fetch(`${BACKEND}/api/leads/drafts`, {
@@ -182,7 +203,6 @@ document.addEventListener('DOMContentLoaded', function() {
             displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
         }
 
-        // Show/hide Send All Drafts button
         if (sendAllDraftsWrapper) {
             sendAllDraftsWrapper.style.display = currentFilter === 'draft' ? 'flex' : 'none';
         }
@@ -397,7 +417,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (res.ok) {
-                    // Delete draft after sending
                     await fetch(BACKEND + '/api/leads/draft', {
                         method: 'DELETE',
                         headers: { 
@@ -423,6 +442,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Schedule single draft from Draft View Modal
+    if (draftScheduleBtn) {
+        draftScheduleBtn.addEventListener('click', function() {
+            const company = draftViewCompany ? draftViewCompany.textContent : '';
+            const email = draftViewEmail ? draftViewEmail.textContent : '';
+            const subject = draftEditSubject ? draftEditSubject.value : '';
+            const message = draftEditMessage ? draftEditMessage.value : '';
+
+            if (!email) return;
+
+            scheduleContext = {
+                type: 'single',
+                leads: [{
+                    companyName: company,
+                    email: email,
+                    subject: subject,
+                    message: message
+                }]
+            };
+
+            updateScheduleModalUI();
+            closeDraftViewModal();
+            scheduleOverlay.style.display = 'flex';
+        });
+    }
+
     // ── 8. Card Click Handler ──
     if (leadsList) {
         leadsList.addEventListener('click', function(e) {
@@ -432,7 +477,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const index = parseInt(card.getAttribute('data-index'));
                 const lead = allLeadsData[index];
                 
-                // If lead has a draft, show action modal
                 if (lead && draftedEmails.has(lead.email)) {
                     openCardActionModal(index);
                 } else {
@@ -817,7 +861,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Make toggleEditor global for inline onclick
     window.toggleEditor = toggleEditor;
 
     // Send Approved Emails
@@ -873,6 +916,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Schedule Outreach from Review Sheet
+    if (scheduleOutreachBtn) {
+        scheduleOutreachBtn.addEventListener('click', function() {
+            const approvedDrafts = reviewDrafts.filter(function(d) { return d.approved; });
+            if (approvedDrafts.length === 0) {
+                alert('Please approve at least one draft before scheduling.');
+                return;
+            }
+
+            scheduleContext = {
+                type: 'review',
+                leads: approvedDrafts.map(d => ({
+                    companyName: d.lead.companyName,
+                    email: d.lead.email,
+                    subject: d.subject,
+                    message: d.body
+                }))
+            };
+
+            updateScheduleModalUI();
+            closeReviewSheet();
+            scheduleOverlay.style.display = 'flex';
+        });
+    }
+
     // Draft Message Button - Saves drafts to backend
     if (draftMessageBtn) {
         draftMessageBtn.addEventListener('click', async function() {
@@ -892,7 +960,6 @@ document.addEventListener('DOMContentLoaded', function() {
             draftMessageBtn.disabled = true;
 
             try {
-                // Save each draft to backend
                 for (const draft of approvedDrafts) {
                     await fetch(BACKEND + '/api/leads/draft', {
                         method: 'POST',
@@ -908,12 +975,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         })
                     });
 
-                    // Update local state
                     draftedEmails.set(draft.lead.email, { subject: draft.subject, message: draft.body });
                 }
 
                 closeReviewSheet();
-                renderLeads(); // Re-render to show Draft labels
+                renderLeads();
             } catch (e) {
                 console.error('Save draft error:', e);
                 alert('Failed to save drafts.');
@@ -963,7 +1029,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (res.ok) {
-                    // Delete all sent drafts from backend
                     for (const lead of draftLeads) {
                         await fetch(BACKEND + '/api/leads/draft', {
                             method: 'DELETE',
@@ -991,7 +1056,170 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 15. Warning Strip Dismissal ──
+    // ── 15. Schedule All Drafts Button ──
+    if (scheduleAllDraftsBtn) {
+        scheduleAllDraftsBtn.addEventListener('click', function() {
+            const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+            if (draftLeads.length === 0) {
+                alert('No draft messages to schedule.');
+                return;
+            }
+
+            scheduleContext = {
+                type: 'all',
+                leads: draftLeads.map(lead => {
+                    const draft = draftedEmails.get(lead.email);
+                    return {
+                        companyName: lead.companyName,
+                        email: lead.email,
+                        subject: draft.subject,
+                        message: draft.message
+                    };
+                })
+            };
+
+            updateScheduleModalUI();
+            scheduleOverlay.style.display = 'flex';
+        });
+    }
+
+    // ─ 16. Schedule Outreach Modal Logic ──
+
+    function updateScheduleModalUI() {
+        const count = scheduleContext.leads.length;
+        if (scheduleEmailCount) scheduleEmailCount.textContent = count + ' approved emails';
+        if (summaryEmailCount) summaryEmailCount.textContent = count + ' emails will be sent separately';
+        if (scheduleConfirmText) scheduleConfirmText.textContent = 'Schedule ' + count + ' emails';
+    }
+
+    function closeScheduleModal() {
+        if (scheduleOverlay) scheduleOverlay.style.display = 'none';
+        scheduleContext = { type: '', leads: [] };
+    }
+
+    if (closeScheduleSheetBtn) closeScheduleSheetBtn.addEventListener('click', closeScheduleModal);
+    if (scheduleCancelBtn) scheduleCancelBtn.addEventListener('click', closeScheduleModal);
+    if (scheduleOverlay) {
+        scheduleOverlay.addEventListener('click', function(e) {
+            if (e.target === scheduleOverlay) closeScheduleModal();
+        });
+    }
+
+    // Date Selector
+    if (scheduleDateInput) {
+        scheduleDateInput.addEventListener('change', function() {
+            if (this.value) {
+                const date = new Date(this.value + 'T00:00:00');
+                const options = { weekday: 'long', month: 'short', day: 'numeric' };
+                selectedDateText.textContent = date.toLocaleDateString('en-US', options);
+            }
+        });
+    }
+
+    // Time Selector
+    if (scheduleTimeInput) {
+        scheduleTimeInput.addEventListener('change', function() {
+            if (this.value) {
+                const [hours, minutes] = this.value.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                selectedTimeText.textContent = h12 + ':' + minutes + ' ' + ampm;
+            }
+        });
+    }
+
+    // Timezone Selector
+    if (scheduleTimezoneSelect) {
+        scheduleTimezoneSelect.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            selectedTimezoneText.textContent = option.text;
+        });
+    }
+
+    // Pace Selector
+    if (schedulePaceSelect) {
+        schedulePaceSelect.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            selectedPaceText.textContent = option.text;
+        });
+    }
+
+    // Schedule Confirm Button
+    if (scheduleConfirmBtn) {
+        scheduleConfirmBtn.addEventListener('click', async function() {
+            if (!token) return;
+
+            const dateVal = scheduleDateInput ? scheduleDateInput.value : '';
+            const timeVal = scheduleTimeInput ? scheduleTimeInput.value : '';
+            const timezone = scheduleTimezoneSelect ? scheduleTimezoneSelect.value : '';
+            const paceMinutes = schedulePaceSelect ? parseInt(schedulePaceSelect.value) : 5;
+            const stopOnReply = ruleStopReply ? ruleStopReply.checked : true;
+            const stopOnUnsubscribe = ruleStopUnsubscribe ? ruleStopUnsubscribe.checked : true;
+            const skipMissing = ruleSkipMissing ? ruleSkipMissing.checked : true;
+
+            if (!dateVal || !timeVal) {
+                alert('Please select both a date and time for scheduling.');
+                return;
+            }
+
+            const scheduledDateTime = new Date(dateVal + 'T' + timeVal + ':00');
+            if (scheduledDateTime <= new Date()) {
+                alert('Please select a future date and time.');
+                return;
+            }
+
+            const originalText = scheduleConfirmBtn.innerHTML;
+            scheduleConfirmBtn.innerHTML = '<span>Scheduling...</span>';
+            scheduleConfirmBtn.disabled = true;
+
+            try {
+                // NOTE: This is a placeholder API call. The actual scheduling backend
+                // endpoint will be implemented when you explain how scheduling works.
+                // For now, we simulate success.
+                
+                // In production, this would be:
+                // await fetch(BACKEND + '/api/leads/schedule', { ... })
+                
+                console.log('Schedule payload:', {
+                    leads: scheduleContext.leads,
+                    scheduledAt: scheduledDateTime.toISOString(),
+                    timezone: timezone,
+                    paceMinutes: paceMinutes,
+                    safetyRules: { stopOnReply, stopOnUnsubscribe, skipMissing }
+                });
+
+                // Simulate success for UI testing
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                closeScheduleModal();
+                alert('Outreach scheduled successfully!');
+                
+                // If scheduling from draft view, remove the draft
+                if (scheduleContext.type === 'single') {
+                    const email = scheduleContext.leads[0].email;
+                    await fetch(BACKEND + '/api/leads/draft', {
+                        method: 'DELETE',
+                        headers: { 
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+                    draftedEmails.delete(email);
+                    renderLeads();
+                }
+            } catch (e) {
+                console.error('Schedule error:', e);
+                alert('Failed to schedule outreach.');
+            } finally {
+                scheduleConfirmBtn.innerHTML = originalText;
+                scheduleConfirmBtn.disabled = false;
+            }
+        });
+    }
+
+    // ── 17. Warning Strip Dismissal ──
     if (closeWarningBtn && warningStrip) {
         closeWarningBtn.addEventListener('click', function() {
             warningStrip.style.display = 'none';
