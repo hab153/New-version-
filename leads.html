@@ -236,6 +236,15 @@
                 </button>
             </div>
 
+            <!-- ✅ NEW: AI Suggestion Section (Top of Review Sheet) -->
+            <div class="ai-suggestion-section">
+                <button class="ai-suggest-btn" id="aiSuggestBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                    <span>AI Suggestion</span>
+                </button>
+                <div class="ai-suggest-status" id="aiSuggestStatus"></div>
+            </div>
+
             <div class="draft-list-container" id="draftListContainer">
                 <!-- Draft rows will be injected here by JS -->
             </div>
@@ -262,6 +271,24 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     Schedule outreach
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ NEW: AI Suggestions Modal -->
+    <div class="modal-overlay" id="aiSuggestionsOverlay" style="display: none;">
+        <div class="modal-content ai-suggestions-modal">
+            <button class="close-modal" id="closeAiSuggestions">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 class="ai-modal-title">AI Outreach Suggestions</h3>
+            <p class="ai-modal-subtitle">Review personalized messages generated for each lead.</p>
+            <div class="ai-suggestions-list" id="aiSuggestionsList">
+                <!-- Dynamic suggestion cards injected here -->
+            </div>
+            <div class="ai-modal-actions">
+                <button class="btn-secondary" id="cancelAiSuggestions">Cancel</button>
+                <button class="btn-primary" id="applyAiSuggestions">Apply to Drafts</button>
             </div>
         </div>
     </div>
@@ -416,4 +443,4 @@
 
     <script src="leads.js"></script>
 </body>
-                    </html>
+    </html>
