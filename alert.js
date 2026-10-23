@@ -1,73 +1,106 @@
 // ============================================================
-// alert.js - Skyline AI · Alerts Page Logic
+// alert.js - Skyline AI · Alerts Page (UI ONLY - Static Fixtures)
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     
     // ── DOM Elements ──
     const notificationList = document.getElementById('notificationList');
-    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    const markAllReadBtn = document.querySelector('.mark-all-read-btn');
     const filterTabs = document.querySelectorAll('.tab-btn');
     const preferencesCard = document.getElementById('preferencesCard');
-    const addAlertBtn = document.getElementById('addAlertBtn');
-    const deleteAlertsBtn = document.getElementById('deleteAlertsBtn');
 
     // State
-    let notifications = [];
     let currentFilter = 'all';
-    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-    const token = localStorage.getItem('token');
 
-    // ── 1. Fetch Notifications ──
-    async function fetchNotifications() {
-        if (!token) {
-            renderEmptyState('Please log in to view alerts.');
-            return;
+    // ✅ STATIC FIXTURE DATA (Matches Screenshot Specification)
+    const fixtureNotifications = [
+        {
+            id: 'n1',
+            type: 'reply',
+            title: 'New reply received',
+            description: 'Maya Chen from Brightline Media replied to your outreach.',
+            timestamp: '10:42 AM',
+            isRead: false,
+            category: 'general',
+            actionLabel: 'Open inbox',
+            actionUrl: 'notifications.html'
+        },
+        {
+            id: 'n2',
+            type: 'ai_draft',
+            title: 'AI draft ready',
+            description: 'A reply suggestion is ready for your review.',
+            timestamp: '9:18 AM',
+            isRead: true,
+            category: 'general',
+            actionLabel: 'Review draft',
+            actionUrl: '#'
+        },
+        {
+            id: 'n3',
+            type: 'automation_paused',
+            title: 'Automation paused',
+            description: 'Follow-ups were paused because a recipient opted out.',
+            timestamp: 'Yesterday',
+            isRead: true,
+            category: 'security',
+            actionLabel: 'View details',
+            actionUrl: '#'
+        },
+        {
+            id: 'n4',
+            type: 'email_connection',
+            title: 'Email connection needs attention',
+            description: 'Reconnect Gmail to resume inbox syncing.',
+            timestamp: 'Yesterday',
+            isRead: true,
+            category: 'connection',
+            actionLabel: 'Reconnect',
+            actionUrl: '#'
+        },
+        {
+            id: 'n5',
+            type: 'usage_summary',
+            title: 'Weekly usage summary',
+            description: 'You used 7 of 10 daily chats and 3 of 5 daily emails.',
+            timestamp: 'Monday',
+            isRead: true,
+            category: 'general',
+            actionLabel: 'View usage',
+            actionUrl: '#'
         }
+    ];
 
-        try {
-            const res = await fetch(`${BACKEND}/api/notifications`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                notifications = data.data || [];
-                renderNotifications();
-            } else {
-                renderErrorState('Failed to load alerts. Please retry.');
-            }
-        } catch (e) {
-            console.error('Fetch notifications error:', e);
-            renderErrorState('Network error. Check your connection.');
-        }
-    }
-
-    // ── 2. Render Notifications ──
+    // ── Render Notifications ──
     function renderNotifications() {
         if (!notificationList) return;
         notificationList.innerHTML = '';
 
-        let filtered = notifications;
+        let filtered = fixtureNotifications;
 
         if (currentFilter === 'unread') {
-            filtered = notifications.filter(n => !n.isRead);
+            filtered = fixtureNotifications.filter(n => !n.isRead);
         } else if (currentFilter === 'security') {
-            filtered = notifications.filter(n => n.category === 'security' || n.type === 'automation_paused');
+            filtered = fixtureNotifications.filter(n => n.category === 'security' || n.type === 'automation_paused');
         }
 
         if (filtered.length === 0) {
-            renderEmptyState(currentFilter === 'unread' ? "You're all caught up." : "No alerts found.");
+            notificationList.innerHTML = `
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9699A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <p>${currentFilter === 'unread' ? "You're all caught up." : "No alerts found."}</p>
+                </div>`;
             return;
         }
 
-        filtered.forEach(notification => {
-            const card = createNotificationCard(notification);
+        filtered.forEach(n => {
+            const card = createNotificationCard(n);
             notificationList.appendChild(card);
         });
     }
 
-    // ── 3. Create Notification Card ──
+    // ── Create Card Element ──
     function createNotificationCard(n) {
         const card = document.createElement('div');
         card.className = 'notification-card';
@@ -76,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (n.type === 'email_connection') card.classList.add('connection-type');
 
         const iconConfig = getIconConfig(n.type);
-        const timeStr = formatTimestamp(n.createdAt);
 
         card.innerHTML = `
             <div class="card-icon ${iconConfig.class}">
@@ -86,37 +118,29 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="card-content">
                 <div class="card-header-row">
                     <h3 class="card-title">${n.title}</h3>
-                    <span class="card-timestamp">${timeStr}</span>
+                    <span class="card-timestamp">${n.timestamp}</span>
                 </div>
                 <p class="card-desc">${n.description}</p>
-                <a href="${n.actionUrl || '#'}" class="card-action-btn" data-id="${n._id}" data-type="${n.type}">
-                    ${n.actionLabel || 'View details'}
+                <a href="${n.actionUrl}" class="card-action-btn">
+                    ${n.actionLabel}
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>
             </div>
         `;
 
-        // Mark as read on click
-        card.addEventListener('click', async function(e) {
-            if (!n.isRead && token) {
-                try {
-                    await fetch(`${BACKEND}/api/notifications/${n._id}/read`, {
-                        method: 'PUT',
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    });
-                    n.isRead = true;
-                    updateUnreadBadge();
-                    renderNotifications();
-                } catch (err) {
-                    console.error('Mark read error:', err);
-                }
+        // Visual-only read toggle for UI testing
+        card.addEventListener('click', function() {
+            if (!n.isRead) {
+                n.isRead = true;
+                updateUnreadBadge();
+                renderNotifications();
             }
         });
 
         return card;
     }
 
-    // ─ 4. Icon Configuration ──
+    // ── Icon Configurations ──
     function getIconConfig(type) {
         const icons = {
             reply: {
@@ -143,55 +167,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return icons[type] || icons.reply;
     }
 
-    // ── 5. Format Timestamp ──
-    function formatTimestamp(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) {
-            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-        } else if (diffDays === 1) {
-            return 'Yesterday';
-        } else if (diffDays < 7) {
-            return date.toLocaleDateString('en-US', { weekday: 'long' });
-        } else {
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-    }
-
-    // ── 6. Empty & Error States ──
-    function renderEmptyState(message) {
-        notificationList.innerHTML = `
-            <div class="empty-state">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9699A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                <p>${message}</p>
-            </div>
-        `;
-    }
-
-    function renderErrorState(message) {
-        notificationList.innerHTML = `
-            <div class="empty-state">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF535B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                <p>${message}</p>
-                <button class="mark-all-read-btn" style="margin-top:16px;" onclick="fetchNotifications()">Retry</button>
-            </div>
-        `;
-    }
-
-    // ── 7. Update Unread Badge ─
+    // ── Update Unread Badge (Visual Only) ──
     function updateUnreadBadge() {
-        const unreadCount = notifications.filter(n => !n.isRead).length;
+        const unreadCount = fixtureNotifications.filter(n => !n.isRead).length;
         const badges = document.querySelectorAll('.nav-badge');
         badges.forEach(badge => {
             badge.style.display = unreadCount > 0 ? 'block' : 'none';
         });
     }
 
-    // ── 8. Event Listeners ──
+    // ── Event Listeners ──
 
     // Filter Tabs
     filterTabs.forEach(tab => {
@@ -203,31 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Mark All As Read
+    // Mark All As Read (Visual Only)
     if (markAllReadBtn) {
-        markAllReadBtn.addEventListener('click', async function() {
-            if (!token) return;
-            
-            const unreadIds = notifications.filter(n => !n.isRead).map(n => n._id);
-            if (unreadIds.length === 0) return;
-
-            try {
-                await fetch(`${BACKEND}/api/notifications/mark-all-read`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ ids: unreadIds })
-                });
-
-                notifications.forEach(n => n.isRead = true);
-                updateUnreadBadge();
-                renderNotifications();
-            } catch (e) {
-                console.error('Mark all read error:', e);
-                alert('Failed to mark all as read.');
-            }
+        markAllReadBtn.addEventListener('click', function() {
+            fixtureNotifications.forEach(n => n.isRead = true);
+            updateUnreadBadge();
+            renderNotifications();
         });
     }
 
@@ -238,34 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add / Delete Buttons (Placeholder integration)
-    if (addAlertBtn) {
-        addAlertBtn.addEventListener('click', function() {
-            // Integrate with existing create workflow
-            console.log('Add alert clicked');
-        });
-    }
-
-    if (deleteAlertsBtn) {
-        deleteAlertsBtn.addEventListener('click', async function() {
-            if (!confirm('Are you sure you want to clear all alerts?')) return;
-            if (!token) return;
-
-            try {
-                await fetch(`${BACKEND}/api/notifications/clear-all`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                notifications = [];
-                updateUnreadBadge();
-                renderNotifications();
-            } catch (e) {
-                console.error('Clear all error:', e);
-                alert('Failed to clear alerts.');
-            }
-        });
-    }
-
-    // ── 9. Initial Load ──
-    fetchNotifications();
+    // Initial Render
+    updateUnreadBadge();
+    renderNotifications();
 });
