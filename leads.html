@@ -15,7 +15,6 @@
     <header class="app-header">
         <div class="brand-section">
             <div class="logo-mark">
-                <!-- Pulse/Heartbeat Icon -->
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0C0D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             </div>
             <div class="brand-text">
@@ -52,7 +51,6 @@
         <div class="toolbar">
             <span class="results-count" id="resultsCount">0 prospects found</span>
             <div class="toolbar-actions">
-                <!-- ✅ NEW: All Dropdown Button -->
                 <div class="dropdown-wrapper">
                     <button class="pill-btn" id="filterDropdownBtn">
                         <span id="currentFilter">All</span>
@@ -99,9 +97,10 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     <span id="saveBtnText">Save leads</span>
                 </button>
-                <button class="action-btn secondary" disabled>
+                <!-- ✅ NEW: Send Button -->
+                <button class="action-btn secondary" id="sendBtn" disabled>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    Draft outreach
+                    Send
                 </button>
             </div>
         </div>
@@ -156,6 +155,40 @@
         </div>
     </div>
 
+    <!-- ✅ NEW: Review Outreach Modal -->
+    <div class="review-sheet-overlay" id="reviewSheetOverlay" style="display: none;">
+        <div class="review-sheet">
+            <div class="sheet-handle"></div>
+            
+            <div class="sheet-header">
+                <div class="header-text">
+                    <h2 class="sheet-title">Review outreach drafts</h2>
+                    <p class="sheet-subtitle" id="draftCounts">0 drafts created · 0 sent</p>
+                </div>
+                <button class="close-sheet" id="closeReviewSheet">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <div class="draft-list-container" id="draftListContainer">
+                <!-- Draft rows will be injected here by JS -->
+            </div>
+
+            <div class="warning-panel">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div class="warning-text">
+                    <div class="warning-primary">Review every message before sending</div>
+                    <div class="warning-secondary">Emails will be sent separately</div>
+                </div>
+            </div>
+
+            <button class="send-approved-btn" id="sendApprovedBtn" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send approved emails
+            </button>
+        </div>
+    </div>
+
     <!-- ✅ NEW: Long-Press Context Menu -->
     <div class="context-menu" id="contextMenu" style="display: none;">
         <div class="context-item" id="pinLeadBtn">
@@ -170,4 +203,4 @@
 
     <script src="leads.js"></script>
 </body>
-        </html>
+    </html>
