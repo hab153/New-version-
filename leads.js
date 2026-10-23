@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ── 4. Render Lead Cards ──
+    // ─ 4. Render Lead Cards ──
     function renderLeads() {
         if (!leadsList) return;
         leadsList.innerHTML = ''; 
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 7. Draft View Modal ─
+    // ─ 7. Draft View Modal ─
     function openDraftViewModal(lead) {
         if (!lead || !draftViewOverlay) return;
 
@@ -640,7 +640,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ── 12. Save Leads Backend Integration ──
+    // ─ 12. Save Leads Backend Integration ──
     if (saveLeadsBtn) {
         saveLeadsBtn.addEventListener('click', async function() {
             if (this.disabled || !token) return;
@@ -1230,7 +1230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═════════════════════════════════════════
-    // ✅ FIXED: DIRECT AI SUGGESTION UPDATE
+    // ✅ FIXED: DIRECT AI SUGGESTION UPDATE (ROBUST)
     // ══════════════════════════════════════════
 
     if (aiSuggestBtn) {
@@ -1272,20 +1272,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // ✅ DIRECTLY UPDATE THE REVIEW SHEET FIELDS
                 let updatedCount = 0;
+                
+                // We loop through the data.suggestions and find the matching draft in our state
                 data.suggestions.forEach(suggestion => {
                     const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
+                    
+                    // Only proceed if we found the draft AND the API returned valid subject/body
                     if (draft && suggestion.subject && suggestion.body) {
-                        // 1. Update internal state
+                        
+                        // 1. Update internal state immediately
                         draft.subject = suggestion.subject;
                         draft.body = suggestion.body;
                         
-                        // 2. Find and update the actual DOM inputs in the review sheet
+                        // 2. SAFELY find and update the ACTUAL DOM elements inside the modal
+                        // We use the unique data-draft-id to guarantee we hit the right input
                         const subjectInput = document.querySelector(`input.subject-input[data-draft-id="${draft.id}"]`);
                         const messageTextarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
                         
                         if (subjectInput) {
                             subjectInput.value = suggestion.subject;
-                            // Trigger input event so validation/state updates if needed
+                            // Dispatching an 'input' event ensures any other listeners (like validation) know it changed
                             subjectInput.dispatchEvent(new Event('input', { bubbles: true }));
                         }
                         
@@ -1309,6 +1315,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     setTimeout(() => {
                         aiSuggestBtn.style.backgroundColor = ''; // Reset
                     }, 600);
+                } else {
+                    console.warn('AI suggestions received but no matching DOM elements found to update.');
                 }
 
             } catch (err) {
