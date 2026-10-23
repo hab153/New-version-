@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Fixed Send Button, Draft Message Button & Modal Layout
+// UPDATED: Skeleton Loading, Draft System, Combined Status Labels
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,17 +17,36 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Modal Elements
     const modalOverlay = document.getElementById('modalOverlay');
-    const detailsModal = document.getElementById('detailsModal');
     const closeModalBtn = document.getElementById('closeModal');
     const modalContent = document.getElementById('modalContent');
+
+    // Card Action Modal Elements
+    const cardActionOverlay = document.getElementById('cardActionOverlay');
+    const closeCardActionBtn = document.getElementById('closeCardAction');
+    const viewInfoBtn = document.getElementById('viewInfoBtn');
+    const viewDraftBtn = document.getElementById('viewDraftBtn');
+    const cardActionTitle = document.getElementById('cardActionTitle');
+
+    // Draft View Modal Elements
+    const draftViewOverlay = document.getElementById('draftViewOverlay');
+    const closeDraftViewBtn = document.getElementById('closeDraftView');
+    const draftViewCompany = document.getElementById('draftViewCompany');
+    const draftViewEmail = document.getElementById('draftViewEmail');
+    const draftEditSubject = document.getElementById('draftEditSubject');
+    const draftEditMessage = document.getElementById('draftEditMessage');
+    const draftSendBtn = document.getElementById('draftSendBtn');
 
     // Review Sheet Elements
     const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
     const draftListContainer = document.getElementById('draftListContainer');
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
     const sendApprovedBtn = document.getElementById('sendApprovedBtn');
-    const draftMessageBtn = document.getElementById('draftMessageBtn'); // NEW
+    const draftMessageBtn = document.getElementById('draftMessageBtn');
     const draftCountsEl = document.getElementById('draftCounts');
+
+    // Send All Drafts Elements
+    const sendAllDraftsWrapper = document.getElementById('sendAllDraftsWrapper');
+    const sendAllDraftsBtn = document.getElementById('sendAllDraftsBtn');
 
     // Filter & Context Menu Elements
     const filterDropdownBtn = document.getElementById('filterDropdownBtn');
@@ -40,16 +59,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // State
     let allLeadsData = []; 
     let savedLeadsEmails = new Set(); 
+    let draftedEmails = new Map(); // email -> { subject, message }
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
     let reviewDrafts = [];
+    let currentCardActionIndex = null;
+    let isLoading = true;
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
-    // ── 1. Load Data ──
+    // ── 1. Load Data with Progressive Loading ──
     async function initData() {
+        isLoading = true;
+        renderSkeletons(5); // Show 5 skeleton cards immediately
+
+        // Load from LocalStorage (Recent Search)
         try {
             const storedData = localStorage.getItem('skyline_leads_data');
             if (storedData) {
@@ -59,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to parse local lead data:', e);
         }
 
+        // Load Saved Leads from Backend
         if (token) {
             try {
                 const res = await fetch(`${BACKEND}/api/leads/saved`, {
@@ -73,10 +100,72 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Load Drafted Messages from Backend
+        if (token) {
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/drafts`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    draftedEmails = new Map();
+                    (data.data || []).forEach(d => {
+                        draftedEmails.set(d.email, { subject: d.subject, message: d.message });
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to fetch drafts:', e);
+            }
+        }
+
+        isLoading = false;
         renderLeads();
     }
 
-    // ── 2. Render Lead Cards ──
+    // ── 2. Render Skeleton Cards ──
+    function renderSkeletons(count) {
+        if (!leadsList) return;
+        leadsList.innerHTML = '';
+
+        for (let i = 0; i < count; i++) {
+            const skeleton = document.createElement('div');
+            skeleton.className = 'skeleton-card';
+            skeleton.innerHTML = `
+                <div class="skeleton-left">
+                    <div class="skeleton-checkbox skeleton-animate"></div>
+                    <div class="skeleton-logo skeleton-animate"></div>
+                </div>
+                <div class="skeleton-center">
+                    <div class="skeleton-line long skeleton-animate"></div>
+                    <div class="skeleton-line medium skeleton-animate"></div>
+                    <div class="skeleton-line short skeleton-animate"></div>
+                    <div class="skeleton-badge skeleton-animate"></div>
+                </div>
+                <div class="skeleton-right">
+                    <div class="skeleton-btn skeleton-animate"></div>
+                </div>
+            `;
+            leadsList.appendChild(skeleton);
+        }
+    }
+
+    // ── 3. Get Status Label HTML ──
+    function getStatusLabel(lead) {
+        const isSaved = savedLeadsEmails.has(lead.email);
+        const isDraft = draftedEmails.has(lead.email);
+        
+        if (isSaved && isDraft) {
+            return '<span class="status-label combined">Saved & Draft</span>';
+        } else if (isDraft) {
+            return '<span class="status-label draft">Draft</span>';
+        } else if (isSaved) {
+            return '<span class="status-label saved">Saved</span>';
+        } else {
+            return '<span class="status-label recent">Recent</span>';
+        }
+    }
+
+    // ── 4. Render Lead Cards ──
     function renderLeads() {
         if (!leadsList) return;
         leadsList.innerHTML = ''; 
@@ -88,7 +177,14 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (currentFilter === 'saved') {
             displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
         } else if (currentFilter === 'recent') {
-            displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email));
+            displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email) && !draftedEmails.has(lead.email));
+        } else if (currentFilter === 'draft') {
+            displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+        }
+
+        // Show/hide Send All Drafts button
+        if (sendAllDraftsWrapper) {
+            sendAllDraftsWrapper.style.display = currentFilter === 'draft' ? 'flex' : 'none';
         }
 
         if (displayLeads.length === 0) {
@@ -116,11 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 badgeText = 'Medium confidence';
             }
 
-            const isSaved = savedLeadsEmails.has(lead.email);
-            const statusLabel = isSaved 
-                ? `<span class="status-label saved">Saved</span>` 
-                : `<span class="status-label recent">Recent</span>`;
-
+            const statusLabel = getStatusLabel(lead);
             const emailDisplay = lead.email || 'No email found';
 
             card.innerHTML = `
@@ -162,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initLongPressLogic();
     }
 
-    // ── 3. Details Modal Logic ──
+    // ── 5. Details Modal Logic ──
     function openDetailsModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !modalOverlay || !modalContent) return;
@@ -202,18 +294,155 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ── 6. Card Action Modal (Information vs Draft) ──
+    function openCardActionModal(index) {
+        const lead = allLeadsData[index];
+        if (!lead || !cardActionOverlay) return;
+
+        currentCardActionIndex = index;
+        if (cardActionTitle) cardActionTitle.textContent = lead.companyName || 'Choose an action';
+        cardActionOverlay.style.display = 'flex';
+    }
+
+    function closeCardActionModal() {
+        if (cardActionOverlay) cardActionOverlay.style.display = 'none';
+        currentCardActionIndex = null;
+    }
+
+    if (closeCardActionBtn) closeCardActionBtn.addEventListener('click', closeCardActionModal);
+    if (cardActionOverlay) {
+        cardActionOverlay.addEventListener('click', function(e) {
+            if (e.target === cardActionOverlay) closeCardActionModal();
+        });
+    }
+
+    if (viewInfoBtn) {
+        viewInfoBtn.addEventListener('click', function() {
+            if (currentCardActionIndex !== null) {
+                closeCardActionModal();
+                openDetailsModal(currentCardActionIndex);
+            }
+        });
+    }
+
+    if (viewDraftBtn) {
+        viewDraftBtn.addEventListener('click', function() {
+            if (currentCardActionIndex !== null) {
+                const lead = allLeadsData[currentCardActionIndex];
+                closeCardActionModal();
+                openDraftViewModal(lead);
+            }
+        });
+    }
+
+    // ── 7. Draft View Modal ──
+    function openDraftViewModal(lead) {
+        if (!lead || !draftViewOverlay) return;
+
+        const draft = draftedEmails.get(lead.email) || { subject: '', message: '' };
+
+        if (draftViewCompany) draftViewCompany.textContent = lead.companyName || 'Unknown';
+        if (draftViewEmail) draftViewEmail.textContent = lead.email || '';
+        if (draftEditSubject) draftEditSubject.value = draft.subject;
+        if (draftEditMessage) draftEditMessage.value = draft.message;
+
+        draftViewOverlay.style.display = 'flex';
+    }
+
+    function closeDraftViewModal() {
+        if (draftViewOverlay) draftViewOverlay.style.display = 'none';
+    }
+
+    if (closeDraftViewBtn) closeDraftViewBtn.addEventListener('click', closeDraftViewModal);
+    if (draftViewOverlay) {
+        draftViewOverlay.addEventListener('click', function(e) {
+            if (e.target === draftViewOverlay) closeDraftViewModal();
+        });
+    }
+
+    // Send individual draft
+    if (draftSendBtn) {
+        draftSendBtn.addEventListener('click', async function() {
+            if (!token) return;
+
+            const company = draftViewCompany ? draftViewCompany.textContent : '';
+            const email = draftViewEmail ? draftViewEmail.textContent : '';
+            const subject = draftEditSubject ? draftEditSubject.value : '';
+            const message = draftEditMessage ? draftEditMessage.value : '';
+
+            if (!email || !message.trim()) {
+                alert('Please enter a message before sending.');
+                return;
+            }
+
+            const originalText = draftSendBtn.innerHTML;
+            draftSendBtn.innerHTML = '<span>Sending...</span>';
+            draftSendBtn.disabled = true;
+
+            try {
+                const res = await fetch(BACKEND + '/api/leads/batch-send', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        leads: [{
+                            name: company,
+                            email: email,
+                            company: company,
+                            messages: [{ subject: subject, body: message }]
+                        }]
+                    })
+                });
+
+                if (res.ok) {
+                    // Delete draft after sending
+                    await fetch(BACKEND + '/api/leads/draft', {
+                        method: 'DELETE',
+                        headers: { 
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+
+                    draftedEmails.delete(email);
+                    closeDraftViewModal();
+                    renderLeads();
+                } else {
+                    alert('Failed to send message.');
+                }
+            } catch (e) {
+                console.error('Send error:', e);
+                alert('Network error while sending.');
+            } finally {
+                draftSendBtn.innerHTML = originalText;
+                draftSendBtn.disabled = false;
+            }
+        });
+    }
+
+    // ── 8. Card Click Handler ──
     if (leadsList) {
         leadsList.addEventListener('click', function(e) {
             if (e.target.closest('.checkbox-wrapper') || e.target.closest('.view-btn')) return;
             const card = e.target.closest('.lead-card');
             if (card) {
                 const index = parseInt(card.getAttribute('data-index'));
-                openDetailsModal(index);
+                const lead = allLeadsData[index];
+                
+                // If lead has a draft, show action modal
+                if (lead && draftedEmails.has(lead.email)) {
+                    openCardActionModal(index);
+                } else {
+                    openDetailsModal(index);
+                }
             }
         });
     }
 
-    // ── 4. Selection Logic ──
+    // ── 9. Selection Logic ──
     function initSelectionLogic() {
         const leadCheckboxes = document.querySelectorAll('.lead-checkbox');
         
@@ -264,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectionState();
     }
 
-    // ── 5. Long Press Logic ──
+    // ── 10. Long Press Logic ──
     function initLongPressLogic() {
         const cards = document.querySelectorAll('.lead-card');
         cards.forEach(card => {
@@ -336,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 6. Filter Dropdown Logic ──
+    // ── 11. Filter Dropdown Logic ──
     if (filterDropdownBtn) {
         filterDropdownBtn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -363,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ── 7. Save Leads Backend Integration ──
+    // ── 12. Save Leads Backend Integration ──
     if (saveLeadsBtn) {
         saveLeadsBtn.addEventListener('click', async function() {
             if (this.disabled || !token) return;
@@ -404,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 8. Review Outreach Modal Logic ──
+    // ── 13. Review Outreach Modal Logic ──
     
     function toggleEditor(btn) {
         const editor = btn.closest('.draft-row').querySelector('.draft-editor');
@@ -419,7 +648,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Check if any message input has text
     function checkMessagesHaveText() {
         const messageInputs = document.querySelectorAll('.message-input');
         if (messageInputs.length === 0) return false;
@@ -433,7 +661,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return hasText;
     }
 
-    // Update send button state
     function updateSendButtonState() {
         const anyChecked = document.querySelectorAll('.draft-checkbox:checked').length > 0;
         const hasText = checkMessagesHaveText();
@@ -529,8 +756,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         reviewSheetOverlay.style.display = 'flex';
-        
-        // Check initial state - default messages have text so button should be enabled
         updateSendButtonState();
     }
 
@@ -588,7 +813,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     draft.body = e.target.value;
                 }
             }
-            // Update send button state whenever user types
             updateSendButtonState();
         }
     });
@@ -631,9 +855,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (res.ok) {
-                    // Close modal immediately after successful send
                     closeReviewSheet();
-                    // Uncheck main checkboxes
                     document.querySelectorAll('.lead-checkbox:checked').forEach(function(cb) { cb.checked = false; });
                     initSelectionLogic();
                 } else {
@@ -651,16 +873,125 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Draft Message Button - Closes modal, does NOT send
+    // Draft Message Button - Saves drafts to backend
     if (draftMessageBtn) {
-        draftMessageBtn.addEventListener('click', function() {
-            // For now, just close the modal and return to leads page
-            // Future: save drafts to backend
-            closeReviewSheet();
+        draftMessageBtn.addEventListener('click', async function() {
+            if (!token) {
+                closeReviewSheet();
+                return;
+            }
+
+            const approvedDrafts = reviewDrafts.filter(function(d) { return d.approved; });
+            if (approvedDrafts.length === 0) {
+                closeReviewSheet();
+                return;
+            }
+
+            const originalText = draftMessageBtn.innerHTML;
+            draftMessageBtn.innerHTML = '<span>Saving...</span>';
+            draftMessageBtn.disabled = true;
+
+            try {
+                // Save each draft to backend
+                for (const draft of approvedDrafts) {
+                    await fetch(BACKEND + '/api/leads/draft', {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            companyName: draft.lead.companyName,
+                            email: draft.lead.email,
+                            subject: draft.subject,
+                            message: draft.body
+                        })
+                    });
+
+                    // Update local state
+                    draftedEmails.set(draft.lead.email, { subject: draft.subject, message: draft.body });
+                }
+
+                closeReviewSheet();
+                renderLeads(); // Re-render to show Draft labels
+            } catch (e) {
+                console.error('Save draft error:', e);
+                alert('Failed to save drafts.');
+            } finally {
+                draftMessageBtn.innerHTML = originalText;
+                draftMessageBtn.disabled = false;
+            }
         });
     }
 
-    // ── 9. Warning Strip Dismissal ──
+    // ── 14. Send All Drafts Button ──
+    if (sendAllDraftsBtn) {
+        sendAllDraftsBtn.addEventListener('click', async function() {
+            if (!token) return;
+
+            const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+            if (draftLeads.length === 0) {
+                alert('No draft messages to send.');
+                return;
+            }
+
+            const originalText = sendAllDraftsBtn.innerHTML;
+            sendAllDraftsBtn.innerHTML = '<span>Sending...</span>';
+            sendAllDraftsBtn.disabled = true;
+
+            const leadsToSend = draftLeads.map(lead => {
+                const draft = draftedEmails.get(lead.email);
+                return {
+                    name: lead.companyName,
+                    email: lead.email,
+                    company: lead.companyName,
+                    messages: [{
+                        subject: draft.subject,
+                        body: draft.message
+                    }]
+                };
+            });
+
+            try {
+                const res = await fetch(BACKEND + '/api/leads/batch-send', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ leads: leadsToSend })
+                });
+
+                if (res.ok) {
+                    // Delete all sent drafts from backend
+                    for (const lead of draftLeads) {
+                        await fetch(BACKEND + '/api/leads/draft', {
+                            method: 'DELETE',
+                            headers: { 
+                                'Authorization': 'Bearer ' + token,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ email: lead.email })
+                        });
+                        draftedEmails.delete(lead.email);
+                    }
+
+                    alert(`Successfully sent ${draftLeads.length} draft messages!`);
+                    renderLeads();
+                } else {
+                    alert('Failed to send some messages.');
+                }
+            } catch (e) {
+                console.error('Send all drafts error:', e);
+                alert('Network error while sending.');
+            } finally {
+                sendAllDraftsBtn.innerHTML = originalText;
+                sendAllDraftsBtn.disabled = false;
+            }
+        });
+    }
+
+    // ── 15. Warning Strip Dismissal ──
     if (closeWarningBtn && warningStrip) {
         closeWarningBtn.addEventListener('click', function() {
             warningStrip.style.display = 'none';
