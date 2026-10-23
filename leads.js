@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Skeleton Loading, Draft System, Schedule Outreach
+// UPDATED: AI Suggestions, Fixed Send All Drafts Flow
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -45,6 +45,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftMessageBtn = document.getElementById('draftMessageBtn');
     const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
     const draftCountsEl = document.getElementById('draftCounts');
+    
+    // ✅ NEW: AI Suggestion Elements
+    const aiSuggestBtn = document.getElementById('aiSuggestBtn');
+    const aiSuggestStatus = document.getElementById('aiSuggestStatus');
+    const aiSuggestionsOverlay = document.getElementById('aiSuggestionsOverlay');
+    const closeAiSuggestions = document.getElementById('closeAiSuggestions');
+    const cancelAiSuggestions = document.getElementById('cancelAiSuggestions');
+    const applyAiSuggestions = document.getElementById('applyAiSuggestions');
+    const aiSuggestionsList = document.getElementById('aiSuggestionsList');
 
     // Send All Drafts + Schedule Elements
     const sendAllDraftsWrapper = document.getElementById('sendAllDraftsWrapper');
@@ -90,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCardActionIndex = null;
     let isLoading = true;
     let scheduleContext = { type: '', leads: [] }; // 'review', 'single', 'all'
+    let pendingAiSuggestions = []; // Holds fetched suggestions before applying
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -170,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ── 3. Get Status Label HTML ──
+    // ─ 3. Get Status Label HTML ──
     function getStatusLabel(lead) {
         const isSaved = savedLeadsEmails.has(lead.email);
         const isDraft = draftedEmails.has(lead.email);
@@ -537,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectionState();
     }
 
-    // ── 10. Long Press Logic ──
+    // ─ 10. Long Press Logic ──
     function initLongPressLogic() {
         const cards = document.querySelectorAll('.lead-card');
         cards.forEach(card => {
@@ -990,69 +1000,78 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 14. Send All Drafts Button ──
+    // ── 14. Send All Drafts Button (FIXED: Opens Review Sheet) ──
     if (sendAllDraftsBtn) {
-        sendAllDraftsBtn.addEventListener('click', async function() {
-            if (!token) return;
-
+        sendAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
             if (draftLeads.length === 0) {
                 alert('No draft messages to send.');
                 return;
             }
 
-            const originalText = sendAllDraftsBtn.innerHTML;
-            sendAllDraftsBtn.innerHTML = '<span>Sending...</span>';
-            sendAllDraftsBtn.disabled = true;
-
-            const leadsToSend = draftLeads.map(lead => {
+            // Build reviewDrafts from saved drafts
+            reviewDrafts = draftLeads.map(lead => {
                 const draft = draftedEmails.get(lead.email);
+                const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                
                 return {
-                    name: lead.companyName,
-                    email: lead.email,
-                    company: lead.companyName,
-                    messages: [{
-                        subject: draft.subject,
-                        body: draft.message
-                    }]
+                    id: draftId,
+                    lead: lead,
+                    subject: draft.subject,
+                    body: draft.message,
+                    approved: true
                 };
             });
 
-            try {
-                const res = await fetch(BACKEND + '/api/leads/batch-send', {
-                    method: 'POST',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ leads: leadsToSend })
-                });
+            // Render into review sheet
+            draftListContainer.innerHTML = '';
+            reviewDrafts.forEach(d => {
+                const row = document.createElement('div');
+                row.className = 'draft-row';
+                row.setAttribute('data-draft-id', d.id);
+                row.innerHTML = `
+                    <div class="draft-header">
+                        <label class="draft-checkbox-wrapper">
+                            <input type="checkbox" class="draft-checkbox" checked>
+                            <span class="custom-checkbox draft-check">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </span>
+                        </label>
+                        <div class="draft-logo">
+                            <span style="font-weight:700; font-size:16px; color:white;">${d.lead.companyName ? d.lead.companyName.charAt(0).toUpperCase() : '?'}</span>
+                        </div>
+                        <div class="draft-info">
+                            <div class="draft-company">${d.lead.companyName || 'Unknown'}</div>
+                            <div class="draft-email">${d.lead.email}</div>
+                        </div>
+                        <div class="draft-status-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span>Needs review</span>
+                        </div>
+                        <button class="expand-editor-btn" onclick="window.toggleEditor(this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                    </div>
+                    <div class="draft-editor" style="display: none;">
+                        <div class="editor-field">
+                            <label>Subject</label>
+                            <input type="text" class="subject-input" value="${d.subject}" data-draft-id="${d.id}">
+                        </div>
+                        <div class="editor-field">
+                            <label>Message</label>
+                            <textarea class="message-input" data-draft-id="${d.id}">${d.body}</textarea>
+                        </div>
+                    </div>
+                `;
+                draftListContainer.appendChild(row);
+            });
 
-                if (res.ok) {
-                    for (const lead of draftLeads) {
-                        await fetch(BACKEND + '/api/leads/draft', {
-                            method: 'DELETE',
-                            headers: { 
-                                'Authorization': 'Bearer ' + token,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ email: lead.email })
-                        });
-                        draftedEmails.delete(lead.email);
-                    }
-
-                    alert(`Successfully sent ${draftLeads.length} draft messages!`);
-                    renderLeads();
-                } else {
-                    alert('Failed to send some messages.');
-                }
-            } catch (e) {
-                console.error('Send all drafts error:', e);
-                alert('Network error while sending.');
-            } finally {
-                sendAllDraftsBtn.innerHTML = originalText;
-                sendAllDraftsBtn.disabled = false;
+            if (draftCountsEl) {
+                draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
             }
+
+            updateSendButtonState();
+            reviewSheetOverlay.style.display = 'flex';
         });
     }
 
@@ -1083,7 +1102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ─ 16. Schedule Outreach Modal Logic ──
+    // ── 16. Schedule Outreach Modal Logic ──
 
     function updateScheduleModalUI() {
         const count = scheduleContext.leads.length;
@@ -1178,9 +1197,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // endpoint will be implemented when you explain how scheduling works.
                 // For now, we simulate success.
                 
-                // In production, this would be:
-                // await fetch(BACKEND + '/api/leads/schedule', { ... })
-                
                 console.log('Schedule payload:', {
                     leads: scheduleContext.leads,
                     scheduledAt: scheduledDateTime.toISOString(),
@@ -1216,6 +1232,116 @@ document.addEventListener('DOMContentLoaded', function() {
                 scheduleConfirmBtn.innerHTML = originalText;
                 scheduleConfirmBtn.disabled = false;
             }
+        });
+    }
+
+    // ═════════════════════════════════════════
+    // ✅ NEW: AI SUGGESTION LOGIC
+    // ══════════════════════════════════════════
+
+    // AI Suggestion Button Handler
+    if (aiSuggestBtn) {
+        aiSuggestBtn.addEventListener('click', async function() {
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) {
+                alert('Please approve at least one draft before requesting AI suggestions.');
+                return;
+            }
+
+            aiSuggestBtn.disabled = true;
+            aiSuggestStatus.textContent = 'Generating suggestions...';
+
+            try {
+                const res = await fetch(BACKEND + '/api/ai/suggest-outreach', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        leads: approvedDrafts.map(d => ({
+                            companyName: d.lead.companyName,
+                            email: d.lead.email,
+                            industry: d.lead.industry || ''
+                        }))
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to generate suggestions');
+                }
+
+                pendingAiSuggestions = data.suggestions;
+                renderAiSuggestionsModal(pendingAiSuggestions);
+                aiSuggestionsOverlay.style.display = 'flex';
+                aiSuggestStatus.textContent = `${data.remainingCalls} suggestions remaining today`;
+
+            } catch (err) {
+                console.error('AI Suggestion Error:', err);
+                alert(err.message || 'Failed to generate AI suggestions.');
+                aiSuggestStatus.textContent = '';
+            } finally {
+                aiSuggestBtn.disabled = false;
+            }
+        });
+    }
+
+    // Render AI Suggestions Modal
+    function renderAiSuggestionsModal(suggestions) {
+        if (!aiSuggestionsList) return;
+        aiSuggestionsList.innerHTML = '';
+
+        suggestions.forEach((s, idx) => {
+            const card = document.createElement('div');
+            card.className = 'ai-suggestion-card';
+            card.innerHTML = `
+                <div class="ai-card-header">
+                    <span class="ai-card-company">${s.companyName}</span>
+                    <span class="ai-card-email">${s.email}</span>
+                </div>
+                <div class="ai-card-message">${s.suggestedMessage}</div>
+            `;
+            aiSuggestionsList.appendChild(card);
+        });
+    }
+
+    // Close / Cancel AI Suggestions Modal
+    function closeAiModal() {
+        if (aiSuggestionsOverlay) aiSuggestionsOverlay.style.display = 'none';
+        pendingAiSuggestions = [];
+    }
+
+    if (closeAiSuggestions) closeAiSuggestions.addEventListener('click', closeAiModal);
+    if (cancelAiSuggestions) cancelAiSuggestions.addEventListener('click', closeAiModal);
+    if (aiSuggestionsOverlay) {
+        aiSuggestionsOverlay.addEventListener('click', function(e) {
+            if (e.target === aiSuggestionsOverlay) closeAiModal();
+        });
+    }
+
+    // Apply AI Suggestions to Drafts
+    if (applyAiSuggestions) {
+        applyAiSuggestions.addEventListener('click', function() {
+            if (!pendingAiSuggestions || pendingAiSuggestions.length === 0) return;
+
+            // Map suggestions back to reviewDrafts by email
+            pendingAiSuggestions.forEach(suggestion => {
+                const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
+                if (draft) {
+                    draft.body = suggestion.suggestedMessage;
+                    
+                    // Update the textarea in the DOM if it exists
+                    const textarea = document.querySelector(`textarea.message-input[data-draft-id="${draft.id}"]`);
+                    if (textarea) {
+                        textarea.value = suggestion.suggestedMessage;
+                    }
+                }
+            });
+
+            closeAiModal();
+            alert('AI suggestions applied to your drafts!');
         });
     }
 
