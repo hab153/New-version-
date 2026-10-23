@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Review Modal, Collapsible Editor & Batch Send
+// UPDATED: Fixed Send Button, Draft Message Button & Modal Layout
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectCountSpan = document.querySelector('.select-count');
     const saveLeadsBtn = document.querySelector('.action-btn.primary');
     const saveBtnText = document.getElementById('saveBtnText');
-    const sendBtn = document.getElementById('sendBtn'); // ✅ NEW: Send Button
+    const sendBtn = document.getElementById('sendBtn');
     const closeWarningBtn = document.getElementById('closeWarning');
     const warningStrip = document.getElementById('warningStrip');
     
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftListContainer = document.getElementById('draftListContainer');
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
     const sendApprovedBtn = document.getElementById('sendApprovedBtn');
+    const draftMessageBtn = document.getElementById('draftMessageBtn'); // NEW
     const draftCountsEl = document.getElementById('draftCounts');
 
     // Filter & Context Menu Elements
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
-    let reviewDrafts = []; // Holds data for the review modal
+    let reviewDrafts = [];
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
@@ -405,19 +406,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── 8. Review Outreach Modal Logic ──
     
-    // Helper to toggle editor visibility
     function toggleEditor(btn) {
         const editor = btn.closest('.draft-row').querySelector('.draft-editor');
         const arrow = btn.querySelector('svg');
         
         if (editor.style.display === 'none' || !editor.style.display) {
             editor.style.display = 'block';
-            // Rotate arrow up
             arrow.style.transform = 'rotate(180deg)';
         } else {
             editor.style.display = 'none';
-            // Rotate arrow down
             arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    // Check if any message input has text
+    function checkMessagesHaveText() {
+        const messageInputs = document.querySelectorAll('.message-input');
+        if (messageInputs.length === 0) return false;
+        
+        let hasText = false;
+        messageInputs.forEach(input => {
+            if (input.value.trim().length > 0) {
+                hasText = true;
+            }
+        });
+        return hasText;
+    }
+
+    // Update send button state
+    function updateSendButtonState() {
+        const anyChecked = document.querySelectorAll('.draft-checkbox:checked').length > 0;
+        const hasText = checkMessagesHaveText();
+        
+        if (sendApprovedBtn) {
+            if (anyChecked && hasText) {
+                sendApprovedBtn.disabled = false;
+                sendApprovedBtn.classList.remove('disabled');
+            } else {
+                sendApprovedBtn.disabled = true;
+                sendApprovedBtn.classList.add('disabled');
+            }
+        }
+    }
+
+    function closeReviewSheet() {
+        if (reviewSheetOverlay) {
+            reviewSheetOverlay.style.display = 'none';
         }
     }
 
@@ -433,20 +467,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const index = parseInt(card.getAttribute('data-index'));
             const lead = allLeadsData[index];
 
-            if (!lead.email) return; // Skip if no email (should be caught by validation earlier)
+            if (!lead.email) return;
 
-            const draftId = Date.now() + Math.random().toString(36).substr(2, 9);
+            const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
             
-            // Default message template
-            const defaultSubject = `Partnership Inquiry`;
-            const defaultBody = `Hi ${lead.companyName},\n\nI came across your company and was impressed by your work. I'd love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`;
+            const defaultSubject = 'Partnership Inquiry';
+            const defaultBody = 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User';
 
             reviewDrafts.push({
                 id: draftId,
                 lead: lead,
                 subject: defaultSubject,
                 body: defaultBody,
-                approved: false
+                approved: true
             });
 
             const row = document.createElement('div');
@@ -491,24 +524,19 @@ document.addEventListener('DOMContentLoaded', function() {
             draftListContainer.appendChild(row);
         });
 
-        // Update counts
         if (draftCountsEl) {
-            draftCountsEl.textContent = `${reviewDrafts.length} drafts created · 0 sent`;
-        }
-
-        // Reset send button
-        if (sendApprovedBtn) {
-            sendApprovedBtn.disabled = true;
-            sendApprovedBtn.classList.add('disabled');
+            draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
         }
 
         reviewSheetOverlay.style.display = 'flex';
+        
+        // Check initial state - default messages have text so button should be enabled
+        updateSendButtonState();
     }
 
-    // Event listener for the new Send button in bulk panel
+    // Event listener for Send button in bulk panel
     if (sendBtn) {
         sendBtn.addEventListener('click', function() {
-            // Validation: Check for missing emails
             const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
             const missingEmails = [];
             
@@ -522,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (missingEmails.length > 0) {
-                alert(`Cannot send to the following companies because they are missing email addresses:\n\n- ${missingEmails.join('\n- ')}\n\nPlease unmark them or add their emails.`);
+                alert('Cannot send to the following companies because they are missing email addresses:\n\n- ' + missingEmails.join('\n- ') + '\n\nPlease unmark them or add their emails.');
                 return;
             }
 
@@ -532,9 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close Review Sheet
     if (closeReviewSheetBtn) {
-        closeReviewSheetBtn.addEventListener('click', function() {
-            reviewSheetOverlay.style.display = 'none';
-        });
+        closeReviewSheetBtn.addEventListener('click', closeReviewSheet);
     }
 
     // Handle Draft Checkbox Changes
@@ -542,18 +568,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('draft-checkbox')) {
             const row = e.target.closest('.draft-row');
             const draftId = row.getAttribute('data-draft-id');
-            const draft = reviewDrafts.find(d => d.id === draftId);
+            const draft = reviewDrafts.find(function(d) { return d.id === draftId; });
             if (draft) {
                 draft.approved = e.target.checked;
             }
-            
-            // Enable send button if at least one is checked
-            const anyChecked = document.querySelectorAll('.draft-checkbox:checked').length > 0;
-            if (sendApprovedBtn) {
-                sendApprovedBtn.disabled = !anyChecked;
-                if (anyChecked) sendApprovedBtn.classList.remove('disabled');
-                else sendApprovedBtn.classList.add('disabled');
-            }
+            updateSendButtonState();
         }
     });
 
@@ -561,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('subject-input') || e.target.classList.contains('message-input')) {
             const draftId = e.target.getAttribute('data-draft-id');
-            const draft = reviewDrafts.find(d => d.id === draftId);
+            const draft = reviewDrafts.find(function(d) { return d.id === draftId; });
             if (draft) {
                 if (e.target.classList.contains('subject-input')) {
                     draft.subject = e.target.value;
@@ -569,6 +588,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     draft.body = e.target.value;
                 }
             }
+            // Update send button state whenever user types
+            updateSendButtonState();
         }
     });
 
@@ -578,28 +599,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Send Approved Emails
     if (sendApprovedBtn) {
         sendApprovedBtn.addEventListener('click', async function() {
-            if (this.disabled) return;
+            if (this.disabled || this.classList.contains('disabled')) return;
 
-            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            const approvedDrafts = reviewDrafts.filter(function(d) { return d.approved; });
             if (approvedDrafts.length === 0) return;
 
             const originalText = sendApprovedBtn.innerHTML;
             sendApprovedBtn.innerHTML = '<span>Sending...</span>';
             sendApprovedBtn.disabled = true;
 
-            // Format for backend
-            const leadsToSend = approvedDrafts.map(d => ({
-                name: d.lead.companyName,
-                email: d.lead.email,
-                company: d.lead.companyName,
-                messages: [{
-                    subject: d.subject,
-                    body: d.body
-                }]
-            }));
+            const leadsToSend = approvedDrafts.map(function(d) {
+                return {
+                    name: d.lead.companyName,
+                    email: d.lead.email,
+                    company: d.lead.companyName,
+                    messages: [{
+                        subject: d.subject,
+                        body: d.body
+                    }]
+                };
+            });
 
             try {
-                const res = await fetch(`${BACKEND}/api/leads/batch-send`, {
+                const res = await fetch(BACKEND + '/api/leads/batch-send', {
                     method: 'POST',
                     headers: { 
                         'Authorization': 'Bearer ' + token,
@@ -609,13 +631,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (res.ok) {
-                    alert(`Successfully sent to ${leadsToSend.length} leads!`);
-                    reviewSheetOverlay.style.display = 'none';
+                    // Close modal immediately after successful send
+                    closeReviewSheet();
                     // Uncheck main checkboxes
-                    document.querySelectorAll('.lead-checkbox:checked').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('.lead-checkbox:checked').forEach(function(cb) { cb.checked = false; });
                     initSelectionLogic();
                 } else {
-                    alert('Failed to send some emails.');
+                    const errData = await res.json();
+                    alert('Failed to send: ' + (errData.message || 'Unknown error'));
                 }
             } catch (e) {
                 console.error('Send error:', e);
@@ -623,7 +646,17 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 sendApprovedBtn.innerHTML = originalText;
                 sendApprovedBtn.disabled = false;
+                updateSendButtonState();
             }
+        });
+    }
+
+    // Draft Message Button - Closes modal, does NOT send
+    if (draftMessageBtn) {
+        draftMessageBtn.addEventListener('click', function() {
+            // For now, just close the modal and return to leads page
+            // Future: save drafts to backend
+            closeReviewSheet();
         });
     }
 
