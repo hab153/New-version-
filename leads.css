@@ -14,6 +14,7 @@
     --text-primary: #F5F5F7;
     --text-secondary: #9697A1;
     --text-dark: #0B0C0D;
+    --text-muted: #858894;
     
     --border-subtle: #2D2F33;
     --border-focus: #4A4C52;
@@ -708,7 +709,7 @@ body {
     cursor: pointer;
 }
 
-/* ── 11. FIVE-ITEM BOTTOM NAVIGATION ── */
+/* ─ 11. FIVE-ITEM BOTTOM NAVIGATION ── */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -1106,6 +1107,49 @@ body {
 
 .close-sheet:hover { background: rgba(255,255,255,0.1); }
 
+/* ✅ NEW: AI Suggestion Section */
+.ai-suggestion-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.ai-suggest-btn {
+    background-color: #8B5CF6;
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.ai-suggest-btn:hover:not(:disabled) {
+    background-color: #7C3AED;
+    transform: translateY(-1px);
+}
+
+.ai-suggest-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ai-suggest-status {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
 .draft-list-container {
     background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
@@ -1355,6 +1399,106 @@ body {
     border-color: var(--text-secondary);
     transform: translateY(-1px);
 }
+
+/* ══════════════════════════════════════════
+   AI SUGGESTIONS MODAL
+   ══════════════════════════════════════════ */
+
+.ai-suggestions-modal {
+    max-width: 700px;
+    max-height: 80vh;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ai-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.ai-modal-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.ai-suggestions-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+}
+
+.ai-suggestion-card {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.ai-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ai-card-company {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.ai-card-email {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.ai-card-message {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ai-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-primary {
+    background-color: #8B5CF6;
+    color: white;
+}
+
+.btn-primary:hover { background-color: #7C3AED; }
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover { background-color: rgba(255,255,255,0.05); }
 
 /* ══════════════════════════════════════════
    SCHEDULE OUTREACH MODAL
