@@ -1,11 +1,11 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: High-Fi Schedule Modal, Approval Workflow, Live Countdown
+// FIXED: Separate Review Sheet & High-Fi Schedule Modal
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // ─ DOM Elements ──
+    //  DOM Elements ──
     const leadsList = document.getElementById('leadsList');
     const selectAllCheckbox = document.getElementById('selectAll');
     const selectCountSpan = document.querySelector('.select-count');
@@ -34,12 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftSendBtn = document.getElementById('draftSendBtn');
     const draftScheduleBtn = document.getElementById('draftScheduleBtn');
 
+    // REVIEW SHEET ELEMENTS
     const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
     const draftListContainer = document.getElementById('draftListContainer');
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
     const sendApprovedBtn = document.getElementById('sendApprovedBtn');
     const draftMessageBtn = document.getElementById('draftMessageBtn');
-    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
+    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn'); // Button INSIDE review sheet
     const draftCountsEl = document.getElementById('draftCounts');
     
     const aiSuggestBtn = document.getElementById('aiSuggestBtn');
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendAllDraftsBtn = document.getElementById('sendAllDraftsBtn');
     const scheduleAllDraftsBtn = document.getElementById('scheduleAllDraftsBtn');
 
-    // ✅ HIGH-FI SCHEDULE MODAL ELEMENTS
+    // HIGH-FI SCHEDULE MODAL ELEMENTS
     const scheduleOverlay = document.getElementById('scheduleOverlay');
     const closeScheduleSheetBtn = document.getElementById('closeScheduleSheetBtn');
     const scheduleCancelBtn = document.getElementById('scheduleCancelBtn');
@@ -86,18 +87,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
-    let reviewDrafts = [];
+    let reviewDrafts = []; // Used for Review Sheet
+    let scheduleLeads = []; // Used for Schedule Modal (separate state)
     let currentCardActionIndex = null;
     let isLoading = true;
-    let scheduleContext = { type: '', leads: [] };
-    let countdownIntervals = {}; // Store intervals for cleanup
+    let countdownIntervals = {}; 
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
     // ═══════════════════════════════════════════════════════════
     // LIVE COUNTDOWN LOGIC
-    // ═══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════
     function startCountdowns() {
         Object.values(countdownIntervals).forEach(clearInterval);
         countdownIntervals = {};
@@ -151,13 +152,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // ═══════════════════════════════════════════════════════════
     // HIGH-FI SCHEDULE MODAL: DYNAMIC COMPANY LIST
     // ═══════════════════════════════════════════════════════════
-    function renderCompanyList() {
+    function renderScheduleCompanyList() {
         if (!companyListContainer) return;
         companyListContainer.innerHTML = '';
 
         let approvedCount = 0;
 
-        scheduleContext.leads.forEach((lead, index) => {
+        scheduleLeads.forEach((lead, index) => {
             const initial = lead.companyName ? lead.companyName.charAt(0).toUpperCase() : '?';
             const isApproved = lead.approved;
             if (isApproved) approvedCount++;
@@ -187,14 +188,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const checkbox = row.querySelector('.row-checkbox');
             checkbox.addEventListener('change', function() {
                 lead.approved = this.checked;
-                renderCompanyList();
+                renderScheduleCompanyList();
             });
 
             // Approve Button Logic
             const approveBtn = row.querySelector('.approve-btn');
             approveBtn.addEventListener('click', function() {
                 lead.approved = !lead.approved;
-                renderCompanyList();
+                renderScheduleCompanyList();
             });
 
             companyListContainer.appendChild(row);
@@ -212,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // THE SINGLE RENDER FUNCTION FOR ALL DRAFTS (REVIEW SHEET)
+    // REVIEW SHEET RENDER FUNCTION
     // ═══════════════════════════════════════════════════════════
     function renderDraftRows() {
         if (!draftListContainer) return;
@@ -483,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startCountdowns();
     }
 
-    // ... [Existing Modal Logic: openDetailsModal, closeModal, openCardActionModal, etc.] ...
+    // ... [Existing Modal Logic: openDetailsModal, closeModal, etc.] ...
     function openDetailsModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !modalOverlay || !modalContent) return;
@@ -575,8 +576,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const subject = draftEditSubject ? draftEditSubject.value : '';
             const message = draftEditMessage ? draftEditMessage.value : '';
             if (!email) return;
-            scheduleContext = { type: 'single', leads: [{ companyName: company, email: email, subject: subject, message: message, approved: true }] };
-            renderCompanyList(); // Render high-fi list
+            
+            // Populate scheduleLeads for High-Fi Modal
+            scheduleLeads = [{ companyName: company, email: email, subject: subject, message: message, approved: true }];
+            renderScheduleCompanyList();
+            
             closeDraftViewModal();
             scheduleOverlay.style.display = 'flex';
         });
@@ -708,12 +712,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✅ FIXED: Schedule Button now opens Review Sheet first for approval
+    // ✅ FIXED: Schedule Button in Review Sheet opens High-Fi Schedule Modal
     if (scheduleOutreachBtn) {
         scheduleOutreachBtn.addEventListener('click', function() {
-            const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
-            if (selectedCards.length === 0) { alert('Please select at least one lead to schedule.'); return; }
-            openReviewSheet();
+            // Validate approval in Review Sheet first
+            const unapproved = reviewDrafts.filter(d => !d.approved);
+            if (unapproved.length > 0) {
+                const names = unapproved.map(d => d.lead.companyName).join(', ');
+                alert(`⚠️ Please approve all companies before scheduling:\n\n${names}`);
+                return;
+            }
+
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) { alert('Please approve at least one draft.'); return; }
+            
+            // Transfer approved drafts to scheduleLeads for High-Fi Modal
+            scheduleLeads = approvedDrafts.map(d => ({
+                companyName: d.lead.companyName,
+                email: d.lead.email,
+                subject: d.subject,
+                message: d.body,
+                approved: true
+            }));
+            
+            // Render High-Fi List and Open Modal
+            renderScheduleCompanyList();
+            closeReviewSheet();
+            scheduleOverlay.style.display = 'flex';
         });
     }
 
@@ -753,6 +778,8 @@ document.addEventListener('DOMContentLoaded', function() {
         scheduleAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
             if (draftLeads.length === 0) { alert('No draft messages to schedule.'); return; }
+            
+            // Open Review Sheet first for verification
             reviewDrafts = draftLeads.map(lead => { const draft = draftedEmails.get(lead.email); const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); return { id: draftId, lead: lead, subject: draft.subject, body: draft.message, approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null }; });
             renderDraftRows();
             if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 scheduled';
@@ -765,7 +792,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // HIGH-FI SCHEDULE MODAL LOGIC
     // ═══════════════════════════════════════════════════════════
     
-    // Helper to update UI text based on selections
     function updateScheduleSelectors() {
         if (scheduleDateInput.value) {
             const date = new Date(scheduleDateInput.value + 'T00:00:00');
@@ -786,28 +812,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Event Listeners for Selectors
     if (scheduleDateInput) scheduleDateInput.addEventListener('change', updateScheduleSelectors);
     if (scheduleTimeInput) scheduleTimeInput.addEventListener('change', updateScheduleSelectors);
     if (scheduleTimezoneSelect) scheduleTimezoneSelect.addEventListener('change', updateScheduleSelectors);
     if (schedulePaceSelect) schedulePaceSelect.addEventListener('change', updateScheduleSelectors);
 
-    // Close Modal Logic
     function closeScheduleModal() {
         if (scheduleOverlay) scheduleOverlay.style.display = 'none';
-        scheduleContext = { type: '', leads: [] };
+        scheduleLeads = [];
     }
     if (closeScheduleSheetBtn) closeScheduleSheetBtn.addEventListener('click', closeScheduleModal);
     if (scheduleCancelBtn) scheduleCancelBtn.addEventListener('click', closeScheduleModal);
     if (scheduleOverlay) scheduleOverlay.addEventListener('click', function(e) { if (e.target === scheduleOverlay) closeScheduleModal(); });
 
-    // Confirm Schedule Logic
     if (scheduleConfirmBtn) {
         scheduleConfirmBtn.addEventListener('click', async function() {
             if (!token) return;
             
-            // Filter only approved leads from the context
-            const approvedLeads = scheduleContext.leads.filter(l => l.approved);
+            // Filter only approved leads from the High-Fi Modal context
+            const approvedLeads = scheduleLeads.filter(l => l.approved);
             if (approvedLeads.length === 0) { alert('Please approve at least one lead.'); return; }
 
             const dateVal = scheduleDateInput.value;
