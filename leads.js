@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// BULLETPROOF AI SUGGESTION: Single render path, direct refs
+// UPDATED: AI Suggestion batch (count-based) + direct refs
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -91,8 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('token');
 
     // ═══════════════════════════════════════════════════════════
-    // ⭐ THE SINGLE RENDER FUNCTION FOR ALL DRAFTS
-    // Every input gets `_draftRef` attached AND draft gets back-ref
+    // THE SINGLE RENDER FUNCTION FOR ALL DRAFTS
     // ═══════════════════════════════════════════════════════════
     function renderDraftRows() {
         if (!draftListContainer) return;
@@ -145,12 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const editorDiv = row.querySelector('.draft-editor');
             const arrowSvg = expandBtn.querySelector('svg');
 
-            // ⭐⭐⭐ DIRECT REFERENCES — the unbreakable link ⭐⭐⭐
+            // DIRECT REFERENCES — unbreakable link between state and DOM
             subjectInput._draftRef = draft;
             messageTextarea._draftRef = draft;
             checkbox._draftRef = draft;
 
-            // Reverse references stored on draft object
             draft._subjectInputEl = subjectInput;
             draft._messageInputEl = messageTextarea;
             draft._checkboxEl = checkbox;
@@ -187,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 1. Load Data ──
+    // ── Load Data ──
     async function initData() {
         isLoading = true;
         renderSkeletons(5);
@@ -236,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
         renderLeads();
     }
 
-    // ── 2. Render Skeletons ──
     function renderSkeletons(count) {
         if (!leadsList) return;
         leadsList.innerHTML = '';
@@ -272,7 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<span class="status-label recent">Recent</span>';
     }
 
-    // ── 3. Render Lead Cards ──
     function renderLeads() {
         if (!leadsList) return;
         leadsList.innerHTML = '';
@@ -353,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
         initLongPressLogic();
     }
 
-    // ── Details Modal ──
     function openDetailsModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !modalOverlay || !modalContent) return;
@@ -393,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Card Action Modal ──
     function openCardActionModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !cardActionOverlay) return;
@@ -433,7 +427,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Draft View Modal ──
     function openDraftViewModal(lead) {
         if (!lead || !draftViewOverlay) return;
         const draft = draftedEmails.get(lead.email) || { subject: '', message: '' };
@@ -455,7 +448,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Send individual draft
     if (draftSendBtn) {
         draftSendBtn.addEventListener('click', async function() {
             if (!token) return;
@@ -500,7 +492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Schedule single draft
     if (draftScheduleBtn) {
         draftScheduleBtn.addEventListener('click', function() {
             const company = draftViewCompany ? draftViewCompany.textContent : '';
@@ -515,7 +506,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Card Click Handler ──
     if (leadsList) {
         leadsList.addEventListener('click', function(e) {
             if (e.target.closest('.checkbox-wrapper') || e.target.closest('.view-btn')) return;
@@ -532,7 +522,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Selection Logic ──
     function initSelectionLogic() {
         const leadCheckboxes = document.querySelectorAll('.lead-checkbox');
 
@@ -562,7 +551,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectionState();
     }
 
-    // ── Long Press ──
     function initLongPressLogic() {
         const cards = document.querySelectorAll('.lead-card');
         cards.forEach(card => {
@@ -627,7 +615,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Filter Dropdown ──
     if (filterDropdownBtn) {
         filterDropdownBtn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -654,7 +641,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ── Save Leads ──
     if (saveLeadsBtn) {
         saveLeadsBtn.addEventListener('click', async function() {
             if (this.disabled || !token) return;
@@ -691,7 +677,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Review Outreach ──
     function checkMessagesHaveText() {
         return reviewDrafts.some(d => d.body && d.body.trim().length > 0);
     }
@@ -712,7 +697,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeReviewSheet() {
         if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none';
-        // Clean up references to avoid memory leaks
         reviewDrafts.forEach(d => {
             d._subjectInputEl = null;
             d._messageInputEl = null;
@@ -720,7 +704,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ⭐⭐⭐ OPEN REVIEW SHEET — from "Send" button ⭐⭐⭐
     function openReviewSheet() {
         const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
         if (selectedCards.length === 0) return;
@@ -785,7 +768,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Send Approved
     if (sendApprovedBtn) {
         sendApprovedBtn.addEventListener('click', async function() {
             if (this.disabled || this.classList.contains('disabled')) return;
@@ -828,7 +810,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Schedule Outreach
     if (scheduleOutreachBtn) {
         scheduleOutreachBtn.addEventListener('click', function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
@@ -848,7 +829,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Draft Message
     if (draftMessageBtn) {
         draftMessageBtn.addEventListener('click', async function() {
             if (!token) { closeReviewSheet(); return; }
@@ -885,7 +865,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ⭐⭐⭐ SEND ALL DRAFTS — uses SAME renderDraftRows() ⭐⭐⭐
     if (sendAllDraftsBtn) {
         sendAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
@@ -914,7 +893,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Schedule All Drafts
     if (scheduleAllDraftsBtn) {
         scheduleAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
@@ -937,7 +915,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Schedule Modal
     function updateScheduleModalUI() {
         const count = scheduleContext.leads.length;
         if (scheduleEmailCount) scheduleEmailCount.textContent = count + ' approved emails';
@@ -1043,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // ⭐⭐⭐ AI SUGGESTION — DIRECT REFERENCE UPDATE ⭐⭐⭐
+    // ⭐⭐⭐ AI SUGGESTION — NEW CONTRACT: count + drafts array ⭐⭐⭐
     // ═══════════════════════════════════════════════════════════
     if (aiSuggestBtn) {
         aiSuggestBtn.addEventListener('click', async function() {
@@ -1056,73 +1033,97 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalBtnHTML = aiSuggestBtn.innerHTML;
             aiSuggestBtn.disabled = true;
             aiSuggestBtn.innerHTML = '<span class="spinner"></span> Generating...';
-            if (aiSuggestStatus) aiSuggestStatus.textContent = 'Generating personalized messages...';
+            if (aiSuggestStatus) {
+                aiSuggestStatus.textContent = `Generating ${approvedDrafts.length} personalized messages...`;
+            }
 
             try {
+                // ⭐ NEW PAYLOAD: count + leads array
+                const payload = {
+                    count: approvedDrafts.length,
+                    leads: approvedDrafts.map(d => ({
+                        companyName: d.lead.companyName || '',
+                        email: d.lead.email || '',
+                        industry: d.lead.industry || ''
+                    }))
+                };
+
+                console.log('📤 [AI Suggest] Sending payload:', payload);
+
                 const res = await fetch(BACKEND + '/api/ai/suggest-outreach', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        leads: approvedDrafts.map(d => ({
-                            companyName: d.lead.companyName,
-                            email: d.lead.email,
-                            industry: d.lead.industry || ''
-                        }))
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to generate');
+                console.log('📥 [AI Suggest] Response:', data);
 
-                // ⭐⭐⭐ DIRECT UPDATE VIA _subjectInputEl / _messageInputEl ⭐⭐⭐
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to generate suggestions');
+                }
+
+                // ⭐ NEW RESPONSE FORMAT: { success, count, drafts: [{leadEmail, subject, message}], remainingCalls }
+                if (!data.drafts || !Array.isArray(data.drafts)) {
+                    throw new Error('Invalid response: missing drafts array');
+                }
+
+                // ⭐⭐⭐ INJECT INTO DOM VIA DIRECT REFS (with fallback) ⭐⭐⭐
                 let updatedCount = 0;
 
-                (data.suggestions || []).forEach(suggestion => {
-                    const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
-                    if (!draft) return;
-                    if (!suggestion.subject || !suggestion.body) return;
+                data.drafts.forEach(aiDraft => {
+                    // Match by leadEmail
+                    const draft = reviewDrafts.find(d => d.lead.email === aiDraft.leadEmail);
+                    
+                    if (!draft) {
+                        console.warn('⚠️ No match for leadEmail:', aiDraft.leadEmail);
+                        return;
+                    }
 
-                    draft.subject = suggestion.subject;
-                    draft.body = suggestion.body;
+                    // Update state
+                    draft.subject = aiDraft.subject;
+                    draft.body = aiDraft.message;
 
-                    // ⭐ PRIMARY: Direct reference
+                    // ⭐ PRIMARY: update via direct references
                     if (draft._subjectInputEl) {
-                        draft._subjectInputEl.value = suggestion.subject;
+                        draft._subjectInputEl.value = aiDraft.subject;
                     }
                     if (draft._messageInputEl) {
-                        draft._messageInputEl.value = suggestion.body;
+                        draft._messageInputEl.value = aiDraft.message;
                     }
 
-                    // ⭐ FALLBACK: If references were lost for any reason
+                    // ⭐ FALLBACK: query by data-draft-id (if refs lost)
                     if (!draft._subjectInputEl || !draft._messageInputEl) {
                         const row = draftListContainer.querySelector(`[data-draft-id="${draft.id}"]`);
                         if (row) {
                             const sIn = row.querySelector('.subject-input');
                             const mIn = row.querySelector('.message-input');
-                            if (sIn) sIn.value = suggestion.subject;
-                            if (mIn) mIn.value = suggestion.body;
+                            if (sIn) sIn.value = aiDraft.subject;
+                            if (mIn) mIn.value = aiDraft.message;
                         }
                     }
 
                     updatedCount++;
                 });
 
+                // Status update
                 if (aiSuggestStatus) {
-                    aiSuggestStatus.textContent = updatedCount + ' drafts updated · ' + (data.remainingCalls ?? '?') + ' remaining';
+                    aiSuggestStatus.textContent = `✅ ${updatedCount}/${approvedDrafts.length} drafts updated · ${data.remainingCalls ?? '?'} remaining today`;
                 }
 
+                // Success flash
                 if (updatedCount > 0) {
                     aiSuggestBtn.style.backgroundColor = '#22C55E';
                     setTimeout(() => { aiSuggestBtn.style.backgroundColor = ''; }, 800);
                     updateSendButtonState();
                 } else {
-                    console.warn('No drafts updated');
+                    console.warn('⚠️ AI returned drafts but none matched');
                 }
 
             } catch (err) {
-                console.error('AI Suggestion Error:', err);
+                console.error('❌ AI Suggestion Error:', err);
                 alert(err.message || 'Failed to generate AI suggestions.');
-                if (aiSuggestStatus) aiSuggestStatus.textContent = 'Failed. Try again.';
+                if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.';
             } finally {
                 aiSuggestBtn.disabled = false;
                 aiSuggestBtn.innerHTML = originalBtnHTML;
@@ -1130,7 +1131,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Warning strip dismissal
     if (closeWarningBtn && warningStrip) {
         closeWarningBtn.addEventListener('click', function() {
             warningStrip.style.display = 'none';
