@@ -1,6 +1,6 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: 3 independent skeleton rows in plan card + email banner loading
+// UPDATED: Exactly 3 independent skeleton rows in plan card + email banner loading
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -34,7 +34,7 @@ if (plusBtn) {
     plusBtn.addEventListener('click', function() { window.location.reload(); });
 }
 
-// ── Delete Button ──
+// ── Delete Button ─
 if (deleteBtn) {
     deleteBtn.addEventListener('click', function() {
         if (customerDescription && customerDescription.value.length > 0) {
@@ -55,7 +55,7 @@ function handleOAuthRedirect() {
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (nylasSuccess === 'error') {
         const errorMsg = params.get('error') || 'Unknown error';
-        showToast(`❌ Connection failed: ${decodeURIComponent(errorMsg)}`, 'error', 6000);
+        showToast(` Connection failed: ${decodeURIComponent(errorMsg)}`, 'error', 6000);
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
@@ -184,7 +184,7 @@ function createMiniPanel() {
     panel.className = 'stage-mini-panel';
     const header = document.createElement('div');
     header.className = 'panel-header';
-    header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">️ 0s</span>';
+    header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">⏱️ 0s</span>';
     panel.appendChild(header);
     const content = document.createElement('div');
     content.className = 'panel-content';
@@ -344,12 +344,12 @@ async function openUsageModal() {
     usageGrid.innerHTML = '<div class="usage-loading">Loading usage data...</div>';
     if (!token) { usageGrid.innerHTML = '<div class="usage-error">Please log in to view usage.</div>'; return; }
     try {
-        console.log(' [MODAL] Fetching fresh usage...');
+        console.log('📤 [MODAL] Fetching fresh usage...');
         const res = await fetch(`${BACKEND}/api/users/me/usage`, {
             headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store'
         });
         const data = await res.json();
-        console.log('📥 [MODAL] Fresh data:', data);
+        console.log(' [MODAL] Fresh data:', data);
         if (!res.ok) throw new Error(data.message || 'Failed');
         const limits = data.limits || {};
         const metrics = [
@@ -381,7 +381,7 @@ if (planCard) {
     planCard.addEventListener('click', function() { openUsageModal(); });
 }
 
-// ── PLAN LOADING WITH 3 INDEPENDENT SKELETON ROWS ──
+// ── PLAN LOADING WITH EXACTLY 3 INDEPENDENT SKELETON ROWS ──
 function checkPlan() {
     if (!token) {
         if (planCardTitle) planCardTitle.classList.remove('skel');
@@ -392,7 +392,7 @@ function checkPlan() {
         return;
     }
 
-    // Initialize exactly 3 skeleton bars beneath the header row
+    // ✅ Initialize EXACTLY 3 skeleton bars beneath the header row
     if (planCardStats && !planCardStats.querySelector('.skel-bar')) {
         planCardStats.classList.add('skel-active');
         planCardStats.innerHTML = `
