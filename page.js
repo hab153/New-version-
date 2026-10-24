@@ -1,12 +1,12 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: Redirects to leads.html with data on completion
+// UPDATED: Merges new leads with existing localStorage data
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 
-// ── DOM Elements ──
+// ─ DOM Elements ──
 const customerDescription = document.getElementById('customerDescription');
 const charCounter = document.getElementById('charCounter');
 const suggestionChips = document.querySelectorAll('.chip-btn');
@@ -315,7 +315,7 @@ function streamLeadResponse(message) {
             if (status) updateStageInPanel(stageId, status);
             if (payload.data?.data) _stageData[stageId] = payload.data.data;
 
-            // ⭐ If this event carries remainingLimits, update UI immediately
+            //  If this event carries remainingLimits, update UI immediately
             if (payload.data?.remainingLimits) {
                 handleLimitsFromSSE(payload.data.remainingLimits);
             }
@@ -363,17 +363,40 @@ function streamLeadResponse(message) {
     }
 }
 
+// ✅ FIXED: MERGE new leads with existing instead of overwriting
 function renderFinalResults(data) {
     const companies = data?.companies || [];
     const count = companies.length;
     
     if (count > 0) {
-        // ⭐ Store the lead data in localStorage to pass to leads.html
-        localStorage.setItem('skyline_leads_data', JSON.stringify(companies));
+        // Load existing leads safely
+        let existingLeads = [];
+        try {
+            const stored = localStorage.getItem('skyline_leads_data');
+            if (stored) {
+                existingLeads = JSON.parse(stored);
+                if (!Array.isArray(existingLeads)) existingLeads = [];
+            }
+        } catch (e) {
+            console.error('Failed to parse existing leads:', e);
+            existingLeads = [];
+        }
+
+        // Deduplicate by email (case-insensitive)
+        const existingEmails = new Set(existingLeads.map(l => l.email?.toLowerCase()));
+        const newUniqueLeads = companies.filter(c => !existingEmails.has(c.email?.toLowerCase()));
+
+        // Prepend new unique leads so they appear at top
+        const mergedLeads = [...newUniqueLeads, ...existingLeads];
+
+        localStorage.setItem('skyline_leads_data', JSON.stringify(mergedLeads));
         
-        showToast(`Search complete! Found ${count} prospects. Redirecting...`, 'success');
+        showToast(
+            `Search complete! Found ${newUniqueLeads.length} new prospects (${mergedLeads.length} total). Redirecting...`, 
+            'success'
+        );
         
-        // ⭐ Redirect to leads.html after a short delay
+        // Redirect to leads.html after a short delay
         setTimeout(() => {
             window.location.href = 'leads.html';
         }, 1500);
