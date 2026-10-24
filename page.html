@@ -22,7 +22,6 @@
         <header class="top-header">
             <div class="brand-section">
                 <div class="logo-mark">
-                    <!-- Pulse/Heartbeat Icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0C0E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                     </svg>
@@ -43,7 +42,6 @@
         </header>
 
         <!-- 4. Email Connection Banner -->
-        <!-- Note: ID retained for existing JS logic if needed, but structure updated -->
         <div id="emailBanner" class="email-banner disconnected">
             <div class="banner-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
@@ -106,7 +104,7 @@
 
         <!-- 7. Lower Dashboard Cards -->
         <section class="dashboard-cards">
-            <!-- Left Card: Free Plan -->
+            <!-- Left Card: Free Plan (CLICKABLE) -->
             <div class="card plan-card">
                 <div class="card-header">
                     <div class="icon-circle purple">
@@ -116,16 +114,12 @@
                     <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div class="card-stats">
-                    <div class="stat-row">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        <span class="stat-value">5</span>
-                        <span class="stat-label">emails left today</span>
-                    </div>
-                    <div class="stat-row">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        <span class="stat-value">10</span>
-                        <span class="stat-label">chats left today</span>
-                    </div>
+                    <!-- Skeleton placeholders for JS to replace -->
+                    <div class="stat-row skel skel-bar"></div>
+                    <div class="stat-row skel skel-bar"></div>
+                    <div class="stat-row skel skel-bar"></div>
+                    <!-- ✅ NEW: 4th skeleton row for AI Suggestions -->
+                    <div class="stat-row skel skel-bar"></div>
                 </div>
             </div>
 
@@ -145,6 +139,21 @@
 
     </main>
 
+    <!-- ✅ NEW: Usage Details Modal (Reused from alert.html pattern) -->
+    <div class="modal-overlay" id="usageModalOverlay" style="display: none;">
+        <div class="modal-content usage-modal">
+            <button class="close-modal" id="closeUsageModal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 class="usage-modal-title">Daily Usage Limits</h3>
+            <p class="usage-modal-subtitle">Your remaining allocations reset every 24 hours.</p>
+            
+            <div class="usage-grid" id="usageGrid">
+                <div class="usage-loading">Loading usage data...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- 8. Fixed Bottom Navigation -->
     <nav class="bottom-nav">
         <a href="page.html" class="nav-item active">
@@ -157,12 +166,10 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <span class="nav-label">Leads</span>
         </a>
-        <!-- ✅ UPDATED: Inbox now points to notifications.html -->
         <a href="notifications.html" class="nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
             <span class="nav-label">Inbox</span>
         </a>
-        <!-- ✅ UPDATED: Alerts now points to alert.html -->
         <a href="alert.html" class="nav-item">
             <div class="nav-icon-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -170,8 +177,8 @@
             </div>
             <span class="nav-label">Alerts</span>
         </a>
-        <a href="dashboard.html" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <a href="settings.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="nav-label">Settings</span>
         </a>
     </nav>
@@ -180,4 +187,4 @@
     <script src="session-check.js"></script>
     <script src="page.js"></script>
 </body>
-    </html>
+                                                                                                                                                                                                             </html>
