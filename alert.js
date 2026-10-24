@@ -1,5 +1,5 @@
 // ============================================================
-// alert.js - Skyline AI · Alerts Page (LIVE DATA)
+// alert.js - Skyline AI · Alerts Page (LIVE DATA - Mirrors page.js)
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,15 +17,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // State
     let currentFilter = 'all';
-    let liveNotifications = []; // Replaces static fixtures
+    let liveNotifications = []; 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
-    // ── Fetch Live Notifications & Usage Data ──
+    // ⭐ Cache for limits (mirrors page.js _cachedLimits pattern)
+    let _cachedLimits = {
+        emails: 0,
+        research: 0,
+        chats: 0,
+        aiSuggestions: 0,
+        tier: 'free'
+    };
+
+    // ── 1. Fetch Live Usage Limits on Init (Mirrors page.js checkPlan) ──
+    async function checkUsageLimits() {
+        if (!token) return null;
+
+        try {
+            console.log('📤 [USAGE] Fetching /api/users/me/usage...');
+            const res = await fetch(`${BACKEND}/api/users/me/usage`, {
+                headers: { 'Authorization': 'Bearer ' + token },
+                cache: 'no-store'
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            
+            const data = await res.json();
+            console.log(' [USAGE] Received:', data);
+
+            // Update cached limits exactly like page.js
+            _cachedLimits.emails = data.emails ?? 0;
+            _cachedLimits.research = data.research ?? 0;
+            _cachedLimits.chats = data.chats ?? 0;
+            _cachedLimits.aiSuggestions = data.aiSuggestions ?? 0;
+            _cachedLimits.tier = data.tier || 'free';
+
+            return data;
+        } catch (err) {
+            console.error(' [USAGE] Failed to fetch limits:', err);
+            return null;
+        }
+    }
+
+    // ── 2. Build Dynamic Usage Card Text from Cached Limits ──
+    function buildUsageCardText(limits) {
+        if (!limits) return 'Loading usage data...';
+        
+        const chatsUsed = (limits.chatsLimit || 30) - (limits.chats || 0);
+        const emailsUsed = (limits.emailsLimit || 30) - (limits.emails || 0);
+        const aiUsed = (limits.aiSuggestionsLimit || 7) - (limits.aiSuggestions || 0);
+        
+        return `You used ${chatsUsed} of ${limits.chatsLimit || 30} daily chats, ${emailsUsed} of ${limits.emailsLimit || 30} daily emails, and ${aiUsed} of ${limits.aiSuggestionsLimit || 7} AI suggestions.`;
+    }
+
+    // ── 3. Get Real Day Name ──
+    function getTodayDayName() {
+        return new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    }
+
+    // ── 4. Fetch Notifications & Inject Live Usage Card ──
     async function initAlertsPage() {
         if (!notificationList) return;
         
-        // Show skeleton loading state
+        // Show skeleton loading state (mirrors page.js plan loading)
         notificationList.innerHTML = `
             <div class="skeleton-card skeleton-animate"></div>
             <div class="skeleton-card skeleton-animate"></div>
@@ -37,19 +92,20 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        try {
-            console.log('📤 Fetching notifications...');
-            const res = await fetch(`${BACKEND}/api/notifications`, {
+        // Fetch BOTH notifications and usage limits in parallel
+        const [notifRes, usageData] = await Promise.all([
+            fetch(`${BACKEND}/api/notifications`, {
                 headers: { 'Authorization': 'Bearer ' + token }
-            });
+            }).catch(() => null),
+            checkUsageLimits()
+        ]);
 
-            if (!res.ok) throw new Error('Failed to fetch notifications');
-            
-            const data = await res.json();
-            console.log('📥 Received notifications:', data);
+        // Process notifications
+        if (notifRes && notifRes.ok) {
+            const notifData = await notifRes.json();
+            console.log('📥 [NOTIFS] Received:', notifData);
 
-            // Transform backend data into UI-compatible format
-            liveNotifications = (data.data || []).map(n => ({
+            liveNotifications = (notifData.data || []).map(n => ({
                 id: n._id,
                 type: mapNotificationType(n.type),
                 title: n.title,
@@ -59,70 +115,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 category: n.category || 'general',
                 actionLabel: n.actionLabel || 'View details',
                 actionUrl: n.actionUrl || '#',
-                // Store raw usage data if this is a usage_summary type
-                usageData: n.type === 'usage_summary' ? n.usageData : null
+                createdAt: n.createdAt
             }));
-
-            // If no usage_summary exists in notifications, create one dynamically
-            const hasUsageCard = liveNotifications.some(n => n.type === 'usage_summary');
-            if (!hasUsageCard) {
-                liveNotifications.push({
-                    id: 'dynamic_usage_' + Date.now(),
-                    type: 'usage_summary',
-                    title: 'Daily usage summary',
-                    description: 'Loading usage data...',
-                    timestamp: getTodayDayName(),
-                    isRead: true,
-                    category: 'general',
-                    actionLabel: 'View usage',
-                    actionUrl: '#usage',
-                    usageData: null
-                });
-            }
-
-            // Sort by timestamp (newest first)
-            liveNotifications.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-            renderNotifications();
-            
-            // Pre-fetch usage data for the card description
-            await updateUsageCardDescription();
-
-        } catch (err) {
-            console.error('Init error:', err);
-            renderEmptyState('Failed to load alerts. Please retry.');
+        } else {
+            liveNotifications = [];
         }
-    }
 
-    // ── Update Usage Card Description with Live Data ─
-    async function updateUsageCardDescription() {
-        const usageCard = liveNotifications.find(n => n.type === 'usage_summary');
-        if (!usageCard) return;
+        // Inject or update the dynamic usage_summary card using LIVE cached limits
+        const existingUsageIdx = liveNotifications.findIndex(n => n.type === 'usage_summary');
+        const usageCard = {
+            id: existingUsageIdx >= 0 ? liveNotifications[existingUsageIdx].id : 'dynamic_usage_' + Date.now(),
+            type: 'usage_summary',
+            title: 'Daily usage summary',
+            description: buildUsageCardText(usageData),
+            timestamp: getTodayDayName(),
+            isRead: true,
+            category: 'general',
+            actionLabel: 'View usage',
+            actionUrl: '#usage',
+            createdAt: new Date().toISOString()
+        };
 
-        try {
-            const res = await fetch(`${BACKEND}/api/users/me/usage`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            
-            if (!res.ok) return;
-            
-            const data = await res.json();
-            console.log('📥 Usage data for card:', data);
-
-            // Build human-readable description from live limits
-            const chatsUsed = (data.chatsLimit || 30) - (data.chats || 0);
-            const emailsUsed = (data.emailsLimit || 30) - (data.emails || 0);
-            
-            usageCard.description = `You used ${chatsUsed} of ${data.chatsLimit || 30} daily chats and ${emailsUsed} of ${data.emailsLimit || 30} daily emails.`;
-            usageCard.timestamp = getTodayDayName();
-            
-            // Re-render only if the card is currently visible
-            if (currentFilter === 'all' || currentFilter === 'unread') {
-                renderNotifications();
-            }
-        } catch (err) {
-            console.error('Failed to update usage card:', err);
+        if (existingUsageIdx >= 0) {
+            liveNotifications[existingUsageIdx] = usageCard;
+        } else {
+            liveNotifications.push(usageCard);
         }
+
+        // Sort by createdAt descending
+        liveNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        renderNotifications();
     }
 
     // ── Render Notifications ──
@@ -269,12 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ── Get Today's Day Name ──
-    function getTodayDayName() {
-        return new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    }
-
-    // ── Render Empty State ──
+    // ─ Render Empty State ──
     function renderEmptyState(message) {
         notificationList.innerHTML = `
             <div class="empty-state">
@@ -293,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═══════════════════════════════════════
-    // ✅ USAGE MODAL LOGIC (LIVE DATA)
+    // ✅ USAGE MODAL LOGIC (LIVE DATA - Always Fresh)
     // ════════════════════════════════════════
 
     async function openUsageModal() {
@@ -308,15 +326,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            console.log('📤 Fetching usage data for modal...');
+            //  ALWAYS fetch fresh data when modal opens (mirrors page.js SSE refresh)
+            console.log('📤 [MODAL] Fetching fresh /api/users/me/usage...');
             const res = await fetch(`${BACKEND}/api/users/me/usage`, {
-                headers: { 'Authorization': 'Bearer ' + token }
+                headers: { 'Authorization': 'Bearer ' + token },
+                cache: 'no-store'
             });
 
             const data = await res.json();
-            console.log('📥 Received usage modal data:', data);
+            console.log(' [MODAL] Received fresh usage:', data);
 
             if (!res.ok) throw new Error(data.message || 'Failed to fetch usage');
+
+            // Update cache with freshest data
+            _cachedLimits.emails = data.emails ?? _cachedLimits.emails;
+            _cachedLimits.research = data.research ?? _cachedLimits.research;
+            _cachedLimits.chats = data.chats ?? _cachedLimits.chats;
+            _cachedLimits.aiSuggestions = data.aiSuggestions ?? _cachedLimits.aiSuggestions;
 
             // Map backend response to UI cards using ACTUAL field names
             const metrics = [
@@ -360,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `).join('');
 
         } catch (err) {
-            console.error('❌ Usage modal fetch error:', err);
+            console.error('❌ [MODAL] Usage fetch error:', err);
             usageGrid.innerHTML = `<div class="usage-error">Failed to load usage: ${err.message}</div>`;
         }
     }
@@ -416,6 +442,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initial Load
+    // Initial Load (mirrors page.js DOMContentLoaded)
     initAlertsPage();
 });
