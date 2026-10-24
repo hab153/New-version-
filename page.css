@@ -52,7 +52,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── MAIN CONTAINER ── */
+/* ─ MAIN CONTAINER ── */
 .dashboard-container {
     flex: 1;
     width: 100%;
@@ -623,7 +623,7 @@ body {
 
 .usage-error { color: var(--accent-red); }
 
-/* ── RESPONSIVE ── */
+/* ─ RESPONSIVE ── */
 @media (min-width: 768px) {
     .dashboard-container { padding-top: var(--space-xl); }
     .section-heading { font-size: 2rem; }
