@@ -174,12 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </label>
                 <div class="company-avatar">${initial}</div>
                 <div class="company-info">
-                    <div class="company-name">${lead.companyName || 'Unknown'}</div>
-                    <div class="company-email">${lead.email || 'No email'}</div>
+                    <div class="company-name-text">${lead.companyName || 'Unknown'}</div>
+                    <div class="company-email-text">${lead.email || 'No email'}</div>
                 </div>
                 <button class="approve-btn ${isApproved ? 'approved' : ''}" data-index="${index}">
                     ${isApproved 
-                        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
+                        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
                         : 'Approve'}
                 </button>
             `;
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════
     // REVIEW SHEET RENDER FUNCTION
     // ═══════════════════════════════════════════════════════════
     function renderDraftRows() {
@@ -790,7 +790,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ═══════════════════════════════════════════════════════════
     // HIGH-FI SCHEDULE MODAL LOGIC
-    // ═══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════
     
     function updateScheduleSelectors() {
         if (scheduleDateInput.value) {
@@ -924,7 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 if (aiSuggestStatus) aiSuggestStatus.textContent = `✅ ${updatedCount}/${approvedDrafts.length} drafts updated · ${data.remainingCalls ?? '?'} remaining today`;
                 if (updatedCount > 0) { aiSuggestBtn.style.backgroundColor = '#22C55E'; setTimeout(() => { aiSuggestBtn.style.backgroundColor = ''; }, 800); updateSendButtonState(); }
-            } catch (err) { console.error('❌ AI Suggestion Error:', err); alert(err.message || 'Failed to generate AI suggestions.'); if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.'; }
+            } catch (err) { console.error(' AI Suggestion Error:', err); alert(err.message || 'Failed to generate AI suggestions.'); if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.'; }
             finally { aiSuggestBtn.disabled = false; aiSuggestBtn.innerHTML = originalBtnHTML; }
         });
     }
