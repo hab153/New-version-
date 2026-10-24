@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// FIXED: Separate Review Sheet & High-Fi Schedule Modal
+// UPDATED: Unapproved-by-default + Expandable Message Editor
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
     const sendApprovedBtn = document.getElementById('sendApprovedBtn');
     const draftMessageBtn = document.getElementById('draftMessageBtn');
-    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn'); // Button INSIDE review sheet
+    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
     const draftCountsEl = document.getElementById('draftCounts');
     
     const aiSuggestBtn = document.getElementById('aiSuggestBtn');
@@ -87,8 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
-    let reviewDrafts = []; // Used for Review Sheet
-    let scheduleLeads = []; // Used for Schedule Modal (separate state)
+    let reviewDrafts = [];
+    let scheduleLeads = [];
     let currentCardActionIndex = null;
     let isLoading = true;
     let countdownIntervals = {}; 
@@ -184,14 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             `;
 
-            // Checkbox Logic
             const checkbox = row.querySelector('.row-checkbox');
             checkbox.addEventListener('change', function() {
                 lead.approved = this.checked;
                 renderScheduleCompanyList();
             });
 
-            // Approve Button Logic
             const approveBtn = row.querySelector('.approve-btn');
             approveBtn.addEventListener('click', function() {
                 lead.approved = !lead.approved;
@@ -201,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
             companyListContainer.appendChild(row);
         });
 
-        // Update Counts and Button Label
         if (scheduleSubtitle) scheduleSubtitle.textContent = `${approvedCount} approved emails`;
         if (summaryPrimaryText) summaryPrimaryText.textContent = `${approvedCount} emails will be sent separately`;
         
@@ -212,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ══════════════════════════════════════════════════════════
-    // REVIEW SHEET RENDER FUNCTION
+    // ═══════════════════════════════════════════════════════════
+    // REVIEW SHEET RENDER FUNCTION WITH EXPANDABLE EDITOR
     // ═══════════════════════════════════════════════════════════
     function renderDraftRows() {
         if (!draftListContainer) return;
@@ -224,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             row.className = 'draft-row';
             row.setAttribute('data-draft-id', draft.id);
 
+            // ✅ ALL LEADS START UNAPPROVED BY DEFAULT
             const badgeHtml = draft.approved 
                 ? `<div class="draft-status-badge approved">
                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -231,8 +229,21 @@ document.addEventListener('DOMContentLoaded', function() {
                    </div>`
                 : `<div class="draft-status-badge">
                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                     <span>Needs review</span>
+                     <span>Needs approval</span>
                    </div>`;
+
+            // ✅ CHECK IF EXISTING DRAFT EXISTS FOR THIS LEAD
+            const existingDraft = draftedEmails.get(draft.lead.email);
+            const hasExistingDraft = !!existingDraft;
+            
+            // Use existing draft content OR generate default with company name
+            const displaySubject = hasExistingDraft 
+                ? existingDraft.subject 
+                : (draft.subject || `Partnership Inquiry – ${draft.lead.companyName || 'Your Company'}`);
+                
+            const displayBody = hasExistingDraft 
+                ? existingDraft.message 
+                : (draft.body || `Hi ${draft.lead.companyName || 'Team'},\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`);
 
             row.innerHTML = `
                 <div class="draft-header">
@@ -257,11 +268,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="draft-editor" style="display: none;">
                     <div class="editor-field">
                         <label>Subject</label>
-                        <input type="text" class="subject-input" value="${String(draft.subject).replace(/"/g, '&quot;')}">
+                        <input type="text" class="subject-input" value="${String(displaySubject).replace(/"/g, '&quot;')}">
                     </div>
                     <div class="editor-field">
                         <label>Message</label>
-                        <textarea class="message-input">${draft.body}</textarea>
+                        <textarea class="message-input">${displayBody}</textarea>
                     </div>
                 </div>
             `;
@@ -281,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
             draft._messageInputEl = messageTextarea;
             draft._checkboxEl = checkbox;
 
+            // ✅ EXPAND/COLLAPSE EDITOR WITH ARROW ROTATION
             expandBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (editorDiv.style.display === 'none' || !editorDiv.style.display) {
@@ -292,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            // ✅ APPROVE TOGGLE — starts unchecked, user must click to approve
             checkbox.addEventListener('change', function() {
                 draft.approved = this.checked;
                 const badge = row.querySelector('.draft-status-badge');
@@ -301,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Approved</span>`;
                     } else {
                         badge.className = 'draft-status-badge';
-                        badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Needs review</span>`;
+                        badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Needs approval</span>`;
                     }
                 }
                 updateSendButtonState();
@@ -484,7 +497,6 @@ document.addEventListener('DOMContentLoaded', function() {
         startCountdowns();
     }
 
-    // ... [Existing Modal Logic: openDetailsModal, closeModal, etc.] ...
     function openDetailsModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !modalOverlay || !modalContent) return;
@@ -577,7 +589,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const message = draftEditMessage ? draftEditMessage.value : '';
             if (!email) return;
             
-            // Populate scheduleLeads for High-Fi Modal
             scheduleLeads = [{ companyName: company, email: email, subject: subject, message: message, approved: true }];
             renderScheduleCompanyList();
             
@@ -662,8 +673,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sendApprovedBtn) { if (anyChecked && hasText) { sendApprovedBtn.disabled = false; sendApprovedBtn.classList.remove('disabled'); } else { sendApprovedBtn.disabled = true; sendApprovedBtn.classList.add('disabled'); } }
     }
 
-    function closeReviewSheet() { if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none'; reviewDrafts.forEach(d => { d._subjectInputEl = null; d._messageInputEl = null; d._checkboxEl = null; }); }
+    function closeReviewSheet() { 
+        if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none'; 
+        reviewDrafts.forEach(d => { d._subjectInputEl = null; d._messageInputEl = null; d._checkboxEl = null; }); 
+    }
     
+    // ✅ UPDATED: All leads start UNAPPROVED, default message includes company name
     function openReviewSheet() {
         const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
         if (selectedCards.length === 0) return;
@@ -673,8 +688,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const index = parseInt(card.getAttribute('data-index'));
             const lead = allLeadsData[index];
             if (!lead.email) return;
+
             const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-            reviewDrafts.push({ id: draftId, lead: lead, subject: 'Partnership Inquiry', body: 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User', approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null });
+            
+            // Check if existing draft exists
+            const existingDraft = draftedEmails.get(lead.email);
+            
+            reviewDrafts.push({ 
+                id: draftId, 
+                lead: lead, 
+                // Use existing draft OR generate default with company name
+                subject: existingDraft ? existingDraft.subject : `Partnership Inquiry – ${lead.companyName || 'Your Company'}`,
+                body: existingDraft ? existingDraft.message : `Hi ${lead.companyName || 'Team'},\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`,
+                approved: false, // ✅ STARTS UNAPPROVED
+                _subjectInputEl: null, 
+                _messageInputEl: null, 
+                _checkboxEl: null 
+            });
         });
         renderDraftRows();
         if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
@@ -712,10 +742,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✅ FIXED: Schedule Button in Review Sheet opens High-Fi Schedule Modal
+    // ✅ Schedule Button in Review Sheet opens High-Fi Schedule Modal
     if (scheduleOutreachBtn) {
         scheduleOutreachBtn.addEventListener('click', function() {
-            // Validate approval in Review Sheet first
             const unapproved = reviewDrafts.filter(d => !d.approved);
             if (unapproved.length > 0) {
                 const names = unapproved.map(d => d.lead.companyName).join(', ');
@@ -726,7 +755,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
             if (approvedDrafts.length === 0) { alert('Please approve at least one draft.'); return; }
             
-            // Transfer approved drafts to scheduleLeads for High-Fi Modal
             scheduleLeads = approvedDrafts.map(d => ({
                 companyName: d.lead.companyName,
                 email: d.lead.email,
@@ -735,7 +763,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 approved: true
             }));
             
-            // Render High-Fi List and Open Modal
             renderScheduleCompanyList();
             closeReviewSheet();
             scheduleOverlay.style.display = 'flex';
@@ -766,7 +793,20 @@ document.addEventListener('DOMContentLoaded', function() {
         sendAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
             if (draftLeads.length === 0) { alert('No draft messages to send.'); return; }
-            reviewDrafts = draftLeads.map(lead => { const draft = draftedEmails.get(lead.email); const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); return { id: draftId, lead: lead, subject: draft.subject, body: draft.message, approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null }; });
+            reviewDrafts = draftLeads.map(lead => { 
+                const draft = draftedEmails.get(lead.email); 
+                const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); 
+                return { 
+                    id: draftId, 
+                    lead: lead, 
+                    subject: draft.subject, 
+                    body: draft.message, 
+                    approved: false, // ✅ STARTS UNAPPROVED
+                    _subjectInputEl: null, 
+                    _messageInputEl: null, 
+                    _checkboxEl: null 
+                }; 
+            });
             renderDraftRows();
             if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
             updateSendButtonState();
@@ -779,8 +819,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
             if (draftLeads.length === 0) { alert('No draft messages to schedule.'); return; }
             
-            // Open Review Sheet first for verification
-            reviewDrafts = draftLeads.map(lead => { const draft = draftedEmails.get(lead.email); const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); return { id: draftId, lead: lead, subject: draft.subject, body: draft.message, approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null }; });
+            reviewDrafts = draftLeads.map(lead => { 
+                const draft = draftedEmails.get(lead.email); 
+                const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); 
+                return { 
+                    id: draftId, 
+                    lead: lead, 
+                    subject: draft.subject, 
+                    body: draft.message, 
+                    approved: false, // ✅ STARTS UNAPPROVED
+                    _subjectInputEl: null, 
+                    _messageInputEl: null, 
+                    _checkboxEl: null 
+                }; 
+            });
             renderDraftRows();
             if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 scheduled';
             updateSendButtonState();
@@ -829,7 +881,6 @@ document.addEventListener('DOMContentLoaded', function() {
         scheduleConfirmBtn.addEventListener('click', async function() {
             if (!token) return;
             
-            // Filter only approved leads from the High-Fi Modal context
             const approvedLeads = scheduleLeads.filter(l => l.approved);
             if (approvedLeads.length === 0) { alert('Please approve at least one lead.'); return; }
 
@@ -869,7 +920,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Failed to schedule outreach');
 
-                // Update local data for countdown
                 if (data.leads && Array.isArray(data.leads)) {
                     data.leads.forEach(scheduledLead => {
                         const leadInList = allLeadsData.find(l => l.email === scheduledLead.email);
@@ -924,7 +974,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 if (aiSuggestStatus) aiSuggestStatus.textContent = `✅ ${updatedCount}/${approvedDrafts.length} drafts updated · ${data.remainingCalls ?? '?'} remaining today`;
                 if (updatedCount > 0) { aiSuggestBtn.style.backgroundColor = '#22C55E'; setTimeout(() => { aiSuggestBtn.style.backgroundColor = ''; }, 800); updateSendButtonState(); }
-            } catch (err) { console.error(' AI Suggestion Error:', err); alert(err.message || 'Failed to generate AI suggestions.'); if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.'; }
+            } catch (err) { console.error('❌ AI Suggestion Error:', err); alert(err.message || 'Failed to generate AI suggestions.'); if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.'; }
             finally { aiSuggestBtn.disabled = false; aiSuggestBtn.innerHTML = originalBtnHTML; }
         });
     }
