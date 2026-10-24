@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Dynamic Company List in Review Sheet, Schedule API, Live Countdown
+// FIXED: Separate Review Sheet & High-Fi Schedule Modal
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -34,12 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftSendBtn = document.getElementById('draftSendBtn');
     const draftScheduleBtn = document.getElementById('draftScheduleBtn');
 
+    // REVIEW SHEET ELEMENTS
     const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
     const draftListContainer = document.getElementById('draftListContainer');
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
     const sendApprovedBtn = document.getElementById('sendApprovedBtn');
     const draftMessageBtn = document.getElementById('draftMessageBtn');
-    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
+    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn'); // Button INSIDE review sheet
     const draftCountsEl = document.getElementById('draftCounts');
     
     const aiSuggestBtn = document.getElementById('aiSuggestBtn');
@@ -49,9 +50,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendAllDraftsBtn = document.getElementById('sendAllDraftsBtn');
     const scheduleAllDraftsBtn = document.getElementById('scheduleAllDraftsBtn');
 
-    // Note: We are reusing the Review Sheet for scheduling now, 
-    // so we don't strictly need separate schedule overlay elements unless you want a 2nd step.
-    // For this implementation, we handle everything in the Review Sheet as requested.
+    // HIGH-FI SCHEDULE MODAL ELEMENTS
+    const scheduleOverlay = document.getElementById('scheduleOverlay');
+    const closeScheduleSheetBtn = document.getElementById('closeScheduleSheetBtn');
+    const scheduleCancelBtn = document.getElementById('scheduleCancelBtn');
+    const scheduleConfirmBtn = document.getElementById('scheduleConfirmBtn');
+    const scheduleSubtitle = document.getElementById('scheduleSubtitle');
+    const summaryPrimaryText = document.getElementById('summaryPrimaryText');
+    const companyListContainer = document.getElementById('companyListContainer');
+    
+    const selectedDateText = document.getElementById('selectedDateText');
+    const selectedTimeText = document.getElementById('selectedTimeText');
+    const selectedTimezoneText = document.getElementById('selectedTimezoneText');
+    const selectedPaceText = document.getElementById('selectedPaceText');
+    
+    const scheduleDateInput = document.getElementById('scheduleDateInput');
+    const scheduleTimeInput = document.getElementById('scheduleTimeInput');
+    const scheduleTimezoneSelect = document.getElementById('scheduleTimezoneSelect');
+    const schedulePaceSelect = document.getElementById('schedulePaceSelect');
+    
+    const ruleStopReply = document.getElementById('ruleStopReply');
+    const ruleStopUnsubscribe = document.getElementById('ruleStopUnsubscribe');
+    const ruleSkipMissing = document.getElementById('ruleSkipMissing');
 
     const filterDropdownBtn = document.getElementById('filterDropdownBtn');
     const filterDropdown = document.getElementById('filterDropdown');
@@ -67,7 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
-    let reviewDrafts = []; // Used for both sending and scheduling context
+    let reviewDrafts = []; // Used for Review Sheet
+    let scheduleLeads = []; // Used for Schedule Modal (separate state)
     let currentCardActionIndex = null;
     let isLoading = true;
     let countdownIntervals = {}; 
@@ -77,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ═══════════════════════════════════════════════════════════
     // LIVE COUNTDOWN LOGIC
-    // ═══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════
     function startCountdowns() {
         Object.values(countdownIntervals).forEach(clearInterval);
         countdownIntervals = {};
@@ -129,37 +150,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // DYNAMIC COMPANY LIST IN REVIEW SHEET
+    // HIGH-FI SCHEDULE MODAL: DYNAMIC COMPANY LIST
     // ═══════════════════════════════════════════════════════════
-    function renderCompanyListInReviewSheet() {
-        // Find or create container in review sheet
-        let listContainer = document.getElementById('reviewCompanyList');
-        if (!listContainer) {
-            listContainer = document.createElement('div');
-            listContainer.id = 'reviewCompanyList';
-            listContainer.className = 'company-list-container';
-            
-            // Insert after draft counts or warning panel
-            const warningPanel = document.querySelector('.warning-panel');
-            if (warningPanel) {
-                reviewSheetOverlay.querySelector('.review-sheet').insertBefore(listContainer, warningPanel);
-            } else {
-                reviewSheetOverlay.querySelector('.review-sheet').appendChild(listContainer);
-            }
-        }
-        
-        listContainer.innerHTML = '';
+    function renderScheduleCompanyList() {
+        if (!companyListContainer) return;
+        companyListContainer.innerHTML = '';
+
         let approvedCount = 0;
 
-        reviewDrafts.forEach((lead, index) => {
-            const initial = lead.lead.companyName ? lead.lead.companyName.charAt(0).toUpperCase() : '?';
+        scheduleLeads.forEach((lead, index) => {
+            const initial = lead.companyName ? lead.companyName.charAt(0).toUpperCase() : '?';
             const isApproved = lead.approved;
             if (isApproved) approvedCount++;
 
             const row = document.createElement('div');
             row.className = 'company-row';
             row.innerHTML = `
-                <label class="row-checkbox-wrapper">
+                <label style="position: relative; width: 24px; height: 24px;">
                     <input type="checkbox" class="row-checkbox" ${isApproved ? 'checked' : ''}>
                     <span class="row-check">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -167,12 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </label>
                 <div class="company-avatar">${initial}</div>
                 <div class="company-info">
-                    <div class="company-name-text">${lead.lead.companyName || 'Unknown'}</div>
-                    <div class="company-email-text">${lead.lead.email || 'No email'}</div>
+                    <div class="company-name">${lead.companyName || 'Unknown'}</div>
+                    <div class="company-email">${lead.email || 'No email'}</div>
                 </div>
                 <button class="approve-btn ${isApproved ? 'approved' : ''}" data-index="${index}">
                     ${isApproved 
-                        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
+                        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
                         : 'Approve'}
                 </button>
             `;
@@ -181,48 +188,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const checkbox = row.querySelector('.row-checkbox');
             checkbox.addEventListener('change', function() {
                 lead.approved = this.checked;
-                renderCompanyListInReviewSheet();
-                updateScheduleButtonState();
+                renderScheduleCompanyList();
             });
 
             // Approve Button Logic
             const approveBtn = row.querySelector('.approve-btn');
             approveBtn.addEventListener('click', function() {
                 lead.approved = !lead.approved;
-                renderCompanyListInReviewSheet();
-                updateScheduleButtonState();
+                renderScheduleCompanyList();
             });
 
-            listContainer.appendChild(row);
+            companyListContainer.appendChild(row);
         });
 
-        // Update button state based on approvals
-        updateScheduleButtonState();
-    }
-
-    function updateScheduleButtonState() {
-        const approvedCount = reviewDrafts.filter(l => l.approved).length;
-        if (scheduleOutreachBtn) {
-            if (approvedCount > 0) {
-                scheduleOutreachBtn.disabled = false;
-                scheduleOutreachBtn.classList.remove('disabled');
-                scheduleOutreachBtn.innerHTML = `
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Schedule ${approvedCount} email${approvedCount !== 1 ? 's' : ''}
-                `;
-            } else {
-                scheduleOutreachBtn.disabled = true;
-                scheduleOutreachBtn.classList.add('disabled');
-                scheduleOutreachBtn.innerHTML = `
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Schedule outreach
-                `;
-            }
+        // Update Counts and Button Label
+        if (scheduleSubtitle) scheduleSubtitle.textContent = `${approvedCount} approved emails`;
+        if (summaryPrimaryText) summaryPrimaryText.textContent = `${approvedCount} emails will be sent separately`;
+        
+        const btnText = approvedCount === 1 ? 'Schedule 1 email' : `Schedule ${approvedCount} emails`;
+        if (scheduleConfirmBtn) {
+            scheduleConfirmBtn.querySelector('span').textContent = btnText;
+            scheduleConfirmBtn.disabled = approvedCount === 0;
         }
     }
 
     // ═══════════════════════════════════════════════════════════
-    // THE SINGLE RENDER FUNCTION FOR ALL DRAFTS (Original)
+    // REVIEW SHEET RENDER FUNCTION
     // ═══════════════════════════════════════════════════════════
     function renderDraftRows() {
         if (!draftListContainer) return;
@@ -314,7 +305,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 updateSendButtonState();
-                updateScheduleButtonState(); // Sync both buttons
             });
 
             subjectInput.addEventListener('input', function() {
@@ -587,21 +577,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const message = draftEditMessage ? draftEditMessage.value : '';
             if (!email) return;
             
-            // Add to review drafts and open sheet
-            const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-            reviewDrafts = [{
-                id: draftId,
-                lead: { companyName: company, email: email },
-                subject: subject,
-                body: message,
-                approved: true,
-                _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null
-            }];
+            // Populate scheduleLeads for High-Fi Modal
+            scheduleLeads = [{ companyName: company, email: email, subject: subject, message: message, approved: true }];
+            renderScheduleCompanyList();
             
-            renderDraftRows();
-            renderCompanyListInReviewSheet();
-            draftViewOverlay.style.display = 'none';
-            reviewSheetOverlay.style.display = 'flex';
+            closeDraftViewModal();
+            scheduleOverlay.style.display = 'flex';
         });
     }
 
@@ -681,14 +662,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sendApprovedBtn) { if (anyChecked && hasText) { sendApprovedBtn.disabled = false; sendApprovedBtn.classList.remove('disabled'); } else { sendApprovedBtn.disabled = true; sendApprovedBtn.classList.add('disabled'); } }
     }
 
-    function closeReviewSheet() { 
-        if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none'; 
-        // Remove dynamic company list if it exists
-        const listContainer = document.getElementById('reviewCompanyList');
-        if (listContainer) listContainer.remove();
-        
-        reviewDrafts.forEach(d => { d._subjectInputEl = null; d._messageInputEl = null; d._checkboxEl = null; }); 
-    }
+    function closeReviewSheet() { if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none'; reviewDrafts.forEach(d => { d._subjectInputEl = null; d._messageInputEl = null; d._checkboxEl = null; }); }
     
     function openReviewSheet() {
         const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
@@ -703,7 +677,6 @@ document.addEventListener('DOMContentLoaded', function() {
             reviewDrafts.push({ id: draftId, lead: lead, subject: 'Partnership Inquiry', body: 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User', approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null });
         });
         renderDraftRows();
-        renderCompanyListInReviewSheet(); // Render company list for scheduling
         if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
         reviewSheetOverlay.style.display = 'flex';
         updateSendButtonState();
@@ -739,10 +712,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✅ FIXED: Schedule Button now validates and submits from Review Sheet
+    // ✅ FIXED: Schedule Button in Review Sheet opens High-Fi Schedule Modal
     if (scheduleOutreachBtn) {
-        scheduleOutreachBtn.addEventListener('click', async function() {
-            // Validate approval
+        scheduleOutreachBtn.addEventListener('click', function() {
+            // Validate approval in Review Sheet first
             const unapproved = reviewDrafts.filter(d => !d.approved);
             if (unapproved.length > 0) {
                 const names = unapproved.map(d => d.lead.companyName).join(', ');
@@ -753,63 +726,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
             if (approvedDrafts.length === 0) { alert('Please approve at least one draft.'); return; }
             
-            // Prepare payload with default scheduling settings
-            const payload = {
-                scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Default to tomorrow
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                paceMinutes: 5,
-                safetyRules: { stopOnReply: true, stopOnUnsubscribe: true, skipMissingEmail: true },
-                leads: approvedDrafts.map(d => ({
-                    companyName: d.lead.companyName,
-                    email: d.lead.email,
-                    subject: d.subject,
-                    message: d.body,
-                    approved: true
-                }))
-            };
-
-            await submitSchedule(payload);
-        });
-    }
-
-    async function submitSchedule(payload) {
-        if (!token) return;
-        const originalText = scheduleOutreachBtn.innerHTML;
-        scheduleOutreachBtn.innerHTML = '<span>Scheduling...</span>';
-        scheduleOutreachBtn.disabled = true;
-
-        try {
-            const res = await fetch(`${BACKEND}/api/leads/schedule`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to schedule');
-
-            // Update local data for countdown
-            if (data.leads && Array.isArray(data.leads)) {
-                data.leads.forEach(scheduledLead => {
-                    const leadInList = allLeadsData.find(l => l.email === scheduledLead.email);
-                    if (leadInList) {
-                        leadInList.scheduledAt = scheduledLead.scheduledAt;
-                        leadInList.scheduleStatus = scheduledLead.scheduleStatus;
-                    }
-                });
-            }
-
+            // Transfer approved drafts to scheduleLeads for High-Fi Modal
+            scheduleLeads = approvedDrafts.map(d => ({
+                companyName: d.lead.companyName,
+                email: d.lead.email,
+                subject: d.subject,
+                message: d.body,
+                approved: true
+            }));
+            
+            // Render High-Fi List and Open Modal
+            renderScheduleCompanyList();
             closeReviewSheet();
-            renderLeads();
-            alert('Outreach scheduled successfully!');
-
-        } catch (e) {
-            console.error('Schedule error:', e);
-            alert(e.message || 'Failed to schedule outreach.');
-        } finally {
-            scheduleOutreachBtn.innerHTML = originalText;
-            scheduleOutreachBtn.disabled = false;
-        }
+            scheduleOverlay.style.display = 'flex';
+        });
     }
 
     if (draftMessageBtn) {
@@ -838,7 +768,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (draftLeads.length === 0) { alert('No draft messages to send.'); return; }
             reviewDrafts = draftLeads.map(lead => { const draft = draftedEmails.get(lead.email); const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); return { id: draftId, lead: lead, subject: draft.subject, body: draft.message, approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null }; });
             renderDraftRows();
-            renderCompanyListInReviewSheet();
             if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
             updateSendButtonState();
             reviewSheetOverlay.style.display = 'flex';
@@ -850,13 +779,118 @@ document.addEventListener('DOMContentLoaded', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
             if (draftLeads.length === 0) { alert('No draft messages to schedule.'); return; }
             
-            // Open review sheet first for verification
+            // Open Review Sheet first for verification
             reviewDrafts = draftLeads.map(lead => { const draft = draftedEmails.get(lead.email); const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); return { id: draftId, lead: lead, subject: draft.subject, body: draft.message, approved: true, _subjectInputEl: null, _messageInputEl: null, _checkboxEl: null }; });
             renderDraftRows();
-            renderCompanyListInReviewSheet();
             if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 scheduled';
             updateSendButtonState();
             reviewSheetOverlay.style.display = 'flex';
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // HIGH-FI SCHEDULE MODAL LOGIC
+    // ═══════════════════════════════════════════════════════════
+    
+    function updateScheduleSelectors() {
+        if (scheduleDateInput.value) {
+            const date = new Date(scheduleDateInput.value + 'T00:00:00');
+            selectedDateText.textContent = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+        }
+        if (scheduleTimeInput.value) {
+            const [h, m] = scheduleTimeInput.value.split(':');
+            const hr = parseInt(h);
+            const ampm = hr >= 12 ? 'PM' : 'AM';
+            const h12 = hr % 12 || 12;
+            selectedTimeText.textContent = `${h12}:${m} ${ampm}`;
+        }
+        if (scheduleTimezoneSelect.value) {
+            selectedTimezoneText.textContent = scheduleTimezoneSelect.options[scheduleTimezoneSelect.selectedIndex].text;
+        }
+        if (schedulePaceSelect.value) {
+            selectedPaceText.textContent = schedulePaceSelect.options[schedulePaceSelect.selectedIndex].text;
+        }
+    }
+
+    if (scheduleDateInput) scheduleDateInput.addEventListener('change', updateScheduleSelectors);
+    if (scheduleTimeInput) scheduleTimeInput.addEventListener('change', updateScheduleSelectors);
+    if (scheduleTimezoneSelect) scheduleTimezoneSelect.addEventListener('change', updateScheduleSelectors);
+    if (schedulePaceSelect) schedulePaceSelect.addEventListener('change', updateScheduleSelectors);
+
+    function closeScheduleModal() {
+        if (scheduleOverlay) scheduleOverlay.style.display = 'none';
+        scheduleLeads = [];
+    }
+    if (closeScheduleSheetBtn) closeScheduleSheetBtn.addEventListener('click', closeScheduleModal);
+    if (scheduleCancelBtn) scheduleCancelBtn.addEventListener('click', closeScheduleModal);
+    if (scheduleOverlay) scheduleOverlay.addEventListener('click', function(e) { if (e.target === scheduleOverlay) closeScheduleModal(); });
+
+    if (scheduleConfirmBtn) {
+        scheduleConfirmBtn.addEventListener('click', async function() {
+            if (!token) return;
+            
+            // Filter only approved leads from the High-Fi Modal context
+            const approvedLeads = scheduleLeads.filter(l => l.approved);
+            if (approvedLeads.length === 0) { alert('Please approve at least one lead.'); return; }
+
+            const dateVal = scheduleDateInput.value;
+            const timeVal = scheduleTimeInput.value;
+            const timezone = scheduleTimezoneSelect.value;
+            const paceMinutes = parseInt(schedulePaceSelect.value) || 5;
+            
+            if (!dateVal || !timeVal) { alert('Please select a date and time.'); return; }
+            
+            const scheduledDateTime = new Date(`${dateVal}T${timeVal}:00`);
+            if (scheduledDateTime <= new Date()) { alert('Please select a future date and time.'); return; }
+
+            const originalText = scheduleConfirmBtn.querySelector('span').textContent;
+            scheduleConfirmBtn.querySelector('span').textContent = 'Scheduling...';
+            scheduleConfirmBtn.disabled = true;
+
+            try {
+                const payload = {
+                    scheduledAt: scheduledDateTime.toISOString(),
+                    timezone: timezone,
+                    paceMinutes: paceMinutes,
+                    safetyRules: { 
+                        stopOnReply: ruleStopReply.checked, 
+                        stopOnUnsubscribe: ruleStopUnsubscribe.checked, 
+                        skipMissingEmail: ruleSkipMissing.checked 
+                    },
+                    leads: approvedLeads
+                };
+
+                const res = await fetch(`${BACKEND}/api/leads/schedule`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed to schedule outreach');
+
+                // Update local data for countdown
+                if (data.leads && Array.isArray(data.leads)) {
+                    data.leads.forEach(scheduledLead => {
+                        const leadInList = allLeadsData.find(l => l.email === scheduledLead.email);
+                        if (leadInList) {
+                            leadInList.scheduledAt = scheduledLead.scheduledAt;
+                            leadInList.scheduleStatus = scheduledLead.scheduleStatus;
+                        }
+                    });
+                }
+
+                closeScheduleModal();
+                renderLeads();
+                alert('Outreach scheduled successfully!');
+
+            } catch (e) {
+                console.error('Schedule error:', e);
+                alert(e.message || 'Failed to schedule outreach.');
+            } finally {
+                scheduleConfirmBtn.querySelector('span').textContent = originalText;
+                scheduleConfirmBtn.disabled = false;
+            }
         });
     }
 
