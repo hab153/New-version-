@@ -148,6 +148,8 @@ body {
     align-items: center;
     gap: var(--space-md);
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .email-banner.connected {
@@ -164,6 +166,7 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: relative;
 }
 
 .email-banner.connected .banner-icon {
@@ -173,6 +176,7 @@ body {
 .banner-content {
     flex: 1;
     min-width: 0;
+    position: relative;
 }
 
 .banner-title {
@@ -202,13 +206,67 @@ body {
     cursor: pointer;
     white-space: nowrap;
     transition: background-color 0.2s;
+    position: relative;
 }
 
 .connect-btn:hover {
     background-color: var(--btn-hover);
 }
 
-/* ── 5. MAIN LEAD DISCOVERY SECTION ── */
+/* ✅ FIX #1: Skeleton → Real Content Transition Styles */
+.skeleton-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.skeleton-line {
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+
+/* Hide real content by default (when loading) */
+.banner-icon .real-icon,
+.banner-content .real-text,
+.connect-btn .btn-text {
+    display: none;
+}
+
+/* When NOT loading, hide skeletons and show real content */
+.email-banner:not(.loading) .skeleton-circle,
+.email-banner:not(.loading) .skeleton-line,
+.email-banner:not(.loading) .connect-btn.skel {
+    display: none !important;
+}
+
+.email-banner:not(.loading) .real-icon,
+.email-banner:not(.loading) .real-text,
+.email-banner:not(.loading) .connect-btn .btn-text {
+    display: block;
+}
+
+/* Reset connect-btn from skeleton bar to actual button when loaded */
+.email-banner:not(.loading) .connect-btn {
+    background-color: var(--btn-primary);
+    color: var(--text-dark);
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    animation: none;
+    background: none; /* Override skel gradient */
+}
+
+/* ─ 5. MAIN LEAD DISCOVERY SECTION ─ */
 .discovery-section {
     display: flex;
     flex-direction: column;
@@ -555,7 +613,7 @@ body {
     border: 1.5px solid var(--bg-main);
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═════════════════════════════════════════════════════════════
    SKELETON LOADING SYSTEM
    ══════════════════════════════════════════════════════════════ */
 
