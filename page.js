@@ -1,6 +1,6 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: Email banner loading skeletons + 4-stat plan card + clickable usage modal
+// UPDATED: 3 independent skeleton rows in plan card + email banner loading
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -17,30 +17,24 @@ const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
 const planCardTitle = document.querySelector('.plan-card .card-title');
 const planCardStats = document.querySelector('.plan-card .card-stats');
-const planCard = document.querySelector('.plan-card'); // ✅ For click listener
+const planCard = document.querySelector('.plan-card');
 
-// ✅ Usage Modal Elements (reused from alert.html pattern)
+// Usage Modal Elements
 const usageModalOverlay = document.getElementById('usageModalOverlay');
 const closeUsageModal = document.getElementById('closeUsageModal');
 const usageGrid = document.getElementById('usageGrid');
 
-// ⭐ Cache for limits (used when reading from SSE)
+// Cache for limits
 let _cachedLimits = {
-    emails: 0,
-    research: 0,
-    chats: 0,
-    aiSuggestions: 0, // ✅ ADDED
-    tier: 'free'
+    emails: 0, research: 0, chats: 0, aiSuggestions: 0, tier: 'free'
 };
 
-// ── 1. Plus Button: Refresh Page ──
+// ── Plus Button ──
 if (plusBtn) {
-    plusBtn.addEventListener('click', function() {
-        window.location.reload();
-    });
+    plusBtn.addEventListener('click', function() { window.location.reload(); });
 }
 
-// ── 2. Delete Button: Clear Input ──
+// ── Delete Button ──
 if (deleteBtn) {
     deleteBtn.addEventListener('click', function() {
         if (customerDescription && customerDescription.value.length > 0) {
@@ -51,11 +45,10 @@ if (deleteBtn) {
     });
 }
 
-// ── 3. Connect Email Logic ─
+// ── Connect Email Logic ──
 function handleOAuthRedirect() {
     const params = new URLSearchParams(window.location.search);
     const nylasSuccess = params.get('nylas');
-
     if (nylasSuccess === 'success') {
         showToast('✅ Email account connected successfully!', 'success', 6000);
         updateEmailUI(true, 'Connected');
@@ -67,47 +60,35 @@ function handleOAuthRedirect() {
     }
 }
 
-// ✅ FIX #1: Update Email UI & Remove Loading Skeletons
 function updateEmailUI(isConnected, emailOrStatus) {
     if (!emailBanner || !connectEmailBtn) return;
-
-    // Remove loading class to trigger CSS transition (skeletons hide, real content shows)
     emailBanner.classList.remove('loading');
 
     if (isConnected) {
         emailBanner.classList.remove('disconnected');
         emailBanner.classList.add('connected');
-
         const title = emailBanner.querySelector('.banner-title');
         const desc = emailBanner.querySelector('.banner-desc');
         if (title) title.textContent = 'Email Connected';
         if (desc) desc.textContent = typeof emailOrStatus === 'string' ? emailOrStatus : 'Connected successfully';
-
         connectEmailBtn.innerHTML = '<span class="btn-text">Manage</span>';
         connectEmailBtn.onclick = () => showToast('Email settings coming soon', 'info');
     } else {
         emailBanner.classList.add('disconnected');
         emailBanner.classList.remove('connected');
-
         const title = emailBanner.querySelector('.banner-title');
         const desc = emailBanner.querySelector('.banner-desc');
         if (title) title.textContent = 'No email connected';
         if (desc) desc.textContent = 'Connect Gmail or Outlook to unlock inbox and follow-up features';
-
         connectEmailBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            <span class="btn-text">Connect email</span>
-        `;
+            <span class="btn-text">Connect email</span>`;
         connectEmailBtn.onclick = connectEmail;
     }
 }
 
 async function checkEmailStatus() {
-    if (!token) {
-        // If no token, remove loading state immediately so user sees "No email connected"
-        if (emailBanner) emailBanner.classList.remove('loading');
-        return;
-    }
+    if (!token) { if (emailBanner) emailBanner.classList.remove('loading'); return; }
     try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
             headers: { 'Authorization': 'Bearer ' + token }
@@ -116,9 +97,7 @@ async function checkEmailStatus() {
         const data = await res.json();
         if (data.connected && !data.isExpired) {
             updateEmailUI(true, data.email || 'Connected');
-        } else {
-            updateEmailUI(false);
-        }
+        } else { updateEmailUI(false); }
     } catch (err) {
         console.error('Email status error:', err);
         updateEmailUI(false);
@@ -131,7 +110,6 @@ async function connectEmail() {
     const originalContent = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="btn-text">Connecting...</span>';
-
     try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
             method: 'GET',
@@ -141,9 +119,7 @@ async function connectEmail() {
         const data = await res.json();
         if (data.url) {
             window.location.href = data.url.replace(/&amp;/g, '&');
-        } else {
-            throw new Error('No URL received');
-        }
+        } else { throw new Error('No URL received'); }
     } catch (error) {
         console.error('Connection error:', error);
         btn.disabled = false;
@@ -152,7 +128,7 @@ async function connectEmail() {
     }
 }
 
-// ── 4. Character Counter & Suggestions ──
+// ── Character Counter & Suggestions ──
 if (customerDescription && charCounter) {
     customerDescription.addEventListener('input', function() {
         const currentLength = this.value.length;
@@ -187,7 +163,7 @@ function updateFindProspectsButton(hasText) {
 }
 updateFindProspectsButton(false);
 
-// ── 5. Mini-Panel & Streaming ──
+// ── Mini-Panel & Streaming ─
 const STAGE_NAMES = {
     's1': 'Understanding your target',
     's2': 'Finding relevant companies',
@@ -203,21 +179,17 @@ let _stageData = {};
 function createMiniPanel() {
     const existing = document.getElementById('stageMiniPanel');
     if (existing) existing.remove();
-
     const panel = document.createElement('div');
     panel.id = 'stageMiniPanel';
     panel.className = 'stage-mini-panel';
-
     const header = document.createElement('div');
     header.className = 'panel-header';
-    header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">⏱️ 0s</span>';
+    header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">️ 0s</span>';
     panel.appendChild(header);
-
     const content = document.createElement('div');
     content.className = 'panel-content';
     content.id = 'stagePanelContent';
     panel.appendChild(content);
-
     const inputWrapper = document.querySelector('.input-wrapper');
     if (inputWrapper && inputWrapper.parentNode) {
         inputWrapper.parentNode.insertBefore(panel, inputWrapper.nextSibling);
@@ -227,10 +199,8 @@ function createMiniPanel() {
 function updateStageInPanel(stageId, status) {
     const content = document.getElementById('stagePanelContent');
     if (!content) return;
-
     let stageEl = document.getElementById(`stage-item-${stageId}`);
     const label = STAGE_NAMES[stageId] || stageId;
-
     if (!stageEl) {
         stageEl = document.createElement('div');
         stageEl.id = `stage-item-${stageId}`;
@@ -239,15 +209,12 @@ function updateStageInPanel(stageId, status) {
             <div class="stage-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="8"/></svg>
             </div>
-            <div class="stage-label">${label}</div>
-        `;
+            <div class="stage-label">${label}</div>`;
         content.appendChild(stageEl);
         content.scrollTop = content.scrollHeight;
     }
-
     stageEl.className = `stage-item ${status}`;
     const iconContainer = stageEl.querySelector('.stage-icon');
-
     if (status === 'processing') {
         iconContainer.innerHTML = `<svg class="spinner" viewBox="0 0 24 24" fill="none" width="14" height="14"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
     } else if (status === 'completed') {
@@ -262,186 +229,101 @@ function removeMiniPanel() {
     if (panel) panel.remove();
 }
 
-// ⭐ UPDATED: Handle limits received from SSE done event (includes aiSuggestions)
 function handleLimitsFromSSE(remainingLimits) {
-    if (!remainingLimits) {
-        console.log('️ [LIMITS] No remainingLimits in SSE event');
-        return;
-    }
-
+    if (!remainingLimits) { console.log('️ [LIMITS] No remainingLimits in SSE event'); return; }
     console.log('⭐ [LIMITS] Received from SSE:', remainingLimits);
-
-    // Update cached limits
     _cachedLimits.research = remainingLimits.remaining ?? _cachedLimits.research;
     _cachedLimits.tier = remainingLimits.tier ?? _cachedLimits.tier;
     if (remainingLimits.aiSuggestions !== undefined) {
         _cachedLimits.aiSuggestions = remainingLimits.aiSuggestions;
     }
-
-    // Update UI directly — no API call needed
     updatePlanUI(_cachedLimits.tier, {
-        emails: _cachedLimits.emails,
-        research: remainingLimits.remaining,
-        chats: _cachedLimits.chats,
-        aiSuggestions: _cachedLimits.aiSuggestions
+        emails: _cachedLimits.emails, research: remainingLimits.remaining,
+        chats: _cachedLimits.chats, aiSuggestions: _cachedLimits.aiSuggestions
     });
-
     console.log('✅ [LIMITS] UI updated: research =', remainingLimits.remaining);
 }
 
 function streamLeadResponse(message) {
-    if (_activeEventSource) {
-        try { _activeEventSource.close(); } catch (e) {}
-        _activeEventSource = null;
-    }
-
+    if (_activeEventSource) { try { _activeEventSource.close(); } catch (e) {} _activeEventSource = null; }
     const runId = ++_runCounter;
     _stageData = {};
     createMiniPanel();
-
     const originalBtnContent = findProspectsBtn.innerHTML;
     findProspectsBtn.innerHTML = '<span>Searching...</span>';
     findProspectsBtn.disabled = true;
-
     let startTime = Date.now();
     const timerEl = document.querySelector('.panel-timer');
     const timerInterval = setInterval(() => {
         if (timerEl) timerEl.textContent = `⏱️ ${Math.floor((Date.now() - startTime) / 1000)}s`;
     }, 1000);
-
     const url = `${BACKEND}/api/stream/pipeline?message=${encodeURIComponent(message)}&token=${encodeURIComponent(token)}`;
-
     try {
         const es = new EventSource(url);
         _activeEventSource = es;
-
         es.addEventListener('stage', function(event) {
             if (runId !== _runCounter) return;
-
             let payload;
-            try {
-                payload = JSON.parse(event.data);
-            } catch (parseErr) {
-                console.error('❌ [SSE] Parse error:', parseErr);
-                return;
-            }
-
+            try { payload = JSON.parse(event.data); } catch (parseErr) { console.error('❌ [SSE] Parse error:', parseErr); return; }
             if (!payload || !payload.stage) return;
-
             const stageId = payload.stage;
             const status = payload.data?.status;
-
             if (status) updateStageInPanel(stageId, status);
             if (payload.data?.data) _stageData[stageId] = payload.data.data;
-
-            // ✅ FIX #1: Handle dedicated limit_reached stage BEFORE checking done/error
             if (stageId === 'limit_reached') {
-                clearInterval(timerInterval);
-                es.close();
-                _activeEventSource = null;
-
+                clearInterval(timerInterval); es.close(); _activeEventSource = null;
                 findProspectsBtn.innerHTML = originalBtnContent;
                 findProspectsBtn.disabled = false;
                 removeMiniPanel();
-
-                // Show clear, actionable message instead of generic connection error
                 const limitMsg = payload.data?.message || 'Daily research limit reached.';
                 showToast(limitMsg, 'warning', 6000);
-
-                // Refresh plan UI to reflect exhausted state
                 checkPlan();
                 return;
             }
-
-            // If this event carries remainingLimits, update UI immediately
-            if (payload.data?.remainingLimits) {
-                handleLimitsFromSSE(payload.data.remainingLimits);
-            }
-
+            if (payload.data?.remainingLimits) { handleLimitsFromSSE(payload.data.remainingLimits); }
             if (stageId === 'done' || stageId === 'error') {
-                clearInterval(timerInterval);
-                es.close();
-                _activeEventSource = null;
-
+                clearInterval(timerInterval); es.close(); _activeEventSource = null;
                 findProspectsBtn.innerHTML = originalBtnContent;
                 findProspectsBtn.disabled = false;
-
                 setTimeout(() => {
                     removeMiniPanel();
-
-                    if (stageId === 'done') {
-                        renderFinalResults(payload.data?.data || _stageData['s5']);
-                    } else {
-                        showToast('Pipeline encountered an error.', 'error');
-                    }
+                    if (stageId === 'done') { renderFinalResults(payload.data?.data || _stageData['s5']); }
+                    else { showToast('Pipeline encountered an error.', 'error'); }
                 }, 1000);
             }
         });
-
-        // ✅ FIX #1: Only show generic connection error for ACTUAL network failures
         es.addEventListener('error', function(e) {
-            // Don't trigger on intentional close after limit_reached
             if (es.readyState === EventSource.CLOSED) return;
-
-            clearInterval(timerInterval);
-            es.close();
-            _activeEventSource = null;
+            clearInterval(timerInterval); es.close(); _activeEventSource = null;
             findProspectsBtn.innerHTML = originalBtnContent;
             findProspectsBtn.disabled = false;
             showToast('Connection lost during search.', 'error');
-            removeMiniPanel();
-
-            // Fallback: refresh from API on connection error
-            checkPlan();
+            removeMiniPanel(); checkPlan();
         });
-
     } catch (e) {
         clearInterval(timerInterval);
         findProspectsBtn.innerHTML = originalBtnContent;
         findProspectsBtn.disabled = false;
         showToast('Could not start search engine.', 'error');
-        removeMiniPanel();
-        checkPlan();
+        removeMiniPanel(); checkPlan();
     }
 }
 
-// ✅ FIXED: MERGE new leads with existing instead of overwriting
 function renderFinalResults(data) {
     const companies = data?.companies || [];
     const count = companies.length;
-    
     if (count > 0) {
-        // Load existing leads safely
         let existingLeads = [];
         try {
             const stored = localStorage.getItem('skyline_leads_data');
-            if (stored) {
-                existingLeads = JSON.parse(stored);
-                if (!Array.isArray(existingLeads)) existingLeads = [];
-            }
-        } catch (e) {
-            console.error('Failed to parse existing leads:', e);
-            existingLeads = [];
-        }
-
-        // Deduplicate by email (case-insensitive)
+            if (stored) { existingLeads = JSON.parse(stored); if (!Array.isArray(existingLeads)) existingLeads = []; }
+        } catch (e) { console.error('Failed to parse existing leads:', e); existingLeads = []; }
         const existingEmails = new Set(existingLeads.map(l => l.email?.toLowerCase()));
         const newUniqueLeads = companies.filter(c => !existingEmails.has(c.email?.toLowerCase()));
-
-        // Prepend new unique leads so they appear at top
         const mergedLeads = [...newUniqueLeads, ...existingLeads];
-
         localStorage.setItem('skyline_leads_data', JSON.stringify(mergedLeads));
-        
-        showToast(
-            `Search complete! Found ${newUniqueLeads.length} new prospects (${mergedLeads.length} total). Redirecting...`, 
-            'success'
-        );
-        
-        // Redirect to leads.html after a short delay
-        setTimeout(() => {
-            window.location.href = 'leads.html';
-        }, 1500);
+        showToast(`Search complete! Found ${newUniqueLeads.length} new prospects (${mergedLeads.length} total). Redirecting...`, 'success');
+        setTimeout(() => { window.location.href = 'leads.html'; }, 1500);
     } else {
         showToast('Search complete but no prospects found.', 'warning');
     }
@@ -450,97 +332,43 @@ function renderFinalResults(data) {
 if (findProspectsBtn) {
     findProspectsBtn.addEventListener('click', function() {
         const query = customerDescription ? customerDescription.value.trim() : '';
-        if (!query) {
-            showToast('Please describe your ideal customer first.', 'warning');
-            return;
-        }
+        if (!query) { showToast('Please describe your ideal customer first.', 'warning'); return; }
         streamLeadResponse(query);
     });
 }
 
-// ════════════════════════════════════════
-// ✅ FIX #2: USAGE MODAL LOGIC (Reused from alert.js)
-// ════════════════════════════════════════
-
+// ── USAGE MODAL LOGIC ──
 async function openUsageModal() {
     if (!usageModalOverlay) return;
-    
     usageModalOverlay.style.display = 'flex';
     usageGrid.innerHTML = '<div class="usage-loading">Loading usage data...</div>';
-
-    if (!token) {
-        usageGrid.innerHTML = '<div class="usage-error">Please log in to view usage.</div>';
-        return;
-    }
-
+    if (!token) { usageGrid.innerHTML = '<div class="usage-error">Please log in to view usage.</div>'; return; }
     try {
-        console.log('📤 [MODAL] Fetching fresh usage...');
+        console.log(' [MODAL] Fetching fresh usage...');
         const res = await fetch(`${BACKEND}/api/users/me/usage`, {
-            headers: { 'Authorization': 'Bearer ' + token },
-            cache: 'no-store'
+            headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store'
         });
-
         const data = await res.json();
         console.log('📥 [MODAL] Fresh data:', data);
-
         if (!res.ok) throw new Error(data.message || 'Failed');
-
-        // Read from data.limits.{type}.{remaining, max}
         const limits = data.limits || {};
-        
         const metrics = [
-            { 
-                label: 'Emails', 
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
-                remaining: limits.email?.remaining ?? 0,
-                total: limits.email?.max ?? 30
-            },
-            { 
-                label: 'Research', 
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-                remaining: limits.research?.remaining ?? 0,
-                total: limits.research?.max ?? 4
-            },
-            { 
-                label: 'Chats', 
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-                remaining: limits.chat?.remaining ?? 0,
-                total: limits.chat?.max ?? 30
-            },
-            { 
-                label: 'AI Suggestions', 
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
-                remaining: limits.aiSuggestions?.remaining ?? 0,
-                total: limits.aiSuggestions?.max ?? 7
-            }
+            { label: 'Emails', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', remaining: limits.email?.remaining ?? 0, total: limits.email?.max ?? 30 },
+            { label: 'Research', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>', remaining: limits.research?.remaining ?? 0, total: limits.research?.max ?? 4 },
+            { label: 'Chats', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', remaining: limits.chat?.remaining ?? 0, total: limits.chat?.max ?? 30 },
+            { label: 'AI Suggestions', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>', remaining: limits.aiSuggestions?.remaining ?? 0, total: limits.aiSuggestions?.max ?? 7 }
         ];
-
         usageGrid.innerHTML = metrics.map(m => {
             const pct = m.total > 0 ? (m.remaining / m.total) * 100 : 0;
-            return `
-                <div class="usage-card">
-                    <div class="usage-icon">${m.icon}</div>
-                    <div class="usage-info">
-                        <div class="usage-label">${m.label}</div>
-                        <div class="usage-count">${m.remaining} / ${m.total}</div>
-                    </div>
-                    <div class="usage-bar-container">
-                        <div class="usage-bar" style="width: ${pct}%"></div>
-                    </div>
-                </div>
-            `;
+            return `<div class="usage-card"><div class="usage-icon">${m.icon}</div><div class="usage-info"><div class="usage-label">${m.label}</div><div class="usage-count">${m.remaining} / ${m.total}</div></div><div class="usage-bar-container"><div class="usage-bar" style="width: ${pct}%"></div></div></div>`;
         }).join('');
-
     } catch (err) {
         console.error('❌ [MODAL] Error:', err);
         usageGrid.innerHTML = `<div class="usage-error">Failed to load usage: ${err.message}</div>`;
     }
 }
 
-function closeUsageModalFn() {
-    if (usageModalOverlay) usageModalOverlay.style.display = 'none';
-}
-
+function closeUsageModalFn() { if (usageModalOverlay) usageModalOverlay.style.display = 'none'; }
 if (closeUsageModal) closeUsageModal.addEventListener('click', closeUsageModalFn);
 if (usageModalOverlay) {
     usageModalOverlay.addEventListener('click', function(e) {
@@ -548,56 +376,44 @@ if (usageModalOverlay) {
     });
 }
 
-// ✅ FIX #2: Make plan card clickable to open usage modal
 if (planCard) {
     planCard.style.cursor = 'pointer';
-    planCard.addEventListener('click', function() {
-        openUsageModal();
-    });
+    planCard.addEventListener('click', function() { openUsageModal(); });
 }
 
-// ── 6. Plan Loading ──
+// ── PLAN LOADING WITH 3 INDEPENDENT SKELETON ROWS ──
 function checkPlan() {
     if (!token) {
-        // If no token, remove skeleton states so user sees empty/default state
         if (planCardTitle) planCardTitle.classList.remove('skel');
-        if (planCardStats) planCardStats.classList.remove('skel-active');
+        if (planCardStats) {
+            planCardStats.classList.remove('skel-active');
+            planCardStats.innerHTML = '';
+        }
         return;
     }
 
-    if (planCardTitle) {
-        planCardTitle.classList.add('skel');
-        planCardTitle.textContent = '\u00A0';
-    }
-    if (planCardStats) {
+    // Initialize exactly 3 skeleton bars beneath the header row
+    if (planCardStats && !planCardStats.querySelector('.skel-bar')) {
         planCardStats.classList.add('skel-active');
-        if (!planCardStats.querySelector('.skel-bar')) {
-            planCardStats.innerHTML = `
-                <div class="stat-row skel skel-bar"></div>
-                <div class="stat-row skel skel-bar"></div>
-                <div class="stat-row skel skel-bar"></div>
-                <div class="stat-row skel skel-bar"></div> <!-- ✅ 4th skeleton row -->
-            `;
-        }
+        planCardStats.innerHTML = `
+            <div class="stat-row skel-bar"></div>
+            <div class="stat-row skel-bar"></div>
+            <div class="stat-row skel-bar"></div>`;
     }
 
     return fetch(`${BACKEND}/api/users/me`, {
-        headers: { 'Authorization': 'Bearer ' + token },
-        cache: 'no-store'
+        headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store'
     })
     .then(function(res) { return res.ok ? res.json() : null; })
     .then(function(user) {
         if (user) {
             var p = user.subscriptionTier || 'free';
             var limits = user.remainingLimits || { emails: 0, research: 0, chats: 0, aiSuggestions: 0 };
-
-            // ⭐ Store in cache (including aiSuggestions)
             _cachedLimits.emails = limits.emails ?? 0;
             _cachedLimits.research = limits.research ?? 0;
             _cachedLimits.chats = limits.chats ?? 0;
-            _cachedLimits.aiSuggestions = limits.aiSuggestions ?? 0; // ✅ ADDED
+            _cachedLimits.aiSuggestions = limits.aiSuggestions ?? 0;
             _cachedLimits.tier = p;
-
             updatePlanUI(p, limits);
         }
     })
@@ -607,10 +423,9 @@ function checkPlan() {
     });
 }
 
-// ✅ FIX #2: Updated to render 4 stats including AI Suggestions
+// Atomically replaces ALL 3 skeletons with real content at once
 function updatePlanUI(plan, limits) {
     if (!planCardTitle || !planCardStats) return;
-
     planCardTitle.classList.remove('skel');
     planCardStats.classList.remove('skel-active');
 
@@ -619,10 +434,10 @@ function updatePlanUI(plan, limits) {
     if (plan === 'pro') displayText = 'Pro plan';
     planCardTitle.textContent = displayText;
 
-    const emailLimit      = limits?.emails          ?? 0;
-    const researchLimit   = limits?.research        ?? 0;
-    const chatLimit       = limits?.chats           ?? 0;
-    const aiSuggestLimit  = limits?.aiSuggestions   ?? 0; // ✅ ADDED
+    const emailLimit = limits?.emails ?? 0;
+    const researchLimit = limits?.research ?? 0;
+    const chatLimit = limits?.chats ?? 0;
+    const aiSuggestLimit = limits?.aiSuggestions ?? 0;
 
     planCardStats.innerHTML = `
         <div class="stat-row">
@@ -639,63 +454,38 @@ function updatePlanUI(plan, limits) {
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             <span class="stat-value">${chatLimit}</span>
             <span class="stat-label">chats left today</span>
-        </div>
-        <!-- ✅ NEW: AI Suggestions stat row -->
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-            <span class="stat-value">${aiSuggestLimit}</span>
-            <span class="stat-label">AI suggestions left today</span>
-        </div>
-    `;
+        </div>`;
 }
 
-// ── Utility: Toast ──
+// ── Toast Utility ──
 function showToast(message, type, duration) {
-    type = type || 'info';
-    duration = duration || 4000;
+    type = type || 'info'; duration = duration || 4000;
     var existing = document.querySelector('.toast-msg');
     if (existing) existing.remove();
-
     var toast = document.createElement('div');
-    toast.className = 'toast-msg';
-    toast.textContent = message;
-
+    toast.className = 'toast-msg'; toast.textContent = message;
     var colors = {
         success: { bg: 'rgba(102,221,153,0.10)', border: 'rgba(102,221,153,0.5)', text: '#66dd99' },
         error:   { bg: 'rgba(255,85,85,0.10)',   border: 'rgba(255,85,85,0.5)',   text: '#ff5555' },
         warning: { bg: 'rgba(255,170,0,0.10)',   border: 'rgba(255,170,0,0.5)',   text: '#ffaa00' },
         info:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.2)', text: '#f5f5f5' }
     };
-
     var color = colors[type] || colors.info;
     Object.assign(toast.style, {
-        background: color.bg,
-        border: '1px solid ' + color.border,
-        color: color.text,
-        position: 'fixed',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        padding: '12px 24px',
-        borderRadius: '10px',
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '14px',
-        fontWeight: '600',
-        zIndex: '9999',
-        backdropFilter: 'blur(10px)'
+        background: color.bg, border: '1px solid ' + color.border, color: color.text,
+        position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
+        padding: '12px 24px', borderRadius: '10px', fontFamily: 'Inter, sans-serif',
+        fontSize: '14px', fontWeight: '600', zIndex: '9999', backdropFilter: 'blur(10px)'
     });
-
     document.body.appendChild(toast);
     setTimeout(function() { toast.remove(); }, duration);
 }
 
 // ── Initialize ──
 document.addEventListener('DOMContentLoaded', function() {
-    // ✅ Start email banner in loading state
     if (emailBanner) emailBanner.classList.add('loading');
-    
     handleOAuthRedirect();
     checkEmailStatus();
-    checkPlan();  // Only ONCE on page load
+    checkPlan();
     console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
 });
