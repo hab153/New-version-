@@ -1,6 +1,6 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: SSE limit handling + AI Suggestions stat + clickable plan card
+// UPDATED: Email banner loading skeletons + 4-stat plan card + clickable usage modal
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -17,9 +17,9 @@ const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
 const planCardTitle = document.querySelector('.plan-card .card-title');
 const planCardStats = document.querySelector('.plan-card .card-stats');
-const planCard = document.querySelector('.plan-card'); // ✅ NEW: For click listener
+const planCard = document.querySelector('.plan-card'); // ✅ For click listener
 
-// ✅ NEW: Usage Modal Elements (reused from alert.html pattern)
+// ✅ Usage Modal Elements (reused from alert.html pattern)
 const usageModalOverlay = document.getElementById('usageModalOverlay');
 const closeUsageModal = document.getElementById('closeUsageModal');
 const usageGrid = document.getElementById('usageGrid');
@@ -67,8 +67,12 @@ function handleOAuthRedirect() {
     }
 }
 
+// ✅ FIX #1: Update Email UI & Remove Loading Skeletons
 function updateEmailUI(isConnected, emailOrStatus) {
     if (!emailBanner || !connectEmailBtn) return;
+
+    // Remove loading class to trigger CSS transition (skeletons hide, real content shows)
+    emailBanner.classList.remove('loading');
 
     if (isConnected) {
         emailBanner.classList.remove('disconnected');
@@ -79,7 +83,7 @@ function updateEmailUI(isConnected, emailOrStatus) {
         if (title) title.textContent = 'Email Connected';
         if (desc) desc.textContent = typeof emailOrStatus === 'string' ? emailOrStatus : 'Connected successfully';
 
-        connectEmailBtn.innerHTML = '<span>Manage</span>';
+        connectEmailBtn.innerHTML = '<span class="btn-text">Manage</span>';
         connectEmailBtn.onclick = () => showToast('Email settings coming soon', 'info');
     } else {
         emailBanner.classList.add('disconnected');
@@ -92,14 +96,18 @@ function updateEmailUI(isConnected, emailOrStatus) {
 
         connectEmailBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            <span>Connect email</span>
+            <span class="btn-text">Connect email</span>
         `;
         connectEmailBtn.onclick = connectEmail;
     }
 }
 
 async function checkEmailStatus() {
-    if (!token) return;
+    if (!token) {
+        // If no token, remove loading state immediately so user sees "No email connected"
+        if (emailBanner) emailBanner.classList.remove('loading');
+        return;
+    }
     try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
             headers: { 'Authorization': 'Bearer ' + token }
@@ -122,7 +130,7 @@ async function connectEmail() {
     const btn = connectEmailBtn;
     const originalContent = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<span>Connecting...</span>';
+    btn.innerHTML = '<span class="btn-text">Connecting...</span>';
 
     try {
         const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
@@ -466,7 +474,7 @@ async function openUsageModal() {
     }
 
     try {
-        console.log(' [MODAL] Fetching fresh usage...');
+        console.log('📤 [MODAL] Fetching fresh usage...');
         const res = await fetch(`${BACKEND}/api/users/me/usage`, {
             headers: { 'Authorization': 'Bearer ' + token },
             cache: 'no-store'
@@ -550,7 +558,12 @@ if (planCard) {
 
 // ── 6. Plan Loading ──
 function checkPlan() {
-    if (!token) return;
+    if (!token) {
+        // If no token, remove skeleton states so user sees empty/default state
+        if (planCardTitle) planCardTitle.classList.remove('skel');
+        if (planCardStats) planCardStats.classList.remove('skel-active');
+        return;
+    }
 
     if (planCardTitle) {
         planCardTitle.classList.add('skel');
@@ -678,6 +691,9 @@ function showToast(message, type, duration) {
 
 // ── Initialize ──
 document.addEventListener('DOMContentLoaded', function() {
+    // ✅ Start email banner in loading state
+    if (emailBanner) emailBanner.classList.add('loading');
+    
     handleOAuthRedirect();
     checkEmailStatus();
     checkPlan();  // Only ONCE on page load
