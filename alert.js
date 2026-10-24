@@ -1,5 +1,5 @@
 // ============================================================
-// alert.js - Skyline AI · Alerts Page (LIVE DATA - Mirrors page.js)
+// alert.js - Skyline AI · Alerts Page (LIVE DATA - FIXED)
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterTabs = document.querySelectorAll('.tab-btn');
     const preferencesCard = document.getElementById('preferencesCard');
     
-    // ✅ NEW: Usage Modal Elements
     const usageModalOverlay = document.getElementById('usageModalOverlay');
     const closeUsageModal = document.getElementById('closeUsageModal');
     const usageGrid = document.getElementById('usageGrid');
@@ -21,16 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
-    // ⭐ Cache for limits (mirrors page.js _cachedLimits pattern)
+    // ⭐ FIXED: Cache includes ALL 8 fields (remaining + max)
     let _cachedLimits = {
-        emails: 0,
-        research: 0,
-        chats: 0,
-        aiSuggestions: 0,
+        emails: 0,          emailsLimit: 30,
+        research: 0,        researchLimit: 4,
+        chats: 0,           chatsLimit: 30,
+        aiSuggestions: 0,   aiSuggestionsLimit: 7,
         tier: 'free'
     };
 
-    // ── 1. Fetch Live Usage Limits on Init (Mirrors page.js checkPlan) ──
+    // ── 1. Fetch Live Usage (FIXED: reads data.limits.*) ──
     async function checkUsageLimits() {
         if (!token) return null;
 
@@ -44,43 +43,45 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             
             const data = await res.json();
-            console.log(' [USAGE] Received:', data);
+            console.log('📥 [USAGE] Received:', data);
 
-            // Update cached limits exactly like page.js
-            _cachedLimits.emails = data.emails ?? 0;
-            _cachedLimits.research = data.research ?? 0;
-            _cachedLimits.chats = data.chats ?? 0;
-            _cachedLimits.aiSuggestions = data.aiSuggestions ?? 0;
-            _cachedLimits.tier = data.tier || 'free';
+            // ⭐ FIXED: Read from data.limits.{type}.remaining / .max
+            const limits = data.limits || {};
+            _cachedLimits.emails            = limits.email?.remaining         ?? 0;
+            _cachedLimits.emailsLimit       = limits.email?.max               ?? 30;
+            _cachedLimits.research          = limits.research?.remaining      ?? 0;
+            _cachedLimits.researchLimit     = limits.research?.max            ?? 4;
+            _cachedLimits.chats             = limits.chat?.remaining          ?? 0;
+            _cachedLimits.chatsLimit        = limits.chat?.max                ?? 30;
+            _cachedLimits.aiSuggestions     = limits.aiSuggestions?.remaining ?? 0;
+            _cachedLimits.aiSuggestionsLimit = limits.aiSuggestions?.max      ?? 7;
+            _cachedLimits.tier              = data.tier || 'free';
 
+            console.log('✅ [USAGE] Cached limits:', _cachedLimits);
             return data;
         } catch (err) {
-            console.error(' [USAGE] Failed to fetch limits:', err);
+            console.error('❌ [USAGE] Failed:', err);
             return null;
         }
     }
 
-    // ── 2. Build Dynamic Usage Card Text from Cached Limits ──
-    function buildUsageCardText(limits) {
-        if (!limits) return 'Loading usage data...';
+    // ── 2. Build Usage Card Text from Cache (FIXED) ──
+    function buildUsageCardText() {
+        const chatsUsed  = _cachedLimits.chatsLimit         - _cachedLimits.chats;
+        const emailsUsed = _cachedLimits.emailsLimit        - _cachedLimits.emails;
+        const aiUsed     = _cachedLimits.aiSuggestionsLimit - _cachedLimits.aiSuggestions;
         
-        const chatsUsed = (limits.chatsLimit || 30) - (limits.chats || 0);
-        const emailsUsed = (limits.emailsLimit || 30) - (limits.emails || 0);
-        const aiUsed = (limits.aiSuggestionsLimit || 7) - (limits.aiSuggestions || 0);
-        
-        return `You used ${chatsUsed} of ${limits.chatsLimit || 30} daily chats, ${emailsUsed} of ${limits.emailsLimit || 30} daily emails, and ${aiUsed} of ${limits.aiSuggestionsLimit || 7} AI suggestions.`;
+        return `You used ${chatsUsed} of ${_cachedLimits.chatsLimit} daily chats, ${emailsUsed} of ${_cachedLimits.emailsLimit} daily emails, and ${aiUsed} of ${_cachedLimits.aiSuggestionsLimit} AI suggestions.`;
     }
 
-    // ── 3. Get Real Day Name ──
     function getTodayDayName() {
         return new Date().toLocaleDateString('en-US', { weekday: 'long' });
     }
 
-    // ── 4. Fetch Notifications & Inject Live Usage Card ──
+    // ── 3. Init Alerts Page ──
     async function initAlertsPage() {
         if (!notificationList) return;
         
-        // Show skeleton loading state (mirrors page.js plan loading)
         notificationList.innerHTML = `
             <div class="skeleton-card skeleton-animate"></div>
             <div class="skeleton-card skeleton-animate"></div>
@@ -92,12 +93,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Fetch BOTH notifications and usage limits in parallel
-        const [notifRes, usageData] = await Promise.all([
+        // Fetch usage + notifications in parallel
+        const [usageData, notifRes] = await Promise.all([
+            checkUsageLimits(),
             fetch(`${BACKEND}/api/notifications`, {
                 headers: { 'Authorization': 'Bearer ' + token }
-            }).catch(() => null),
-            checkUsageLimits()
+            }).catch(() => null)
         ]);
 
         // Process notifications
@@ -121,13 +122,13 @@ document.addEventListener('DOMContentLoaded', function() {
             liveNotifications = [];
         }
 
-        // Inject or update the dynamic usage_summary card using LIVE cached limits
+        // ⭐ FIXED: Build usage card from cache (not from `usageData`)
         const existingUsageIdx = liveNotifications.findIndex(n => n.type === 'usage_summary');
         const usageCard = {
             id: existingUsageIdx >= 0 ? liveNotifications[existingUsageIdx].id : 'dynamic_usage_' + Date.now(),
             type: 'usage_summary',
             title: 'Daily usage summary',
-            description: buildUsageCardText(usageData),
+            description: buildUsageCardText(),  // ← No argument needed now
             timestamp: getTodayDayName(),
             isRead: true,
             category: 'general',
@@ -142,9 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             liveNotifications.push(usageCard);
         }
 
-        // Sort by createdAt descending
         liveNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
         renderNotifications();
     }
 
@@ -154,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
         notificationList.innerHTML = '';
 
         let filtered = liveNotifications;
-
         if (currentFilter === 'unread') {
             filtered = liveNotifications.filter(n => !n.isRead);
         } else if (currentFilter === 'security') {
@@ -167,12 +165,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         filtered.forEach(n => {
-            const card = createNotificationCard(n);
-            notificationList.appendChild(card);
+            notificationList.appendChild(createNotificationCard(n));
         });
     }
 
-    // ── Create Card Element ──
     function createNotificationCard(n) {
         const card = document.createElement('div');
         card.className = 'notification-card';
@@ -200,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Handle special actions vs standard navigation
         const actionBtn = card.querySelector('.card-action-btn');
         actionBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -213,7 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Mark as read on click
         card.addEventListener('click', async function() {
             if (!n.isRead && token) {
                 try {
@@ -233,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return card;
     }
 
-    // ── Icon Configurations ──
     function getIconConfig(type) {
         const icons = {
             reply: {
@@ -260,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return icons[type] || icons.reply;
     }
 
-    // ── Map Backend Type to UI Type ──
     function mapNotificationType(backendType) {
         const mapping = {
             'reply_received': 'reply',
@@ -272,10 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return mapping[backendType] || 'reply';
     }
 
-    // ── Format Timestamp Dynamically ──
     function formatTimestamp(dateString) {
         if (!dateString) return getTodayDayName();
-        
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now - date;
@@ -292,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ─ Render Empty State ──
     function renderEmptyState(message) {
         notificationList.innerHTML = `
             <div class="empty-state">
@@ -301,19 +290,16 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
     }
 
-    // ─ Update Unread Badge ──
     function updateUnreadBadge() {
         const unreadCount = liveNotifications.filter(n => !n.isRead).length;
-        const badges = document.querySelectorAll('.nav-badge');
-        badges.forEach(badge => {
+        document.querySelectorAll('.nav-badge').forEach(badge => {
             badge.style.display = unreadCount > 0 ? 'block' : 'none';
         });
     }
 
     // ═══════════════════════════════════════
-    // ✅ USAGE MODAL LOGIC (LIVE DATA - Always Fresh)
-    // ════════════════════════════════════════
-
+    // ✅ USAGE MODAL — ALWAYS FETCH FRESH (FIXED paths)
+    // ═══════════════════════════════════════
     async function openUsageModal() {
         if (!usageModalOverlay) return;
         
@@ -326,67 +312,66 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            //  ALWAYS fetch fresh data when modal opens (mirrors page.js SSE refresh)
-            console.log('📤 [MODAL] Fetching fresh /api/users/me/usage...');
+            console.log('📤 [MODAL] Fetching fresh usage...');
             const res = await fetch(`${BACKEND}/api/users/me/usage`, {
                 headers: { 'Authorization': 'Bearer ' + token },
                 cache: 'no-store'
             });
 
             const data = await res.json();
-            console.log(' [MODAL] Received fresh usage:', data);
+            console.log('📥 [MODAL] Fresh data:', data);
 
-            if (!res.ok) throw new Error(data.message || 'Failed to fetch usage');
+            if (!res.ok) throw new Error(data.message || 'Failed');
 
-            // Update cache with freshest data
-            _cachedLimits.emails = data.emails ?? _cachedLimits.emails;
-            _cachedLimits.research = data.research ?? _cachedLimits.research;
-            _cachedLimits.chats = data.chats ?? _cachedLimits.chats;
-            _cachedLimits.aiSuggestions = data.aiSuggestions ?? _cachedLimits.aiSuggestions;
-
-            // Map backend response to UI cards using ACTUAL field names
+            // ⭐ FIXED: Read from data.limits.{type}.{remaining, max}
+            const limits = data.limits || {};
+            
             const metrics = [
                 { 
                     label: 'Emails', 
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
-                    remaining: data.emails || 0,
-                    total: data.emailsLimit || 30
+                    remaining: limits.email?.remaining ?? 0,
+                    total: limits.email?.max ?? 30
                 },
                 { 
                     label: 'Research', 
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-                    remaining: data.research || 0,
-                    total: data.researchLimit || 4
+                    remaining: limits.research?.remaining ?? 0,
+                    total: limits.research?.max ?? 4
                 },
                 { 
                     label: 'Chats', 
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-                    remaining: data.chats || 0,
-                    total: data.chatsLimit || 30
+                    remaining: limits.chat?.remaining ?? 0,
+                    total: limits.chat?.max ?? 30
                 },
                 { 
                     label: 'AI Suggestions', 
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
-                    remaining: data.aiSuggestions || 0,
-                    total: data.aiSuggestionsLimit || 7
+                    remaining: limits.aiSuggestions?.remaining ?? 0,
+                    total: limits.aiSuggestions?.max ?? 7
                 }
             ];
 
-            usageGrid.innerHTML = metrics.map(m => `
-                <div class="usage-card">
-                    <div class="usage-icon">${m.icon}</div>
-                    <div class="usage-info">
-                        <div class="usage-label">${m.label}</div>
-                        <div class="usage-count">${m.remaining} / ${m.total}</div>
+            usageGrid.innerHTML = metrics.map(m => {
+                const used = m.total - m.remaining;
+                const pct = m.total > 0 ? (m.remaining / m.total) * 100 : 0;
+                return `
+                    <div class="usage-card">
+                        <div class="usage-icon">${m.icon}</div>
+                        <div class="usage-info">
+                            <div class="usage-label">${m.label}</div>
+                            <div class="usage-count">${m.remaining} / ${m.total}</div>
+                        </div>
+                        <div class="usage-bar-container">
+                            <div class="usage-bar" style="width: ${pct}%"></div>
+                        </div>
                     </div>
-                    <div class="usage-bar-container">
-                        <div class="usage-bar" style="width: ${(m.remaining / m.total) * 100}%"></div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
         } catch (err) {
-            console.error('❌ [MODAL] Usage fetch error:', err);
+            console.error('❌ [MODAL] Error:', err);
             usageGrid.innerHTML = `<div class="usage-error">Failed to load usage: ${err.message}</div>`;
         }
     }
@@ -402,9 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Event Listeners ─
-
-    // Filter Tabs
+    // ── Event Listeners ──
     filterTabs.forEach(tab => {
         tab.addEventListener('click', function() {
             filterTabs.forEach(t => t.classList.remove('active'));
@@ -414,34 +397,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Mark All As Read
     if (markAllReadBtn) {
         markAllReadBtn.addEventListener('click', async function() {
             if (!token) return;
-            
             try {
                 await fetch(`${BACKEND}/api/notifications/mark-all-read`, {
                     method: 'PUT',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                
                 liveNotifications.forEach(n => n.isRead = true);
                 updateUnreadBadge();
                 renderNotifications();
             } catch (err) {
-                console.error('Mark all read error:', err);
+                console.error('Mark all error:', err);
                 alert('Failed to mark all as read.');
             }
         });
     }
 
-    // Preferences Card → Settings
     if (preferencesCard) {
         preferencesCard.addEventListener('click', function() {
             window.location.href = 'settings.html#notifications';
         });
     }
 
-    // Initial Load (mirrors page.js DOMContentLoaded)
+    // Initial Load
     initAlertsPage();
 });
