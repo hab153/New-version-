@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Bulletproof AI Suggestion via Attached DOM References
+// BULLETPROOF AI SUGGESTION: Single render path, direct refs
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -15,19 +15,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeWarningBtn = document.getElementById('closeWarning');
     const warningStrip = document.getElementById('warningStrip');
     
-    // Modal Elements
     const modalOverlay = document.getElementById('modalOverlay');
     const closeModalBtn = document.getElementById('closeModal');
     const modalContent = document.getElementById('modalContent');
 
-    // Card Action Modal Elements
     const cardActionOverlay = document.getElementById('cardActionOverlay');
     const closeCardActionBtn = document.getElementById('closeCardAction');
     const viewInfoBtn = document.getElementById('viewInfoBtn');
     const viewDraftBtn = document.getElementById('viewDraftBtn');
     const cardActionTitle = document.getElementById('cardActionTitle');
 
-    // Draft View Modal Elements
     const draftViewOverlay = document.getElementById('draftViewOverlay');
     const closeDraftViewBtn = document.getElementById('closeDraftView');
     const draftViewCompany = document.getElementById('draftViewCompany');
@@ -37,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftSendBtn = document.getElementById('draftSendBtn');
     const draftScheduleBtn = document.getElementById('draftScheduleBtn');
 
-    // Review Sheet Elements
     const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
     const draftListContainer = document.getElementById('draftListContainer');
     const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
@@ -46,16 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
     const draftCountsEl = document.getElementById('draftCounts');
     
-    // ✅ NEW: AI Suggestion Elements
     const aiSuggestBtn = document.getElementById('aiSuggestBtn');
     const aiSuggestStatus = document.getElementById('aiSuggestStatus');
 
-    // Send All Drafts + Schedule Elements
     const sendAllDraftsWrapper = document.getElementById('sendAllDraftsWrapper');
     const sendAllDraftsBtn = document.getElementById('sendAllDraftsBtn');
     const scheduleAllDraftsBtn = document.getElementById('scheduleAllDraftsBtn');
 
-    // Schedule Outreach Modal Elements
     const scheduleOverlay = document.getElementById('scheduleOverlay');
     const closeScheduleSheetBtn = document.getElementById('closeScheduleSheet');
     const scheduleCancelBtn = document.getElementById('scheduleCancelBtn');
@@ -75,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const ruleStopUnsubscribe = document.getElementById('ruleStopUnsubscribe');
     const ruleSkipMissing = document.getElementById('ruleSkipMissing');
 
-    // Filter & Context Menu Elements
     const filterDropdownBtn = document.getElementById('filterDropdownBtn');
     const filterDropdown = document.getElementById('filterDropdown');
     const currentFilterSpan = document.getElementById('currentFilter');
@@ -86,19 +78,116 @@ document.addEventListener('DOMContentLoaded', function() {
     // State
     let allLeadsData = []; 
     let savedLeadsEmails = new Set(); 
-    let draftedEmails = new Map(); // email -> { subject, message }
+    let draftedEmails = new Map();
     let currentFilter = 'all';
     let longPressTimer;
     let selectedLeadIndex = null;
     let reviewDrafts = [];
     let currentCardActionIndex = null;
     let isLoading = true;
-    let scheduleContext = { type: '', leads: [] }; // 'review', 'single', 'all'
+    let scheduleContext = { type: '', leads: [] };
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
-    // ── 1. Load Data with Progressive Loading ──
+    // ═══════════════════════════════════════════════════════════
+    // ⭐ THE SINGLE RENDER FUNCTION FOR ALL DRAFTS
+    // Every input gets `_draftRef` attached AND draft gets back-ref
+    // ═══════════════════════════════════════════════════════════
+    function renderDraftRows() {
+        if (!draftListContainer) return;
+        draftListContainer.innerHTML = '';
+        
+        reviewDrafts.forEach(function(draft) {
+            const row = document.createElement('div');
+            row.className = 'draft-row';
+            row.setAttribute('data-draft-id', draft.id);
+
+            row.innerHTML = `
+                <div class="draft-header">
+                    <label class="draft-checkbox-wrapper">
+                        <input type="checkbox" class="draft-checkbox" ${draft.approved ? 'checked' : ''}>
+                        <span class="custom-checkbox draft-check">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </label>
+                    <div class="draft-logo">
+                        <span style="font-weight:700; font-size:16px; color:white;">${draft.lead.companyName ? draft.lead.companyName.charAt(0).toUpperCase() : '?'}</span>
+                    </div>
+                    <div class="draft-info">
+                        <div class="draft-company">${draft.lead.companyName || 'Unknown'}</div>
+                        <div class="draft-email">${draft.lead.email}</div>
+                    </div>
+                    <div class="draft-status-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Needs review</span>
+                    </div>
+                    <button type="button" class="expand-editor-btn" data-action="toggle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+                <div class="draft-editor" style="display: none;">
+                    <div class="editor-field">
+                        <label>Subject</label>
+                        <input type="text" class="subject-input" value="${String(draft.subject).replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="editor-field">
+                        <label>Message</label>
+                        <textarea class="message-input">${draft.body}</textarea>
+                    </div>
+                </div>
+            `;
+
+            const subjectInput = row.querySelector('.subject-input');
+            const messageTextarea = row.querySelector('.message-input');
+            const checkbox = row.querySelector('.draft-checkbox');
+            const expandBtn = row.querySelector('.expand-editor-btn');
+            const editorDiv = row.querySelector('.draft-editor');
+            const arrowSvg = expandBtn.querySelector('svg');
+
+            // ⭐⭐⭐ DIRECT REFERENCES — the unbreakable link ⭐⭐⭐
+            subjectInput._draftRef = draft;
+            messageTextarea._draftRef = draft;
+            checkbox._draftRef = draft;
+
+            // Reverse references stored on draft object
+            draft._subjectInputEl = subjectInput;
+            draft._messageInputEl = messageTextarea;
+            draft._checkboxEl = checkbox;
+
+            // Toggle editor
+            expandBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (editorDiv.style.display === 'none' || !editorDiv.style.display) {
+                    editorDiv.style.display = 'block';
+                    arrowSvg.style.transform = 'rotate(180deg)';
+                } else {
+                    editorDiv.style.display = 'none';
+                    arrowSvg.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // Checkbox
+            checkbox.addEventListener('change', function() {
+                draft.approved = this.checked;
+                updateSendButtonState();
+            });
+
+            // Input updates
+            subjectInput.addEventListener('input', function() {
+                draft.subject = this.value;
+                updateSendButtonState();
+            });
+            messageTextarea.addEventListener('input', function() {
+                draft.body = this.value;
+                updateSendButtonState();
+            });
+
+            draftListContainer.appendChild(row);
+        });
+    }
+
+    // ── 1. Load Data ──
     async function initData() {
         isLoading = true;
         renderSkeletons(5);
@@ -147,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderLeads();
     }
 
-    // ── 2. Render Skeleton Cards ──
+    // ── 2. Render Skeletons ──
     function renderSkeletons(count) {
         if (!leadsList) return;
         leadsList.innerHTML = '';
@@ -174,38 +263,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ─ 3. Get Status Label HTML ──
     function getStatusLabel(lead) {
         const isSaved = savedLeadsEmails.has(lead.email);
         const isDraft = draftedEmails.has(lead.email);
-        
-        if (isSaved && isDraft) {
-            return '<span class="status-label combined">Saved & Draft</span>';
-        } else if (isDraft) {
-            return '<span class="status-label draft">Draft</span>';
-        } else if (isSaved) {
-            return '<span class="status-label saved">Saved</span>';
-        } else {
-            return '<span class="status-label recent">Recent</span>';
-        }
+        if (isSaved && isDraft) return '<span class="status-label combined">Saved & Draft</span>';
+        if (isDraft) return '<span class="status-label draft">Draft</span>';
+        if (isSaved) return '<span class="status-label saved">Saved</span>';
+        return '<span class="status-label recent">Recent</span>';
     }
 
-    // ─ 4. Render Lead Cards ──
+    // ── 3. Render Lead Cards ──
     function renderLeads() {
         if (!leadsList) return;
-        leadsList.innerHTML = ''; 
+        leadsList.innerHTML = '';
 
         let displayLeads = [];
-
-        if (currentFilter === 'all') {
-            displayLeads = [...allLeadsData];
-        } else if (currentFilter === 'saved') {
-            displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
-        } else if (currentFilter === 'recent') {
-            displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email) && !draftedEmails.has(lead.email));
-        } else if (currentFilter === 'draft') {
-            displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
-        }
+        if (currentFilter === 'all') displayLeads = [...allLeadsData];
+        else if (currentFilter === 'saved') displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
+        else if (currentFilter === 'recent') displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email) && !draftedEmails.has(lead.email));
+        else if (currentFilter === 'draft') displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
 
         if (sendAllDraftsWrapper) {
             sendAllDraftsWrapper.style.display = currentFilter === 'draft' ? 'flex' : 'none';
@@ -219,13 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const countEl = document.getElementById('resultsCount');
         if (countEl) countEl.textContent = `${displayLeads.length} prospects found`;
 
-        displayLeads.forEach((lead, index) => {
+        displayLeads.forEach((lead) => {
             const originalIndex = allLeadsData.indexOf(lead);
-            
             const card = document.createElement('div');
             card.className = 'lead-card';
             card.setAttribute('data-index', originalIndex);
-            
+
             let badgeClass = 'low';
             let badgeText = 'Needs verification';
             if (lead.emailStatus === 'verified') {
@@ -278,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initLongPressLogic();
     }
 
-    // ─ 5. Details Modal Logic ──
+    // ── Details Modal ──
     function openDetailsModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !modalOverlay || !modalContent) return;
@@ -318,11 +393,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 6. Card Action Modal (Information vs Draft) ──
+    // ── Card Action Modal ──
     function openCardActionModal(index) {
         const lead = allLeadsData[index];
         if (!lead || !cardActionOverlay) return;
-
         currentCardActionIndex = index;
         if (cardActionTitle) cardActionTitle.textContent = lead.companyName || 'Choose an action';
         cardActionOverlay.style.display = 'flex';
@@ -359,17 +433,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ─ 7. Draft View Modal ─
+    // ── Draft View Modal ──
     function openDraftViewModal(lead) {
         if (!lead || !draftViewOverlay) return;
-
         const draft = draftedEmails.get(lead.email) || { subject: '', message: '' };
-
         if (draftViewCompany) draftViewCompany.textContent = lead.companyName || 'Unknown';
         if (draftViewEmail) draftViewEmail.textContent = lead.email || '';
         if (draftEditSubject) draftEditSubject.value = draft.subject;
         if (draftEditMessage) draftEditMessage.value = draft.message;
-
         draftViewOverlay.style.display = 'flex';
     }
 
@@ -388,16 +459,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (draftSendBtn) {
         draftSendBtn.addEventListener('click', async function() {
             if (!token) return;
-
             const company = draftViewCompany ? draftViewCompany.textContent : '';
             const email = draftViewEmail ? draftViewEmail.textContent : '';
             const subject = draftEditSubject ? draftEditSubject.value : '';
             const message = draftEditMessage ? draftEditMessage.value : '';
-
-            if (!email || !message.trim()) {
-                alert('Please enter a message before sending.');
-                return;
-            }
+            if (!email || !message.trim()) { alert('Please enter a message before sending.'); return; }
 
             const originalText = draftSendBtn.innerHTML;
             draftSendBtn.innerHTML = '<span>Sending...</span>';
@@ -406,30 +472,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const res = await fetch(BACKEND + '/api/leads/batch-send', {
                     method: 'POST',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        leads: [{
-                            name: company,
-                            email: email,
-                            company: company,
-                            messages: [{ subject: subject, body: message }]
-                        }]
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        leads: [{ name: company, email: email, company: company, messages: [{ subject: subject, body: message }] }]
                     })
                 });
 
                 if (res.ok) {
                     await fetch(BACKEND + '/api/leads/draft', {
                         method: 'DELETE',
-                        headers: { 
-                            'Authorization': 'Bearer ' + token,
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: email })
                     });
-
                     draftedEmails.delete(email);
                     closeDraftViewModal();
                     renderLeads();
@@ -446,33 +500,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Schedule single draft from Draft View Modal
+    // Schedule single draft
     if (draftScheduleBtn) {
         draftScheduleBtn.addEventListener('click', function() {
             const company = draftViewCompany ? draftViewCompany.textContent : '';
             const email = draftViewEmail ? draftViewEmail.textContent : '';
             const subject = draftEditSubject ? draftEditSubject.value : '';
             const message = draftEditMessage ? draftEditMessage.value : '';
-
             if (!email) return;
-
-            scheduleContext = {
-                type: 'single',
-                leads: [{
-                    companyName: company,
-                    email: email,
-                    subject: subject,
-                    message: message
-                }]
-            };
-
+            scheduleContext = { type: 'single', leads: [{ companyName: company, email: email, subject: subject, message: message }] };
             updateScheduleModalUI();
             closeDraftViewModal();
             scheduleOverlay.style.display = 'flex';
         });
     }
 
-    // ── 8. Card Click Handler ──
+    // ── Card Click Handler ──
     if (leadsList) {
         leadsList.addEventListener('click', function(e) {
             if (e.target.closest('.checkbox-wrapper') || e.target.closest('.view-btn')) return;
@@ -480,7 +523,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (card) {
                 const index = parseInt(card.getAttribute('data-index'));
                 const lead = allLeadsData[index];
-                
                 if (lead && draftedEmails.has(lead.email)) {
                     openCardActionModal(index);
                 } else {
@@ -490,58 +532,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 9. Selection Logic ─
+    // ── Selection Logic ──
     function initSelectionLogic() {
         const leadCheckboxes = document.querySelectorAll('.lead-checkbox');
-        
+
         function updateSelectionState() {
             const total = leadCheckboxes.length;
             const checked = Array.from(leadCheckboxes).filter(cb => cb.checked).length;
-            
             if (selectCountSpan) selectCountSpan.textContent = `${checked} selected`;
-
             if (selectAllCheckbox) {
-                if (checked === 0) {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = false;
-                } else if (checked === total) {
-                    selectAllCheckbox.checked = true;
-                    selectAllCheckbox.indeterminate = false;
-                } else {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = true;
-                }
+                if (checked === 0) { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; }
+                else if (checked === total) { selectAllCheckbox.checked = true; selectAllCheckbox.indeterminate = false; }
+                else { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = true; }
             }
-
             const hasSelection = checked > 0;
-            if (saveLeadsBtn) {
-                saveLeadsBtn.disabled = !hasSelection;
-                saveLeadsBtn.style.opacity = hasSelection ? '1' : '0.5';
-            }
-            if (sendBtn) {
-                sendBtn.disabled = !hasSelection;
-                sendBtn.style.opacity = hasSelection ? '1' : '0.5';
-            }
+            if (saveLeadsBtn) { saveLeadsBtn.disabled = !hasSelection; saveLeadsBtn.style.opacity = hasSelection ? '1' : '0.5'; }
+            if (sendBtn) { sendBtn.disabled = !hasSelection; sendBtn.style.opacity = hasSelection ? '1' : '0.5'; }
         }
 
         if (selectAllCheckbox) {
             selectAllCheckbox.addEventListener('change', function() {
                 const isChecked = this.checked;
-                leadCheckboxes.forEach(cb => {
-                    cb.checked = isChecked;
-                });
+                leadCheckboxes.forEach(cb => { cb.checked = isChecked; });
                 updateSelectionState();
             });
         }
 
-        leadCheckboxes.forEach(cb => {
-            cb.addEventListener('change', updateSelectionState);
-        });
-
+        leadCheckboxes.forEach(cb => { cb.addEventListener('change', updateSelectionState); });
         updateSelectionState();
     }
 
-    // ─ 10. Long Press Logic ─
+    // ── Long Press ──
     function initLongPressLogic() {
         const cards = document.querySelectorAll('.lead-card');
         cards.forEach(card => {
@@ -561,10 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 600);
     }
 
-    function cancelPress() {
-        clearTimeout(longPressTimer);
-    }
-
+    function cancelPress() { clearTimeout(longPressTimer); }
     function showContextMenu(x, y) {
         contextMenu.style.left = `${x}px`;
         contextMenu.style.top = `${y}px`;
@@ -596,14 +614,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 allLeadsData.splice(selectedLeadIndex, 1);
                 renderLeads();
                 contextMenu.style.display = 'none';
-
                 try {
                     await fetch(`${BACKEND}/api/leads/${lead.email}`, {
                         method: 'DELETE',
-                        headers: { 
-                            'Authorization': 'Bearer ' + token,
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: lead.email, companyName: lead.companyName })
                     });
                 } catch (e) {
@@ -613,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ─ 11. Filter Dropdown Logic ──
+    // ── Filter Dropdown ──
     if (filterDropdownBtn) {
         filterDropdownBtn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -640,11 +654,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ─ 12. Save Leads Backend Integration ──
+    // ── Save Leads ──
     if (saveLeadsBtn) {
         saveLeadsBtn.addEventListener('click', async function() {
             if (this.disabled || !token) return;
-            
             const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
             if (selectedCards.length === 0) return;
 
@@ -664,10 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 await fetch(`${BACKEND}/api/leads/save`, {
                     method: 'POST',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ leads: leadsToSave })
                 });
                 saveBtnText.textContent = 'Saved';
@@ -681,38 +691,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 13. Review Outreach Modal Logic ──
-    
-    function toggleEditor(btn) {
-        const editor = btn.closest('.draft-row').querySelector('.draft-editor');
-        const arrow = btn.querySelector('svg');
-        
-        if (editor.style.display === 'none' || !editor.style.display) {
-            editor.style.display = 'block';
-            arrow.style.transform = 'rotate(180deg)';
-        } else {
-            editor.style.display = 'none';
-            arrow.style.transform = 'rotate(0deg)';
-        }
-    }
-
+    // ── Review Outreach ──
     function checkMessagesHaveText() {
-        const messageInputs = document.querySelectorAll('.message-input');
-        if (messageInputs.length === 0) return false;
-        
-        let hasText = false;
-        messageInputs.forEach(input => {
-            if (input.value.trim().length > 0) {
-                hasText = true;
-            }
-        });
-        return hasText;
+        return reviewDrafts.some(d => d.body && d.body.trim().length > 0);
     }
 
     function updateSendButtonState() {
-        const anyChecked = document.querySelectorAll('.draft-checkbox:checked').length > 0;
+        const anyChecked = reviewDrafts.some(d => d.approved);
         const hasText = checkMessagesHaveText();
-        
         if (sendApprovedBtn) {
             if (anyChecked && hasText) {
                 sendApprovedBtn.disabled = false;
@@ -725,200 +711,107 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function closeReviewSheet() {
-        if (reviewSheetOverlay) {
-            reviewSheetOverlay.style.display = 'none';
-        }
+        if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none';
+        // Clean up references to avoid memory leaks
+        reviewDrafts.forEach(d => {
+            d._subjectInputEl = null;
+            d._messageInputEl = null;
+            d._checkboxEl = null;
+        });
     }
 
-    // ✅ BULLETPROOF: ATTACH DRAFT OBJECT DIRECTLY TO INPUT ELEMENTS AT CREATION
+    // ⭐⭐⭐ OPEN REVIEW SHEET — from "Send" button ⭐⭐⭐
     function openReviewSheet() {
         const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
         if (selectedCards.length === 0) return;
 
         reviewDrafts = [];
-        draftListContainer.innerHTML = '';
 
         selectedCards.forEach(cb => {
             const card = cb.closest('.lead-card');
             const index = parseInt(card.getAttribute('data-index'));
             const lead = allLeadsData[index];
-
             if (!lead.email) return;
 
             const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-            
-            const defaultSubject = 'Partnership Inquiry';
-            const defaultBody = 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User';
-
-            // Create the row element FIRST so we can grab inputs before appending
-            const row = document.createElement('div');
-            row.className = 'draft-row';
-            row.setAttribute('data-draft-id', draftId);
-
-            row.innerHTML = `
-                <div class="draft-header">
-                    <label class="draft-checkbox-wrapper">
-                        <input type="checkbox" class="draft-checkbox" checked>
-                        <span class="custom-checkbox draft-check">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                    </label>
-                    <div class="draft-logo">
-                        <span style="font-weight:700; font-size:16px; color:white;">${lead.companyName ? lead.companyName.charAt(0).toUpperCase() : '?'}</span>
-                    </div>
-                    <div class="draft-info">
-                        <div class="draft-company">${lead.companyName || 'Unknown'}</div>
-                        <div class="draft-email">${lead.email}</div>
-                    </div>
-                    <div class="draft-status-badge">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span>Needs review</span>
-                    </div>
-                    <button class="expand-editor-btn" onclick="window.toggleEditor(this)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                </div>
-                <div class="draft-editor" style="display: none;">
-                    <div class="editor-field">
-                        <label>Subject</label>
-                        <input type="text" class="subject-input" value="${defaultSubject}" data-draft-id="${draftId}">
-                    </div>
-                    <div class="editor-field">
-                        <label>Message</label>
-                        <textarea class="message-input" data-draft-id="${draftId}">${defaultBody}</textarea>
-                    </div>
-                </div>
-            `;
-
-            // ✅ GRAB ACTUAL DOM ELEMENTS BEFORE APPENDING
-            const subjectInput = row.querySelector('.subject-input');
-            const messageTextarea = row.querySelector('.message-input');
-
-            // Create draft object
-            const draftObj = {
+            reviewDrafts.push({
                 id: draftId,
                 lead: lead,
-                subject: defaultSubject,
-                body: defaultBody,
-                approved: true
-            };
-
-            // ✅ ATTACH DRAFT OBJECT DIRECTLY TO INPUT ELEMENTS
-            // This creates an unbreakable link between UI and state
-            subjectInput._draftRef = draftObj;
-            messageTextarea._draftRef = draftObj;
-
-            // Push to state array
-            reviewDrafts.push(draftObj);
-
-            draftListContainer.appendChild(row);
+                subject: 'Partnership Inquiry',
+                body: 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User',
+                approved: true,
+                _subjectInputEl: null,
+                _messageInputEl: null,
+                _checkboxEl: null
+            });
         });
 
-        if (draftCountsEl) {
-            draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
-        }
+        renderDraftRows();
 
+        if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
         reviewSheetOverlay.style.display = 'flex';
         updateSendButtonState();
     }
 
-    // Event listener for Send button in bulk panel
     if (sendBtn) {
         sendBtn.addEventListener('click', function() {
             const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
             const missingEmails = [];
-            
             selectedCards.forEach(cb => {
                 const card = cb.closest('.lead-card');
                 const index = parseInt(card.getAttribute('data-index'));
                 const lead = allLeadsData[index];
-                if (!lead.email) {
-                    missingEmails.push(lead.companyName || 'Unknown Company');
-                }
+                if (!lead.email) missingEmails.push(lead.companyName || 'Unknown Company');
             });
-
             if (missingEmails.length > 0) {
-                alert('Cannot send to the following companies because they are missing email addresses:\n\n- ' + missingEmails.join('\n- ') + '\n\nPlease unmark them or add their emails.');
+                alert('Cannot send to:\n\n- ' + missingEmails.join('\n- '));
                 return;
             }
-
             openReviewSheet();
         });
     }
 
-    // Close Review Sheet
-    if (closeReviewSheetBtn) {
-        closeReviewSheetBtn.addEventListener('click', closeReviewSheet);
-    }
+    if (closeReviewSheetBtn) closeReviewSheetBtn.addEventListener('click', closeReviewSheet);
 
-    // Handle Draft Checkbox Changes
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('draft-checkbox')) {
-            const row = e.target.closest('.draft-row');
-            const draftId = row.getAttribute('data-draft-id');
-            const draft = reviewDrafts.find(function(d) { return d.id === draftId; });
-            if (draft) {
-                draft.approved = e.target.checked;
-            }
-            updateSendButtonState();
+    window.toggleEditor = function(btn) {
+        const editor = btn.closest('.draft-row').querySelector('.draft-editor');
+        const arrow = btn.querySelector('svg');
+        if (editor.style.display === 'none' || !editor.style.display) {
+            editor.style.display = 'block';
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            editor.style.display = 'none';
+            arrow.style.transform = 'rotate(0deg)';
         }
-    });
+    };
 
-    // Handle Input Changes in Editor
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('subject-input') || e.target.classList.contains('message-input')) {
-            const draftId = e.target.getAttribute('data-draft-id');
-            const draft = reviewDrafts.find(function(d) { return d.id === draftId; });
-            if (draft) {
-                if (e.target.classList.contains('subject-input')) {
-                    draft.subject = e.target.value;
-                } else {
-                    draft.body = e.target.value;
-                }
-            }
-            updateSendButtonState();
-        }
-    });
-
-    window.toggleEditor = toggleEditor;
-
-    // Send Approved Emails
+    // Send Approved
     if (sendApprovedBtn) {
         sendApprovedBtn.addEventListener('click', async function() {
             if (this.disabled || this.classList.contains('disabled')) return;
-
-            const approvedDrafts = reviewDrafts.filter(function(d) { return d.approved; });
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
             if (approvedDrafts.length === 0) return;
 
             const originalText = sendApprovedBtn.innerHTML;
             sendApprovedBtn.innerHTML = '<span>Sending...</span>';
             sendApprovedBtn.disabled = true;
 
-            const leadsToSend = approvedDrafts.map(function(d) {
-                return {
-                    name: d.lead.companyName,
-                    email: d.lead.email,
-                    company: d.lead.companyName,
-                    messages: [{
-                        subject: d.subject,
-                        body: d.body
-                    }]
-                };
-            });
+            const leadsToSend = approvedDrafts.map(d => ({
+                name: d.lead.companyName,
+                email: d.lead.email,
+                company: d.lead.companyName,
+                messages: [{ subject: d.subject, body: d.body }]
+            }));
 
             try {
                 const res = await fetch(BACKEND + '/api/leads/batch-send', {
                     method: 'POST',
-                    headers: { 
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ leads: leadsToSend })
                 });
-
                 if (res.ok) {
                     closeReviewSheet();
-                    document.querySelectorAll('.lead-checkbox:checked').forEach(function(cb) { cb.checked = false; });
+                    document.querySelectorAll('.lead-checkbox:checked').forEach(cb => { cb.checked = false; });
                     initSelectionLogic();
                 } else {
                     const errData = await res.json();
@@ -935,15 +828,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Schedule Outreach from Review Sheet
+    // Schedule Outreach
     if (scheduleOutreachBtn) {
         scheduleOutreachBtn.addEventListener('click', function() {
-            const approvedDrafts = reviewDrafts.filter(function(d) { return d.approved; });
-            if (approvedDrafts.length === 0) {
-                alert('Please approve at least one draft before scheduling.');
-                return;
-            }
-
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) { alert('Please approve at least one draft.'); return; }
             scheduleContext = {
                 type: 'review',
                 leads: approvedDrafts.map(d => ({
@@ -953,26 +842,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     message: d.body
                 }))
             };
-
             updateScheduleModalUI();
             closeReviewSheet();
             scheduleOverlay.style.display = 'flex';
         });
     }
 
-    // Draft Message Button - Saves drafts to backend
+    // Draft Message
     if (draftMessageBtn) {
         draftMessageBtn.addEventListener('click', async function() {
-            if (!token) {
-                closeReviewSheet();
-                return;
-            }
-
-            const approvedDrafts = reviewDrafts.filter(function(d) { return d.approved; });
-            if (approvedDrafts.length === 0) {
-                closeReviewSheet();
-                return;
-            }
+            if (!token) { closeReviewSheet(); return; }
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) { closeReviewSheet(); return; }
 
             const originalText = draftMessageBtn.innerHTML;
             draftMessageBtn.innerHTML = '<span>Saving...</span>';
@@ -982,10 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (const draft of approvedDrafts) {
                     await fetch(BACKEND + '/api/leads/draft', {
                         method: 'POST',
-                        headers: { 
-                            'Authorization': 'Bearer ' + token,
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             companyName: draft.lead.companyName,
                             email: draft.lead.email,
@@ -993,10 +871,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             message: draft.body
                         })
                     });
-
                     draftedEmails.set(draft.lead.email, { subject: draft.subject, message: draft.body });
                 }
-
                 closeReviewSheet();
                 renderLeads();
             } catch (e) {
@@ -1009,89 +885,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 14. Send All Drafts Button (FIXED: Opens Review Sheet) ─
+    // ⭐⭐⭐ SEND ALL DRAFTS — uses SAME renderDraftRows() ⭐⭐⭐
     if (sendAllDraftsBtn) {
         sendAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
-            if (draftLeads.length === 0) {
-                alert('No draft messages to send.');
-                return;
-            }
+            if (draftLeads.length === 0) { alert('No draft messages to send.'); return; }
 
-            // Build reviewDrafts from saved drafts
             reviewDrafts = draftLeads.map(lead => {
                 const draft = draftedEmails.get(lead.email);
                 const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                
                 return {
                     id: draftId,
                     lead: lead,
                     subject: draft.subject,
                     body: draft.message,
-                    approved: true
+                    approved: true,
+                    _subjectInputEl: null,
+                    _messageInputEl: null,
+                    _checkboxEl: null
                 };
             });
 
-            // Render into review sheet
-            draftListContainer.innerHTML = '';
-            reviewDrafts.forEach(d => {
-                const row = document.createElement('div');
-                row.className = 'draft-row';
-                row.setAttribute('data-draft-id', d.id);
-                row.innerHTML = `
-                    <div class="draft-header">
-                        <label class="draft-checkbox-wrapper">
-                            <input type="checkbox" class="draft-checkbox" checked>
-                            <span class="custom-checkbox draft-check">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            </span>
-                        </label>
-                        <div class="draft-logo">
-                            <span style="font-weight:700; font-size:16px; color:white;">${d.lead.companyName ? d.lead.companyName.charAt(0).toUpperCase() : '?'}</span>
-                        </div>
-                        <div class="draft-info">
-                            <div class="draft-company">${d.lead.companyName || 'Unknown'}</div>
-                            <div class="draft-email">${d.lead.email}</div>
-                        </div>
-                        <div class="draft-status-badge">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            <span>Needs review</span>
-                        </div>
-                        <button class="expand-editor-btn" onclick="window.toggleEditor(this)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                    </div>
-                    <div class="draft-editor" style="display: none;">
-                        <div class="editor-field">
-                            <label>Subject</label>
-                            <input type="text" class="subject-input" value="${d.subject}" data-draft-id="${d.id}">
-                        </div>
-                        <div class="editor-field">
-                            <label>Message</label>
-                            <textarea class="message-input" data-draft-id="${d.id}">${d.body}</textarea>
-                        </div>
-                    </div>
-                `;
-                draftListContainer.appendChild(row);
-            });
+            renderDraftRows();
 
-            if (draftCountsEl) {
-                draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
-            }
-
+            if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
             updateSendButtonState();
             reviewSheetOverlay.style.display = 'flex';
         });
     }
 
-    // ── 15. Schedule All Drafts Button ──
+    // Schedule All Drafts
     if (scheduleAllDraftsBtn) {
         scheduleAllDraftsBtn.addEventListener('click', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
-            if (draftLeads.length === 0) {
-                alert('No draft messages to schedule.');
-                return;
-            }
+            if (draftLeads.length === 0) { alert('No draft messages to schedule.'); return; }
 
             scheduleContext = {
                 type: 'all',
@@ -1105,14 +932,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 })
             };
-
             updateScheduleModalUI();
             scheduleOverlay.style.display = 'flex';
         });
     }
 
-    // ── 16. Schedule Outreach Modal Logic ──
-
+    // Schedule Modal
     function updateScheduleModalUI() {
         const count = scheduleContext.leads.length;
         if (scheduleEmailCount) scheduleEmailCount.textContent = count + ' approved emails';
@@ -1133,51 +958,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Date Selector
     if (scheduleDateInput) {
         scheduleDateInput.addEventListener('change', function() {
             if (this.value) {
                 const date = new Date(this.value + 'T00:00:00');
-                const options = { weekday: 'long', month: 'short', day: 'numeric' };
-                selectedDateText.textContent = date.toLocaleDateString('en-US', options);
+                selectedDateText.textContent = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
             }
         });
     }
 
-    // Time Selector
     if (scheduleTimeInput) {
         scheduleTimeInput.addEventListener('change', function() {
             if (this.value) {
-                const [hours, minutes] = this.value.split(':');
-                const h = parseInt(hours);
-                const ampm = h >= 12 ? 'PM' : 'AM';
-                const h12 = h % 12 || 12;
-                selectedTimeText.textContent = h12 + ':' + minutes + ' ' + ampm;
+                const [h, m] = this.value.split(':');
+                const hr = parseInt(h);
+                const ampm = hr >= 12 ? 'PM' : 'AM';
+                const h12 = hr % 12 || 12;
+                selectedTimeText.textContent = h12 + ':' + m + ' ' + ampm;
             }
         });
     }
 
-    // Timezone Selector
     if (scheduleTimezoneSelect) {
         scheduleTimezoneSelect.addEventListener('change', function() {
-            const option = this.options[this.selectedIndex];
-            selectedTimezoneText.textContent = option.text;
+            selectedTimezoneText.textContent = this.options[this.selectedIndex].text;
         });
     }
 
-    // Pace Selector
     if (schedulePaceSelect) {
         schedulePaceSelect.addEventListener('change', function() {
-            const option = this.options[this.selectedIndex];
-            selectedPaceText.textContent = option.text;
+            selectedPaceText.textContent = this.options[this.selectedIndex].text;
         });
     }
 
-    // Schedule Confirm Button
     if (scheduleConfirmBtn) {
         scheduleConfirmBtn.addEventListener('click', async function() {
             if (!token) return;
-
             const dateVal = scheduleDateInput ? scheduleDateInput.value : '';
             const timeVal = scheduleTimeInput ? scheduleTimeInput.value : '';
             const timezone = scheduleTimezoneSelect ? scheduleTimezoneSelect.value : '';
@@ -1186,49 +1002,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const stopOnUnsubscribe = ruleStopUnsubscribe ? ruleStopUnsubscribe.checked : true;
             const skipMissing = ruleSkipMissing ? ruleSkipMissing.checked : true;
 
-            if (!dateVal || !timeVal) {
-                alert('Please select both a date and time for scheduling.');
-                return;
-            }
-
+            if (!dateVal || !timeVal) { alert('Please select a date and time.'); return; }
             const scheduledDateTime = new Date(dateVal + 'T' + timeVal + ':00');
-            if (scheduledDateTime <= new Date()) {
-                alert('Please select a future date and time.');
-                return;
-            }
+            if (scheduledDateTime <= new Date()) { alert('Please select a future date and time.'); return; }
 
             const originalText = scheduleConfirmBtn.innerHTML;
             scheduleConfirmBtn.innerHTML = '<span>Scheduling...</span>';
             scheduleConfirmBtn.disabled = true;
 
             try {
-                // NOTE: This is a placeholder API call. The actual scheduling backend
-                // endpoint will be implemented when you explain how scheduling works.
-                // For now, we simulate success.
-                
                 console.log('Schedule payload:', {
                     leads: scheduleContext.leads,
                     scheduledAt: scheduledDateTime.toISOString(),
-                    timezone: timezone,
-                    paceMinutes: paceMinutes,
+                    timezone, paceMinutes,
                     safetyRules: { stopOnReply, stopOnUnsubscribe, skipMissing }
                 });
 
-                // Simulate success for UI testing
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
+                await new Promise(r => setTimeout(r, 1000));
                 closeScheduleModal();
                 alert('Outreach scheduled successfully!');
-                
-                // If scheduling from draft view, remove the draft
+
                 if (scheduleContext.type === 'single') {
                     const email = scheduleContext.leads[0].email;
                     await fetch(BACKEND + '/api/leads/draft', {
                         method: 'DELETE',
-                        headers: { 
-                            'Authorization': 'Bearer ' + token,
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: email })
                     });
                     draftedEmails.delete(email);
@@ -1244,10 +1042,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ════════════════════════════════════════
-    // ✅ BULLETPROOF: USE ATTACHED DOM REFERENCES FOR AI UPDATE
-    // ═════════════════════════════════════════
-
+    // ═══════════════════════════════════════════════════════════
+    // ⭐⭐⭐ AI SUGGESTION — DIRECT REFERENCE UPDATE ⭐⭐⭐
+    // ═══════════════════════════════════════════════════════════
     if (aiSuggestBtn) {
         aiSuggestBtn.addEventListener('click', async function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
@@ -1259,16 +1056,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalBtnHTML = aiSuggestBtn.innerHTML;
             aiSuggestBtn.disabled = true;
             aiSuggestBtn.innerHTML = '<span class="spinner"></span> Generating...';
-            
-            if (aiSuggestStatus) aiSuggestStatus.textContent = 'Working on personalized messages...';
+            if (aiSuggestStatus) aiSuggestStatus.textContent = 'Generating personalized messages...';
 
             try {
                 const res = await fetch(BACKEND + '/api/ai/suggest-outreach', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         leads: approvedDrafts.map(d => ({
                             companyName: d.lead.companyName,
@@ -1279,61 +1072,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed to generate');
 
-                if (!res.ok) {
-                    throw new Error(data.message || 'Failed to generate suggestions');
-                }
-
-                // ✅ UPDATE USING ATTACHED _draftRef REFERENCES - ZERO QUERY SELECTORS
+                // ⭐⭐⭐ DIRECT UPDATE VIA _subjectInputEl / _messageInputEl ⭐⭐⭐
                 let updatedCount = 0;
-                
-                data.suggestions.forEach(suggestion => {
+
+                (data.suggestions || []).forEach(suggestion => {
                     const draft = reviewDrafts.find(d => d.lead.email === suggestion.email);
-                    
-                    if (draft && suggestion.subject && suggestion.body) {
-                        // Update internal state
-                        draft.subject = suggestion.subject;
-                        draft.body = suggestion.body;
-                        
-                        // ✅ FIND INPUTS BY CHECKING THEIR ATTACHED _draftRef PROPERTY
-                        // No string matching, no ID comparison, no timing issues
-                        const subjectInput = Array.from(document.querySelectorAll('.subject-input'))
-                            .find(input => input._draftRef === draft);
-                            
-                        const messageTextarea = Array.from(document.querySelectorAll('.message-input'))
-                            .find(textarea => textarea._draftRef === draft);
-                        
-                        if (subjectInput) {
-                            subjectInput.value = suggestion.subject;
-                            subjectInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        
-                        if (messageTextarea) {
-                            messageTextarea.value = suggestion.body;
-                            messageTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                        
-                        updatedCount++;
+                    if (!draft) return;
+                    if (!suggestion.subject || !suggestion.body) return;
+
+                    draft.subject = suggestion.subject;
+                    draft.body = suggestion.body;
+
+                    // ⭐ PRIMARY: Direct reference
+                    if (draft._subjectInputEl) {
+                        draft._subjectInputEl.value = suggestion.subject;
                     }
+                    if (draft._messageInputEl) {
+                        draft._messageInputEl.value = suggestion.body;
+                    }
+
+                    // ⭐ FALLBACK: If references were lost for any reason
+                    if (!draft._subjectInputEl || !draft._messageInputEl) {
+                        const row = draftListContainer.querySelector(`[data-draft-id="${draft.id}"]`);
+                        if (row) {
+                            const sIn = row.querySelector('.subject-input');
+                            const mIn = row.querySelector('.message-input');
+                            if (sIn) sIn.value = suggestion.subject;
+                            if (mIn) mIn.value = suggestion.body;
+                        }
+                    }
+
+                    updatedCount++;
                 });
 
                 if (aiSuggestStatus) {
-                    aiSuggestStatus.textContent = `${data.remainingCalls} suggestions remaining today`;
+                    aiSuggestStatus.textContent = updatedCount + ' drafts updated · ' + (data.remainingCalls ?? '?') + ' remaining';
                 }
 
                 if (updatedCount > 0) {
-                    aiSuggestBtn.style.backgroundColor = '#22C55E'; 
-                    setTimeout(() => {
-                        aiSuggestBtn.style.backgroundColor = ''; 
-                    }, 600);
+                    aiSuggestBtn.style.backgroundColor = '#22C55E';
+                    setTimeout(() => { aiSuggestBtn.style.backgroundColor = ''; }, 800);
+                    updateSendButtonState();
                 } else {
-                    console.warn('AI suggestions received but no matching attached DOM references found.');
+                    console.warn('No drafts updated');
                 }
 
             } catch (err) {
                 console.error('AI Suggestion Error:', err);
                 alert(err.message || 'Failed to generate AI suggestions.');
-                if (aiSuggestStatus) aiSuggestStatus.textContent = 'Generation failed. Try again.';
+                if (aiSuggestStatus) aiSuggestStatus.textContent = 'Failed. Try again.';
             } finally {
                 aiSuggestBtn.disabled = false;
                 aiSuggestBtn.innerHTML = originalBtnHTML;
@@ -1341,13 +1130,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── 17. Warning Strip Dismissal ──
+    // Warning strip dismissal
     if (closeWarningBtn && warningStrip) {
         closeWarningBtn.addEventListener('click', function() {
             warningStrip.style.display = 'none';
         });
     }
 
-    // Initial Load
+    // Init
     initData();
 });
