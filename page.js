@@ -1,491 +1,1246 @@
 // ============================================================
-// page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: Exactly 3 independent skeleton rows in plan card + email banner loading
+// leads.js - Skyline AI · Lead Results Logic
+// UPDATED: Approval Workflow, Schedule API, Live Countdown
 // ============================================================
 
-const BACKEND = 'https://skylineapp-backend-file.onrender.com';
-const token = localStorage.getItem('token');
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ─ DOM Elements ──
+    const leadsList = document.getElementById('leadsList');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const selectCountSpan = document.querySelector('.select-count');
+    const saveLeadsBtn = document.querySelector('.action-btn.primary');
+    const saveBtnText = document.getElementById('saveBtnText');
+    const sendBtn = document.getElementById('sendBtn');
+    const closeWarningBtn = document.getElementById('closeWarning');
+    const warningStrip = document.getElementById('warningStrip');
+    
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modalContent = document.getElementById('modalContent');
 
-// ─ DOM Elements ──
-const customerDescription = document.getElementById('customerDescription');
-const charCounter = document.getElementById('charCounter');
-const suggestionChips = document.querySelectorAll('.chip-btn');
-const findProspectsBtn = document.getElementById('findProspectsBtn');
-const plusBtn = document.getElementById('plusBtn');
-const deleteBtn = document.getElementById('deleteBtn');
-const connectEmailBtn = document.getElementById('connectEmailBtn');
-const emailBanner = document.getElementById('emailBanner');
-const planCardTitle = document.querySelector('.plan-card .card-title');
-const planCardStats = document.querySelector('.plan-card .card-stats');
-const planCard = document.querySelector('.plan-card');
+    const cardActionOverlay = document.getElementById('cardActionOverlay');
+    const closeCardActionBtn = document.getElementById('closeCardAction');
+    const viewInfoBtn = document.getElementById('viewInfoBtn');
+    const viewDraftBtn = document.getElementById('viewDraftBtn');
+    const cardActionTitle = document.getElementById('cardActionTitle');
 
-// Usage Modal Elements
-const usageModalOverlay = document.getElementById('usageModalOverlay');
-const closeUsageModal = document.getElementById('closeUsageModal');
-const usageGrid = document.getElementById('usageGrid');
+    const draftViewOverlay = document.getElementById('draftViewOverlay');
+    const closeDraftViewBtn = document.getElementById('closeDraftView');
+    const draftViewCompany = document.getElementById('draftViewCompany');
+    const draftViewEmail = document.getElementById('draftViewEmail');
+    const draftEditSubject = document.getElementById('draftEditSubject');
+    const draftEditMessage = document.getElementById('draftEditMessage');
+    const draftSendBtn = document.getElementById('draftSendBtn');
+    const draftScheduleBtn = document.getElementById('draftScheduleBtn');
 
-// Cache for limits
-let _cachedLimits = {
-    emails: 0, research: 0, chats: 0, aiSuggestions: 0, tier: 'free'
-};
+    const reviewSheetOverlay = document.getElementById('reviewSheetOverlay');
+    const draftListContainer = document.getElementById('draftListContainer');
+    const closeReviewSheetBtn = document.getElementById('closeReviewSheet');
+    const sendApprovedBtn = document.getElementById('sendApprovedBtn');
+    const draftMessageBtn = document.getElementById('draftMessageBtn');
+    const scheduleOutreachBtn = document.getElementById('scheduleOutreachBtn');
+    const draftCountsEl = document.getElementById('draftCounts');
+    
+    const aiSuggestBtn = document.getElementById('aiSuggestBtn');
+    const aiSuggestStatus = document.getElementById('aiSuggestStatus');
 
-// ── Plus Button ──
-if (plusBtn) {
-    plusBtn.addEventListener('click', function() { window.location.reload(); });
-}
+    const sendAllDraftsWrapper = document.getElementById('sendAllDraftsWrapper');
+    const sendAllDraftsBtn = document.getElementById('sendAllDraftsBtn');
+    const scheduleAllDraftsBtn = document.getElementById('scheduleAllDraftsBtn');
 
-// ── Delete Button ─
-if (deleteBtn) {
-    deleteBtn.addEventListener('click', function() {
-        if (customerDescription && customerDescription.value.length > 0) {
-            customerDescription.value = '';
-            customerDescription.dispatchEvent(new Event('input'));
-            showToast('Input cleared', 'info');
-        }
-    });
-}
+    const scheduleOverlay = document.getElementById('scheduleOverlay');
+    const closeScheduleSheetBtn = document.getElementById('closeScheduleSheet');
+    const scheduleCancelBtn = document.getElementById('scheduleCancelBtn');
+    const scheduleConfirmBtn = document.getElementById('scheduleConfirmBtn');
+    const scheduleEmailCount = document.getElementById('scheduleEmailCount');
+    const summaryEmailCount = document.getElementById('summaryEmailCount');
+    const scheduleConfirmText = document.getElementById('scheduleConfirmText');
+    const selectedDateText = document.getElementById('selectedDateText');
+    const selectedTimeText = document.getElementById('selectedTimeText');
+    const selectedTimezoneText = document.getElementById('selectedTimezoneText');
+    const selectedPaceText = document.getElementById('selectedPaceText');
+    const scheduleDateInput = document.getElementById('scheduleDateInput');
+    const scheduleTimeInput = document.getElementById('scheduleTimeInput');
+    const scheduleTimezoneSelect = document.getElementById('scheduleTimezoneSelect');
+    const schedulePaceSelect = document.getElementById('schedulePaceSelect');
+    const ruleStopReply = document.getElementById('ruleStopReply');
+    const ruleStopUnsubscribe = document.getElementById('ruleStopUnsubscribe');
+    const ruleSkipMissing = document.getElementById('ruleSkipMissing');
 
-// ── Connect Email Logic ──
-function handleOAuthRedirect() {
-    const params = new URLSearchParams(window.location.search);
-    const nylasSuccess = params.get('nylas');
-    if (nylasSuccess === 'success') {
-        showToast('✅ Email account connected successfully!', 'success', 6000);
-        updateEmailUI(true, 'Connected');
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (nylasSuccess === 'error') {
-        const errorMsg = params.get('error') || 'Unknown error';
-        showToast(` Connection failed: ${decodeURIComponent(errorMsg)}`, 'error', 6000);
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-}
+    const filterDropdownBtn = document.getElementById('filterDropdownBtn');
+    const filterDropdown = document.getElementById('filterDropdown');
+    const currentFilterSpan = document.getElementById('currentFilter');
+    const contextMenu = document.getElementById('contextMenu');
+    const pinLeadBtn = document.getElementById('pinLeadBtn');
+    const deleteLeadBtn = document.getElementById('deleteLeadBtn');
 
-function updateEmailUI(isConnected, emailOrStatus) {
-    if (!emailBanner || !connectEmailBtn) return;
-    emailBanner.classList.remove('loading');
+    // State
+    let allLeadsData = []; 
+    let savedLeadsEmails = new Set(); 
+    let draftedEmails = new Map();
+    let currentFilter = 'all';
+    let longPressTimer;
+    let selectedLeadIndex = null;
+    let reviewDrafts = [];
+    let currentCardActionIndex = null;
+    let isLoading = true;
+    let scheduleContext = { type: '', leads: [] };
+    let countdownIntervals = {}; // Store intervals for cleanup
 
-    if (isConnected) {
-        emailBanner.classList.remove('disconnected');
-        emailBanner.classList.add('connected');
-        const title = emailBanner.querySelector('.banner-title');
-        const desc = emailBanner.querySelector('.banner-desc');
-        if (title) title.textContent = 'Email Connected';
-        if (desc) desc.textContent = typeof emailOrStatus === 'string' ? emailOrStatus : 'Connected successfully';
-        connectEmailBtn.innerHTML = '<span class="btn-text">Manage</span>';
-        connectEmailBtn.onclick = () => showToast('Email settings coming soon', 'info');
-    } else {
-        emailBanner.classList.add('disconnected');
-        emailBanner.classList.remove('connected');
-        const title = emailBanner.querySelector('.banner-title');
-        const desc = emailBanner.querySelector('.banner-desc');
-        if (title) title.textContent = 'No email connected';
-        if (desc) desc.textContent = 'Connect Gmail or Outlook to unlock inbox and follow-up features';
-        connectEmailBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            <span class="btn-text">Connect email</span>`;
-        connectEmailBtn.onclick = connectEmail;
-    }
-}
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token = localStorage.getItem('token');
 
-async function checkEmailStatus() {
-    if (!token) { if (emailBanner) emailBanner.classList.remove('loading'); return; }
-    try {
-        const res = await fetch(`${BACKEND}/api/auth/nylas/status`, {
-            headers: { 'Authorization': 'Bearer ' + token }
+    // ═══════════════════════════════════════════════════════════
+    // LIVE COUNTDOWN LOGIC
+    // ═══════════════════════════════════════════════════════════
+    function startCountdowns() {
+        // Clear existing timers to prevent duplicates
+        Object.values(countdownIntervals).forEach(clearInterval);
+        countdownIntervals = {};
+
+        allLeadsData.forEach((lead, index) => {
+            if (lead.scheduledAt && lead.scheduleStatus === 'pending') {
+                const card = document.querySelector(`.lead-card[data-index="${index}"]`);
+                if (!card) return;
+
+                let statusBadge = card.querySelector('.status-label.scheduled');
+                if (!statusBadge) {
+                    // Create badge if missing
+                    const rightCol = card.querySelector('.card-right');
+                    if (rightCol) {
+                        statusBadge = document.createElement('span');
+                        statusBadge.className = 'status-label scheduled';
+                        rightCol.insertBefore(statusBadge, rightCol.firstChild);
+                    }
+                }
+
+                if (statusBadge) {
+                    const timerId = setInterval(() => {
+                        const now = new Date().getTime();
+                        const scheduled = new Date(lead.scheduledAt).getTime();
+                        const diff = scheduled - now;
+
+                        if (diff <= 0) {
+                            clearInterval(timerId);
+                            statusBadge.textContent = 'Sent';
+                            statusBadge.classList.remove('scheduled');
+                            statusBadge.classList.add('sent');
+                            lead.scheduleStatus = 'sent';
+                        } else {
+                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                            
+                            let timeStr = '';
+                            if (hours > 0) timeStr += `${hours}h `;
+                            if (minutes > 0 || hours > 0) timeStr += `${minutes}m `;
+                            timeStr += `${seconds}s`;
+                            
+                            statusBadge.textContent = `Scheduled · ${timeStr.trim()}`;
+                        }
+                    }, 1000);
+                    countdownIntervals[lead.email] = timerId;
+                }
+            }
         });
-        if (!res.ok) throw new Error('Status check failed');
-        const data = await res.json();
-        if (data.connected && !data.isExpired) {
-            updateEmailUI(true, data.email || 'Connected');
-        } else { updateEmailUI(false); }
-    } catch (err) {
-        console.error('Email status error:', err);
-        updateEmailUI(false);
     }
-}
 
-async function connectEmail() {
-    if (!token) { window.location.href = 'login.html'; return; }
-    const btn = connectEmailBtn;
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="btn-text">Connecting...</span>';
-    try {
-        const res = await fetch(`${BACKEND}/api/auth/nylas/connect`, {
-            method: 'GET',
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    // ═══════════════════════════════════════════════════════════
+    // THE SINGLE RENDER FUNCTION FOR ALL DRAFTS
+    // ═══════════════════════════════════════════════════════════
+    function renderDraftRows() {
+        if (!draftListContainer) return;
+        draftListContainer.innerHTML = '';
+        
+        reviewDrafts.forEach(function(draft) {
+            const row = document.createElement('div');
+            row.className = 'draft-row';
+            row.setAttribute('data-draft-id', draft.id);
+
+            // ✅ UPDATED: Dynamic Badge based on approval
+            const badgeHtml = draft.approved 
+                ? `<div class="draft-status-badge approved">
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                     <span>Approved</span>
+                   </div>`
+                : `<div class="draft-status-badge">
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                     <span>Needs review</span>
+                   </div>`;
+
+            row.innerHTML = `
+                <div class="draft-header">
+                    <label class="draft-checkbox-wrapper">
+                        <input type="checkbox" class="draft-checkbox" ${draft.approved ? 'checked' : ''}>
+                        <span class="custom-checkbox draft-check">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </label>
+                    <div class="draft-logo">
+                        <span style="font-weight:700; font-size:16px; color:white;">${draft.lead.companyName ? draft.lead.companyName.charAt(0).toUpperCase() : '?'}</span>
+                    </div>
+                    <div class="draft-info">
+                        <div class="draft-company">${draft.lead.companyName || 'Unknown'}</div>
+                        <div class="draft-email">${draft.lead.email}</div>
+                    </div>
+                    ${badgeHtml}
+                    <button type="button" class="expand-editor-btn" data-action="toggle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+                <div class="draft-editor" style="display: none;">
+                    <div class="editor-field">
+                        <label>Subject</label>
+                        <input type="text" class="subject-input" value="${String(draft.subject).replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="editor-field">
+                        <label>Message</label>
+                        <textarea class="message-input">${draft.body}</textarea>
+                    </div>
+                </div>
+            `;
+
+            const subjectInput = row.querySelector('.subject-input');
+            const messageTextarea = row.querySelector('.message-input');
+            const checkbox = row.querySelector('.draft-checkbox');
+            const expandBtn = row.querySelector('.expand-editor-btn');
+            const editorDiv = row.querySelector('.draft-editor');
+            const arrowSvg = expandBtn.querySelector('svg');
+
+            // DIRECT REFERENCES
+            subjectInput._draftRef = draft;
+            messageTextarea._draftRef = draft;
+            checkbox._draftRef = draft;
+
+            draft._subjectInputEl = subjectInput;
+            draft._messageInputEl = messageTextarea;
+            draft._checkboxEl = checkbox;
+
+            // Toggle editor
+            expandBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (editorDiv.style.display === 'none' || !editorDiv.style.display) {
+                    editorDiv.style.display = 'block';
+                    arrowSvg.style.transform = 'rotate(180deg)';
+                } else {
+                    editorDiv.style.display = 'none';
+                    arrowSvg.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // ✅ APPROVAL TOGGLE LOGIC
+            checkbox.addEventListener('change', function() {
+                draft.approved = this.checked;
+                // Update badge visually without full re-render
+                const badge = row.querySelector('.draft-status-badge');
+                if (badge) {
+                    if (draft.approved) {
+                        badge.className = 'draft-status-badge approved';
+                        badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Approved</span>`;
+                    } else {
+                        badge.className = 'draft-status-badge';
+                        badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Needs review</span>`;
+                    }
+                }
+                updateSendButtonState();
+            });
+
+            // Input updates
+            subjectInput.addEventListener('input', function() {
+                draft.subject = this.value;
+                updateSendButtonState();
+            });
+            messageTextarea.addEventListener('input', function() {
+                draft.body = this.value;
+                updateSendButtonState();
+            });
+
+            draftListContainer.appendChild(row);
         });
-        if (!res.ok) throw new Error('Failed to get connection URL');
-        const data = await res.json();
-        if (data.url) {
-            window.location.href = data.url.replace(/&amp;/g, '&');
-        } else { throw new Error('No URL received'); }
-    } catch (error) {
-        console.error('Connection error:', error);
-        btn.disabled = false;
-        btn.innerHTML = originalContent;
-        showToast('❌ Could not start connection process', 'error');
     }
-}
 
-// ── Character Counter & Suggestions ──
-if (customerDescription && charCounter) {
-    customerDescription.addEventListener('input', function() {
-        const currentLength = this.value.length;
-        charCounter.textContent = `${currentLength}/500`;
-        charCounter.style.color = currentLength >= 450 ? '#ff5555' : '#92939D';
-        updateFindProspectsButton(currentLength > 0);
-    });
-}
+    // ── Load Data ──
+    async function initData() {
+        isLoading = true;
+        renderSkeletons(5);
 
-suggestionChips.forEach(chip => {
-    chip.addEventListener('click', function() {
-        const text = this.getAttribute('data-text');
-        if (customerDescription && text) {
-            customerDescription.value = text;
-            customerDescription.dispatchEvent(new Event('input'));
-            customerDescription.focus();
+        try {
+            const storedData = localStorage.getItem('skyline_leads_data');
+            if (storedData) {
+                allLeadsData = JSON.parse(storedData);
+            }
+        } catch (e) {
+            console.error('Failed to parse local lead data:', e);
         }
-    });
-});
 
-function updateFindProspectsButton(hasText) {
-    if (!findProspectsBtn) return;
-    if (hasText) {
-        findProspectsBtn.style.opacity = '1';
-        findProspectsBtn.style.cursor = 'pointer';
-        findProspectsBtn.style.pointerEvents = 'auto';
-    } else {
-        findProspectsBtn.style.opacity = '0.5';
-        findProspectsBtn.style.cursor = 'default';
-        findProspectsBtn.style.pointerEvents = 'none';
+        if (token) {
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/saved`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    savedLeadsEmails = new Set(data.data.map(l => l.email));
+                }
+            } catch (e) {
+                console.error('Failed to fetch saved leads:', e);
+            }
+        }
+
+        if (token) {
+            try {
+                const res = await fetch(`${BACKEND}/api/leads/drafts`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    draftedEmails = new Map();
+                    (data.data || []).forEach(d => {
+                        draftedEmails.set(d.email, { subject: d.subject, message: d.message });
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to fetch drafts:', e);
+            }
+        }
+
+        isLoading = false;
+        renderLeads();
+        startCountdowns(); // Start timers after initial render
     }
-}
-updateFindProspectsButton(false);
 
-// ── Mini-Panel & Streaming ─
-const STAGE_NAMES = {
-    's1': 'Understanding your target',
-    's2': 'Finding relevant companies',
-    's3': 'Checking available business details',
-    's4': 'Verifying key information',
-    's5': 'Preparing your results'
-};
+    function renderSkeletons(count) {
+        if (!leadsList) return;
+        leadsList.innerHTML = '';
 
-let _activeEventSource = null;
-let _runCounter = 0;
-let _stageData = {};
-
-function createMiniPanel() {
-    const existing = document.getElementById('stageMiniPanel');
-    if (existing) existing.remove();
-    const panel = document.createElement('div');
-    panel.id = 'stageMiniPanel';
-    panel.className = 'stage-mini-panel';
-    const header = document.createElement('div');
-    header.className = 'panel-header';
-    header.innerHTML = '<span>Lead Discovery Pipeline</span><span class="panel-timer">⏱️ 0s</span>';
-    panel.appendChild(header);
-    const content = document.createElement('div');
-    content.className = 'panel-content';
-    content.id = 'stagePanelContent';
-    panel.appendChild(content);
-    const inputWrapper = document.querySelector('.input-wrapper');
-    if (inputWrapper && inputWrapper.parentNode) {
-        inputWrapper.parentNode.insertBefore(panel, inputWrapper.nextSibling);
+        for (let i = 0; i < count; i++) {
+            const skeleton = document.createElement('div');
+            skeleton.className = 'skeleton-card';
+            skeleton.innerHTML = `
+                <div class="skeleton-left">
+                    <div class="skeleton-checkbox skeleton-animate"></div>
+                    <div class="skeleton-logo skeleton-animate"></div>
+                </div>
+                <div class="skeleton-center">
+                    <div class="skeleton-line long skeleton-animate"></div>
+                    <div class="skeleton-line medium skeleton-animate"></div>
+                    <div class="skeleton-line short skeleton-animate"></div>
+                    <div class="skeleton-badge skeleton-animate"></div>
+                </div>
+                <div class="skeleton-right">
+                    <div class="skeleton-btn skeleton-animate"></div>
+                </div>
+            `;
+            leadsList.appendChild(skeleton);
+        }
     }
-}
 
-function updateStageInPanel(stageId, status) {
-    const content = document.getElementById('stagePanelContent');
-    if (!content) return;
-    let stageEl = document.getElementById(`stage-item-${stageId}`);
-    const label = STAGE_NAMES[stageId] || stageId;
-    if (!stageEl) {
-        stageEl = document.createElement('div');
-        stageEl.id = `stage-item-${stageId}`;
-        stageEl.className = 'stage-item waiting';
-        stageEl.innerHTML = `
-            <div class="stage-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="8"/></svg>
+    function getStatusLabel(lead) {
+        const isSaved = savedLeadsEmails.has(lead.email);
+        const isDraft = draftedEmails.has(lead.email);
+        if (isSaved && isDraft) return '<span class="status-label combined">Saved & Draft</span>';
+        if (isDraft) return '<span class="status-label draft">Draft</span>';
+        if (isSaved) return '<span class="status-label saved">Saved</span>';
+        return '<span class="status-label recent">Recent</span>';
+    }
+
+    function renderLeads() {
+        if (!leadsList) return;
+        leadsList.innerHTML = '';
+
+        let displayLeads = [];
+        if (currentFilter === 'all') displayLeads = [...allLeadsData];
+        else if (currentFilter === 'saved') displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
+        else if (currentFilter === 'recent') displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email) && !draftedEmails.has(lead.email));
+        else if (currentFilter === 'draft') displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+
+        if (sendAllDraftsWrapper) {
+            sendAllDraftsWrapper.style.display = currentFilter === 'draft' ? 'flex' : 'none';
+        }
+
+        if (displayLeads.length === 0) {
+            leadsList.innerHTML = '<div style="text-align:center; padding:40px; color:#9697A1;">No leads found for this filter.</div>';
+            return;
+        }
+
+        const countEl = document.getElementById('resultsCount');
+        if (countEl) countEl.textContent = `${displayLeads.length} prospects found`;
+
+        displayLeads.forEach((lead) => {
+            const originalIndex = allLeadsData.indexOf(lead);
+            const card = document.createElement('div');
+            card.className = 'lead-card';
+            card.setAttribute('data-index', originalIndex);
+
+            let badgeClass = 'low';
+            let badgeText = 'Needs verification';
+            if (lead.emailStatus === 'verified') {
+                badgeClass = 'high';
+                badgeText = 'High confidence';
+            } else if (lead.email && lead.email.includes('@')) {
+                badgeClass = 'medium';
+                badgeText = 'Medium confidence';
+            }
+
+            const statusLabel = getStatusLabel(lead);
+            const emailDisplay = lead.email || 'No email found';
+
+            card.innerHTML = `
+                <div class="card-left">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" class="lead-checkbox">
+                        <span class="custom-checkbox">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </label>
+                    <div class="company-logo">
+                        <span style="font-weight:700; font-size:18px; color:white;">${lead.companyName ? lead.companyName.charAt(0).toUpperCase() : '?'}</span>
+                    </div>
+                </div>
+                <div class="card-center">
+                    <h3 class="company-name">${lead.companyName || 'Unknown Company'}</h3>
+                    <div class="info-row email">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9697A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <span>${emailDisplay}</span>
+                    </div>
+                    <div class="confidence-badge ${badgeClass}">
+                        <span class="dot"></span>
+                        <span>${badgeText}</span>
+                    </div>
+                </div>
+                <div class="card-right">
+                    ${statusLabel}
+                    <button class="view-btn">
+                        More
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            `;
+
+            leadsList.appendChild(card);
+        });
+
+        initSelectionLogic();
+        initLongPressLogic();
+        startCountdowns(); // Restart timers for new renders
+    }
+
+    function openDetailsModal(index) {
+        const lead = allLeadsData[index];
+        if (!lead || !modalOverlay || !modalContent) return;
+
+        const phone = lead.phoneNumber || 'Not publicly listed';
+        const info = lead.companyInformation || 'No additional information available.';
+        const email = lead.email || 'No email found';
+
+        modalContent.innerHTML = `
+            <h2 style="margin-bottom:16px; color:white; font-size:1.2rem;">${lead.companyName}</h2>
+            <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #2D2F33;">
+                <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Email Address</div>
+                <div style="color:white; font-size:1rem; word-break:break-all;">${email}</div>
+                <div style="color:${lead.emailStatus === 'verified' ? '#22C55E' : '#FFAA00'}; font-size:0.75rem; margin-top:4px;">Status: ${lead.emailStatus || 'unknown'}</div>
             </div>
-            <div class="stage-label">${label}</div>`;
-        content.appendChild(stageEl);
-        content.scrollTop = content.scrollHeight;
-    }
-    stageEl.className = `stage-item ${status}`;
-    const iconContainer = stageEl.querySelector('.stage-icon');
-    if (status === 'processing') {
-        iconContainer.innerHTML = `<svg class="spinner" viewBox="0 0 24 24" fill="none" width="14" height="14"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
-    } else if (status === 'completed') {
-        iconContainer.innerHTML = `<svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>`;
-    } else if (status === 'failed') {
-        iconContainer.innerHTML = `<svg class="cross" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-    }
-}
+            <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid #2D2F33;">
+                <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Phone Number</div>
+                <div style="color:white; font-size:1rem;">${phone}</div>
+            </div>
+            <div>
+                <div style="color:#9697A1; font-size:0.8rem; margin-bottom:4px;">Company Information</div>
+                <div style="color:white; font-size:0.9rem; line-height:1.6;">${info}</div>
+            </div>
+        `;
 
-function removeMiniPanel() {
-    const panel = document.getElementById('stageMiniPanel');
-    if (panel) panel.remove();
-}
-
-function handleLimitsFromSSE(remainingLimits) {
-    if (!remainingLimits) { console.log('️ [LIMITS] No remainingLimits in SSE event'); return; }
-    console.log('⭐ [LIMITS] Received from SSE:', remainingLimits);
-    _cachedLimits.research = remainingLimits.remaining ?? _cachedLimits.research;
-    _cachedLimits.tier = remainingLimits.tier ?? _cachedLimits.tier;
-    if (remainingLimits.aiSuggestions !== undefined) {
-        _cachedLimits.aiSuggestions = remainingLimits.aiSuggestions;
+        modalOverlay.style.display = 'flex';
     }
-    updatePlanUI(_cachedLimits.tier, {
-        emails: _cachedLimits.emails, research: remainingLimits.remaining,
-        chats: _cachedLimits.chats, aiSuggestions: _cachedLimits.aiSuggestions
+
+    function closeModal() {
+        if (modalOverlay) modalOverlay.style.display = 'none';
+    }
+
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) closeModal();
+        });
+    }
+
+    function openCardActionModal(index) {
+        const lead = allLeadsData[index];
+        if (!lead || !cardActionOverlay) return;
+        currentCardActionIndex = index;
+        if (cardActionTitle) cardActionTitle.textContent = lead.companyName || 'Choose an action';
+        cardActionOverlay.style.display = 'flex';
+    }
+
+    function closeCardActionModal() {
+        if (cardActionOverlay) cardActionOverlay.style.display = 'none';
+        currentCardActionIndex = null;
+    }
+
+    if (closeCardActionBtn) closeCardActionBtn.addEventListener('click', closeCardActionModal);
+    if (cardActionOverlay) {
+        cardActionOverlay.addEventListener('click', function(e) {
+            if (e.target === cardActionOverlay) closeCardActionModal();
+        });
+    }
+
+    if (viewInfoBtn) {
+        viewInfoBtn.addEventListener('click', function() {
+            if (currentCardActionIndex !== null) {
+                closeCardActionModal();
+                openDetailsModal(currentCardActionIndex);
+            }
+        });
+    }
+
+    if (viewDraftBtn) {
+        viewDraftBtn.addEventListener('click', function() {
+            if (currentCardActionIndex !== null) {
+                const lead = allLeadsData[currentCardActionIndex];
+                closeCardActionModal();
+                openDraftViewModal(lead);
+            }
+        });
+    }
+
+    function openDraftViewModal(lead) {
+        if (!lead || !draftViewOverlay) return;
+        const draft = draftedEmails.get(lead.email) || { subject: '', message: '' };
+        if (draftViewCompany) draftViewCompany.textContent = lead.companyName || 'Unknown';
+        if (draftViewEmail) draftViewEmail.textContent = lead.email || '';
+        if (draftEditSubject) draftEditSubject.value = draft.subject;
+        if (draftEditMessage) draftEditMessage.value = draft.message;
+        draftViewOverlay.style.display = 'flex';
+    }
+
+    function closeDraftViewModal() {
+        if (draftViewOverlay) draftViewOverlay.style.display = 'none';
+    }
+
+    if (closeDraftViewBtn) closeDraftViewBtn.addEventListener('click', closeDraftViewModal);
+    if (draftViewOverlay) {
+        draftViewOverlay.addEventListener('click', function(e) {
+            if (e.target === draftViewOverlay) closeDraftViewModal();
+        });
+    }
+
+    if (draftSendBtn) {
+        draftSendBtn.addEventListener('click', async function() {
+            if (!token) return;
+            const company = draftViewCompany ? draftViewCompany.textContent : '';
+            const email = draftViewEmail ? draftViewEmail.textContent : '';
+            const subject = draftEditSubject ? draftEditSubject.value : '';
+            const message = draftEditMessage ? draftEditMessage.value : '';
+            if (!email || !message.trim()) { alert('Please enter a message before sending.'); return; }
+
+            const originalText = draftSendBtn.innerHTML;
+            draftSendBtn.innerHTML = '<span>Sending...</span>';
+            draftSendBtn.disabled = true;
+
+            try {
+                const res = await fetch(BACKEND + '/api/leads/batch-send', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        leads: [{ name: company, email: email, company: company, messages: [{ subject: subject, body: message }] }]
+                    })
+                });
+
+                if (res.ok) {
+                    await fetch(BACKEND + '/api/leads/draft', {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    draftedEmails.delete(email);
+                    closeDraftViewModal();
+                    renderLeads();
+                } else {
+                    alert('Failed to send message.');
+                }
+            } catch (e) {
+                console.error('Send error:', e);
+                alert('Network error while sending.');
+            } finally {
+                draftSendBtn.innerHTML = originalText;
+                draftSendBtn.disabled = false;
+            }
+        });
+    }
+
+    if (draftScheduleBtn) {
+        draftScheduleBtn.addEventListener('click', function() {
+            const company = draftViewCompany ? draftViewCompany.textContent : '';
+            const email = draftViewEmail ? draftViewEmail.textContent : '';
+            const subject = draftEditSubject ? draftEditSubject.value : '';
+            const message = draftEditMessage ? draftEditMessage.value : '';
+            if (!email) return;
+            scheduleContext = { type: 'single', leads: [{ companyName: company, email: email, subject: subject, message: message, approved: true }] };
+            updateScheduleModalUI();
+            closeDraftViewModal();
+            scheduleOverlay.style.display = 'flex';
+        });
+    }
+
+    if (leadsList) {
+        leadsList.addEventListener('click', function(e) {
+            if (e.target.closest('.checkbox-wrapper') || e.target.closest('.view-btn')) return;
+            const card = e.target.closest('.lead-card');
+            if (card) {
+                const index = parseInt(card.getAttribute('data-index'));
+                const lead = allLeadsData[index];
+                if (lead && draftedEmails.has(lead.email)) {
+                    openCardActionModal(index);
+                } else {
+                    openDetailsModal(index);
+                }
+            }
+        });
+    }
+
+    function initSelectionLogic() {
+        const leadCheckboxes = document.querySelectorAll('.lead-checkbox');
+
+        function updateSelectionState() {
+            const total = leadCheckboxes.length;
+            const checked = Array.from(leadCheckboxes).filter(cb => cb.checked).length;
+            if (selectCountSpan) selectCountSpan.textContent = `${checked} selected`;
+            if (selectAllCheckbox) {
+                if (checked === 0) { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; }
+                else if (checked === total) { selectAllCheckbox.checked = true; selectAllCheckbox.indeterminate = false; }
+                else { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = true; }
+            }
+            const hasSelection = checked > 0;
+            if (saveLeadsBtn) { saveLeadsBtn.disabled = !hasSelection; saveLeadsBtn.style.opacity = hasSelection ? '1' : '0.5'; }
+            if (sendBtn) { sendBtn.disabled = !hasSelection; sendBtn.style.opacity = hasSelection ? '1' : '0.5'; }
+        }
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                leadCheckboxes.forEach(cb => { cb.checked = isChecked; });
+                updateSelectionState();
+            });
+        }
+
+        leadCheckboxes.forEach(cb => { cb.addEventListener('change', updateSelectionState); });
+        updateSelectionState();
+    }
+
+    function initLongPressLogic() {
+        const cards = document.querySelectorAll('.lead-card');
+        cards.forEach(card => {
+            card.addEventListener('mousedown', startPress);
+            card.addEventListener('touchstart', startPress, {passive: true});
+            card.addEventListener('mouseup', cancelPress);
+            card.addEventListener('mouseleave', cancelPress);
+            card.addEventListener('touchend', cancelPress);
+        });
+    }
+
+    function startPress(e) {
+        const card = e.currentTarget;
+        selectedLeadIndex = parseInt(card.getAttribute('data-index'));
+        longPressTimer = setTimeout(() => {
+            showContextMenu(e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY);
+        }, 600);
+    }
+
+    function cancelPress() { clearTimeout(longPressTimer); }
+    function showContextMenu(x, y) {
+        contextMenu.style.left = `${x}px`;
+        contextMenu.style.top = `${y}px`;
+        contextMenu.style.display = 'block';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.context-menu')) {
+            contextMenu.style.display = 'none';
+        }
     });
-    console.log('✅ [LIMITS] UI updated: research =', remainingLimits.remaining);
-}
 
-function streamLeadResponse(message) {
-    if (_activeEventSource) { try { _activeEventSource.close(); } catch (e) {} _activeEventSource = null; }
-    const runId = ++_runCounter;
-    _stageData = {};
-    createMiniPanel();
-    const originalBtnContent = findProspectsBtn.innerHTML;
-    findProspectsBtn.innerHTML = '<span>Searching...</span>';
-    findProspectsBtn.disabled = true;
-    let startTime = Date.now();
-    const timerEl = document.querySelector('.panel-timer');
-    const timerInterval = setInterval(() => {
-        if (timerEl) timerEl.textContent = `⏱️ ${Math.floor((Date.now() - startTime) / 1000)}s`;
-    }, 1000);
-    const url = `${BACKEND}/api/stream/pipeline?message=${encodeURIComponent(message)}&token=${encodeURIComponent(token)}`;
-    try {
-        const es = new EventSource(url);
-        _activeEventSource = es;
-        es.addEventListener('stage', function(event) {
-            if (runId !== _runCounter) return;
-            let payload;
-            try { payload = JSON.parse(event.data); } catch (parseErr) { console.error('❌ [SSE] Parse error:', parseErr); return; }
-            if (!payload || !payload.stage) return;
-            const stageId = payload.stage;
-            const status = payload.data?.status;
-            if (status) updateStageInPanel(stageId, status);
-            if (payload.data?.data) _stageData[stageId] = payload.data.data;
-            if (stageId === 'limit_reached') {
-                clearInterval(timerInterval); es.close(); _activeEventSource = null;
-                findProspectsBtn.innerHTML = originalBtnContent;
-                findProspectsBtn.disabled = false;
-                removeMiniPanel();
-                const limitMsg = payload.data?.message || 'Daily research limit reached.';
-                showToast(limitMsg, 'warning', 6000);
-                checkPlan();
+    if (pinLeadBtn) {
+        pinLeadBtn.addEventListener('click', function() {
+            if (selectedLeadIndex !== null) {
+                const lead = allLeadsData[selectedLeadIndex];
+                allLeadsData.splice(selectedLeadIndex, 1);
+                allLeadsData.unshift(lead);
+                renderLeads();
+                contextMenu.style.display = 'none';
+            }
+        });
+    }
+
+    if (deleteLeadBtn) {
+        deleteLeadBtn.addEventListener('click', async function() {
+            if (selectedLeadIndex !== null && token) {
+                const lead = allLeadsData[selectedLeadIndex];
+                allLeadsData.splice(selectedLeadIndex, 1);
+                renderLeads();
+                contextMenu.style.display = 'none';
+                try {
+                    await fetch(`${BACKEND}/api/leads/${lead.email}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: lead.email, companyName: lead.companyName })
+                    });
+                } catch (e) {
+                    console.error('Failed to delete from backend:', e);
+                }
+            }
+        });
+    }
+
+    if (filterDropdownBtn) {
+        filterDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterDropdown.classList.toggle('show');
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-wrapper')) {
+            filterDropdown.classList.remove('show');
+        }
+    });
+
+    const dropdownItems = document.querySelectorAll('.dropdown-item');
+    dropdownItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            currentFilter = value;
+            dropdownItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            currentFilterSpan.textContent = this.textContent;
+            renderLeads();
+            filterDropdown.classList.remove('show');
+        });
+    });
+
+    if (saveLeadsBtn) {
+        saveLeadsBtn.addEventListener('click', async function() {
+            if (this.disabled || !token) return;
+            const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
+            if (selectedCards.length === 0) return;
+
+            const leadsToSave = [];
+            selectedCards.forEach(cb => {
+                const card = cb.closest('.lead-card');
+                const index = parseInt(card.getAttribute('data-index'));
+                leadsToSave.push(allLeadsData[index]);
+            });
+
+            saveBtnText.textContent = 'Saving...';
+            saveLeadsBtn.disabled = true;
+
+            leadsToSave.forEach(l => savedLeadsEmails.add(l.email));
+            renderLeads();
+
+            try {
+                await fetch(`${BACKEND}/api/leads/save`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ leads: leadsToSave })
+                });
+                saveBtnText.textContent = 'Saved';
+                setTimeout(() => { saveBtnText.textContent = 'Save leads'; }, 2000);
+            } catch (e) {
+                console.error('Save error:', e);
+                saveBtnText.textContent = 'Error';
+            } finally {
+                saveLeadsBtn.disabled = false;
+            }
+        });
+    }
+
+    function checkMessagesHaveText() {
+        return reviewDrafts.some(d => d.body && d.body.trim().length > 0);
+    }
+
+    function updateSendButtonState() {
+        const anyChecked = reviewDrafts.some(d => d.approved);
+        const hasText = checkMessagesHaveText();
+        if (sendApprovedBtn) {
+            if (anyChecked && hasText) {
+                sendApprovedBtn.disabled = false;
+                sendApprovedBtn.classList.remove('disabled');
+            } else {
+                sendApprovedBtn.disabled = true;
+                sendApprovedBtn.classList.add('disabled');
+            }
+        }
+    }
+
+    function closeReviewSheet() {
+        if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none';
+        reviewDrafts.forEach(d => {
+            d._subjectInputEl = null;
+            d._messageInputEl = null;
+            d._checkboxEl = null;
+        });
+    }
+
+    function openReviewSheet() {
+        const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
+        if (selectedCards.length === 0) return;
+
+        reviewDrafts = [];
+
+        selectedCards.forEach(cb => {
+            const card = cb.closest('.lead-card');
+            const index = parseInt(card.getAttribute('data-index'));
+            const lead = allLeadsData[index];
+            if (!lead.email) return;
+
+            const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            reviewDrafts.push({
+                id: draftId,
+                lead: lead,
+                subject: 'Partnership Inquiry',
+                body: 'Hi ' + (lead.companyName || '') + ',\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User',
+                approved: true,
+                _subjectInputEl: null,
+                _messageInputEl: null,
+                _checkboxEl: null
+            });
+        });
+
+        renderDraftRows();
+
+        if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
+        reviewSheetOverlay.style.display = 'flex';
+        updateSendButtonState();
+    }
+
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function() {
+            const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
+            const missingEmails = [];
+            selectedCards.forEach(cb => {
+                const card = cb.closest('.lead-card');
+                const index = parseInt(card.getAttribute('data-index'));
+                const lead = allLeadsData[index];
+                if (!lead.email) missingEmails.push(lead.companyName || 'Unknown Company');
+            });
+            if (missingEmails.length > 0) {
+                alert('Cannot send to:\n\n- ' + missingEmails.join('\n- '));
                 return;
             }
-            if (payload.data?.remainingLimits) { handleLimitsFromSSE(payload.data.remainingLimits); }
-            if (stageId === 'done' || stageId === 'error') {
-                clearInterval(timerInterval); es.close(); _activeEventSource = null;
-                findProspectsBtn.innerHTML = originalBtnContent;
-                findProspectsBtn.disabled = false;
-                setTimeout(() => {
-                    removeMiniPanel();
-                    if (stageId === 'done') { renderFinalResults(payload.data?.data || _stageData['s5']); }
-                    else { showToast('Pipeline encountered an error.', 'error'); }
-                }, 1000);
+            openReviewSheet();
+        });
+    }
+
+    if (closeReviewSheetBtn) closeReviewSheetBtn.addEventListener('click', closeReviewSheet);
+
+    window.toggleEditor = function(btn) {
+        const editor = btn.closest('.draft-row').querySelector('.draft-editor');
+        const arrow = btn.querySelector('svg');
+        if (editor.style.display === 'none' || !editor.style.display) {
+            editor.style.display = 'block';
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            editor.style.display = 'none';
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    };
+
+    if (sendApprovedBtn) {
+        sendApprovedBtn.addEventListener('click', async function() {
+            if (this.disabled || this.classList.contains('disabled')) return;
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) return;
+
+            const originalText = sendApprovedBtn.innerHTML;
+            sendApprovedBtn.innerHTML = '<span>Sending...</span>';
+            sendApprovedBtn.disabled = true;
+
+            const leadsToSend = approvedDrafts.map(d => ({
+                name: d.lead.companyName,
+                email: d.lead.email,
+                company: d.lead.companyName,
+                messages: [{ subject: d.subject, body: d.body }]
+            }));
+
+            try {
+                const res = await fetch(BACKEND + '/api/leads/batch-send', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ leads: leadsToSend })
+                });
+                if (res.ok) {
+                    closeReviewSheet();
+                    document.querySelectorAll('.lead-checkbox:checked').forEach(cb => { cb.checked = false; });
+                    initSelectionLogic();
+                } else {
+                    const errData = await res.json();
+                    alert('Failed to send: ' + (errData.message || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Send error:', e);
+                alert('Network error while sending.');
+            } finally {
+                sendApprovedBtn.innerHTML = originalText;
+                sendApprovedBtn.disabled = false;
+                updateSendButtonState();
             }
         });
-        es.addEventListener('error', function(e) {
-            if (es.readyState === EventSource.CLOSED) return;
-            clearInterval(timerInterval); es.close(); _activeEventSource = null;
-            findProspectsBtn.innerHTML = originalBtnContent;
-            findProspectsBtn.disabled = false;
-            showToast('Connection lost during search.', 'error');
-            removeMiniPanel(); checkPlan();
+    }
+
+    // ✅ FIXED: Schedule Button now opens Review Sheet first for approval
+    if (scheduleOutreachBtn) {
+        scheduleOutreachBtn.addEventListener('click', function() {
+            // Instead of opening the schedule modal directly, we open the Review Sheet
+            // This allows the user to view messages and approve them one by one.
+            const selectedCards = document.querySelectorAll('.lead-checkbox:checked');
+            if (selectedCards.length === 0) {
+                alert('Please select at least one lead to schedule.');
+                return;
+            }
+            
+            // Reuse the same logic as the "Send" button to populate the review sheet
+            openReviewSheet();
         });
-    } catch (e) {
-        clearInterval(timerInterval);
-        findProspectsBtn.innerHTML = originalBtnContent;
-        findProspectsBtn.disabled = false;
-        showToast('Could not start search engine.', 'error');
-        removeMiniPanel(); checkPlan();
     }
-}
 
-function renderFinalResults(data) {
-    const companies = data?.companies || [];
-    const count = companies.length;
-    if (count > 0) {
-        let existingLeads = [];
-        try {
-            const stored = localStorage.getItem('skyline_leads_data');
-            if (stored) { existingLeads = JSON.parse(stored); if (!Array.isArray(existingLeads)) existingLeads = []; }
-        } catch (e) { console.error('Failed to parse existing leads:', e); existingLeads = []; }
-        const existingEmails = new Set(existingLeads.map(l => l.email?.toLowerCase()));
-        const newUniqueLeads = companies.filter(c => !existingEmails.has(c.email?.toLowerCase()));
-        const mergedLeads = [...newUniqueLeads, ...existingLeads];
-        localStorage.setItem('skyline_leads_data', JSON.stringify(mergedLeads));
-        showToast(`Search complete! Found ${newUniqueLeads.length} new prospects (${mergedLeads.length} total). Redirecting...`, 'success');
-        setTimeout(() => { window.location.href = 'leads.html'; }, 1500);
-    } else {
-        showToast('Search complete but no prospects found.', 'warning');
-    }
-}
+    if (draftMessageBtn) {
+        draftMessageBtn.addEventListener('click', async function() {
+            if (!token) { closeReviewSheet(); return; }
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) { closeReviewSheet(); return; }
 
-if (findProspectsBtn) {
-    findProspectsBtn.addEventListener('click', function() {
-        const query = customerDescription ? customerDescription.value.trim() : '';
-        if (!query) { showToast('Please describe your ideal customer first.', 'warning'); return; }
-        streamLeadResponse(query);
-    });
-}
+            const originalText = draftMessageBtn.innerHTML;
+            draftMessageBtn.innerHTML = '<span>Saving...</span>';
+            draftMessageBtn.disabled = true;
 
-// ── USAGE MODAL LOGIC ──
-async function openUsageModal() {
-    if (!usageModalOverlay) return;
-    usageModalOverlay.style.display = 'flex';
-    usageGrid.innerHTML = '<div class="usage-loading">Loading usage data...</div>';
-    if (!token) { usageGrid.innerHTML = '<div class="usage-error">Please log in to view usage.</div>'; return; }
-    try {
-        console.log('📤 [MODAL] Fetching fresh usage...');
-        const res = await fetch(`${BACKEND}/api/users/me/usage`, {
-            headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store'
+            try {
+                for (const draft of approvedDrafts) {
+                    await fetch(BACKEND + '/api/leads/draft', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            companyName: draft.lead.companyName,
+                            email: draft.lead.email,
+                            subject: draft.subject,
+                            message: draft.body
+                        })
+                    });
+                    draftedEmails.set(draft.lead.email, { subject: draft.subject, message: draft.body });
+                }
+                closeReviewSheet();
+                renderLeads();
+            } catch (e) {
+                console.error('Save draft error:', e);
+                alert('Failed to save drafts.');
+            } finally {
+                draftMessageBtn.innerHTML = originalText;
+                draftMessageBtn.disabled = false;
+            }
         });
-        const data = await res.json();
-        console.log(' [MODAL] Fresh data:', data);
-        if (!res.ok) throw new Error(data.message || 'Failed');
-        const limits = data.limits || {};
-        const metrics = [
-            { label: 'Emails', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', remaining: limits.email?.remaining ?? 0, total: limits.email?.max ?? 30 },
-            { label: 'Research', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>', remaining: limits.research?.remaining ?? 0, total: limits.research?.max ?? 4 },
-            { label: 'Chats', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>', remaining: limits.chat?.remaining ?? 0, total: limits.chat?.max ?? 30 },
-            { label: 'AI Suggestions', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>', remaining: limits.aiSuggestions?.remaining ?? 0, total: limits.aiSuggestions?.max ?? 7 }
-        ];
-        usageGrid.innerHTML = metrics.map(m => {
-            const pct = m.total > 0 ? (m.remaining / m.total) * 100 : 0;
-            return `<div class="usage-card"><div class="usage-icon">${m.icon}</div><div class="usage-info"><div class="usage-label">${m.label}</div><div class="usage-count">${m.remaining} / ${m.total}</div></div><div class="usage-bar-container"><div class="usage-bar" style="width: ${pct}%"></div></div></div>`;
-        }).join('');
-    } catch (err) {
-        console.error('❌ [MODAL] Error:', err);
-        usageGrid.innerHTML = `<div class="usage-error">Failed to load usage: ${err.message}</div>`;
-    }
-}
-
-function closeUsageModalFn() { if (usageModalOverlay) usageModalOverlay.style.display = 'none'; }
-if (closeUsageModal) closeUsageModal.addEventListener('click', closeUsageModalFn);
-if (usageModalOverlay) {
-    usageModalOverlay.addEventListener('click', function(e) {
-        if (e.target === usageModalOverlay) closeUsageModalFn();
-    });
-}
-
-if (planCard) {
-    planCard.style.cursor = 'pointer';
-    planCard.addEventListener('click', function() { openUsageModal(); });
-}
-
-// ── PLAN LOADING WITH EXACTLY 3 INDEPENDENT SKELETON ROWS ──
-function checkPlan() {
-    if (!token) {
-        if (planCardTitle) planCardTitle.classList.remove('skel');
-        if (planCardStats) {
-            planCardStats.classList.remove('skel-active');
-            planCardStats.innerHTML = '';
-        }
-        return;
     }
 
-    // ✅ Initialize EXACTLY 3 skeleton bars beneath the header row
-    if (planCardStats && !planCardStats.querySelector('.skel-bar')) {
-        planCardStats.classList.add('skel-active');
-        planCardStats.innerHTML = `
-            <div class="stat-row skel-bar"></div>
-            <div class="stat-row skel-bar"></div>
-            <div class="stat-row skel-bar"></div>`;
+    if (sendAllDraftsBtn) {
+        sendAllDraftsBtn.addEventListener('click', function() {
+            const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+            if (draftLeads.length === 0) { alert('No draft messages to send.'); return; }
+
+            reviewDrafts = draftLeads.map(lead => {
+                const draft = draftedEmails.get(lead.email);
+                const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                return {
+                    id: draftId,
+                    lead: lead,
+                    subject: draft.subject,
+                    body: draft.message,
+                    approved: true,
+                    _subjectInputEl: null,
+                    _messageInputEl: null,
+                    _checkboxEl: null
+                };
+            });
+
+            renderDraftRows();
+
+            if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 sent';
+            updateSendButtonState();
+            reviewSheetOverlay.style.display = 'flex';
+        });
     }
 
-    return fetch(`${BACKEND}/api/users/me`, {
-        headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store'
-    })
-    .then(function(res) { return res.ok ? res.json() : null; })
-    .then(function(user) {
-        if (user) {
-            var p = user.subscriptionTier || 'free';
-            var limits = user.remainingLimits || { emails: 0, research: 0, chats: 0, aiSuggestions: 0 };
-            _cachedLimits.emails = limits.emails ?? 0;
-            _cachedLimits.research = limits.research ?? 0;
-            _cachedLimits.chats = limits.chats ?? 0;
-            _cachedLimits.aiSuggestions = limits.aiSuggestions ?? 0;
-            _cachedLimits.tier = p;
-            updatePlanUI(p, limits);
-        }
-    })
-    .catch(function(err) {
-        console.error('Plan check failed:', err);
-        updatePlanUI('free', { emails: 0, research: 0, chats: 0, aiSuggestions: 0 });
-    });
-}
+    if (scheduleAllDraftsBtn) {
+        scheduleAllDraftsBtn.addEventListener('click', function() {
+            const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+            if (draftLeads.length === 0) { alert('No draft messages to schedule.'); return; }
 
-// Atomically replaces ALL 3 skeletons with real content at once
-function updatePlanUI(plan, limits) {
-    if (!planCardTitle || !planCardStats) return;
-    planCardTitle.classList.remove('skel');
-    planCardStats.classList.remove('skel-active');
+            // Open review sheet for drafts too, so they can be verified
+            reviewDrafts = draftLeads.map(lead => {
+                const draft = draftedEmails.get(lead.email);
+                const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                return {
+                    id: draftId,
+                    lead: lead,
+                    subject: draft.subject,
+                    body: draft.message,
+                    approved: true,
+                    _subjectInputEl: null,
+                    _messageInputEl: null,
+                    _checkboxEl: null
+                };
+            });
 
-    let displayText = 'Free plan';
-    if (plan === 'go') displayText = 'Go plan';
-    if (plan === 'pro') displayText = 'Pro plan';
-    planCardTitle.textContent = displayText;
+            renderDraftRows();
+            if (draftCountsEl) draftCountsEl.textContent = reviewDrafts.length + ' drafts created - 0 scheduled';
+            updateSendButtonState();
+            reviewSheetOverlay.style.display = 'flex';
+        });
+    }
 
-    const emailLimit = limits?.emails ?? 0;
-    const researchLimit = limits?.research ?? 0;
-    const chatLimit = limits?.chats ?? 0;
-    const aiSuggestLimit = limits?.aiSuggestions ?? 0;
+    function updateScheduleModalUI() {
+        const count = scheduleContext.leads.length;
+        if (scheduleEmailCount) scheduleEmailCount.textContent = count + ' approved emails';
+        if (summaryEmailCount) summaryEmailCount.textContent = count + ' emails will be sent separately';
+        if (scheduleConfirmText) scheduleConfirmText.textContent = 'Schedule ' + count + ' emails';
+    }
 
-    planCardStats.innerHTML = `
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            <span class="stat-value">${emailLimit}</span>
-            <span class="stat-label">emails left today</span>
-        </div>
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span class="stat-value">${researchLimit}</span>
-            <span class="stat-label">research left today</span>
-        </div>
-        <div class="stat-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span class="stat-value">${chatLimit}</span>
-            <span class="stat-label">chats left today</span>
-        </div>`;
-}
+    function closeScheduleModal() {
+        if (scheduleOverlay) scheduleOverlay.style.display = 'none';
+        scheduleContext = { type: '', leads: [] };
+    }
 
-// ── Toast Utility ──
-function showToast(message, type, duration) {
-    type = type || 'info'; duration = duration || 4000;
-    var existing = document.querySelector('.toast-msg');
-    if (existing) existing.remove();
-    var toast = document.createElement('div');
-    toast.className = 'toast-msg'; toast.textContent = message;
-    var colors = {
-        success: { bg: 'rgba(102,221,153,0.10)', border: 'rgba(102,221,153,0.5)', text: '#66dd99' },
-        error:   { bg: 'rgba(255,85,85,0.10)',   border: 'rgba(255,85,85,0.5)',   text: '#ff5555' },
-        warning: { bg: 'rgba(255,170,0,0.10)',   border: 'rgba(255,170,0,0.5)',   text: '#ffaa00' },
-        info:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.2)', text: '#f5f5f5' }
-    };
-    var color = colors[type] || colors.info;
-    Object.assign(toast.style, {
-        background: color.bg, border: '1px solid ' + color.border, color: color.text,
-        position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
-        padding: '12px 24px', borderRadius: '10px', fontFamily: 'Inter, sans-serif',
-        fontSize: '14px', fontWeight: '600', zIndex: '9999', backdropFilter: 'blur(10px)'
-    });
-    document.body.appendChild(toast);
-    setTimeout(function() { toast.remove(); }, duration);
-}
+    if (closeScheduleSheetBtn) closeScheduleSheetBtn.addEventListener('click', closeScheduleModal);
+    if (scheduleCancelBtn) scheduleCancelBtn.addEventListener('click', closeScheduleModal);
+    if (scheduleOverlay) {
+        scheduleOverlay.addEventListener('click', function(e) {
+            if (e.target === scheduleOverlay) closeScheduleModal();
+        });
+    }
 
-// ── Initialize ──
-document.addEventListener('DOMContentLoaded', function() {
-    if (emailBanner) emailBanner.classList.add('loading');
-    handleOAuthRedirect();
-    checkEmailStatus();
-    checkPlan();
-    console.log('✅ [PAGE] Lead Discovery Dashboard Ready');
+    if (scheduleDateInput) {
+        scheduleDateInput.addEventListener('change', function() {
+            if (this.value) {
+                const date = new Date(this.value + 'T00:00:00');
+                selectedDateText.textContent = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            }
+        });
+    }
+
+    if (scheduleTimeInput) {
+        scheduleTimeInput.addEventListener('change', function() {
+            if (this.value) {
+                const [h, m] = this.value.split(':');
+                const hr = parseInt(h);
+                const ampm = hr >= 12 ? 'PM' : 'AM';
+                const h12 = hr % 12 || 12;
+                selectedTimeText.textContent = h12 + ':' + m + ' ' + ampm;
+            }
+        });
+    }
+
+    if (scheduleTimezoneSelect) {
+        scheduleTimezoneSelect.addEventListener('change', function() {
+            selectedTimezoneText.textContent = this.options[this.selectedIndex].text;
+        });
+    }
+
+    if (schedulePaceSelect) {
+        schedulePaceSelect.addEventListener('change', function() {
+            selectedPaceText.textContent = this.options[this.selectedIndex].text;
+        });
+    }
+
+    if (scheduleConfirmBtn) {
+        scheduleConfirmBtn.addEventListener('click', async function() {
+            if (!token) return;
+            const dateVal = scheduleDateInput ? scheduleDateInput.value : '';
+            const timeVal = scheduleTimeInput ? scheduleTimeInput.value : '';
+            const timezone = scheduleTimezoneSelect ? scheduleTimezoneSelect.value : '';
+            const paceMinutes = schedulePaceSelect ? parseInt(schedulePaceSelect.value) : 5;
+            const stopOnReply = ruleStopReply ? ruleStopReply.checked : true;
+            const stopOnUnsubscribe = ruleStopUnsubscribe ? ruleStopUnsubscribe.checked : true;
+            const skipMissing = ruleSkipMissing ? ruleSkipMissing.checked : true;
+
+            if (!dateVal || !timeVal) { alert('Please select a date and time.'); return; }
+            const scheduledDateTime = new Date(dateVal + 'T' + timeVal + ':00');
+            if (scheduledDateTime <= new Date()) { alert('Please select a future date and time.'); return; }
+
+            const originalText = scheduleConfirmBtn.innerHTML;
+            scheduleConfirmBtn.innerHTML = '<span>Scheduling...</span>';
+            scheduleConfirmBtn.disabled = true;
+
+            try {
+                // ✅ CALL REAL SCHEDULE ENDPOINT
+                const payload = {
+                    scheduledAt: scheduledDateTime.toISOString(),
+                    timezone: timezone,
+                    paceMinutes: paceMinutes,
+                    safetyRules: { stopOnReply, stopOnUnsubscribe, skipMissing },
+                    leads: scheduleContext.leads
+                };
+
+                const res = await fetch(`${BACKEND}/api/leads/schedule`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to schedule outreach');
+                }
+
+                // ✅ UPDATE LOCAL DATA WITH SCHEDULED TIMES FOR COUNTDOWN
+                if (data.leads && Array.isArray(data.leads)) {
+                    data.leads.forEach(scheduledLead => {
+                        const leadInList = allLeadsData.find(l => l.email === scheduledLead.email);
+                        if (leadInList) {
+                            leadInList.scheduledAt = scheduledLead.scheduledAt;
+                            leadInList.scheduleStatus = scheduledLead.scheduleStatus;
+                        }
+                    });
+                }
+
+                closeScheduleModal();
+                renderLeads(); // Re-render to show countdown badges
+                alert('Outreach scheduled successfully!');
+
+                if (scheduleContext.type === 'single') {
+                    const email = scheduleContext.leads[0].email;
+                    await fetch(BACKEND + '/api/leads/draft', {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    draftedEmails.delete(email);
+                }
+            } catch (e) {
+                console.error('Schedule error:', e);
+                alert(e.message || 'Failed to schedule outreach.');
+            } finally {
+                scheduleConfirmBtn.innerHTML = originalText;
+                scheduleConfirmBtn.disabled = false;
+            }
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ⭐⭐⭐ AI SUGGESTION — NEW CONTRACT: count + drafts array ⭐⭐⭐
+    // ═══════════════════════════════════════════════════════════
+    if (aiSuggestBtn) {
+        aiSuggestBtn.addEventListener('click', async function() {
+            const approvedDrafts = reviewDrafts.filter(d => d.approved);
+            if (approvedDrafts.length === 0) {
+                alert('Please approve at least one draft before requesting AI suggestions.');
+                return;
+            }
+
+            const originalBtnHTML = aiSuggestBtn.innerHTML;
+            aiSuggestBtn.disabled = true;
+            aiSuggestBtn.innerHTML = '<span class="spinner"></span> Generating...';
+            if (aiSuggestStatus) {
+                aiSuggestStatus.textContent = `Generating ${approvedDrafts.length} personalized messages...`;
+            }
+
+            try {
+                // ⭐ NEW PAYLOAD: count + leads array
+                const payload = {
+                    count: approvedDrafts.length,
+                    leads: approvedDrafts.map(d => ({
+                        companyName: d.lead.companyName || '',
+                        email: d.lead.email || '',
+                        industry: d.lead.industry || ''
+                    }))
+                };
+
+                console.log('📤 [AI Suggest] Sending payload:', payload);
+
+                const res = await fetch(BACKEND + '/api/ai/suggest-outreach', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                console.log('📥 [AI Suggest] Response:', data);
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to generate suggestions');
+                }
+
+                // ⭐ NEW RESPONSE FORMAT: { success, count, drafts: [{leadEmail, subject, message}], remainingCalls }
+                if (!data.drafts || !Array.isArray(data.drafts)) {
+                    throw new Error('Invalid response: missing drafts array');
+                }
+
+                // ⭐⭐⭐ INJECT INTO DOM VIA DIRECT REFS (with fallback) ⭐⭐⭐
+                let updatedCount = 0;
+
+                data.drafts.forEach(aiDraft => {
+                    // Match by leadEmail
+                    const draft = reviewDrafts.find(d => d.lead.email === aiDraft.leadEmail);
+                    
+                    if (!draft) {
+                        console.warn('⚠️ No match for leadEmail:', aiDraft.leadEmail);
+                        return;
+                    }
+
+                    // Update state
+                    draft.subject = aiDraft.subject;
+                    draft.body = aiDraft.message;
+
+                    // ⭐ PRIMARY: update via direct references
+                    if (draft._subjectInputEl) {
+                        draft._subjectInputEl.value = aiDraft.subject;
+                    }
+                    if (draft._messageInputEl) {
+                        draft._messageInputEl.value = aiDraft.message;
+                    }
+
+                    // ⭐ FALLBACK: query by data-draft-id (if refs lost)
+                    if (!draft._subjectInputEl || !draft._messageInputEl) {
+                        const row = draftListContainer.querySelector(`[data-draft-id="${draft.id}"]`);
+                        if (row) {
+                            const sIn = row.querySelector('.subject-input');
+                            const mIn = row.querySelector('.message-input');
+                            if (sIn) sIn.value = aiDraft.subject;
+                            if (mIn) mIn.value = aiDraft.message;
+                        }
+                    }
+
+                    updatedCount++;
+                });
+
+                // Status update
+                if (aiSuggestStatus) {
+                    aiSuggestStatus.textContent = `✅ ${updatedCount}/${approvedDrafts.length} drafts updated · ${data.remainingCalls ?? '?'} remaining today`;
+                }
+
+                // Success flash
+                if (updatedCount > 0) {
+                    aiSuggestBtn.style.backgroundColor = '#22C55E';
+                    setTimeout(() => { aiSuggestBtn.style.backgroundColor = ''; }, 800);
+                    updateSendButtonState();
+                } else {
+                    console.warn('⚠️ AI returned drafts but none matched');
+                }
+
+            } catch (err) {
+                console.error('❌ AI Suggestion Error:', err);
+                alert(err.message || 'Failed to generate AI suggestions.');
+                if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.';
+            } finally {
+                aiSuggestBtn.disabled = false;
+                aiSuggestBtn.innerHTML = originalBtnHTML;
+            }
+        });
+    }
+
+    if (closeWarningBtn && warningStrip) {
+        closeWarningBtn.addEventListener('click', function() {
+            warningStrip.style.display = 'none';
+        });
+    }
+
+    // Init
+    initData();
 });
