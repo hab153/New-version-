@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: AI Suggestion batch (count-based) + direct refs
+// UPDATED: Approval Workflow, Schedule API, Live Countdown
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -86,9 +86,65 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCardActionIndex = null;
     let isLoading = true;
     let scheduleContext = { type: '', leads: [] };
+    let countdownIntervals = {}; // Store intervals for cleanup
 
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
+
+    // ═══════════════════════════════════════════════════════════
+    // LIVE COUNTDOWN LOGIC
+    // ═══════════════════════════════════════════════════════════
+    function startCountdowns() {
+        // Clear existing timers to prevent duplicates
+        Object.values(countdownIntervals).forEach(clearInterval);
+        countdownIntervals = {};
+
+        allLeadsData.forEach((lead, index) => {
+            if (lead.scheduledAt && lead.scheduleStatus === 'pending') {
+                const card = document.querySelector(`.lead-card[data-index="${index}"]`);
+                if (!card) return;
+
+                let statusBadge = card.querySelector('.status-label.scheduled');
+                if (!statusBadge) {
+                    // Create badge if missing
+                    const rightCol = card.querySelector('.card-right');
+                    if (rightCol) {
+                        statusBadge = document.createElement('span');
+                        statusBadge.className = 'status-label scheduled';
+                        rightCol.insertBefore(statusBadge, rightCol.firstChild);
+                    }
+                }
+
+                if (statusBadge) {
+                    const timerId = setInterval(() => {
+                        const now = new Date().getTime();
+                        const scheduled = new Date(lead.scheduledAt).getTime();
+                        const diff = scheduled - now;
+
+                        if (diff <= 0) {
+                            clearInterval(timerId);
+                            statusBadge.textContent = 'Sent';
+                            statusBadge.classList.remove('scheduled');
+                            statusBadge.classList.add('sent');
+                            lead.scheduleStatus = 'sent';
+                        } else {
+                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                            
+                            let timeStr = '';
+                            if (hours > 0) timeStr += `${hours}h `;
+                            if (minutes > 0 || hours > 0) timeStr += `${minutes}m `;
+                            timeStr += `${seconds}s`;
+                            
+                            statusBadge.textContent = `Scheduled · ${timeStr.trim()}`;
+                        }
+                    }, 1000);
+                    countdownIntervals[lead.email] = timerId;
+                }
+            }
+        });
+    }
 
     // ═══════════════════════════════════════════════════════════
     // THE SINGLE RENDER FUNCTION FOR ALL DRAFTS
@@ -101,6 +157,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('div');
             row.className = 'draft-row';
             row.setAttribute('data-draft-id', draft.id);
+
+            // ✅ UPDATED: Dynamic Badge based on approval
+            const badgeHtml = draft.approved 
+                ? `<div class="draft-status-badge approved">
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                     <span>Approved</span>
+                   </div>`
+                : `<div class="draft-status-badge">
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                     <span>Needs review</span>
+                   </div>`;
 
             row.innerHTML = `
                 <div class="draft-header">
@@ -117,10 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="draft-company">${draft.lead.companyName || 'Unknown'}</div>
                         <div class="draft-email">${draft.lead.email}</div>
                     </div>
-                    <div class="draft-status-badge">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span>Needs review</span>
-                    </div>
+                    ${badgeHtml}
                     <button type="button" class="expand-editor-btn" data-action="toggle">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
@@ -144,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const editorDiv = row.querySelector('.draft-editor');
             const arrowSvg = expandBtn.querySelector('svg');
 
-            // DIRECT REFERENCES — unbreakable link between state and DOM
+            // DIRECT REFERENCES
             subjectInput._draftRef = draft;
             messageTextarea._draftRef = draft;
             checkbox._draftRef = draft;
@@ -165,9 +229,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Checkbox
+            // ✅ APPROVAL TOGGLE LOGIC
             checkbox.addEventListener('change', function() {
                 draft.approved = this.checked;
+                // Update badge visually without full re-render
+                const badge = row.querySelector('.draft-status-badge');
+                if (badge) {
+                    if (draft.approved) {
+                        badge.className = 'draft-status-badge approved';
+                        badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Approved</span>`;
+                    } else {
+                        badge.className = 'draft-status-badge';
+                        badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB84D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Needs review</span>`;
+                    }
+                }
                 updateSendButtonState();
             });
 
@@ -232,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         isLoading = false;
         renderLeads();
+        startCountdowns(); // Start timers after initial render
     }
 
     function renderSkeletons(count) {
@@ -347,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         initSelectionLogic();
         initLongPressLogic();
+        startCountdowns(); // Restart timers for new renders
     }
 
     function openDetailsModal(index) {
@@ -499,7 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const subject = draftEditSubject ? draftEditSubject.value : '';
             const message = draftEditMessage ? draftEditMessage.value : '';
             if (!email) return;
-            scheduleContext = { type: 'single', leads: [{ companyName: company, email: email, subject: subject, message: message }] };
+            scheduleContext = { type: 'single', leads: [{ companyName: company, email: email, subject: subject, message: message, approved: true }] };
             updateScheduleModalUI();
             closeDraftViewModal();
             scheduleOverlay.style.display = 'flex';
@@ -812,15 +889,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (scheduleOutreachBtn) {
         scheduleOutreachBtn.addEventListener('click', function() {
+            // ✅ VALIDATE APPROVAL BEFORE SCHEDULING
+            const unapproved = reviewDrafts.filter(d => !d.approved);
+            if (unapproved.length > 0) {
+                const names = unapproved.map(d => d.lead.companyName).join(', ');
+                alert(`⚠️ The following companies need approval before scheduling:\n\n${names}`);
+                return;
+            }
+
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
             if (approvedDrafts.length === 0) { alert('Please approve at least one draft.'); return; }
+            
             scheduleContext = {
                 type: 'review',
                 leads: approvedDrafts.map(d => ({
                     companyName: d.lead.companyName,
                     email: d.lead.email,
                     subject: d.subject,
-                    message: d.body
+                    message: d.body,
+                    approved: true
                 }))
             };
             updateScheduleModalUI();
@@ -906,7 +993,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         companyName: lead.companyName,
                         email: lead.email,
                         subject: draft.subject,
-                        message: draft.message
+                        message: draft.message,
+                        approved: true
                     };
                 })
             };
@@ -988,15 +1076,40 @@ document.addEventListener('DOMContentLoaded', function() {
             scheduleConfirmBtn.disabled = true;
 
             try {
-                console.log('Schedule payload:', {
-                    leads: scheduleContext.leads,
+                // ✅ CALL REAL SCHEDULE ENDPOINT
+                const payload = {
                     scheduledAt: scheduledDateTime.toISOString(),
-                    timezone, paceMinutes,
-                    safetyRules: { stopOnReply, stopOnUnsubscribe, skipMissing }
+                    timezone: timezone,
+                    paceMinutes: paceMinutes,
+                    safetyRules: { stopOnReply, stopOnUnsubscribe, skipMissing },
+                    leads: scheduleContext.leads
+                };
+
+                const res = await fetch(`${BACKEND}/api/leads/schedule`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
-                await new Promise(r => setTimeout(r, 1000));
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to schedule outreach');
+                }
+
+                // ✅ UPDATE LOCAL DATA WITH SCHEDULED TIMES FOR COUNTDOWN
+                if (data.leads && Array.isArray(data.leads)) {
+                    data.leads.forEach(scheduledLead => {
+                        const leadInList = allLeadsData.find(l => l.email === scheduledLead.email);
+                        if (leadInList) {
+                            leadInList.scheduledAt = scheduledLead.scheduledAt;
+                            leadInList.scheduleStatus = scheduledLead.scheduleStatus;
+                        }
+                    });
+                }
+
                 closeScheduleModal();
+                renderLeads(); // Re-render to show countdown badges
                 alert('Outreach scheduled successfully!');
 
                 if (scheduleContext.type === 'single') {
@@ -1007,11 +1120,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify({ email: email })
                     });
                     draftedEmails.delete(email);
-                    renderLeads();
                 }
             } catch (e) {
                 console.error('Schedule error:', e);
-                alert('Failed to schedule outreach.');
+                alert(e.message || 'Failed to schedule outreach.');
             } finally {
                 scheduleConfirmBtn.innerHTML = originalText;
                 scheduleConfirmBtn.disabled = false;
