@@ -1,6 +1,6 @@
 // ============================================================
 // page.js - Skyline AI · Lead Discovery Dashboard
-// UPDATED: Merges new leads with existing localStorage data
+// UPDATED: SSE limit handling + AI Suggestions stat + clickable plan card
 // ============================================================
 
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
@@ -17,12 +17,19 @@ const connectEmailBtn = document.getElementById('connectEmailBtn');
 const emailBanner = document.getElementById('emailBanner');
 const planCardTitle = document.querySelector('.plan-card .card-title');
 const planCardStats = document.querySelector('.plan-card .card-stats');
+const planCard = document.querySelector('.plan-card'); // ✅ NEW: For click listener
+
+// ✅ NEW: Usage Modal Elements (reused from alert.html pattern)
+const usageModalOverlay = document.getElementById('usageModalOverlay');
+const closeUsageModal = document.getElementById('closeUsageModal');
+const usageGrid = document.getElementById('usageGrid');
 
 // ⭐ Cache for limits (used when reading from SSE)
 let _cachedLimits = {
     emails: 0,
     research: 0,
     chats: 0,
+    aiSuggestions: 0, // ✅ ADDED
     tier: 'free'
 };
 
@@ -44,7 +51,7 @@ if (deleteBtn) {
     });
 }
 
-// ── 3. Connect Email Logic ──
+// ── 3. Connect Email Logic ─
 function handleOAuthRedirect() {
     const params = new URLSearchParams(window.location.search);
     const nylasSuccess = params.get('nylas');
@@ -247,10 +254,10 @@ function removeMiniPanel() {
     if (panel) panel.remove();
 }
 
-// ⭐ NEW: Handle limits received from SSE done event
+// ⭐ UPDATED: Handle limits received from SSE done event (includes aiSuggestions)
 function handleLimitsFromSSE(remainingLimits) {
     if (!remainingLimits) {
-        console.log('⚠️ [LIMITS] No remainingLimits in SSE event');
+        console.log('️ [LIMITS] No remainingLimits in SSE event');
         return;
     }
 
@@ -259,12 +266,16 @@ function handleLimitsFromSSE(remainingLimits) {
     // Update cached limits
     _cachedLimits.research = remainingLimits.remaining ?? _cachedLimits.research;
     _cachedLimits.tier = remainingLimits.tier ?? _cachedLimits.tier;
+    if (remainingLimits.aiSuggestions !== undefined) {
+        _cachedLimits.aiSuggestions = remainingLimits.aiSuggestions;
+    }
 
     // Update UI directly — no API call needed
     updatePlanUI(_cachedLimits.tier, {
         emails: _cachedLimits.emails,
         research: remainingLimits.remaining,
-        chats: _cachedLimits.chats
+        chats: _cachedLimits.chats,
+        aiSuggestions: _cachedLimits.aiSuggestions
     });
 
     console.log('✅ [LIMITS] UI updated: research =', remainingLimits.remaining);
@@ -315,7 +326,26 @@ function streamLeadResponse(message) {
             if (status) updateStageInPanel(stageId, status);
             if (payload.data?.data) _stageData[stageId] = payload.data.data;
 
-            //  If this event carries remainingLimits, update UI immediately
+            // ✅ FIX #1: Handle dedicated limit_reached stage BEFORE checking done/error
+            if (stageId === 'limit_reached') {
+                clearInterval(timerInterval);
+                es.close();
+                _activeEventSource = null;
+
+                findProspectsBtn.innerHTML = originalBtnContent;
+                findProspectsBtn.disabled = false;
+                removeMiniPanel();
+
+                // Show clear, actionable message instead of generic connection error
+                const limitMsg = payload.data?.message || 'Daily research limit reached.';
+                showToast(limitMsg, 'warning', 6000);
+
+                // Refresh plan UI to reflect exhausted state
+                checkPlan();
+                return;
+            }
+
+            // If this event carries remainingLimits, update UI immediately
             if (payload.data?.remainingLimits) {
                 handleLimitsFromSSE(payload.data.remainingLimits);
             }
@@ -340,7 +370,11 @@ function streamLeadResponse(message) {
             }
         });
 
-        es.addEventListener('error', function() {
+        // ✅ FIX #1: Only show generic connection error for ACTUAL network failures
+        es.addEventListener('error', function(e) {
+            // Don't trigger on intentional close after limit_reached
+            if (es.readyState === EventSource.CLOSED) return;
+
             clearInterval(timerInterval);
             es.close();
             _activeEventSource = null;
@@ -349,7 +383,7 @@ function streamLeadResponse(message) {
             showToast('Connection lost during search.', 'error');
             removeMiniPanel();
 
-            // ⭐ Fallback: refresh from API on connection error
+            // Fallback: refresh from API on connection error
             checkPlan();
         });
 
@@ -416,6 +450,104 @@ if (findProspectsBtn) {
     });
 }
 
+// ════════════════════════════════════════
+// ✅ FIX #2: USAGE MODAL LOGIC (Reused from alert.js)
+// ════════════════════════════════════════
+
+async function openUsageModal() {
+    if (!usageModalOverlay) return;
+    
+    usageModalOverlay.style.display = 'flex';
+    usageGrid.innerHTML = '<div class="usage-loading">Loading usage data...</div>';
+
+    if (!token) {
+        usageGrid.innerHTML = '<div class="usage-error">Please log in to view usage.</div>';
+        return;
+    }
+
+    try {
+        console.log(' [MODAL] Fetching fresh usage...');
+        const res = await fetch(`${BACKEND}/api/users/me/usage`, {
+            headers: { 'Authorization': 'Bearer ' + token },
+            cache: 'no-store'
+        });
+
+        const data = await res.json();
+        console.log('📥 [MODAL] Fresh data:', data);
+
+        if (!res.ok) throw new Error(data.message || 'Failed');
+
+        // Read from data.limits.{type}.{remaining, max}
+        const limits = data.limits || {};
+        
+        const metrics = [
+            { 
+                label: 'Emails', 
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                remaining: limits.email?.remaining ?? 0,
+                total: limits.email?.max ?? 30
+            },
+            { 
+                label: 'Research', 
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+                remaining: limits.research?.remaining ?? 0,
+                total: limits.research?.max ?? 4
+            },
+            { 
+                label: 'Chats', 
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+                remaining: limits.chat?.remaining ?? 0,
+                total: limits.chat?.max ?? 30
+            },
+            { 
+                label: 'AI Suggestions', 
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+                remaining: limits.aiSuggestions?.remaining ?? 0,
+                total: limits.aiSuggestions?.max ?? 7
+            }
+        ];
+
+        usageGrid.innerHTML = metrics.map(m => {
+            const pct = m.total > 0 ? (m.remaining / m.total) * 100 : 0;
+            return `
+                <div class="usage-card">
+                    <div class="usage-icon">${m.icon}</div>
+                    <div class="usage-info">
+                        <div class="usage-label">${m.label}</div>
+                        <div class="usage-count">${m.remaining} / ${m.total}</div>
+                    </div>
+                    <div class="usage-bar-container">
+                        <div class="usage-bar" style="width: ${pct}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error('❌ [MODAL] Error:', err);
+        usageGrid.innerHTML = `<div class="usage-error">Failed to load usage: ${err.message}</div>`;
+    }
+}
+
+function closeUsageModalFn() {
+    if (usageModalOverlay) usageModalOverlay.style.display = 'none';
+}
+
+if (closeUsageModal) closeUsageModal.addEventListener('click', closeUsageModalFn);
+if (usageModalOverlay) {
+    usageModalOverlay.addEventListener('click', function(e) {
+        if (e.target === usageModalOverlay) closeUsageModalFn();
+    });
+}
+
+// ✅ FIX #2: Make plan card clickable to open usage modal
+if (planCard) {
+    planCard.style.cursor = 'pointer';
+    planCard.addEventListener('click', function() {
+        openUsageModal();
+    });
+}
+
 // ── 6. Plan Loading ──
 function checkPlan() {
     if (!token) return;
@@ -431,6 +563,7 @@ function checkPlan() {
                 <div class="stat-row skel skel-bar"></div>
                 <div class="stat-row skel skel-bar"></div>
                 <div class="stat-row skel skel-bar"></div>
+                <div class="stat-row skel skel-bar"></div> <!-- ✅ 4th skeleton row -->
             `;
         }
     }
@@ -443,12 +576,13 @@ function checkPlan() {
     .then(function(user) {
         if (user) {
             var p = user.subscriptionTier || 'free';
-            var limits = user.remainingLimits || { emails: 0, research: 0, chats: 0 };
+            var limits = user.remainingLimits || { emails: 0, research: 0, chats: 0, aiSuggestions: 0 };
 
-            // ⭐ Store in cache
+            // ⭐ Store in cache (including aiSuggestions)
             _cachedLimits.emails = limits.emails ?? 0;
             _cachedLimits.research = limits.research ?? 0;
             _cachedLimits.chats = limits.chats ?? 0;
+            _cachedLimits.aiSuggestions = limits.aiSuggestions ?? 0; // ✅ ADDED
             _cachedLimits.tier = p;
 
             updatePlanUI(p, limits);
@@ -456,10 +590,11 @@ function checkPlan() {
     })
     .catch(function(err) {
         console.error('Plan check failed:', err);
-        updatePlanUI('free', { emails: 0, research: 0, chats: 0 });
+        updatePlanUI('free', { emails: 0, research: 0, chats: 0, aiSuggestions: 0 });
     });
 }
 
+// ✅ FIX #2: Updated to render 4 stats including AI Suggestions
 function updatePlanUI(plan, limits) {
     if (!planCardTitle || !planCardStats) return;
 
@@ -471,9 +606,10 @@ function updatePlanUI(plan, limits) {
     if (plan === 'pro') displayText = 'Pro plan';
     planCardTitle.textContent = displayText;
 
-    const emailLimit    = limits?.emails   ?? 0;
-    const researchLimit = limits?.research ?? 0;
-    const chatLimit     = limits?.chats    ?? 0;
+    const emailLimit      = limits?.emails          ?? 0;
+    const researchLimit   = limits?.research        ?? 0;
+    const chatLimit       = limits?.chats           ?? 0;
+    const aiSuggestLimit  = limits?.aiSuggestions   ?? 0; // ✅ ADDED
 
     planCardStats.innerHTML = `
         <div class="stat-row">
@@ -490,6 +626,12 @@ function updatePlanUI(plan, limits) {
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             <span class="stat-value">${chatLimit}</span>
             <span class="stat-label">chats left today</span>
+        </div>
+        <!-- ✅ NEW: AI Suggestions stat row -->
+        <div class="stat-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <span class="stat-value">${aiSuggestLimit}</span>
+            <span class="stat-label">AI suggestions left today</span>
         </div>
     `;
 }
