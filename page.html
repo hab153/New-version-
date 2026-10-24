@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- Existing Styles (Will be overridden/extended by new page.css) -->
+    <!-- Styles -->
     <link rel="stylesheet" href="page.css" />
 </head>
 <body>
@@ -44,17 +44,13 @@
         <!-- ✅ FIX #1: Email Connection Banner with Loading Skeletons -->
         <div id="emailBanner" class="email-banner disconnected loading">
             <div class="banner-icon">
-                <!-- Skeleton circle shown while loading -->
                 <div class="skeleton-circle skel"></div>
-                <!-- Real icon hidden until loaded -->
                 <svg class="real-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
             </div>
             <div class="banner-content">
-                <!-- Skeleton lines shown while loading -->
                 <div class="skeleton-line skel" style="width: 120px; height: 14px; margin-bottom: 6px;"></div>
                 <div class="skeleton-line skel" style="width: 280px; height: 12px;"></div>
                 
-                <!-- Real text hidden until loaded -->
                 <h3 class="banner-title real-text">No email connected</h3>
                 <p class="banner-desc real-text">Connect Gmail or Outlook to unlock inbox and follow-up features</p>
             </div>
@@ -116,12 +112,10 @@
                     <div class="icon-circle purple">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>
                     </div>
-                    <!-- Skeleton title placeholder -->
                     <span class="card-title skel">&nbsp;</span>
                     <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div class="card-stats">
-                    <!-- 4 skeleton bars representing limits (Email, Research, Chat, AI Suggestions) -->
                     <div class="stat-row skel skel-bar"></div>
                     <div class="stat-row skel skel-bar"></div>
                     <div class="stat-row skel skel-bar"></div>
@@ -129,7 +123,7 @@
                 </div>
             </div>
 
-            <!-- Right Card: Automation (Unchanged) -->
+            <!-- Right Card: Automation -->
             <div class="card automation-card">
                 <div class="card-header">
                     <div class="icon-circle green">
@@ -145,7 +139,7 @@
 
     </main>
 
-    <!-- ✅ NEW: Usage Details Modal (Reused from alert.html pattern) -->
+    <!-- ✅ NEW: Usage Details Modal -->
     <div class="modal-overlay" id="usageModalOverlay" style="display: none;">
         <div class="modal-content usage-modal">
             <button class="close-modal" id="closeUsageModal">
@@ -326,4 +320,4 @@
     <script src="session-check.js"></script>
     <script src="page.js"></script>
 </body>
-                    </html>
+    </html>
