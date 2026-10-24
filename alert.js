@@ -9,9 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const markAllReadBtn = document.querySelector('.mark-all-read-btn');
     const filterTabs = document.querySelectorAll('.tab-btn');
     const preferencesCard = document.getElementById('preferencesCard');
+    
+    // ✅ NEW: Usage Modal Elements
+    const usageModalOverlay = document.getElementById('usageModalOverlay');
+    const closeUsageModal = document.getElementById('closeUsageModal');
+    const usageGrid = document.getElementById('usageGrid');
 
     // State
     let currentFilter = 'all';
+    const BACKEND = 'https://skylineapp-backend-file.onrender.com';
+    const token = localStorage.getItem('token');
 
     // ✅ STATIC FIXTURE DATA (Matches Screenshot Specification)
     const fixtureNotifications = [
@@ -68,11 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
             isRead: true,
             category: 'general',
             actionLabel: 'View usage',
-            actionUrl: '#'
+            actionUrl: '#usage' // Special marker to trigger modal
         }
     ];
 
-    // ── Render Notifications ──
+    // ── Render Notifications ─
     function renderNotifications() {
         if (!notificationList) return;
         notificationList.innerHTML = '';
@@ -121,12 +128,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="card-timestamp">${n.timestamp}</span>
                 </div>
                 <p class="card-desc">${n.description}</p>
-                <a href="${n.actionUrl}" class="card-action-btn">
+                <a href="${n.actionUrl}" class="card-action-btn" data-action="${n.actionLabel}">
                     ${n.actionLabel}
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>
             </div>
         `;
+
+        // Handle special actions vs standard navigation
+        const actionBtn = card.querySelector('.card-action-btn');
+        actionBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (n.actionUrl === '#usage') {
+                openUsageModal();
+            } else if (n.actionUrl !== '#') {
+                window.location.href = n.actionUrl;
+            }
+        });
 
         // Visual-only read toggle for UI testing
         card.addEventListener('click', function() {
@@ -176,7 +196,91 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Event Listeners ──
+    // ═══════════════════════════════════════
+    // ✅ USAGE MODAL LOGIC
+    // ════════════════════════════════════════
+
+    async function openUsageModal() {
+        if (!usageModalOverlay) return;
+        
+        usageModalOverlay.style.display = 'flex';
+        usageGrid.innerHTML = '<div class="usage-loading">Loading usage data...</div>';
+
+        if (!token) {
+            usageGrid.innerHTML = '<div class="usage-error">Please log in to view usage.</div>';
+            return;
+        }
+
+        try {
+            console.log(' Fetching usage data...');
+            const res = await fetch(`${BACKEND}/api/users/me/usage`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            const data = await res.json();
+            console.log(' Received usage:', data);
+
+            if (!res.ok) throw new Error(data.message || 'Failed to fetch usage');
+
+            // Map backend response to UI cards
+            const metrics = [
+                { 
+                    label: 'Emails', 
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                    remaining: data.emails || 0,
+                    total: data.emailsLimit || 30
+                },
+                { 
+                    label: 'Research', 
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+                    remaining: data.research || 0,
+                    total: data.researchLimit || 4
+                },
+                { 
+                    label: 'Chats', 
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+                    remaining: data.chats || 0,
+                    total: data.chatsLimit || 30
+                },
+                { 
+                    label: 'AI Suggestions', 
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+                    remaining: data.aiSuggestions || 0,
+                    total: data.aiSuggestionsLimit || 7
+                }
+            ];
+
+            usageGrid.innerHTML = metrics.map(m => `
+                <div class="usage-card">
+                    <div class="usage-icon">${m.icon}</div>
+                    <div class="usage-info">
+                        <div class="usage-label">${m.label}</div>
+                        <div class="usage-count">${m.remaining} / ${m.total}</div>
+                    </div>
+                    <div class="usage-bar-container">
+                        <div class="usage-bar" style="width: ${(m.remaining / m.total) * 100}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error('Usage fetch error:', err);
+            usageGrid.innerHTML = `<div class="usage-error">Failed to load usage: ${err.message}</div>`;
+        }
+    }
+
+    function closeUsageModalFn() {
+        if (usageModalOverlay) usageModalOverlay.style.display = 'none';
+    }
+
+    if (closeUsageModal) closeUsageModal.addEventListener('click', closeUsageModalFn);
+    if (usageModalOverlay) {
+        usageModalOverlay.addEventListener('click', function(e) {
+            if (e.target === usageModalOverlay) closeUsageModalFn();
+        });
+    }
+
+    // ── Event Listeners ─
 
     // Filter Tabs
     filterTabs.forEach(tab => {
