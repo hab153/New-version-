@@ -267,6 +267,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     Draft message
                 </button>
+                <!-- This button opens the High-Fidelity Schedule Modal -->
                 <button class="schedule-outreach-btn" id="scheduleOutreachBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     Schedule outreach
@@ -275,27 +276,7 @@
         </div>
     </div>
 
-    <!-- ✅ NEW: AI Suggestions Modal -->
-    <div class="modal-overlay" id="aiSuggestionsOverlay" style="display: none;">
-        <div class="modal-content ai-suggestions-modal">
-            <button class="close-modal" id="closeAiSuggestions">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-            <h3 class="ai-modal-title">AI Outreach Suggestions</h3>
-            <p class="ai-modal-subtitle">Review personalized messages generated for each lead.</p>
-            <div class="ai-suggestions-list" id="aiSuggestionsList">
-                <!-- Dynamic suggestion cards injected here -->
-            </div>
-            <div class="ai-modal-actions">
-                <button class="btn-secondary" id="cancelAiSuggestions">Cancel</button>
-                <button class="btn-primary" id="applyAiSuggestions">Apply to Drafts</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         SCHEDULE OUTREACH MODAL
-         ═════════════════════════════════════════ -->
+    <!-- ✅ HIGH-FIDELITY SCHEDULE OUTREACH MODAL -->
     <div class="schedule-overlay" id="scheduleOverlay" style="display: none;">
         <div class="schedule-sheet">
             <div class="sheet-handle"></div>
@@ -304,104 +285,95 @@
             <div class="schedule-header">
                 <div class="schedule-header-left">
                     <div class="schedule-icon-container">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     </div>
                     <div class="schedule-header-text">
                         <h2 class="schedule-title">Schedule outreach</h2>
-                        <p class="schedule-subtitle" id="scheduleEmailCount">2 approved emails</p>
+                        <p class="schedule-subtitle" id="scheduleSubtitle">0 approved emails</p>
                     </div>
                 </div>
-                <button class="close-sheet" id="closeScheduleSheet">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <button class="close-sheet" id="closeScheduleSheetBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
 
             <!-- Scheduling Question -->
-            <div class="schedule-section-heading">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <div class="section-heading">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
                 <span>When should these emails send?</span>
             </div>
 
-            <!-- Date Selector -->
-            <div class="schedule-selector" id="dateSelector">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span class="selector-text" id="selectedDateText">Tuesday, Oct 27</span>
-                <svg class="selector-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                <input type="date" class="hidden-date-input" id="scheduleDateInput">
+            <!-- Selectors -->
+            <div class="selector-group">
+                <!-- Date -->
+                <div class="schedule-selector">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span class="selector-text" id="selectedDateText">Select a date</span>
+                    <svg class="selector-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <input type="date" id="scheduleDateInput" class="hidden-input">
+                </div>
+
+                <!-- Time -->
+                <div class="schedule-selector">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span class="selector-text" id="selectedTimeText">Select a time</span>
+                    <svg class="selector-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <input type="time" id="scheduleTimeInput" class="hidden-input">
+                </div>
+
+                <!-- Timezone -->
+                <div class="schedule-selector">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    <span class="selector-text" id="selectedTimezoneText">West Africa Time (WAT)</span>
+                    <svg class="selector-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <select id="scheduleTimezoneSelect" class="hidden-input">
+                        <option value="Africa/Lagos">West Africa Time (WAT)</option>
+                        <option value="America/New_York">Eastern Time (ET)</option>
+                        <option value="Europe/London">Greenwich Mean Time (GMT)</option>
+                    </select>
+                </div>
+
+                <!-- Pace -->
+                <div class="section-heading" style="margin-top: 16px; font-size: 20px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    <span>Sending pace</span>
+                </div>
+                <div class="schedule-selector">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span class="selector-text" id="selectedPaceText">One email every 5 minutes</span>
+                    <svg class="selector-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <select id="schedulePaceSelect" class="hidden-input">
+                        <option value="5">One email every 5 minutes</option>
+                        <option value="10">One email every 10 minutes</option>
+                        <option value="15">One email every 15 minutes</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Time Selector -->
-            <div class="schedule-selector" id="timeSelector">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span class="selector-text" id="selectedTimeText">10:00 AM</span>
-                <svg class="selector-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                <input type="time" class="hidden-time-input" id="scheduleTimeInput" value="10:00">
-            </div>
-
-            <!-- Timezone Selector -->
-            <div class="schedule-selector" id="timezoneSelector">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <span class="selector-text" id="selectedTimezoneText">West Africa Time (WAT)</span>
-                <svg class="selector-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                <select class="hidden-timezone-select" id="scheduleTimezoneSelect">
-                    <option value="Africa/Lagos" selected>West Africa Time (WAT)</option>
-                    <option value="Africa/Accra">Greenwich Mean Time (GMT)</option>
-                    <option value="Africa/Johannesburg">South Africa Standard Time (SAST)</option>
-                    <option value="Africa/Cairo">Eastern European Time (EET)</option>
-                    <option value="Europe/London">British Summer Time (BST)</option>
-                    <option value="Europe/Paris">Central European Time (CET)</option>
-                    <option value="America/New_York">Eastern Standard Time (EST)</option>
-                    <option value="America/Chicago">Central Standard Time (CST)</option>
-                    <option value="America/Los_Angeles">Pacific Standard Time (PST)</option>
-                </select>
-            </div>
-
-            <!-- Sending Pace Section -->
-            <div class="schedule-section-heading">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span>Sending pace</span>
-            </div>
-
-            <div class="schedule-selector" id="paceSelector">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-                <span class="selector-text" id="selectedPaceText">One email every 5 minutes</span>
-                <svg class="selector-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A3AC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                <select class="hidden-pace-select" id="schedulePaceSelect">
-                    <option value="1">One email every 1 minute</option>
-                    <option value="3">One email every 3 minutes</option>
-                    <option value="5" selected>One email every 5 minutes</option>
-                    <option value="10">One email every 10 minutes</option>
-                    <option value="15">One email every 15 minutes</option>
-                    <option value="30">One email every 30 minutes</option>
-                    <option value="60">One email every 1 hour</option>
-                </select>
-            </div>
-
-            <!-- Safety Rules Section -->
-            <div class="schedule-section-heading">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <!-- Safety Rules -->
+            <div class="section-heading" style="margin-top: 8px; font-size: 20px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                 <span>Safety rules</span>
             </div>
-
             <div class="safety-rules-container">
                 <label class="safety-rule">
-                    <input type="checkbox" class="safety-checkbox" id="ruleStopReply" checked>
+                    <input type="checkbox" id="ruleStopReply" class="safety-checkbox" checked>
                     <span class="safety-check">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </span>
                     <span class="safety-label">Stop if recipient replies</span>
                 </label>
                 <label class="safety-rule">
-                    <input type="checkbox" class="safety-checkbox" id="ruleStopUnsubscribe" checked>
+                    <input type="checkbox" id="ruleStopUnsubscribe" class="safety-checkbox" checked>
                     <span class="safety-check">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </span>
                     <span class="safety-label">Stop if recipient unsubscribes</span>
                 </label>
                 <label class="safety-rule">
-                    <input type="checkbox" class="safety-checkbox" id="ruleSkipMissing" checked>
+                    <input type="checkbox" id="ruleSkipMissing" class="safety-checkbox" checked>
                     <span class="safety-check">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </span>
                     <span class="safety-label">Skip missing or unverified email</span>
                 </label>
@@ -409,21 +381,28 @@
 
             <!-- Email Summary Card -->
             <div class="email-summary-card">
-                <div class="summary-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <div class="summary-header">
+                    <div class="summary-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
+                    <div class="summary-text">
+                        <div class="summary-primary" id="summaryPrimaryText">0 emails will be sent separately</div>
+                        <div class="summary-secondary">You can cancel scheduled emails before they send</div>
+                    </div>
                 </div>
-                <div class="summary-text">
-                    <div class="summary-primary" id="summaryEmailCount">2 emails will be sent separately</div>
-                    <div class="summary-secondary">You can cancel scheduled emails before they send</div>
+
+                <!-- Dynamic Company List -->
+                <div class="company-list" id="companyListContainer">
+                    <!-- Rows injected by JS -->
                 </div>
             </div>
 
-            <!-- Cancel and Schedule Buttons -->
+            <!-- Action Buttons -->
             <div class="schedule-button-row">
                 <button class="schedule-cancel-btn" id="scheduleCancelBtn">Cancel</button>
                 <button class="schedule-confirm-btn" id="scheduleConfirmBtn">
-                    <span id="scheduleConfirmText">Schedule 2 emails</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    <span>Schedule 0 emails</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
             </div>
         </div>
