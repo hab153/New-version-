@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Pre-Approved Schedule Modal + Expandable Message Editor
+// UPDATED: Clear Message Editor + Pre-Approved Schedule Modal
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ═══════════════════════════════════════════════════════════
     // LIVE COUNTDOWN LOGIC
-    // ═════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════
     function startCountdowns() {
         Object.values(countdownIntervals).forEach(clearInterval);
         countdownIntervals = {};
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // HIGH-FI SCHEDULE MODAL: DYNAMIC COMPANY LIST + MESSAGE EDITOR
+    // HIGH-FI SCHEDULE MODAL: CLEAR MESSAGE EDITOR
     // ═══════════════════════════════════════════════════════════
     function renderScheduleCompanyList() {
         if (!companyListContainer) return;
@@ -165,43 +165,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const row = document.createElement('div');
             row.className = 'company-row';
+            // Clean row styling matching screenshot
+            row.style.cssText = 'padding:16px 0;border-bottom:1px solid #29323D;position:relative;';
             
-            // ✅ EXPANDABLE MESSAGE EDITOR HTML
+            // ✅ COLLAPSED HEADER ROW
             row.innerHTML = `
-                <label style="position: relative; width: 24px; height: 24px;">
-                    <input type="checkbox" class="row-checkbox" ${isApproved ? 'checked' : ''}>
-                    <span class="row-check">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </span>
-                </label>
-                <div class="company-avatar">${initial}</div>
-                <div class="company-info" style="flex:1; min-width:0;">
-                    <div class="company-name-text">${lead.companyName || 'Unknown'}</div>
-                    <div class="company-email-text">${lead.email || 'No email'}</div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <!-- Checkbox -->
+                    <label style="position:relative;width:24px;height:24px;flex-shrink:0;">
+                        <input type="checkbox" class="row-checkbox" ${isApproved ? 'checked' : ''} style="opacity:0;position:absolute;width:100%;height:100%;cursor:pointer;z-index:20;">
+                        <span class="row-check" style="position:absolute;top:0;left:0;width:24px;height:24px;background-color:#F2F4F8;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#101216;${!isApproved ? 'background-color:transparent;border:2px solid #29323D;' : ''}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                    </label>
                     
-                    <!-- View Message Toggle -->
-                    <button type="button" class="view-msg-toggle" data-index="${index}" style="background:none;border:none;color:#9BA7BA;cursor:pointer;padding:4px 0;margin-top:4px;display:flex;align-items:center;gap:4px;font-size:11px;">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                        <span>View message</span>
+                    <!-- Avatar -->
+                    <div class="company-avatar" style="width:40px;height:40px;background-color:#1A1F26;border:1px solid #29323D;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#F2F4F8;font-size:14px;flex-shrink:0;">${initial}</div>
+                    
+                    <!-- Company Info -->
+                    <div style="flex:1;min-width:0;">
+                        <div class="company-name-text" style="font-weight:600;color:#F2F4F8;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.companyName || 'Unknown'}</div>
+                        <div class="company-email-text" style="color:#9BA7BA;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.email || 'No email'}</div>
+                    </div>
+                    
+                    <!-- Approve Button -->
+                    <button class="approve-btn ${isApproved ? 'approved' : ''}" data-index="${index}" style="background-color:${isApproved ? '#77A8FF' : 'transparent'};border:1px solid #77A8FF;color:${isApproved ? '#101216' : '#77A8FF'};padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;cursor:pointer;transition:all 0.2s;flex-shrink:0;">
+                        ${isApproved 
+                            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
+                            : 'Approve'}
                     </button>
                     
-                    <!-- Hidden Message Editor -->
-                    <div class="msg-editor" data-index="${index}" style="display:none;width:100%;margin-top:8px;padding:10px;background:#1A1F26;border-radius:8px;border:1px solid #29323D;">
-                        <div style="margin-bottom:8px;">
-                            <label style="font-size:10px;color:#9BA7BA;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Subject</label>
-                            <input type="text" class="sched-subject-input" value="${String(lead.subject || '').replace(/"/g, '&quot;')}" style="width:100%;background:#12161A;border:1px solid #29323D;border-radius:4px;padding:8px;color:#F2F4F8;font-size:12px;outline:none;">
-                        </div>
-                        <div>
-                            <label style="font-size:10px;color:#9BA7BA;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Message</label>
-                            <textarea class="sched-msg-input" style="width:100%;background:#12161A;border:1px solid #29323D;border-radius:4px;padding:8px;color:#F2F4F8;font-size:12px;min-height:80px;resize:vertical;outline:none;font-family:inherit;line-height:1.5;">${lead.message || ''}</textarea>
-                        </div>
+                    <!-- Chevron Toggle -->
+                    <button type="button" class="view-msg-toggle" data-index="${index}" style="background:none;border:none;color:#9BA7BA;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+                
+                <!-- ✅ EXPANDED MESSAGE EDITOR - LARGE & CLEAR -->
+                <div class="msg-editor" data-index="${index}" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed #29323D;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:12px;color:#9BA7BA;display:block;margin-bottom:6px;font-weight:500;">Subject</label>
+                        <input type="text" class="sched-subject-input" value="${String(lead.subject || '').replace(/"/g, '&quot;')}" style="width:100%;background:#12161A;border:1px solid #29323D;border-radius:8px;padding:10px 12px;color:#F2F4F8;font-size:14px;outline:none;font-family:inherit;">
+                    </div>
+                    <div>
+                        <label style="font-size:12px;color:#9BA7BA;display:block;margin-bottom:6px;font-weight:500;">Message</label>
+                        <textarea class="sched-msg-input" style="width:100%;background:#12161A;border:1px solid #29323D;border-radius:8px;padding:10px 12px;color:#F2F4F8;font-size:14px;min-height:100px;resize:vertical;outline:none;font-family:inherit;line-height:1.6;">${lead.message || ''}</textarea>
                     </div>
                 </div>
-                <button class="approve-btn ${isApproved ? 'approved' : ''}" data-index="${index}">
-                    ${isApproved 
-                        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
-                        : 'Approve'}
-                </button>
             `;
 
             // Checkbox Toggle
@@ -218,22 +228,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 renderScheduleCompanyList();
             });
 
-            // ✅ Message Editor Expand/Collapse
+            // ✅ Message Editor Expand/Collapse with Arrow Rotation
             const toggleBtn = row.querySelector('.view-msg-toggle');
             const msgEditor = row.querySelector('.msg-editor');
             const arrowSvg = toggleBtn.querySelector('svg');
-            const labelSpan = toggleBtn.querySelector('span');
             
             toggleBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (msgEditor.style.display === 'none') {
                     msgEditor.style.display = 'block';
                     arrowSvg.style.transform = 'rotate(180deg)';
-                    labelSpan.textContent = 'Hide message';
                 } else {
                     msgEditor.style.display = 'none';
                     arrowSvg.style.transform = 'rotate(0deg)';
-                    labelSpan.textContent = 'View message';
                 }
             });
 
