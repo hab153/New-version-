@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const markAllReadBtn = document.querySelector('.mark-all-read-btn');
     const filterTabs = document.querySelectorAll('.tab-btn');
     const preferencesCard = document.getElementById('preferencesCard');
+    const automationCard = document.getElementById('automationCard'); // ✅ NEW
     
     const usageModalOverlay = document.getElementById('usageModalOverlay');
     const closeUsageModal = document.getElementById('closeUsageModal');
@@ -418,6 +419,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (preferencesCard) {
         preferencesCard.addEventListener('click', function() {
             window.location.href = 'settings.html#notifications';
+        });
+    }
+
+    // ✅ NEW: Automation Card Navigation
+    if (automationCard) {
+        automationCard.addEventListener('click', function() {
+            window.location.href = 'automation.html';
         });
     }
 
