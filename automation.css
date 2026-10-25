@@ -153,62 +153,113 @@ body {
 
 .inline-schedule-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ═══════════════════════════════════════
-   SKELETON LOADING ANIMATIONS (SCHEDULES ONLY)
+/* ══════════════════════════════════════
+   ✅ REALISTIC SKELETON ANIMATIONS
    ════════════════════════════════════════ */
 @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
 }
 
 .skel-base {
     background: linear-gradient(90deg, #1a1b1e 25%, #252629 50%, #1a1b1e 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite linear;
+    animation: shimmer 1.8s infinite ease-in-out;
     border-radius: 6px;
 }
 
-/* ✅ REMOVED: All status-skeleton, skel-circle, skel-divider, 
-   skel-info, skel-line, skel-title, skel-desc, skel-btn rules */
-
 /* Schedules Skeleton Only */
 .schedules-skeleton {
-    display: flex; flex-direction: column; gap: 16px;
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px;
 }
 
 .skel-schedule-row {
-    display: flex; align-items: center; gap: 16px;
+    display: flex; 
+    align-items: center; 
+    gap: 16px;
     padding: 16px 0;
     border-bottom: 1px solid var(--border-color);
 }
 
-.skel-schedule-row:last-child { border-bottom: none; padding-bottom: 0; }
+.skel-schedule-row:last-child { 
+    border-bottom: none; 
+    padding-bottom: 0; 
+}
 
 .skel-icon {
-    width: 40px; height: 40px;
-    border-radius: 10px; flex-shrink: 0;
+    width: 40px; 
+    height: 40px;
+    border-radius: 10px; 
+    flex-shrink: 0;
+    /* ✅ Continuous shimmer on icon placeholder */
+    background: linear-gradient(90deg, #1a1b1e 25%, #252629 50%, #1a1b1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite ease-in-out;
 }
 
 .skel-schedule-row .skel-info {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column; gap: 6px;
+    flex: 1; 
+    min-width: 0;
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px;
 }
 
-.skel-company { width: 50%; height: 14px; }
-.skel-date { width: 70%; height: 12px; }
+.skel-company { 
+    width: 55%; 
+    height: 14px; 
+    border-radius: 4px;
+    background: linear-gradient(90deg, #1a1b1e 25%, #252629 50%, #1a1b1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite ease-in-out;
+}
+
+.skel-date { 
+    width: 75%; 
+    height: 12px; 
+    border-radius: 4px;
+    background: linear-gradient(90deg, #1a1b1e 25%, #252629 50%, #1a1b1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite ease-in-out;
+    animation-delay: 0.1s; /* Slight offset for natural feel */
+}
 
 .skel-countdown {
-    width: 90px; height: 16px;
-    border-radius: 4px; flex-shrink: 0;
+    width: 90px; 
+    height: 16px;
+    border-radius: 4px; 
+    flex-shrink: 0;
+    background: linear-gradient(90deg, #1a1b1e 25%, #252629 50%, #1a1b1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite ease-in-out;
+    animation-delay: 0.2s;
 }
 
-.skel-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.skel-btn-sm { width: 60px; height: 28px; border-radius: 999px; }
+.skel-actions { 
+    display: flex; 
+    gap: 8px; 
+    flex-shrink: 0; 
+}
+
+.skel-btn-sm {
+    width: 60px; 
+    height: 28px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #1a1b1e 25%, #252629 50%, #1a1b1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite ease-in-out;
+}
+
+.skel-btn-sm:nth-child(2) { animation-delay: 0.05s; }
+.skel-btn-sm:nth-child(3) { animation-delay: 0.1s; }
 
 @media (prefers-reduced-motion: reduce) {
-    .skel-base, .skel-icon, .skel-countdown, .skel-btn-sm,
-    .skel-company, .skel-date {
-        animation: none; background: #252629;
+    .skel-icon, .skel-company, .skel-date, 
+    .skel-countdown, .skel-btn-sm {
+        animation: none;
+        background: #252629;
     }
 }
 
