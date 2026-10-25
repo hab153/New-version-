@@ -3,14 +3,8 @@ const token = localStorage.getItem('token');
 
 // ─ DOM Elements ──
 const backToAlertsBtn = document.getElementById('backToAlertsBtn');
-const statusCard = document.getElementById('statusCard');
-const statusSkeleton = document.getElementById('statusSkeleton');
-const statusReal = document.getElementById('statusReal');
-const statusSvg = statusCard.querySelector('.status-svg');
-const statusTitle = document.getElementById('statusTitle');
-const statusDesc = document.getElementById('statusDesc');
-const pauseResumeBtn = document.getElementById('pauseResumeBtn');
-const pauseResumeText = document.getElementById('pauseResumeText');
+// ✅ REMOVED: statusCard, statusSkeleton, statusReal, statusSvg, statusTitle, 
+//    statusDesc, pauseResumeBtn, pauseResumeText
 const autoRepliesToggle = document.getElementById('autoRepliesToggle');
 const autoRepliesLabel = document.getElementById('autoRepliesLabel');
 const followUpToggle = document.getElementById('followUpToggle');
@@ -40,7 +34,7 @@ const removeScheduleDesc = document.getElementById('removeScheduleDesc');
 const cancelRemoveBtn = document.getElementById('cancelRemoveBtn');
 const confirmRemoveBtn = document.getElementById('confirmRemoveBtn');
 
-// ✅ NEW: Inline schedule editor modal elements
+// Inline schedule editor modal elements
 const scheduleEditorOverlay = document.getElementById('scheduleEditorOverlay');
 const closeScheduleEditor = document.getElementById('closeScheduleEditor');
 const editorSubtitle = document.getElementById('editorSubtitle');
@@ -58,18 +52,10 @@ const confirmScheduleText = document.getElementById('confirmScheduleText');
 
 // State
 let currentSchedules = [];
-let automationState = 'off';
 let userSettings = {};
 let countdownIntervals = {};
 let pendingRemovalId = null;
-let editingScheduleId = null; // Track which schedule is being edited
-
-// SVG Icons
-const ICONS = {
-    off: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-    on: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
-    paused: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
-};
+let editingScheduleId = null;
 
 const BULK_ICONS = {
     pause: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
@@ -85,7 +71,7 @@ const ACTION_ICONS = {
 
 // ════════════════════════════════════════════
 // NAVIGATION
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 if (backToAlertsBtn) {
     backToAlertsBtn.addEventListener('click', () => window.history.back());
 }
@@ -96,7 +82,6 @@ if (backToAlertsBtn) {
 async function loadAutomationState() {
     if (!token) {
         showRealContent();
-        setAutomationState('off');
         renderActiveSchedules();
         return;
     }
@@ -117,13 +102,6 @@ async function loadAutomationState() {
         } else {
             currentSchedules = [];
         }
-
-        const hasPending = currentSchedules.some(s => s.status === 'pending');
-        const hasPaused = currentSchedules.some(s => s.status === 'paused');
-
-        if (hasPending) setAutomationState('on');
-        else if (hasPaused) setAutomationState('paused');
-        else setAutomationState('off');
 
         if (settingsRes && settingsRes.ok) {
             const userData = await settingsRes.json();
@@ -160,47 +138,17 @@ async function loadAutomationState() {
     } catch (err) {
         console.error('Error loading automation state:', err);
         showRealContent();
-        setAutomationState('off');
         renderActiveSchedules();
     }
 }
 
 function showRealContent() {
-    if (statusSkeleton) statusSkeleton.style.display = 'none';
-    if (statusReal) statusReal.style.display = 'flex';
+    // ✅ Only toggles schedules skeleton/content — no status card references
     if (schedulesSkeleton) schedulesSkeleton.style.display = 'none';
     if (schedulesContent) schedulesContent.style.display = 'block';
 }
 
-function setAutomationState(state) {
-    automationState = state;
-    statusCard.className = `status-card ${state}`;
-    statusSvg.innerHTML = ICONS[state];
-
-    switch (state) {
-        case 'on':
-            statusTitle.textContent = 'Automation is on';
-            statusDesc.textContent = `${currentSchedules.filter(s => s.status === 'pending').length} active schedules running`;
-            pauseResumeText.textContent = 'Pause all automation';
-            pauseResumeBtn.disabled = false;
-            break;
-        case 'paused':
-            statusTitle.textContent = 'Automation is paused';
-            statusDesc.textContent = 'Schedules are frozen and will resume when turned back on';
-            pauseResumeText.textContent = 'Resume all automation';
-            pauseResumeBtn.disabled = false;
-            break;
-        case 'off':
-        default:
-            statusTitle.textContent = 'Automation is off';
-            statusDesc.textContent = 'No automatic emails will be sent';
-            pauseResumeText.textContent = 'Pause all automation';
-            pauseResumeBtn.disabled = true;
-            break;
-    }
-
-    updateBulkToggleUI();
-}
+// ✅ REMOVED: setAutomationState() function entirely
 
 function updateBulkToggleUI() {
     if (!bulkScheduleToggleBtn || !bulkScheduleToggleText) return;
@@ -363,7 +311,6 @@ function openScheduleEditor(scheduleId) {
 
     editingScheduleId = scheduleId;
 
-    // Populate modal fields
     editorSubtitle.textContent = '1 approved email';
     
     const schedDate = new Date(schedule.scheduledAt);
@@ -384,7 +331,6 @@ function openScheduleEditor(scheduleId) {
     editorStopUnsub.checked = rules.stopOnUnsubscribe !== false;
     editorSkipMissing.checked = rules.skipMissingEmail !== false;
 
-    // Populate recipients list
     editorRecipientsList.innerHTML = `
         <div class="recipient-item">
             <div class="recipient-avatar">${escapeHtml(schedule.companyName.charAt(0).toUpperCase())}</div>
@@ -441,13 +387,11 @@ if (confirmScheduleBtn) {
             this.disabled = true;
             confirmScheduleText.textContent = 'Scheduling...';
 
-            // Delete old schedule first
             await fetch(`${BACKEND}/api/automation/schedule/${editingScheduleId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + token }
             });
 
-            // Create new schedule with updated values
             const payload = {
                 scheduledAt: scheduledDateTime.toISOString(),
                 timezone: editorTimezone.value,
@@ -526,39 +470,7 @@ if (bulkScheduleToggleBtn) {
     });
 }
 
-// ════════════════════════════════════════════
-// GLOBAL STATUS CARD PAUSE/RESUME
-// ════════════════════════════════════════════
-if (pauseResumeBtn) {
-    pauseResumeBtn.addEventListener('click', async function() {
-        if (!token || this.disabled) return;
-
-        const endpoint = automationState === 'on'
-            ? '/api/automation/pause'
-            : '/api/automation/resume';
-
-        try {
-            this.disabled = true;
-            pauseResumeText.textContent = automationState === 'on' ? 'Pausing...' : 'Resuming...';
-
-            const res = await fetch(`${BACKEND}${endpoint}`, {
-                method: 'PUT',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            await loadAutomationState();
-            showToast(`✅ Automation ${automationState === 'on' ? 'paused' : 'resumed'} successfully`, 'success');
-
-        } catch (err) {
-            console.error('Pause/Resume error:', err);
-            showToast(`❌ Failed to update automation`, 'error');
-        } finally {
-            this.disabled = false;
-        }
-    });
-}
+// ✅ REMOVED: Global status card pause/resume event listener entirely
 
 // ════════════════════════════════════════════
 // PER-LEAD ACTION HANDLERS
@@ -572,7 +484,7 @@ if (schedulesContent) {
 
         // ✅ DEBUG LOGS — Remove after confirming fix
         console.log('🔍 DEBUG - Button data-id:', JSON.stringify(rawScheduleId));
-        console.log('🔍 DEBUG - Button HTML:', actionBtn.outerHTML.substring(0, 400));
+        console.log(' DEBUG - Button HTML:', actionBtn.outerHTML.substring(0, 400));
         console.log(' DEBUG - Schedule IDs:', currentSchedules.map(s => ({
             _id_type: typeof s._id, _id_val: s._id,
             id_type: typeof s.id, id_val: s.id,
@@ -587,7 +499,7 @@ if (schedulesContent) {
 
         const scheduleId = rawScheduleId.trim();
 
-        // ✅ EDIT → Open inline schedule editor modal
+        // EDIT → Open inline schedule editor modal
         if (actionBtn.classList.contains('edit-btn')) {
             openScheduleEditor(scheduleId);
             return;
