@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// FIXED: Persistent Countdown + Standardized 'body' property
+// FIXED: Persistent Countdown + Standardized 'body' property + Paused Sync
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -146,6 +146,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     countdownIntervals[lead.email] = timerId;
                 }
             }
+
+            // ✅ NEW: Clear/update countdown badges for paused/cancelled/sent schedules
+            if (lead.scheduledAt && lead.scheduleStatus !== 'pending') {
+                const card = document.querySelector(`.lead-card[data-index="${index}"]`);
+                if (!card) return;
+
+                let statusBadge = card.querySelector('.status-label.scheduled');
+                if (statusBadge) {
+                    if (lead.scheduleStatus === 'paused') {
+                        statusBadge.textContent = 'Paused';
+                        statusBadge.classList.remove('scheduled');
+                        statusBadge.classList.add('paused-status');
+                    } else if (lead.scheduleStatus === 'sent') {
+                        statusBadge.textContent = 'Sent';
+                        statusBadge.classList.remove('scheduled');
+                        statusBadge.classList.add('sent');
+                    }
+                }
+            }
         });
     }
 
@@ -172,15 +191,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (matchingLead) {
                     // Update existing lead with schedule metadata
                     matchingLead.scheduledAt = schedule.scheduledAt;
-                    matchingLead.scheduleStatus = 'pending';
+                    matchingLead.scheduleStatus = schedule.status; // ✅ Use actual status (pending/paused)
                 } else {
                     // Create synthetic lead entry for scheduled-only contacts
-                    // This ensures countdown appears even if lead isn't in main list yet
                     allLeadsData.push({
                         email: schedule.leadEmail,
                         companyName: schedule.companyName,
                         scheduledAt: schedule.scheduledAt,
-                        scheduleStatus: 'pending',
+                        scheduleStatus: schedule.status,
                         emailStatus: 'verified'
                     });
                 }
