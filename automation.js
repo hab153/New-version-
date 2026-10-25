@@ -4,6 +4,8 @@ const token = localStorage.getItem('token');
 // ─ DOM Elements ──
 const backToAlertsBtn = document.getElementById('backToAlertsBtn');
 const statusCard = document.getElementById('statusCard');
+const statusSkeleton = document.getElementById('statusSkeleton');
+const statusReal = document.getElementById('statusReal');
 const statusSvg = statusCard.querySelector('.status-svg');
 const statusTitle = document.getElementById('statusTitle');
 const statusDesc = document.getElementById('statusDesc');
@@ -18,6 +20,7 @@ const bizHoursLabel = document.getElementById('bizHoursLabel');
 const dailyLimitValue = document.getElementById('dailyLimitValue');
 const paceValue = document.getElementById('paceValue');
 const schedulesContent = document.getElementById('schedulesContent');
+const schedulesSkeleton = document.getElementById('schedulesSkeleton');
 const emptyScheduleState = document.getElementById('emptyScheduleState');
 const disableAllBtn = document.getElementById('disableAllBtn');
 const warningModalOverlay = document.getElementById('warningModalOverlay');
@@ -26,38 +29,53 @@ const confirmDisableBtn = document.getElementById('confirmDisableBtn');
 const dailyLimitRow = document.getElementById('dailyLimitRow');
 const paceRow = document.getElementById('paceRow');
 
-// ✅ NEW: Inline bulk schedule toggle elements
+// Inline bulk toggle
 const bulkScheduleToggleBtn = document.getElementById('bulkScheduleToggleBtn');
 const bulkScheduleToggleText = document.getElementById('bulkScheduleToggleText');
 
-// ✅ NEW: Per-lead removal modal elements
+// Per-lead removal modal
 const removeScheduleModalOverlay = document.getElementById('removeScheduleModalOverlay');
 const removeScheduleTitle = document.getElementById('removeScheduleTitle');
 const removeScheduleDesc = document.getElementById('removeScheduleDesc');
 const cancelRemoveBtn = document.getElementById('cancelRemoveBtn');
 const confirmRemoveBtn = document.getElementById('confirmRemoveBtn');
 
+// ✅ NEW: Inline schedule editor modal elements
+const scheduleEditorOverlay = document.getElementById('scheduleEditorOverlay');
+const closeScheduleEditor = document.getElementById('closeScheduleEditor');
+const editorSubtitle = document.getElementById('editorSubtitle');
+const editorDateInput = document.getElementById('editorDateInput');
+const editorTimeInput = document.getElementById('editorTimeInput');
+const editorTimezone = document.getElementById('editorTimezone');
+const editorPace = document.getElementById('editorPace');
+const editorStopReply = document.getElementById('editorStopReply');
+const editorStopUnsub = document.getElementById('editorStopUnsub');
+const editorSkipMissing = document.getElementById('editorSkipMissing');
+const editorRecipientsList = document.getElementById('editorRecipientsList');
+const cancelEditorBtn = document.getElementById('cancelEditorBtn');
+const confirmScheduleBtn = document.getElementById('confirmScheduleBtn');
+const confirmScheduleText = document.getElementById('confirmScheduleText');
+
 // State
 let currentSchedules = [];
-let automationState = 'off'; // 'on' | 'paused' | 'off' — tracks ONLY scheduled outreach
+let automationState = 'off';
 let userSettings = {};
-let countdownIntervals = {}; // Map<scheduleId, intervalId>
-let pendingRemovalId = null; // Track which schedule is being confirmed for removal
+let countdownIntervals = {};
+let pendingRemovalId = null;
+let editingScheduleId = null; // Track which schedule is being edited
 
-// SVG Icons for Status States
+// SVG Icons
 const ICONS = {
     off: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
     on: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     paused: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
 };
 
-// BULK PAUSE ICONS
 const BULK_ICONS = {
     pause: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
     resume: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
 };
 
-// PER-LEAD ACTION ICONS
 const ACTION_ICONS = {
     edit: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>',
     pause: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
@@ -77,6 +95,7 @@ if (backToAlertsBtn) {
 // ═══════════════════════════════════════════
 async function loadAutomationState() {
     if (!token) {
+        showRealContent();
         setAutomationState('off');
         renderActiveSchedules();
         return;
@@ -92,7 +111,6 @@ async function loadAutomationState() {
             }).catch(() => null)
         ]);
 
-        // Process schedules
         if (schedRes && schedRes.ok) {
             const schedData = await schedRes.json();
             currentSchedules = schedData.schedules || [];
@@ -100,19 +118,13 @@ async function loadAutomationState() {
             currentSchedules = [];
         }
 
-        // Determine scheduled-outreach-only state
         const hasPending = currentSchedules.some(s => s.status === 'pending');
         const hasPaused = currentSchedules.some(s => s.status === 'paused');
 
-        if (hasPending) {
-            setAutomationState('on');
-        } else if (hasPaused) {
-            setAutomationState('paused');
-        } else {
-            setAutomationState('off');
-        }
+        if (hasPending) setAutomationState('on');
+        else if (hasPaused) setAutomationState('paused');
+        else setAutomationState('off');
 
-        // Process user settings
         if (settingsRes && settingsRes.ok) {
             const userData = await settingsRes.json();
             userSettings = userData.settings || userData.automation || {};
@@ -141,14 +153,23 @@ async function loadAutomationState() {
             }
         }
 
+        showRealContent();
         renderActiveSchedules();
         startAllCountdowns();
 
     } catch (err) {
         console.error('Error loading automation state:', err);
+        showRealContent();
         setAutomationState('off');
         renderActiveSchedules();
     }
+}
+
+function showRealContent() {
+    if (statusSkeleton) statusSkeleton.style.display = 'none';
+    if (statusReal) statusReal.style.display = 'flex';
+    if (schedulesSkeleton) schedulesSkeleton.style.display = 'none';
+    if (schedulesContent) schedulesContent.style.display = 'block';
 }
 
 function setAutomationState(state) {
@@ -178,7 +199,6 @@ function setAutomationState(state) {
             break;
     }
 
-    // ✅ Update inline bulk toggle button independently
     updateBulkToggleUI();
 }
 
@@ -229,7 +249,6 @@ function formatCountdown(ms) {
 }
 
 function startAllCountdowns() {
-    // Clear existing intervals
     Object.values(countdownIntervals).forEach(clearInterval);
     countdownIntervals = {};
 
@@ -241,7 +260,6 @@ function startAllCountdowns() {
 }
 
 function startSingleCountdown(schedule) {
-    // ✅ FIX: Use String() to extract raw hex ID from Mongoose ObjectId
     const safeId = String(schedule._id || schedule.id);
     const el = document.getElementById(`countdown-${safeId}`);
     if (!el) return;
@@ -258,10 +276,9 @@ function startSingleCountdown(schedule) {
 }
 
 // ════════════════════════════════════════════
-// RENDER ACTIVE SCHEDULES WITH PER-LEAD ACTIONS
+// RENDER ACTIVE SCHEDULES
 // ════════════════════════════════════════════
 function renderActiveSchedules() {
-    // Clear existing countdowns first
     Object.values(countdownIntervals).forEach(clearInterval);
     countdownIntervals = {};
 
@@ -269,7 +286,6 @@ function renderActiveSchedules() {
 
     if (!hasAny) {
         emptyScheduleState.style.display = 'flex';
-        // Remove any previously rendered schedule items
         const existingItems = schedulesContent.querySelectorAll('.schedule-item');
         existingItems.forEach(item => item.remove());
         updateBulkToggleUI();
@@ -278,26 +294,20 @@ function renderActiveSchedules() {
 
     emptyScheduleState.style.display = 'none';
 
-    // Remove old items but keep empty state in DOM
     const existingItems = schedulesContent.querySelectorAll('.schedule-item');
     existingItems.forEach(item => item.remove());
 
-    // Build per-lead items
     currentSchedules.forEach(schedule => {
-        // ✅ CRITICAL FIX: Extract raw hex string from Mongoose ObjectId
-        // schedule._id is an ObjectId object; schedule.id may also be an object
         const safeId = String(schedule._id || schedule.id);
-        
         const isPaused = schedule.status === 'paused';
         const item = document.createElement('div');
         item.className = `schedule-item${isPaused ? ' paused' : ''}`;
-        item.dataset.scheduleId = safeId; // ✅ Store safe string ID
+        item.dataset.scheduleId = safeId;
 
         const btnLabel = isPaused ? 'Resume' : 'Pause';
         const btnIcon = isPaused ? ACTION_ICONS.resume : ACTION_ICONS.pause;
         const btnClass = isPaused ? 'resume-btn' : 'pause-btn';
 
-        // ✅ All data-id attributes now use safeId (raw hex string)
         item.innerHTML = `
             <div class="schedule-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -327,7 +337,6 @@ function renderActiveSchedules() {
 
         schedulesContent.appendChild(item);
 
-        // Start countdown if pending
         if (!isPaused) {
             startSingleCountdown(schedule);
         }
@@ -340,6 +349,146 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// ════════════════════════════════════════════
+// INLINE SCHEDULE EDITOR MODAL
+// ════════════════════════════════════════════
+function openScheduleEditor(scheduleId) {
+    const schedule = currentSchedules.find(s => {
+        const sid = String(s._id || s.id);
+        return sid === scheduleId;
+    });
+    if (!schedule) return;
+
+    editingScheduleId = scheduleId;
+
+    // Populate modal fields
+    editorSubtitle.textContent = '1 approved email';
+    
+    const schedDate = new Date(schedule.scheduledAt);
+    const yyyy = schedDate.getFullYear();
+    const mm = String(schedDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(schedDate.getDate()).padStart(2, '0');
+    editorDateInput.value = `${yyyy}-${mm}-${dd}`;
+    
+    const hh = String(schedDate.getHours()).padStart(2, '0');
+    const min = String(schedDate.getMinutes()).padStart(2, '0');
+    editorTimeInput.value = `${hh}:${min}`;
+    
+    editorTimezone.value = schedule.timezone || 'Africa/Lagos';
+    editorPace.value = String(schedule.paceMinutes || 5);
+    
+    const rules = schedule.safetyRules || {};
+    editorStopReply.checked = rules.stopOnReply !== false;
+    editorStopUnsub.checked = rules.stopOnUnsubscribe !== false;
+    editorSkipMissing.checked = rules.skipMissingEmail !== false;
+
+    // Populate recipients list
+    editorRecipientsList.innerHTML = `
+        <div class="recipient-item">
+            <div class="recipient-avatar">${escapeHtml(schedule.companyName.charAt(0).toUpperCase())}</div>
+            <div class="recipient-info">
+                <div class="recipient-name">${escapeHtml(schedule.companyName)}</div>
+                <div class="recipient-email">${escapeHtml(schedule.leadEmail)}</div>
+            </div>
+            <span class="recipient-status">Approved</span>
+        </div>
+    `;
+
+    confirmScheduleText.textContent = 'Schedule 1 email';
+    scheduleEditorOverlay.style.display = 'flex';
+}
+
+function closeScheduleEditorFn() {
+    scheduleEditorOverlay.style.display = 'none';
+    editingScheduleId = null;
+}
+
+if (closeScheduleEditor) {
+    closeScheduleEditor.addEventListener('click', closeScheduleEditorFn);
+}
+
+if (cancelEditorBtn) {
+    cancelEditorBtn.addEventListener('click', closeScheduleEditorFn);
+}
+
+if (scheduleEditorOverlay) {
+    scheduleEditorOverlay.addEventListener('click', function(e) {
+        if (e.target === scheduleEditorOverlay) closeScheduleEditorFn();
+    });
+}
+
+if (confirmScheduleBtn) {
+    confirmScheduleBtn.addEventListener('click', async function() {
+        if (!token || !editingScheduleId) return;
+
+        const dateVal = editorDateInput.value;
+        const timeVal = editorTimeInput.value;
+
+        if (!dateVal || !timeVal) {
+            showToast('❌ Please select both date and time', 'error');
+            return;
+        }
+
+        const scheduledDateTime = new Date(`${dateVal}T${timeVal}:00`);
+        if (scheduledDateTime <= new Date()) {
+            showToast(' Please select a future date and time', 'error');
+            return;
+        }
+
+        try {
+            this.disabled = true;
+            confirmScheduleText.textContent = 'Scheduling...';
+
+            // Delete old schedule first
+            await fetch(`${BACKEND}/api/automation/schedule/${editingScheduleId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            // Create new schedule with updated values
+            const payload = {
+                scheduledAt: scheduledDateTime.toISOString(),
+                timezone: editorTimezone.value,
+                paceMinutes: parseInt(editorPace.value) || 5,
+                safetyRules: {
+                    stopOnReply: editorStopReply.checked,
+                    stopOnUnsubscribe: editorStopUnsub.checked,
+                    skipMissingEmail: editorSkipMissing.checked
+                },
+                leads: [{
+                    companyName: currentSchedules.find(s => String(s._id || s.id) === editingScheduleId)?.companyName || '',
+                    email: currentSchedules.find(s => String(s._id || s.id) === editingScheduleId)?.leadEmail || '',
+                    subject: currentSchedules.find(s => String(s._id || s.id) === editingScheduleId)?.subject || 'Scheduled outreach',
+                    body: currentSchedules.find(s => String(s._id || s.id) === editingScheduleId)?.body || '',
+                    approved: true
+                }]
+            };
+
+            const res = await fetch(`${BACKEND}/api/leads/schedule`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            closeScheduleEditorFn();
+            await loadAutomationState();
+            showToast('✅ Schedule updated successfully', 'success');
+
+        } catch (err) {
+            console.error('Edit schedule error:', err);
+            showToast('❌ Failed to update schedule', 'error');
+        } finally {
+            this.disabled = false;
+            confirmScheduleText.textContent = 'Schedule 1 email';
+        }
+    });
 }
 
 // ════════════════════════════════════════════
@@ -366,10 +515,7 @@ if (bulkScheduleToggleBtn) {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
             await loadAutomationState();
-            showToast(
-                `✅ All schedules ${hasPaused ? 'resumed' : 'paused'} successfully`,
-                'success'
-            );
+            showToast(`✅ All schedules ${hasPaused ? 'resumed' : 'paused'} successfully`, 'success');
 
         } catch (err) {
             console.error('Bulk toggle error:', err);
@@ -403,10 +549,7 @@ if (pauseResumeBtn) {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
             await loadAutomationState();
-            showToast(
-                `✅ Automation ${automationState === 'on' ? 'paused' : 'resumed'} successfully`,
-                'success'
-            );
+            showToast(`✅ Automation ${automationState === 'on' ? 'paused' : 'resumed'} successfully`, 'success');
 
         } catch (err) {
             console.error('Pause/Resume error:', err);
@@ -418,8 +561,7 @@ if (pauseResumeBtn) {
 }
 
 // ════════════════════════════════════════════
-// ✅ FIXED: PER-LEAD ACTION HANDLERS (Event Delegation)
-// Uses class-based detection + validated string IDs + DEBUG LOGS
+// PER-LEAD ACTION HANDLERS
 // ════════════════════════════════════════════
 if (schedulesContent) {
     schedulesContent.addEventListener('click', async function(e) {
@@ -427,51 +569,31 @@ if (schedulesContent) {
         if (!actionBtn) return;
 
         const rawScheduleId = actionBtn.dataset.id;
-        
-        // ✅ TEMPORARY DIAGNOSTIC LOGS — REMOVE AFTER CONFIRMING FIX
-        console.log('🔍 DEBUG - Button data-id value:', JSON.stringify(rawScheduleId));
-        console.log('🔍 DEBUG - Button outerHTML (first 400 chars):', actionBtn.outerHTML.substring(0, 400));
-        console.log('🔍 DEBUG - All currentSchedules IDs:', currentSchedules.map(s => ({
-            _id_type: typeof s._id,
-            _id_value: s._id,
-            id_type: typeof s.id,
-            id_value: s.id,
-            safeId: String(s._id || s.id)
+
+        // ✅ DEBUG LOGS — Remove after confirming fix
+        console.log('🔍 DEBUG - Button data-id:', JSON.stringify(rawScheduleId));
+        console.log('🔍 DEBUG - Button HTML:', actionBtn.outerHTML.substring(0, 400));
+        console.log(' DEBUG - Schedule IDs:', currentSchedules.map(s => ({
+            _id_type: typeof s._id, _id_val: s._id,
+            id_type: typeof s.id, id_val: s.id,
+            safe: String(s._id || s.id)
         })));
 
-        // Existing validation (keep unchanged)
         if (!rawScheduleId || typeof rawScheduleId !== 'string' || rawScheduleId === '[object Object]') {
-            console.error('❌ Invalid schedule ID detected:', rawScheduleId);
-            showToast('❌ Schedule ID error. Please refresh the page.', 'error');
+            console.error('❌ Invalid schedule ID:', rawScheduleId);
+            showToast('❌ Schedule ID error. Please refresh.', 'error');
             return;
         }
-        
+
         const scheduleId = rawScheduleId.trim();
 
-        // ✅ FIX #1: EDIT → Navigate to leads.html with schedule pre-populated via URL params
+        // ✅ EDIT → Open inline schedule editor modal
         if (actionBtn.classList.contains('edit-btn')) {
-            // Find schedule by matching the safe string ID
-            const schedule = currentSchedules.find(s => {
-                const sid = String(s._id || s.id);
-                return sid === scheduleId;
-            });
-            if (!schedule) return;
-
-            // Redirect to leads.html with schedule edit params
-            const params = new URLSearchParams({
-                editScheduleId: scheduleId,
-                companyName: schedule.companyName,
-                leadEmail: schedule.leadEmail,
-                subject: encodeURIComponent(schedule.subject || ''),
-                body: encodeURIComponent(schedule.body || ''),
-                scheduledAt: schedule.scheduledAt,
-                paceMinutes: schedule.paceMinutes || 5
-            });
-            window.location.href = `leads.html?${params.toString()}`;
+            openScheduleEditor(scheduleId);
             return;
         }
 
-        // ✅ FIX #2 & #3: Detect action by CSS class instead of dataset.action
+        // PAUSE / RESUME
         if (actionBtn.classList.contains('pause-btn') || actionBtn.classList.contains('resume-btn')) {
             const isPaused = actionBtn.classList.contains('resume-btn');
             const endpoint = isPaused
@@ -502,8 +624,8 @@ if (schedulesContent) {
             return;
         }
 
+        // REMOVE
         if (actionBtn.classList.contains('remove-btn')) {
-            // Find schedule by matching the safe string ID
             const schedule = currentSchedules.find(s => {
                 const sid = String(s._id || s.id);
                 return sid === scheduleId;
@@ -550,13 +672,11 @@ if (confirmRemoveBtn) {
             removeScheduleModalOverlay.style.display = 'none';
             pendingRemovalId = null;
 
-            // Backend already cleared Lead.scheduledAt & Lead.scheduleStatus via $unset
-            // Just reload to reflect updated state
             await loadAutomationState();
-            showToast(`️ Schedule for ${data.companyName || 'lead'} removed successfully`, 'info');
+            showToast(`️ Schedule for ${data.companyName || 'lead'} removed`, 'info');
 
         } catch (err) {
-            console.error('Remove schedule error:', err);
+            console.error('Remove error:', err);
             showToast('❌ Failed to remove schedule', 'error');
         } finally {
             this.disabled = false;
@@ -565,7 +685,6 @@ if (confirmRemoveBtn) {
     });
 }
 
-// Close removal modal on overlay click
 if (removeScheduleModalOverlay) {
     removeScheduleModalOverlay.addEventListener('click', function(e) {
         if (e.target === removeScheduleModalOverlay) {
@@ -576,7 +695,7 @@ if (removeScheduleModalOverlay) {
 }
 
 // ═══════════════════════════════════════════
-// TOGGLE HANDLERS (Auto-replies, Follow-ups, Business Hours)
+// TOGGLE HANDLERS
 // ════════════════════════════════════════════
 if (autoRepliesToggle) {
     autoRepliesToggle.addEventListener('change', async function() {
@@ -621,87 +740,65 @@ if (businessHoursToggle) {
         } catch (err) {
             this.checked = !newState;
             bizHoursLabel.textContent = !newState ? 'On' : 'Off';
-            showToast('❌ Failed to save setting', 'error');
+            showToast(' Failed to save setting', 'error');
         }
     });
 }
 
 async function saveUserSetting(key, value) {
-    // TODO: Replace with actual settings API endpoint
     await new Promise(resolve => setTimeout(resolve, 300));
     userSettings[key] = value;
 }
 
 // ════════════════════════════════════════════
-// SENDING LIMITS ROW CLICK HANDLERS
+// SENDING LIMITS & SAFETY RULES
 // ════════════════════════════════════════════
 if (dailyLimitRow) {
-    dailyLimitRow.addEventListener('click', function() {
-        showToast('ℹ️ Daily limit editor coming soon', 'info');
-    });
+    dailyLimitRow.addEventListener('click', () => showToast('ℹ️ Daily limit editor coming soon', 'info'));
 }
-
 if (paceRow) {
-    paceRow.addEventListener('click', function() {
-        showToast('ℹ️ Pace selector coming soon', 'info');
-    });
+    paceRow.addEventListener('click', () => showToast('ℹ️ Pace selector coming soon', 'info'));
 }
 
-// ════════════════════════════════════════════
-// SAFETY RULES HANDLERS
-// ════════════════════════════════════════════
-document.querySelectorAll('.safety-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', async function() {
+document.querySelectorAll('.safety-checkbox').forEach(cb => {
+    cb.addEventListener('change', async function() {
         if (!token) return;
         const rule = this.dataset.rule;
         const isEnabled = this.checked;
-
         try {
-            // TODO: Connect to actual safety rules API
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(r => setTimeout(r, 200));
             const labelEl = this.nextElementSibling?.nextElementSibling;
-            showToast(`✅ "${labelEl ? labelEl.textContent : rule}" ${isEnabled ? 'enabled' : 'disabled'}`, 'success');
+            showToast(`✅ "${labelEl?.textContent || rule}" ${isEnabled ? 'enabled' : 'disabled'}`, 'success');
         } catch (err) {
             this.checked = !isEnabled;
-            showToast(' Failed to update safety rule', 'error');
+            showToast('❌ Failed to update safety rule', 'error');
         }
     });
 });
 
 // ═══════════════════════════════════════════
-// DISABLE ALL AUTOMATION HANDLER
+// DISABLE ALL AUTOMATION
 // ═══════════════════════════════════════════
 if (disableAllBtn) {
-    disableAllBtn.addEventListener('click', function() {
-        warningModalOverlay.style.display = 'flex';
-    });
+    disableAllBtn.addEventListener('click', () => warningModalOverlay.style.display = 'flex');
 }
-
 if (cancelWarningBtn) {
-    cancelWarningBtn.addEventListener('click', function() {
-        warningModalOverlay.style.display = 'none';
-    });
+    cancelWarningBtn.addEventListener('click', () => warningModalOverlay.style.display = 'none');
 }
-
 if (confirmDisableBtn) {
     confirmDisableBtn.addEventListener('click', async function() {
         if (!token) return;
-
         try {
             this.disabled = true;
             this.textContent = 'Disabling...';
-
             const res = await fetch(`${BACKEND}/api/automation/cancel`, {
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + token }
             });
-
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
             warningModalOverlay.style.display = 'none';
             await loadAutomationState();
-            showToast('️ All automation disabled and schedules cancelled', 'info');
-
+            showToast('🗑️ All automation disabled', 'info');
         } catch (err) {
             console.error('Disable error:', err);
             showToast('❌ Failed to disable automation', 'error');
@@ -711,17 +808,13 @@ if (confirmDisableBtn) {
         }
     });
 }
-
-// Close global warning modal on overlay click
 if (warningModalOverlay) {
     warningModalOverlay.addEventListener('click', function(e) {
-        if (e.target === warningModalOverlay) {
-            warningModalOverlay.style.display = 'none';
-        }
+        if (e.target === warningModalOverlay) warningModalOverlay.style.display = 'none';
     });
 }
 
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // TOAST UTILITY
 // ═══════════════════════════════════════════
 function showToast(message, type, duration) {
@@ -743,29 +836,17 @@ function showToast(message, type, duration) {
 
     const color = colors[type] || colors.info;
     Object.assign(toast.style, {
-        background: color.bg,
-        border: '1px solid ' + color.border,
-        color: color.text,
-        position: 'fixed',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        padding: '12px 24px',
-        borderRadius: '10px',
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '14px',
-        fontWeight: '600',
-        zIndex: '9999',
-        backdropFilter: 'blur(10px)'
+        background: color.bg, border: '1px solid ' + color.border, color: color.text,
+        position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
+        padding: '12px 24px', borderRadius: '10px', fontFamily: 'Inter, sans-serif',
+        fontSize: '14px', fontWeight: '600', zIndex: '9999', backdropFilter: 'blur(10px)'
     });
 
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), duration);
 }
 
-// ════════════════════════════════════════════
 // CLEANUP ON UNLOAD
-// ════════════════════════════════════════════
 window.addEventListener('beforeunload', function() {
     Object.values(countdownIntervals).forEach(clearInterval);
     countdownIntervals = {};
