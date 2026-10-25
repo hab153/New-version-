@@ -44,20 +44,8 @@
             </div>
         </div>
 
-        <!-- ✅ UPDATED: STATUS CARD WITH SKELETON -->
+        <!-- ✅ UPDATED: STATUS CARD - NO SKELETON, ONLY REAL CONTENT -->
         <div class="status-card" id="statusCard">
-            <!-- Skeleton State -->
-            <div class="status-skeleton" id="statusSkeleton">
-                <div class="skel-circle"></div>
-                <div class="skel-divider"></div>
-                <div class="skel-info">
-                    <div class="skel-line skel-title"></div>
-                    <div class="skel-line skel-desc"></div>
-                </div>
-                <div class="skel-btn"></div>
-            </div>
-            
-            <!-- Real Content (hidden until loaded) -->
             <div class="status-real" id="statusReal" style="display:none;">
                 <div class="status-icon-wrapper">
                     <div class="status-glow"></div>
@@ -186,7 +174,7 @@
             </div>
         </section>
 
-        <!-- ✅ UPDATED: ACTIVE SCHEDULES WITH SKELETON + INLINE EDITOR MODAL -->
+        <!-- ACTIVE SCHEDULES WITH SKELETON + INLINE EDITOR MODAL -->
         <section class="schedules-card">
             <div class="card-heading-row">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F5F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -284,7 +272,7 @@
         </div>
     </div>
 
-    <!-- ✅ NEW: Inline Schedule Editor Modal (Matches Spec Exactly) -->
+    <!-- Inline Schedule Editor Modal -->
     <div class="modal-overlay" id="scheduleEditorOverlay" style="display: none;">
         <div class="modal-content schedule-editor-modal">
             <button class="close-modal" id="closeScheduleEditor">
@@ -356,9 +344,7 @@
                 </label>
             </div>
             
-            <div class="editor-recipients" id="editorRecipientsList">
-                <!-- Dynamically populated -->
-            </div>
+            <div class="editor-recipients" id="editorRecipientsList"></div>
             
             <p class="editor-footer-note">You can cancel scheduled emails before they send</p>
             
@@ -403,4 +389,4 @@
     <script src="session-check.js"></script>
     <script src="automation.js"></script>
 </body>
-    </html>
+                                                                          </html>
