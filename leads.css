@@ -1,4 +1,4 @@
-/* ─ RESET & BASE ── */
+/* ─ RESET & BASE ─ */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -301,7 +301,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* ── 8. LEAD RESULTS LIST ── */
+/* ─ 8. LEAD RESULTS LIST ── */
 .leads-list {
     display: flex;
     flex-direction: column;
@@ -501,6 +501,17 @@ body {
     color: #F87171;
 }
 
+/* ✅ NEW: Paused Status Badge */
+.status-label.paused-status {
+    background-color: rgba(255, 184, 77, 0.15);
+    color: #FFB84D;
+    border: 1px solid rgba(255, 184, 77, 0.3);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
 .card-right {
     display: flex;
     flex-direction: column;
@@ -628,7 +639,7 @@ body {
     }
 }
 
-/* ── 10. BULK-ACTION PANEL ── */
+/* ─ 10. BULK-ACTION PANEL ─ */
 .bulk-panel {
     position: fixed;
     bottom: 70px;
@@ -874,7 +885,7 @@ body {
 
 /* ═════════════════════════════════════════
    CARD ACTION MODAL
-   ══════════════════════════════════════════ */
+   ═════════════════════════════════════════ */
 
 .card-action-modal {
     max-width: 400px;
@@ -1448,7 +1459,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* ══════════════════════════════════════════
+/* ═════════════════════════════════════════
    DYNAMIC COMPANY LIST IN REVIEW SHEET
    ══════════════════════════════════════════ */
 
