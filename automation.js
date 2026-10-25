@@ -3,39 +3,39 @@ const token = localStorage.getItem('token');
 
 // DOM Elements
 const backToAlertsBtn = document.getElementById('backToAlertsBtn');
-const cardSkeleton = document.getElementById('cardSkeleton');
-const cardContent = document.getElementById('cardContent');
-const scheduleCount = document.getElementById('scheduleCount');
-const nextSendTime = document.getElementById('nextSendTime');
-const emptyState = document.getElementById('emptyState');
-const automationToggle = document.getElementById('automationToggle');
-const toggleInput = document.getElementById('toggleInput');
-const scheduleCard = document.getElementById('scheduleCard');
-const countdownDisplay = document.getElementById('countdownDisplay');
-
-// Warning Modal Elements
+const statusCard = document.getElementById('statusCard');
+const statusIcon = document.getElementById('statusIcon');
+const statusTitle = document.getElementById('statusTitle');
+const statusDesc = document.getElementById('statusDesc');
+const pauseResumeBtn = document.getElementById('pauseResumeBtn');
+const pauseResumeText = document.getElementById('pauseResumeText');
+const autoRepliesToggle = document.getElementById('autoRepliesToggle');
+const followUpToggle = document.getElementById('followUpToggle');
+const businessHoursToggle = document.getElementById('businessHoursToggle');
+const schedulesList = document.getElementById('schedulesList');
+const disableAllBtn = document.getElementById('disableAllBtn');
 const warningModalOverlay = document.getElementById('warningModalOverlay');
 const cancelWarningBtn = document.getElementById('cancelWarningBtn');
-const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+const confirmDisableBtn = document.getElementById('confirmDisableBtn');
 
 // State
-let countdownInterval = null;
 let currentSchedules = [];
-let isPaused = false;
+let isAutomationOn = false;
 
 // ─ Navigation ──
 if (backToAlertsBtn) {
     backToAlertsBtn.addEventListener('click', () => window.history.back());
 }
 
-// ── Fetch Schedules on Load ──
-async function loadSchedules() {
+// ── Load Automation State ──
+async function loadAutomationState() {
     if (!token) {
-        showEmptyState();
+        setAutomationOff();
         return;
     }
 
     try {
+        // Fetch pending schedules to determine state
         const res = await fetch(`${BACKEND}/api/leads/schedules/pending`, {
             headers: { 'Authorization': 'Bearer ' + token }
         });
@@ -45,175 +45,154 @@ async function loadSchedules() {
         const data = await res.json();
         currentSchedules = data.schedules || [];
 
-        // Check if any schedules are paused
-        isPaused = currentSchedules.some(s => s.status === 'paused');
+        // Determine if automation is on (has pending schedules) or paused/off
+        const hasPending = currentSchedules.some(s => s.status === 'pending');
+        const hasPaused = currentSchedules.some(s => s.status === 'paused');
 
-        renderScheduleCard();
-        startCountdownTimer();
+        if (hasPending) {
+            setAutomationOn();
+        } else if (hasPaused) {
+            setAutomationPaused();
+        } else {
+            setAutomationOff();
+        }
+
+        renderActiveSchedules();
 
     } catch (err) {
-        console.error('Error loading schedules:', err);
-        showEmptyState();
-    } finally {
-        cardSkeleton.style.display = 'none';
-        cardContent.style.display = 'flex';
+        console.error('Error loading automation state:', err);
+        setAutomationOff();
     }
 }
 
-function renderScheduleCard() {
-    const activeCount = currentSchedules.filter(s => s.status === 'pending').length;
-    const pausedCount = currentSchedules.filter(s => s.status === 'paused').length;
-
-    if (currentSchedules.length === 0) {
-        showEmptyState();
-        toggleInput.checked = false;
-        toggleInput.disabled = true;
-        return;
-    }
-
-    toggleInput.disabled = false;
-    emptyState.style.display = 'none';
-    countdownDisplay.style.display = 'block';
-
-    if (isPaused) {
-        scheduleCard.classList.add('paused');
-        scheduleCount.textContent = `${pausedCount} paused, ${activeCount} active`;
-        nextSendTime.textContent = '--:--';
-        toggleInput.checked = false;
-    } else {
-        scheduleCard.classList.remove('paused');
-        scheduleCount.textContent = `${activeCount} active schedule${activeCount !== 1 ? 's' : ''}`;
-        toggleInput.checked = true;
-    }
+function setAutomationOn() {
+    isAutomationOn = true;
+    statusCard.className = 'status-card active';
+    statusIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>';
+    statusTitle.textContent = 'Automation is on';
+    statusDesc.textContent = `${currentSchedules.filter(s => s.status === 'pending').length} active schedules running`;
+    pauseResumeText.textContent = 'Pause all automation';
+    pauseResumeBtn.querySelector('svg').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
 }
 
-function showEmptyState() {
-    emptyState.style.display = 'flex';
-    countdownDisplay.style.display = 'none';
-    scheduleCount.textContent = 'No active schedules';
-    nextSendTime.textContent = '--:--';
-    toggleInput.checked = false;
-    toggleInput.disabled = true;
+function setAutomationPaused() {
+    isAutomationOn = false;
+    statusCard.className = 'status-card paused';
+    statusIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+    statusTitle.textContent = 'Automation is paused';
+    statusDesc.textContent = 'Schedules are frozen and will resume when turned back on';
+    pauseResumeText.textContent = 'Resume all automation';
+    pauseResumeBtn.querySelector('svg').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
 }
 
-// ── Countdown Timer ──
-function startCountdownTimer() {
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    if (isPaused || currentSchedules.length === 0) {
-        nextSendTime.textContent = '--:--';
-        return;
-    }
-
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
+function setAutomationOff() {
+    isAutomationOn = false;
+    statusCard.className = 'status-card';
+    statusIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    statusTitle.textContent = 'Automation is off';
+    statusDesc.textContent = 'No automatic emails will be sent';
+    pauseResumeText.textContent = 'Pause all automation';
+    pauseResumeBtn.querySelector('svg').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
 }
 
-function updateCountdown() {
+function renderActiveSchedules() {
     const pendingSchedules = currentSchedules.filter(s => s.status === 'pending');
+    
     if (pendingSchedules.length === 0) {
-        nextSendTime.textContent = '--:--';
+        schedulesList.innerHTML = `
+            <div class="empty-schedule">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#92939D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h4 class="empty-title">No active schedules</h4>
+                <p class="empty-desc">Approved scheduled outreach will appear here</p>
+            </div>
+        `;
         return;
     }
 
-    // Find earliest scheduled time
-    const earliest = pendingSchedules.reduce((min, s) => {
-        const time = new Date(s.scheduledAt).getTime();
-        return time < min ? time : min;
-    }, Infinity);
-
-    const now = Date.now();
-    const diff = earliest - now;
-
-    if (diff <= 0) {
-        nextSendTime.textContent = 'Sending...';
-        return;
-    }
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    let timeStr = '';
-    if (hours > 0) timeStr += `${hours}h `;
-    if (minutes > 0 || hours > 0) timeStr += `${minutes}m `;
-    timeStr += `${seconds}s`;
-
-    nextSendTime.textContent = timeStr.trim();
+    schedulesList.innerHTML = pendingSchedules.map(s => `
+        <div class="schedule-item">
+            <div class="schedule-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="schedule-info">
+                <h4 class="schedule-title">${s.companyName}</h4>
+                <p class="schedule-desc">${new Date(s.scheduledAt).toLocaleString()}</p>
+            </div>
+        </div>
+    `).join('');
 }
 
-// ── Toggle Handler ──
-if (automationToggle) {
-    toggleInput.addEventListener('change', async function() {
-        const shouldBeOn = this.checked;
+// ── Pause/Resume Handler ──
+if (pauseResumeBtn) {
+    pauseResumeBtn.addEventListener('click', async function() {
+        if (!token) return;
 
-        if (shouldBeOn && isPaused) {
-            // Resume
-            await handleResume();
-        } else if (!shouldBeOn && !isPaused) {
-            // Show warning before turning off
-            this.checked = true; // Revert temporarily
-            warningModalOverlay.style.display = 'flex';
+        const endpoint = isAutomationOn ? '/api/automation/pause' : '/api/automation/resume';
+        const method = 'PUT';
+
+        try {
+            pauseResumeBtn.disabled = true;
+            pauseResumeText.textContent = isAutomationOn ? 'Pausing...' : 'Resuming...';
+
+            const res = await fetch(`${BACKEND}${endpoint}`, {
+                method,
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!res.ok) throw new Error(`Failed to ${isAutomationOn ? 'pause' : 'resume'}`);
+
+            await loadAutomationState();
+            showToast(`✅ Automation ${isAutomationOn ? 'paused' : 'resumed'} successfully`, 'success');
+
+        } catch (err) {
+            console.error('Error:', err);
+            showToast(`❌ Failed to ${isAutomationOn ? 'pause' : 'resume'} automation`, 'error');
+        } finally {
+            pauseResumeBtn.disabled = false;
         }
     });
 }
 
-async function handleResume() {
-    try {
-        toggleInput.disabled = true;
-        const res = await fetch(`${BACKEND}/api/automation/resume`, {
-            method: 'PUT',
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-
-        if (!res.ok) throw new Error('Failed to resume');
-
-        isPaused = false;
-        await loadSchedules();
-        showToast('✅ Automation resumed successfully', 'success');
-
-    } catch (err) {
-        console.error('Resume error:', err);
-        showToast('❌ Failed to resume automation', 'error');
-        toggleInput.checked = false;
-    } finally {
-        toggleInput.disabled = false;
-    }
+// ── Disable All Handler ──
+if (disableAllBtn) {
+    disableAllBtn.addEventListener('click', function() {
+        warningModalOverlay.style.display = 'flex';
+    });
 }
 
-// ── Warning Modal Handlers ──
 if (cancelWarningBtn) {
-    cancelWarningBtn.addEventListener('click', () => {
+    cancelWarningBtn.addEventListener('click', function() {
         warningModalOverlay.style.display = 'none';
     });
 }
 
-if (confirmCancelBtn) {
-    confirmCancelBtn.addEventListener('click', async () => {
+if (confirmDisableBtn) {
+    confirmDisableBtn.addEventListener('click', async function() {
+        if (!token) return;
+
         try {
-            confirmCancelBtn.disabled = true;
-            confirmCancelBtn.textContent = 'Cancelling...';
+            confirmDisableBtn.disabled = true;
+            confirmDisableBtn.textContent = 'Disabling...';
 
             const res = await fetch(`${BACKEND}/api/automation/cancel`, {
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + token }
             });
 
-            if (!res.ok) throw new Error('Failed to cancel');
+            if (!res.ok) throw new Error('Failed to disable');
 
             warningModalOverlay.style.display = 'none';
-            currentSchedules = [];
-            isPaused = false;
-            renderScheduleCard();
-            startCountdownTimer();
-            showToast('🗑️ All schedules cancelled', 'info');
+            await loadAutomationState();
+            showToast('️ All automation disabled and schedules cancelled', 'info');
 
         } catch (err) {
-            console.error('Cancel error:', err);
-            showToast('❌ Failed to cancel schedules', 'error');
+            console.error('Error:', err);
+            showToast(' Failed to disable automation', 'error');
         } finally {
-            confirmCancelBtn.disabled = false;
-            confirmCancelBtn.textContent = 'Yes, Cancel All';
+            confirmDisableBtn.disabled = false;
+            confirmDisableBtn.textContent = 'Yes, Disable All';
         }
     });
 }
@@ -268,4 +247,4 @@ function showToast(message, type, duration) {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', loadSchedules);
+document.addEventListener('DOMContentLoaded', loadAutomationState);
