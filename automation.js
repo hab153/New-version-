@@ -419,7 +419,7 @@ if (pauseResumeBtn) {
 
 // ════════════════════════════════════════════
 // ✅ FIXED: PER-LEAD ACTION HANDLERS (Event Delegation)
-// Uses class-based detection + validated string IDs
+// Uses class-based detection + validated string IDs + DEBUG LOGS
 // ════════════════════════════════════════════
 if (schedulesContent) {
     schedulesContent.addEventListener('click', async function(e) {
@@ -428,9 +428,20 @@ if (schedulesContent) {
 
         const rawScheduleId = actionBtn.dataset.id;
         
-        // ✅ CRITICAL VALIDATION: Ensure ID is a valid hex string, not "[object Object]"
+        // ✅ TEMPORARY DIAGNOSTIC LOGS — REMOVE AFTER CONFIRMING FIX
+        console.log('🔍 DEBUG - Button data-id value:', JSON.stringify(rawScheduleId));
+        console.log('🔍 DEBUG - Button outerHTML (first 400 chars):', actionBtn.outerHTML.substring(0, 400));
+        console.log('🔍 DEBUG - All currentSchedules IDs:', currentSchedules.map(s => ({
+            _id_type: typeof s._id,
+            _id_value: s._id,
+            id_type: typeof s.id,
+            id_value: s.id,
+            safeId: String(s._id || s.id)
+        })));
+
+        // Existing validation (keep unchanged)
         if (!rawScheduleId || typeof rawScheduleId !== 'string' || rawScheduleId === '[object Object]') {
-            console.error('Invalid schedule ID detected:', rawScheduleId);
+            console.error('❌ Invalid schedule ID detected:', rawScheduleId);
             showToast('❌ Schedule ID error. Please refresh the page.', 'error');
             return;
         }
@@ -652,7 +663,7 @@ document.querySelectorAll('.safety-checkbox').forEach(checkbox => {
             showToast(`✅ "${labelEl ? labelEl.textContent : rule}" ${isEnabled ? 'enabled' : 'disabled'}`, 'success');
         } catch (err) {
             this.checked = !isEnabled;
-            showToast('❌ Failed to update safety rule', 'error');
+            showToast(' Failed to update safety rule', 'error');
         }
     });
 });
@@ -689,7 +700,7 @@ if (confirmDisableBtn) {
 
             warningModalOverlay.style.display = 'none';
             await loadAutomationState();
-            showToast('🗑️ All automation disabled and schedules cancelled', 'info');
+            showToast('️ All automation disabled and schedules cancelled', 'info');
 
         } catch (err) {
             console.error('Disable error:', err);
