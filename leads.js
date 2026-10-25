@@ -1,11 +1,11 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// FIXED: Persistent Countdown + Standardized 'body' property + Paused Sync
+// FIXED: Persistent Countdown + Paused Status Visibility
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    //  DOM Elements ──
+    // DOM Elements ──
     const leadsList = document.getElementById('leadsList');
     const selectAllCheckbox = document.getElementById('selectAll');
     const selectCountSpan = document.querySelector('.select-count');
@@ -96,18 +96,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const BACKEND = 'https://skylineapp-backend-file.onrender.com';
     const token = localStorage.getItem('token');
 
-    // ═══════════════════════════════════════════════════════════
-    // LIVE COUNTDOWN LOGIC (PERSISTENT ACROSS REFRESH)
-    // ════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════
+    // LIVE COUNTDOWN LOGIC WITH VISIBLE PAUSED STATUS
+    // ═══════════════════════════════════════════════════════
     function startCountdowns() {
         Object.values(countdownIntervals).forEach(clearInterval);
         countdownIntervals = {};
 
         allLeadsData.forEach((lead, index) => {
-            if (lead.scheduledAt && lead.scheduleStatus === 'pending') {
-                const card = document.querySelector(`.lead-card[data-index="${index}"]`);
-                if (!card) return;
+            const card = document.querySelector(`.lead-card[data-index="${index}"]`);
+            if (!card) return;
 
+            // ✅ HANDLE PAUSED: Show visible "Paused" badge, skip timer
+            if (lead.scheduledAt && lead.scheduleStatus === 'paused') {
+                let statusBadge = card.querySelector('.status-label.scheduled');
+                
+                if (!statusBadge) {
+                    const rightCol = card.querySelector('.card-right');
+                    if (rightCol) {
+                        statusBadge = document.createElement('span');
+                        statusBadge.className = 'status-label scheduled';
+                        rightCol.insertBefore(statusBadge, rightCol.firstChild);
+                    }
+                }
+
+                if (statusBadge) {
+                    statusBadge.textContent = '⏸ Paused';
+                    statusBadge.classList.remove('scheduled');
+                    statusBadge.classList.add('paused-status');
+                }
+                return; // Skip timer setup for paused leads
+            }
+
+            // ✅ HANDLE PENDING: Live countdown timer
+            if (lead.scheduledAt && lead.scheduleStatus === 'pending') {
                 let statusBadge = card.querySelector('.status-label.scheduled');
                 if (!statusBadge) {
                     const rightCol = card.querySelector('.card-right');
@@ -147,21 +169,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // ✅ NEW: Clear/update countdown badges for paused/cancelled/sent schedules
-            if (lead.scheduledAt && lead.scheduleStatus !== 'pending') {
-                const card = document.querySelector(`.lead-card[data-index="${index}"]`);
-                if (!card) return;
-
+            // ✅ CLEANUP: Convert stale badges for sent/failed/cancelled
+            if (lead.scheduledAt && ['sent', 'failed', 'cancelled'].includes(lead.scheduleStatus)) {
                 let statusBadge = card.querySelector('.status-label.scheduled');
                 if (statusBadge) {
-                    if (lead.scheduleStatus === 'paused') {
-                        statusBadge.textContent = 'Paused';
-                        statusBadge.classList.remove('scheduled');
-                        statusBadge.classList.add('paused-status');
-                    } else if (lead.scheduleStatus === 'sent') {
+                    if (lead.scheduleStatus === 'sent') {
                         statusBadge.textContent = 'Sent';
                         statusBadge.classList.remove('scheduled');
                         statusBadge.classList.add('sent');
+                    } else if (lead.scheduleStatus === 'failed') {
+                        statusBadge.textContent = 'Failed';
+                        statusBadge.classList.remove('scheduled');
+                        statusBadge.classList.add('failed');
                     }
                 }
             }
@@ -1029,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Outreach scheduled successfully!');
 
             } catch (e) {
-                console.error('❌ Schedule error:', e);
+                console.error(' Schedule error:', e);
                 alert(e.message || 'Failed to schedule outreach. Check console for details.');
             } finally {
                 scheduleConfirmBtn.querySelector('span').textContent = originalText;
