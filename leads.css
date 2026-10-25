@@ -1825,15 +1825,51 @@ body {
     padding-top: 16px;
 }
 
+/* ✅ FIX: Row is now a BLOCK container so the message editor
+   drops UNDER the header instead of sitting beside it.
+   (The header inside the row is already its own inline flex div.) */
 .company-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: block;
+    width: 100%;
+    max-width: 100%;
     padding: 12px 0;
     border-bottom: 1px solid #29323D;
 }
 
 .company-row:last-child { border-bottom: none; }
+
+/* ✅ FIX: Expanded message editor — full width, stacked under the row.
+   NOTE: "display" is intentionally NOT set here because the JS toggles it inline. */
+.company-row .msg-editor {
+    width: 100%;
+    max-width: 100%;
+    float: none;
+    clear: both;
+    position: static;
+}
+
+.company-row .msg-editor > div {
+    width: 100%;
+}
+
+.company-row .msg-editor label {
+    display: block;
+    width: 100%;
+}
+
+.company-row .sched-subject-input,
+.company-row .sched-msg-input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+}
+
+.company-row .sched-msg-input {
+    min-height: 120px;
+    resize: vertical;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
 
 .row-checkbox-wrapper {
     position: relative;
