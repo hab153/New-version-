@@ -1,7 +1,7 @@
 const BACKEND = 'https://skylineapp-backend-file.onrender.com';
 const token = localStorage.getItem('token');
 
-// ── DOM Elements ──
+// ─ DOM Elements ──
 const backToAlertsBtn = document.getElementById('backToAlertsBtn');
 const statusCard = document.getElementById('statusCard');
 const statusSvg = statusCard.querySelector('.status-svg');
@@ -74,7 +74,7 @@ if (backToAlertsBtn) {
 
 // ════════════════════════════════════════════
 // LOAD FULL AUTOMATION STATE
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 async function loadAutomationState() {
     if (!token) {
         setAutomationState('off');
@@ -212,7 +212,7 @@ function formatPace(minutes) {
     return `One email every ${minutes} minutes`;
 }
 
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // COUNTDOWN TIMER ENGINE
 // ════════════════════════════════════════════
 function formatCountdown(ms) {
@@ -291,6 +291,7 @@ function renderActiveSchedules() {
         const btnIcon = isPaused ? ACTION_ICONS.resume : ACTION_ICONS.pause;
         const btnClass = isPaused ? 'resume-btn' : 'pause-btn';
 
+        // ✅ FIX #2 & #3: Always set data-action for pause/resume AND remove buttons
         item.innerHTML = `
             <div class="schedule-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -304,10 +305,15 @@ function renderActiveSchedules() {
                 <button class="schedule-action-btn edit-btn" data-id="${schedule.id}" title="Edit schedule">
                     ${ACTION_ICONS.edit} Edit
                 </button>
-                <button class="schedule-action-btn ${btnClass}" data-id="${schedule.id}" data-action="${isPaused ? 'resume' : 'pause'}">
+                <button class="schedule-action-btn ${btnClass}" 
+                        data-id="${schedule.id}" 
+                        data-action="${isPaused ? 'resume' : 'pause'}">
                     ${btnIcon} ${btnLabel}
                 </button>
-                <button class="schedule-action-btn remove-btn" data-id="${schedule.id}" title="Remove schedule">
+                <button class="schedule-action-btn remove-btn" 
+                        data-id="${schedule.id}" 
+                        data-action="remove" 
+                        title="Remove schedule">
                     ${ACTION_ICONS.remove} Remove
                 </button>
             </div>
@@ -406,7 +412,8 @@ if (pauseResumeBtn) {
 }
 
 // ════════════════════════════════════════════
-// PER-LEAD ACTION HANDLERS (Event Delegation)
+// ✅ FIXED: PER-LEAD ACTION HANDLERS (Event Delegation)
+// Uses class-based detection instead of unreliable dataset.action
 // ════════════════════════════════════════════
 if (schedulesContent) {
     schedulesContent.addEventListener('click', async function(e) {
@@ -414,39 +421,39 @@ if (schedulesContent) {
         if (!actionBtn) return;
 
         const scheduleId = actionBtn.dataset.id;
-        const action = actionBtn.dataset.action || actionBtn.classList.contains('edit-btn') ? 'edit'
-                       : actionBtn.classList.contains('remove-btn') ? 'remove' : null;
-
         if (!scheduleId) return;
 
-        // EDIT → Open existing Schedule Modal pre-populated
-        if (action === 'edit') {
-            openEditScheduleModal(scheduleId);
-            return;
-        }
-
-        // REMOVE → Show confirmation modal with company name
-        if (action === 'remove') {
+        // ✅ FIX #1: EDIT → Navigate to leads.html with schedule pre-populated via URL params
+        // Since the High-Fidelity Schedule Modal doesn't exist on automation.html,
+        // we redirect to leads.html where it does exist, passing the schedule ID
+        if (actionBtn.classList.contains('edit-btn')) {
             const schedule = currentSchedules.find(s => s._id === scheduleId || s.id === scheduleId);
             if (!schedule) return;
 
-            pendingRemovalId = scheduleId;
-            const companyName = escapeHtml(schedule.companyName);
-            removeScheduleTitle.textContent = `⚠️ Remove ${companyName}?`;
-            removeScheduleDesc.textContent = `This will permanently cancel the scheduled email for ${companyName}. This action cannot be undone.`;
-            removeScheduleModalOverlay.style.display = 'flex';
+            // Redirect to leads.html with schedule edit params
+            const params = new URLSearchParams({
+                editScheduleId: schedule.id,
+                companyName: schedule.companyName,
+                leadEmail: schedule.leadEmail,
+                subject: encodeURIComponent(schedule.subject || ''),
+                body: encodeURIComponent(schedule.body || ''),
+                scheduledAt: schedule.scheduledAt,
+                paceMinutes: schedule.paceMinutes || 5
+            });
+            window.location.href = `leads.html?${params.toString()}`;
             return;
         }
 
-        // PAUSE / RESUME single schedule
-        if (action === 'pause' || action === 'resume') {
-            const endpoint = action === 'pause'
-                ? `/api/automation/schedule/${scheduleId}/pause`
-                : `/api/automation/schedule/${scheduleId}/resume`;
+        // ✅ FIX #2 & #3: Detect action by CSS class instead of dataset.action
+        if (actionBtn.classList.contains('pause-btn') || actionBtn.classList.contains('resume-btn')) {
+            const isPaused = actionBtn.classList.contains('resume-btn');
+            const endpoint = isPaused
+                ? `/api/automation/schedule/${scheduleId}/resume`
+                : `/api/automation/schedule/${scheduleId}/pause`;
 
             try {
                 actionBtn.disabled = true;
-                const originalText = actionBtn.innerHTML;
+                const originalHTML = actionBtn.innerHTML;
                 actionBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg> ...`;
 
                 const res = await fetch(`${BACKEND}${endpoint}`, {
@@ -457,61 +464,29 @@ if (schedulesContent) {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                 await loadAutomationState();
-                showToast(`✅ Schedule ${action === 'pause' ? 'paused' : 'resumed'} successfully`, 'success');
+                showToast(`✅ Schedule ${isPaused ? 'resumed' : 'paused'} successfully`, 'success');
 
             } catch (err) {
                 console.error('Per-lead toggle error:', err);
-                showToast(`❌ Failed to update schedule`, 'error');
+                showToast(` Failed to update schedule`, 'error');
             } finally {
                 actionBtn.disabled = false;
             }
+            return;
+        }
+
+        if (actionBtn.classList.contains('remove-btn')) {
+            const schedule = currentSchedules.find(s => s._id === scheduleId || s.id === scheduleId);
+            if (!schedule) return;
+
+            pendingRemovalId = scheduleId;
+            const companyName = escapeHtml(schedule.companyName);
+            removeScheduleTitle.textContent = `️ Remove ${companyName}?`;
+            removeScheduleDesc.textContent = `This will permanently cancel the scheduled email for ${companyName}. This action cannot be undone.`;
+            removeScheduleModalOverlay.style.display = 'flex';
+            return;
         }
     });
-}
-
-// ════════════════════════════════════════════
-// OPEN EXISTING SCHEDULE MODAL FOR EDITING
-// ════════════════════════════════════════════
-function openEditScheduleModal(scheduleId) {
-    const schedule = currentSchedules.find(s => s._id === scheduleId || s.id === scheduleId);
-    if (!schedule) return;
-
-    // Check if the High-Fidelity Schedule Modal exists on this page
-    const scheduleOverlay = document.getElementById('scheduleOverlay');
-    if (!scheduleOverlay) {
-        showToast('ℹ️ Schedule editor not available on this page', 'info');
-        return;
-    }
-
-    // Populate the existing schedule modal fields
-    const companyListContainer = document.getElementById('companyListContainer');
-    const scheduleSubtitle = document.getElementById('scheduleSubtitle');
-    const summaryPrimaryText = document.getElementById('summaryPrimaryText');
-    const scheduleConfirmBtn = document.getElementById('scheduleConfirmBtn');
-
-    if (typeof window.renderScheduleCompanyList === 'function' && companyListContainer) {
-        // Pre-populate scheduleLeads state for the modal
-        window.scheduleLeads = [{
-            companyName: schedule.companyName,
-            email: schedule.leadEmail,
-            subject: schedule.subject,
-            body: schedule.body,
-            approved: true
-        }];
-        window.renderScheduleCompanyList();
-    }
-
-    if (scheduleSubtitle) scheduleSubtitle.textContent = '1 approved email';
-    if (summaryPrimaryText) summaryPrimaryText.textContent = '1 email will be sent separately';
-    if (scheduleConfirmBtn) {
-        scheduleConfirmBtn.querySelector('span').textContent = 'Schedule 1 email';
-        scheduleConfirmBtn.disabled = false;
-    }
-
-    // Show the modal
-    scheduleOverlay.style.display = 'flex';
-
-    showToast('ℹ️ Edit the schedule details and save to update', 'info');
 }
 
 // ════════════════════════════════════════════
@@ -569,7 +544,7 @@ if (removeScheduleModalOverlay) {
     });
 }
 
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // TOGGLE HANDLERS (Auto-replies, Follow-ups, Business Hours)
 // ════════════════════════════════════════════
 if (autoRepliesToggle) {
@@ -599,7 +574,7 @@ if (followUpToggle) {
         } catch (err) {
             this.checked = !newState;
             followUpLabel.textContent = !newState ? 'On' : 'Off';
-            showToast('❌ Failed to save setting', 'error');
+            showToast(' Failed to save setting', 'error');
         }
     });
 }
@@ -653,7 +628,7 @@ document.querySelectorAll('.safety-checkbox').forEach(checkbox => {
         try {
             // TODO: Connect to actual safety rules API
             await new Promise(resolve => setTimeout(resolve, 200));
-            const labelEl = this.nextElementSibling.nextElementSibling;
+            const labelEl = this.nextElementSibling?.nextElementSibling;
             showToast(`✅ "${labelEl ? labelEl.textContent : rule}" ${isEnabled ? 'enabled' : 'disabled'}`, 'success');
         } catch (err) {
             this.checked = !isEnabled;
@@ -662,7 +637,7 @@ document.querySelectorAll('.safety-checkbox').forEach(checkbox => {
     });
 });
 
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // DISABLE ALL AUTOMATION HANDLER
 // ════════════════════════════════════════════
 if (disableAllBtn) {
@@ -717,7 +692,7 @@ if (warningModalOverlay) {
 
 // ════════════════════════════════════════════
 // TOAST UTILITY
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 4000;
