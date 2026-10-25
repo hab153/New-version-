@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="automation.css" />
 </head>
 <body>
-    <!-- 4. GLOBAL HEADER -->
+    <!-- GLOBAL HEADER -->
     <header class="global-header">
         <div class="header-left">
             <div class="logo-circle">
@@ -33,7 +33,7 @@
 
     <!-- Scrollable Content Wrapper -->
     <main class="automation-main">
-        <!-- 5. PAGE HEADING -->
+        <!-- PAGE HEADING -->
         <div class="page-heading">
             <div class="heading-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#92949E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
@@ -44,24 +44,38 @@
             </div>
         </div>
 
-        <!-- 6. MAIN AUTOMATION STATUS CARD -->
+        <!-- ✅ UPDATED: STATUS CARD WITH SKELETON -->
         <div class="status-card" id="statusCard">
-            <div class="status-icon-wrapper">
-                <div class="status-glow"></div>
-                <svg class="status-svg" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <!-- Skeleton State -->
+            <div class="status-skeleton" id="statusSkeleton">
+                <div class="skel-circle"></div>
+                <div class="skel-divider"></div>
+                <div class="skel-info">
+                    <div class="skel-line skel-title"></div>
+                    <div class="skel-line skel-desc"></div>
+                </div>
+                <div class="skel-btn"></div>
             </div>
-            <div class="status-divider"></div>
-            <div class="status-info">
-                <h3 class="status-title" id="statusTitle">Automation is off</h3>
-                <p class="status-desc" id="statusDesc">No automatic emails will be sent</p>
+            
+            <!-- Real Content (hidden until loaded) -->
+            <div class="status-real" id="statusReal" style="display:none;">
+                <div class="status-icon-wrapper">
+                    <div class="status-glow"></div>
+                    <svg class="status-svg" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                </div>
+                <div class="status-divider"></div>
+                <div class="status-info">
+                    <h3 class="status-title" id="statusTitle">Automation is off</h3>
+                    <p class="status-desc" id="statusDesc">No automatic emails will be sent</p>
+                </div>
+                <button class="status-action-btn" id="pauseResumeBtn" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    <span id="pauseResumeText">Pause all automation</span>
+                </button>
             </div>
-            <button class="status-action-btn" id="pauseResumeBtn" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                <span id="pauseResumeText">Pause all automation</span>
-            </button>
         </div>
 
-        <!-- 7. WHAT CAN RUN AUTOMATICALLY? -->
+        <!-- WHAT CAN RUN AUTOMATICALLY? -->
         <section class="feature-card">
             <h3 class="card-heading">What can run automatically?</h3>
             <div class="feature-row">
@@ -98,7 +112,7 @@
             </div>
         </section>
 
-        <!-- 8. SAFETY RULES CARD -->
+        <!-- SAFETY RULES CARD -->
         <section class="safety-card">
             <h3 class="card-heading">Safety rules</h3>
             <label class="safety-row">
@@ -131,7 +145,7 @@
             </label>
         </section>
 
-        <!-- 9. SENDING LIMITS CARD -->
+        <!-- SENDING LIMITS CARD -->
         <section class="limits-card">
             <h3 class="card-heading">Sending limits</h3>
             <div class="limit-row clickable" id="dailyLimitRow">
@@ -172,19 +186,49 @@
             </div>
         </section>
 
-        <!-- ✅ UPDATED: 10. ACTIVE SCHEDULES CARD WITH INLINE BUTTON & DYNAMIC CONTAINER -->
+        <!-- ✅ UPDATED: ACTIVE SCHEDULES WITH SKELETON + INLINE EDITOR MODAL -->
         <section class="schedules-card">
             <div class="card-heading-row">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F5F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <h3 class="card-heading">Active schedules</h3>
-                <!-- ✅ NEW: Inline bulk pause/resume button -->
                 <button class="inline-schedule-btn" id="bulkScheduleToggleBtn" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                     <span id="bulkScheduleToggleText">Pause all schedules</span>
                 </button>
             </div>
-            <!-- ✅ NEW: Dynamic container replaces static empty state -->
-            <div class="schedules-content" id="schedulesContent">
+            
+            <!-- Skeleton State for Schedules -->
+            <div class="schedules-skeleton" id="schedulesSkeleton">
+                <div class="skel-schedule-row">
+                    <div class="skel-icon"></div>
+                    <div class="skel-info">
+                        <div class="skel-line skel-company"></div>
+                        <div class="skel-line skel-date"></div>
+                    </div>
+                    <div class="skel-countdown"></div>
+                    <div class="skel-actions">
+                        <div class="skel-btn-sm"></div>
+                        <div class="skel-btn-sm"></div>
+                        <div class="skel-btn-sm"></div>
+                    </div>
+                </div>
+                <div class="skel-schedule-row">
+                    <div class="skel-icon"></div>
+                    <div class="skel-info">
+                        <div class="skel-line skel-company"></div>
+                        <div class="skel-line skel-date"></div>
+                    </div>
+                    <div class="skel-countdown"></div>
+                    <div class="skel-actions">
+                        <div class="skel-btn-sm"></div>
+                        <div class="skel-btn-sm"></div>
+                        <div class="skel-btn-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real Content Container -->
+            <div class="schedules-content" id="schedulesContent" style="display:none;">
                 <div class="empty-schedule-state" id="emptyScheduleState">
                     <div class="empty-icon-tile">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5F5F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -197,13 +241,13 @@
             </div>
         </section>
 
-        <!-- 11. DISABLE ALL AUTOMATION BUTTON -->
+        <!-- DISABLE ALL AUTOMATION BUTTON -->
         <button class="disable-all-btn" id="disableAllBtn">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             Disable all automation
         </button>
 
-        <!-- 12. COMPLIANCE WARNING -->
+        <!-- COMPLIANCE WARNING -->
         <div class="compliance-warning">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#747783" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <p>You are responsible for reviewing outreach and following applicable email laws.</p>
@@ -225,7 +269,7 @@
         </div>
     </div>
 
-    <!-- ✅ NEW: Per-Lead Removal Confirmation Modal -->
+    <!-- Per-Lead Removal Confirmation Modal -->
     <div class="modal-overlay" id="removeScheduleModalOverlay" style="display: none;">
         <div class="modal-content warning-modal">
             <div class="warning-icon">
@@ -240,7 +284,94 @@
         </div>
     </div>
 
-    <!-- 13. FIXED BOTTOM NAVIGATION -->
+    <!-- ✅ NEW: Inline Schedule Editor Modal (Matches Spec Exactly) -->
+    <div class="modal-overlay" id="scheduleEditorOverlay" style="display: none;">
+        <div class="modal-content schedule-editor-modal">
+            <button class="close-modal" id="closeScheduleEditor">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            
+            <h3 class="editor-title">Schedule outreach</h3>
+            <p class="editor-subtitle" id="editorSubtitle">2 approved emails</p>
+            
+            <div class="editor-section">
+                <label class="editor-label">When should these emails send?</label>
+                <div class="editor-datetime-row">
+                    <div class="editor-field">
+                        <span class="field-label">Select a date</span>
+                        <input type="date" id="editorDateInput" class="editor-input">
+                    </div>
+                    <div class="editor-field">
+                        <span class="field-label">Select a time</span>
+                        <input type="time" id="editorTimeInput" class="editor-input" value="--:--">
+                    </div>
+                </div>
+                <div class="editor-field full-width">
+                    <span class="field-label">Timezone</span>
+                    <select id="editorTimezone" class="editor-select">
+                        <option value="Africa/Lagos">West Africa Time (WAT)</option>
+                        <option value="America/New_York">Eastern Time (ET)</option>
+                        <option value="America/Chicago">Central Time (CT)</option>
+                        <option value="America/Denver">Mountain Time (MT)</option>
+                        <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                        <option value="Europe/London">Greenwich Mean Time (GMT)</option>
+                        <option value="Asia/Kolkata">India Standard Time (IST)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="editor-section">
+                <label class="editor-label">Sending pace</label>
+                <select id="editorPace" class="editor-select">
+                    <option value="5">One email every 5 minutes</option>
+                    <option value="10">One email every 10 minutes</option>
+                    <option value="15">One email every 15 minutes</option>
+                    <option value="30">One email every 30 minutes</option>
+                    <option value="60">One email every 1 hour</option>
+                </select>
+            </div>
+            
+            <div class="editor-section">
+                <label class="editor-label">Safety rules</label>
+                <label class="editor-checkbox">
+                    <input type="checkbox" id="editorStopReply" checked>
+                    <span class="checkmark-small">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#090A0C" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    Stop if recipient replies
+                </label>
+                <label class="editor-checkbox">
+                    <input type="checkbox" id="editorStopUnsub" checked>
+                    <span class="checkmark-small">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#090A0C" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    Stop if recipient unsubscribes
+                </label>
+                <label class="editor-checkbox">
+                    <input type="checkbox" id="editorSkipMissing" checked>
+                    <span class="checkmark-small">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#090A0C" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    Skip missing or unverified email
+                </label>
+            </div>
+            
+            <div class="editor-recipients" id="editorRecipientsList">
+                <!-- Dynamically populated -->
+            </div>
+            
+            <p class="editor-footer-note">You can cancel scheduled emails before they send</p>
+            
+            <div class="editor-actions">
+                <button class="btn-secondary" id="cancelEditorBtn">Cancel</button>
+                <button class="btn-primary" id="confirmScheduleBtn">
+                    <span id="confirmScheduleText">Schedule 2 emails</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIXED BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
         <a href="page.html" class="nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -272,4 +403,4 @@
     <script src="session-check.js"></script>
     <script src="automation.js"></script>
 </body>
-                    </html>
+    </html>
