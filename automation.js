@@ -241,7 +241,9 @@ function startAllCountdowns() {
 }
 
 function startSingleCountdown(schedule) {
-    const el = document.getElementById(`countdown-${schedule.id}`);
+    // ✅ FIX: Use String() to extract raw hex ID from Mongoose ObjectId
+    const safeId = String(schedule._id || schedule.id);
+    const el = document.getElementById(`countdown-${safeId}`);
     if (!el) return;
 
     const updateTimer = () => {
@@ -252,7 +254,7 @@ function startSingleCountdown(schedule) {
     };
 
     updateTimer();
-    countdownIntervals[schedule.id] = setInterval(updateTimer, 1000);
+    countdownIntervals[safeId] = setInterval(updateTimer, 1000);
 }
 
 // ════════════════════════════════════════════
@@ -282,16 +284,20 @@ function renderActiveSchedules() {
 
     // Build per-lead items
     currentSchedules.forEach(schedule => {
+        // ✅ CRITICAL FIX: Extract raw hex string from Mongoose ObjectId
+        // schedule._id is an ObjectId object; schedule.id may also be an object
+        const safeId = String(schedule._id || schedule.id);
+        
         const isPaused = schedule.status === 'paused';
         const item = document.createElement('div');
         item.className = `schedule-item${isPaused ? ' paused' : ''}`;
-        item.dataset.scheduleId = schedule.id;
+        item.dataset.scheduleId = safeId; // ✅ Store safe string ID
 
         const btnLabel = isPaused ? 'Resume' : 'Pause';
         const btnIcon = isPaused ? ACTION_ICONS.resume : ACTION_ICONS.pause;
         const btnClass = isPaused ? 'resume-btn' : 'pause-btn';
 
-        // ✅ FIX #2 & #3: Always set data-action for pause/resume AND remove buttons
+        // ✅ All data-id attributes now use safeId (raw hex string)
         item.innerHTML = `
             <div class="schedule-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -300,18 +306,18 @@ function renderActiveSchedules() {
                 <h4 class="schedule-title">${escapeHtml(schedule.companyName)}</h4>
                 <p class="schedule-desc">${new Date(schedule.scheduledAt).toLocaleString()}</p>
             </div>
-            <div class="schedule-countdown" id="countdown-${schedule.id}">--</div>
+            <div class="schedule-countdown" id="countdown-${safeId}">--</div>
             <div class="schedule-actions">
-                <button class="schedule-action-btn edit-btn" data-id="${schedule.id}" title="Edit schedule">
+                <button class="schedule-action-btn edit-btn" data-id="${safeId}" title="Edit schedule">
                     ${ACTION_ICONS.edit} Edit
                 </button>
                 <button class="schedule-action-btn ${btnClass}" 
-                        data-id="${schedule.id}" 
+                        data-id="${safeId}" 
                         data-action="${isPaused ? 'resume' : 'pause'}">
                     ${btnIcon} ${btnLabel}
                 </button>
                 <button class="schedule-action-btn remove-btn" 
-                        data-id="${schedule.id}" 
+                        data-id="${safeId}" 
                         data-action="remove" 
                         title="Remove schedule">
                     ${ACTION_ICONS.remove} Remove
@@ -413,26 +419,36 @@ if (pauseResumeBtn) {
 
 // ════════════════════════════════════════════
 // ✅ FIXED: PER-LEAD ACTION HANDLERS (Event Delegation)
-// Uses class-based detection instead of unreliable dataset.action
+// Uses class-based detection + validated string IDs
 // ════════════════════════════════════════════
 if (schedulesContent) {
     schedulesContent.addEventListener('click', async function(e) {
         const actionBtn = e.target.closest('.schedule-action-btn');
         if (!actionBtn) return;
 
-        const scheduleId = actionBtn.dataset.id;
-        if (!scheduleId) return;
+        const rawScheduleId = actionBtn.dataset.id;
+        
+        // ✅ CRITICAL VALIDATION: Ensure ID is a valid hex string, not "[object Object]"
+        if (!rawScheduleId || typeof rawScheduleId !== 'string' || rawScheduleId === '[object Object]') {
+            console.error('Invalid schedule ID detected:', rawScheduleId);
+            showToast('❌ Schedule ID error. Please refresh the page.', 'error');
+            return;
+        }
+        
+        const scheduleId = rawScheduleId.trim();
 
         // ✅ FIX #1: EDIT → Navigate to leads.html with schedule pre-populated via URL params
-        // Since the High-Fidelity Schedule Modal doesn't exist on automation.html,
-        // we redirect to leads.html where it does exist, passing the schedule ID
         if (actionBtn.classList.contains('edit-btn')) {
-            const schedule = currentSchedules.find(s => s._id === scheduleId || s.id === scheduleId);
+            // Find schedule by matching the safe string ID
+            const schedule = currentSchedules.find(s => {
+                const sid = String(s._id || s.id);
+                return sid === scheduleId;
+            });
             if (!schedule) return;
 
             // Redirect to leads.html with schedule edit params
             const params = new URLSearchParams({
-                editScheduleId: schedule.id,
+                editScheduleId: scheduleId,
                 companyName: schedule.companyName,
                 leadEmail: schedule.leadEmail,
                 subject: encodeURIComponent(schedule.subject || ''),
@@ -468,7 +484,7 @@ if (schedulesContent) {
 
             } catch (err) {
                 console.error('Per-lead toggle error:', err);
-                showToast(` Failed to update schedule`, 'error');
+                showToast(`❌ Failed to update schedule`, 'error');
             } finally {
                 actionBtn.disabled = false;
             }
@@ -476,12 +492,16 @@ if (schedulesContent) {
         }
 
         if (actionBtn.classList.contains('remove-btn')) {
-            const schedule = currentSchedules.find(s => s._id === scheduleId || s.id === scheduleId);
+            // Find schedule by matching the safe string ID
+            const schedule = currentSchedules.find(s => {
+                const sid = String(s._id || s.id);
+                return sid === scheduleId;
+            });
             if (!schedule) return;
 
             pendingRemovalId = scheduleId;
             const companyName = escapeHtml(schedule.companyName);
-            removeScheduleTitle.textContent = `️ Remove ${companyName}?`;
+            removeScheduleTitle.textContent = `⚠️ Remove ${companyName}?`;
             removeScheduleDesc.textContent = `This will permanently cancel the scheduled email for ${companyName}. This action cannot be undone.`;
             removeScheduleModalOverlay.style.display = 'flex';
             return;
@@ -522,7 +542,7 @@ if (confirmRemoveBtn) {
             // Backend already cleared Lead.scheduledAt & Lead.scheduleStatus via $unset
             // Just reload to reflect updated state
             await loadAutomationState();
-            showToast(`🗑️ Schedule for ${data.companyName || 'lead'} removed successfully`, 'info');
+            showToast(`️ Schedule for ${data.companyName || 'lead'} removed successfully`, 'info');
 
         } catch (err) {
             console.error('Remove schedule error:', err);
@@ -574,7 +594,7 @@ if (followUpToggle) {
         } catch (err) {
             this.checked = !newState;
             followUpLabel.textContent = !newState ? 'On' : 'Off';
-            showToast(' Failed to save setting', 'error');
+            showToast('❌ Failed to save setting', 'error');
         }
     });
 }
@@ -639,7 +659,7 @@ document.querySelectorAll('.safety-checkbox').forEach(checkbox => {
 
 // ═══════════════════════════════════════════
 // DISABLE ALL AUTOMATION HANDLER
-// ════════════════════════════════════════════
+// ═══════════════════════════════════════════
 if (disableAllBtn) {
     disableAllBtn.addEventListener('click', function() {
         warningModalOverlay.style.display = 'flex';
