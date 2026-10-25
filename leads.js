@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// FIXED: Standardized 'body' property + Debug Logging
+// FIXED: Persistent Countdown + Standardized 'body' property
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('token');
 
     // ═══════════════════════════════════════════════════════════
-    // LIVE COUNTDOWN LOGIC
+    // LIVE COUNTDOWN LOGIC (PERSISTENT ACROSS REFRESH)
     // ════════════════════════════════════════════════════════
     function startCountdowns() {
         Object.values(countdownIntervals).forEach(clearInterval);
@@ -147,6 +147,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+    // ✅ NEW: Fetch active schedules from backend and merge with local leads
+    async function loadActiveSchedules() {
+        if (!token) return;
+        
+        try {
+            const res = await fetch(`${BACKEND}/api/leads/schedules/pending`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            
+            if (!res.ok) {
+                console.warn('Failed to load active schedules:', res.status);
+                return;
+            }
+            
+            const data = await res.json();
+            
+            // Map backend schedule data to local lead format
+            data.schedules.forEach(schedule => {
+                const matchingLead = allLeadsData.find(l => l.email === schedule.leadEmail);
+                
+                if (matchingLead) {
+                    // Update existing lead with schedule metadata
+                    matchingLead.scheduledAt = schedule.scheduledAt;
+                    matchingLead.scheduleStatus = 'pending';
+                } else {
+                    // Create synthetic lead entry for scheduled-only contacts
+                    // This ensures countdown appears even if lead isn't in main list yet
+                    allLeadsData.push({
+                        email: schedule.leadEmail,
+                        companyName: schedule.companyName,
+                        scheduledAt: schedule.scheduledAt,
+                        scheduleStatus: 'pending',
+                        emailStatus: 'verified'
+                    });
+                }
+            });
+            
+            console.log(`✅ Loaded ${data.schedules.length} active schedules`);
+            
+        } catch (err) {
+            console.error('Error loading schedules:', err);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -378,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isLoading = true;
         renderSkeletons(5);
 
+        // Load cached leads first
         try {
             const storedData = localStorage.getItem('skyline_leads_data');
             if (storedData) {
@@ -387,40 +432,36 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to parse local lead data:', e);
         }
 
+        // Fetch saved leads & drafts (existing logic)
         if (token) {
             try {
-                const res = await fetch(`${BACKEND}/api/leads/saved`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    savedLeadsEmails = new Set(data.data.map(l => l.email));
+                const [savedRes, draftsRes] = await Promise.all([
+                    fetch(`${BACKEND}/api/leads/saved`, { headers: { 'Authorization': 'Bearer ' + token } }),
+                    fetch(`${BACKEND}/api/leads/drafts`, { headers: { 'Authorization': 'Bearer ' + token } })
+                ]);
+                
+                if (savedRes.ok) {
+                    const savedData = await savedRes.json();
+                    savedLeadsEmails = new Set(savedData.data.map(l => l.email));
                 }
-            } catch (e) {
-                console.error('Failed to fetch saved leads:', e);
-            }
-        }
-
-        if (token) {
-            try {
-                const res = await fetch(`${BACKEND}/api/leads/drafts`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (res.ok) {
-                    const data = await res.json();
+                if (draftsRes.ok) {
+                    const draftsData = await draftsRes.json();
                     draftedEmails = new Map();
-                    (data.data || []).forEach(d => {
+                    (draftsData.data || []).forEach(d => {
                         draftedEmails.set(d.email, { subject: d.subject, message: d.message });
                     });
                 }
             } catch (e) {
-                console.error('Failed to fetch drafts:', e);
+                console.error('Failed to fetch saved leads/drafts:', e);
             }
         }
 
+        // ✅ CRITICAL: Load active schedules BEFORE rendering
+        await loadActiveSchedules();
+
         isLoading = false;
-        renderLeads();
-        startCountdowns();
+        renderLeads();       // Now includes scheduled leads
+        startCountdowns();   // Timers start immediately on rendered badges
     }
 
     function renderSkeletons(count) {
@@ -1009,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 if (aiSuggestStatus) aiSuggestStatus.textContent = `✅ ${updatedCount}/${approvedDrafts.length} drafts updated · ${data.remainingCalls ?? '?'} remaining today`;
                 if (updatedCount > 0) { aiSuggestBtn.style.backgroundColor = '#22C55E'; setTimeout(() => { aiSuggestBtn.style.backgroundColor = ''; }, 800); updateSendButtonState(); }
-            } catch (err) { console.error('❌ AI Suggestion Error:', err); alert(err.message || 'Failed to generate AI suggestions.'); if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.'; }
+            } catch (err) { console.error(' AI Suggestion Error:', err); alert(err.message || 'Failed to generate AI suggestions.'); if (aiSuggestStatus) aiSuggestStatus.textContent = '❌ Failed. Try again.'; }
             finally { aiSuggestBtn.disabled = false; aiSuggestBtn.innerHTML = originalBtnHTML; }
         });
     }
