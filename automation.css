@@ -17,22 +17,15 @@ body {
     background-color: var(--bg-page);
     color: var(--text-primary);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
+    margin: 0; padding: 0; overflow-x: hidden;
 }
 
 /* GLOBAL HEADER */
 .global-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    height: 84px;
-    background-color: var(--bg-page);
+    position: sticky; top: 0; z-index: 100;
+    height: 84px; background-color: var(--bg-page);
     border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 0 40px;
 }
 
@@ -40,8 +33,7 @@ body {
 
 .logo-circle {
     width: 42px; height: 42px;
-    background-color: #FFFFFF;
-    border-radius: 50%;
+    background-color: #FFFFFF; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
 }
 
@@ -55,8 +47,7 @@ body {
 .brand-subtitle {
     font-size: 11px; font-weight: 600;
     color: var(--text-secondary);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.15em; text-transform: uppercase;
     margin-top: 2px;
 }
 
@@ -117,8 +108,7 @@ body {
 .status-card, .feature-card, .safety-card, .limits-card, .schedules-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 24px;
+    border-radius: 16px; padding: 24px;
 }
 
 .card-heading {
@@ -161,12 +151,10 @@ body {
     background-color: var(--bg-surface);
 }
 
-.inline-schedule-btn:disabled {
-    opacity: 0.4; cursor: not-allowed;
-}
+.inline-schedule-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ═══════════════════════════════════════
-   SKELETON LOADING ANIMATIONS
+   SKELETON LOADING ANIMATIONS (SCHEDULES ONLY)
    ════════════════════════════════════════ */
 @keyframes shimmer {
     0% { background-position: 200% 0; }
@@ -180,35 +168,10 @@ body {
     border-radius: 6px;
 }
 
-/* Status Card Skeleton */
-.status-skeleton {
-    display: flex; align-items: center; gap: 24px;
-    min-height: 120px;
-}
+/* ✅ REMOVED: All status-skeleton, skel-circle, skel-divider, 
+   skel-info, skel-line, skel-title, skel-desc, skel-btn rules */
 
-.skel-circle {
-    width: 74px; height: 74px;
-    border-radius: 50%; flex-shrink: 0;
-}
-
-.skel-divider {
-    width: 1px; height: 48px;
-    background-color: var(--border-color);
-    flex-shrink: 0;
-}
-
-.skel-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-
-.skel-line { height: 16px; border-radius: 4px; }
-.skel-title { width: 60%; height: 20px; }
-.skel-desc { width: 45%; }
-
-.skel-btn {
-    width: 180px; height: 40px;
-    border-radius: 999px; flex-shrink: 0;
-}
-
-/* Schedules Skeleton */
+/* Schedules Skeleton Only */
 .schedules-skeleton {
     display: flex; flex-direction: column; gap: 16px;
 }
@@ -226,7 +189,11 @@ body {
     border-radius: 10px; flex-shrink: 0;
 }
 
-.skel-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.skel-schedule-row .skel-info {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 6px;
+}
+
 .skel-company { width: 50%; height: 14px; }
 .skel-date { width: 70%; height: 12px; }
 
@@ -235,25 +202,18 @@ body {
     border-radius: 4px; flex-shrink: 0;
 }
 
-.skel-actions {
-    display: flex; gap: 6px; flex-shrink: 0;
-}
-
-.skel-btn-sm {
-    width: 60px; height: 28px;
-    border-radius: 999px;
-}
+.skel-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.skel-btn-sm { width: 60px; height: 28px; border-radius: 999px; }
 
 @media (prefers-reduced-motion: reduce) {
-    .skel-base, .skel-circle, .skel-line, .skel-btn,
-    .skel-icon, .skel-countdown, .skel-btn-sm {
-        animation: none;
-        background: #252629;
+    .skel-base, .skel-icon, .skel-countdown, .skel-btn-sm,
+    .skel-company, .skel-date {
+        animation: none; background: #252629;
     }
 }
 
 /* ════════════════════════════════════════
-   STATUS CARD REAL CONTENT
+   STATUS CARD REAL CONTENT (NO SKELETON)
    ════════════════════════════════════════ */
 .status-card {
     display: flex; align-items: center; gap: 24px;
@@ -329,9 +289,7 @@ body {
     background-color: var(--border-color);
 }
 
-.status-action-btn:disabled {
-    opacity: 0.5; cursor: not-allowed;
-}
+.status-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* FEATURE ROWS */
 .feature-row {
@@ -516,6 +474,18 @@ input:checked + .slider:before { transform: translateX(20px); }
     margin-left: 6px;
 }
 
+/* ✅ NEW: Paused Badge Under Company Name */
+.paused-badge {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 8px;
+    background-color: rgba(255, 184, 77, 0.15);
+    color: var(--accent-amber);
+    font-size: 11px; font-weight: 600;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+}
+
 .schedule-icon {
     width: 40px; height: 40px;
     background-color: var(--bg-surface);
@@ -588,9 +558,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     color: var(--accent-red);
 }
 
-.schedule-action-btn:disabled {
-    opacity: 0.4; cursor: not-allowed;
-}
+.schedule-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* DISABLE ALL BUTTON */
 .disable-all-btn {
@@ -609,9 +577,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     background-color: rgba(255, 70, 84, 0.1);
 }
 
-.disable-all-btn:disabled {
-    opacity: 0.5; cursor: not-allowed;
-}
+.disable-all-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* COMPLIANCE WARNING */
 .compliance-warning {
@@ -701,13 +667,10 @@ input:checked + .slider:before { transform: translateX(20px); }
     z-index: 9999; backdrop-filter: blur(10px);
 }
 
-/* ════════════════════════════════════════
-   INLINE SCHEDULE EDITOR MODAL
-   ════════════════════════════════════════ */
+/* INLINE SCHEDULE EDITOR MODAL */
 .schedule-editor-modal {
     max-width: 520px;
-    padding: 32px 28px;
-    text-align: left;
+    padding: 32px 28px; text-align: left;
 }
 
 .editor-title {
@@ -721,9 +684,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     margin: 0 0 24px 0;
 }
 
-.editor-section {
-    margin-bottom: 24px;
-}
+.editor-section { margin-bottom: 24px; }
 
 .editor-label {
     display: block;
@@ -735,8 +696,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .editor-datetime-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 12px; margin-bottom: 12px;
 }
 
 .editor-field {
@@ -757,11 +717,9 @@ input:checked + .slider:before { transform: translateX(20px); }
     padding: 12px 14px;
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
+    font-size: 14px; outline: none;
     transition: border-color 0.2s;
-    width: 100%;
-    box-sizing: border-box;
+    width: 100%; box-sizing: border-box;
 }
 
 .editor-input:focus, .editor-select:focus {
@@ -775,8 +733,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2392949E' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    padding-right: 36px;
-    cursor: pointer;
+    padding-right: 36px; cursor: pointer;
 }
 
 .editor-checkbox {
@@ -809,8 +766,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .editor-checkbox input:not(:checked) + .checkmark-small svg { display: none; }
 
 .editor-recipients {
-    margin: 20px 0;
-    padding: 16px;
+    margin: 20px 0; padding: 16px;
     background-color: var(--bg-surface);
     border-radius: 12px;
     border: 1px solid var(--border-color);
@@ -830,8 +786,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 700;
-    color: var(--text-primary);
-    flex-shrink: 0;
+    color: var(--text-primary); flex-shrink: 0;
 }
 
 .recipient-info { flex: 1; min-width: 0; }
@@ -849,14 +804,12 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 .recipient-status {
     font-size: 11px; font-weight: 600;
-    color: var(--accent-green);
-    flex-shrink: 0;
+    color: var(--accent-green); flex-shrink: 0;
 }
 
 .editor-footer-note {
     font-size: 13px; color: var(--text-muted);
-    margin: 16px 0 20px;
-    text-align: center;
+    margin: 16px 0 20px; text-align: center;
 }
 
 .editor-actions {
@@ -878,19 +831,14 @@ input:checked + .slider:before { transform: translateX(20px); }
     .heading-title { font-size: 26px; }
     .heading-subtitle { font-size: 16px; }
     
-    /* Status card stacks vertically on mobile */
-    .status-card, .status-skeleton {
+    .status-card {
         flex-direction: column;
         align-items: flex-start; gap: 16px;
     }
     
-    .status-divider, .skel-divider {
-        width: 100%; height: 1px;
-    }
+    .status-divider { width: 100%; height: 1px; }
+    .status-action-btn { width: 100%; justify-content: center; }
     
-    .status-action-btn, .skel-btn { width: 100%; justify-content: center; }
-    
-    /* Inline header button wraps below heading */
     .card-heading-row {
         flex-direction: column;
         align-items: flex-start; gap: 12px;
@@ -898,18 +846,19 @@ input:checked + .slider:before { transform: translateX(20px); }
     
     .inline-schedule-btn { width: 100%; justify-content: center; }
     
-    /* Per-lead items stack on mobile */
     .schedule-item { flex-wrap: wrap; gap: 12px; }
     .schedule-info { width: 100%; order: 1; }
     .schedule-countdown { order: 2; min-width: auto; text-align: left; }
     .schedule-actions { order: 3; width: 100%; justify-content: stretch; }
-    .schedule-action-btn { flex: 1; justify-content: center; padding: 8px 8px; font-size: 11px; }
+    .schedule-action-btn {
+        flex: 1; justify-content: center;
+        padding: 8px 8px; font-size: 11px;
+    }
     
     .warning-actions, .editor-actions { flex-direction: column; }
     .btn-secondary, .btn-danger, .btn-primary { width: 100%; }
     
     .editor-datetime-row { grid-template-columns: 1fr; }
-    
     .schedule-editor-modal { padding: 24px 20px; }
 }
 
