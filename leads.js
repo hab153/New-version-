@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// FIXED: Persistent Countdown + Paused Status Visibility
+// FIXED: Persistent Countdown + Paused Status Visibility + Schedule Filter
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -535,22 +535,39 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<span class="status-label recent">Recent</span>';
     }
 
+    // ✅ UPDATED: Added 'schedule' filter logic
     function renderLeads() {
         if (!leadsList) return;
         leadsList.innerHTML = '';
 
         let displayLeads = [];
-        if (currentFilter === 'all') displayLeads = [...allLeadsData];
-        else if (currentFilter === 'saved') displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
-        else if (currentFilter === 'recent') displayLeads = allLeadsData.filter(lead => !savedLeadsEmails.has(lead.email) && !draftedEmails.has(lead.email));
-        else if (currentFilter === 'draft') displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+        
+        if (currentFilter === 'all') {
+            displayLeads = [...allLeadsData];
+        } else if (currentFilter === 'saved') {
+            displayLeads = allLeadsData.filter(lead => savedLeadsEmails.has(lead.email));
+        } else if (currentFilter === 'recent') {
+            displayLeads = allLeadsData.filter(lead => 
+                !savedLeadsEmails.has(lead.email) && !draftedEmails.has(lead.email)
+            );
+        } else if (currentFilter === 'draft') {
+            displayLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
+        } else if (currentFilter === 'schedule') {
+            // Show only leads that have an active or paused schedule
+            displayLeads = allLeadsData.filter(lead => 
+                lead.scheduledAt && ['pending', 'paused'].includes(lead.scheduleStatus)
+            );
+        }
 
         if (sendAllDraftsWrapper) {
             sendAllDraftsWrapper.style.display = currentFilter === 'draft' ? 'flex' : 'none';
         }
 
         if (displayLeads.length === 0) {
-            leadsList.innerHTML = '<div style="text-align:center; padding:40px; color:#9697A1;">No leads found for this filter.</div>';
+            const emptyMsg = currentFilter === 'schedule' 
+                ? 'No scheduled leads found.' 
+                : 'No leads found for this filter.';
+            leadsList.innerHTML = `<div style="text-align:center; padding:40px; color:#9697A1;">${emptyMsg}</div>`;
             return;
         }
 
