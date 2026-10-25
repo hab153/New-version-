@@ -14,6 +14,12 @@ const usageModalOverlay = document.getElementById('usageModalOverlay');
 const closeUsageModal = document.getElementById('closeUsageModal');
 const usageGrid = document.getElementById('usageGrid');
 
+// ✅ NEW: Automation card elements
+const automationCard = document.getElementById('automationCard');
+const automationStatusTitle = document.getElementById('automationStatusTitle');
+const automationStatusDesc = document.getElementById('automationStatusDesc');
+const automationManageBtn = document.getElementById('automationManageBtn');
+
 let _cachedLimits = { emails: 0, research: 0, chats: 0, aiSuggestions: 0, tier: 'free' };
 let _activeEventSource = null;
 let _runCounter = 0;
@@ -210,8 +216,81 @@ function updatePlanUI(plan, limits) {
     if (chatEl) chatEl.textContent = limits?.chats ?? 0;
 }
 
+// ✅ NEW: Update automation card UI based on fetched status
+function updateAutomationUI(status) {
+    if (!automationCard) return;
+    automationCard.classList.remove('loading'); // Atomic reveal
+
+    const iconCircle = automationCard.querySelector('.icon-circle.green');
+    const svgReal = iconCircle?.querySelector('.real-icon');
+    const svgSkel = iconCircle?.querySelector('.skeleton-circle');
+
+    if (status === 'on') {
+        automationStatusTitle.textContent = 'Automation: On';
+        automationStatusDesc.textContent = 'Scheduled outreach is actively running.';
+        if (svgReal) svgReal.setAttribute('stroke', '#22C55E');
+    } else if (status === 'paused') {
+        automationStatusTitle.textContent = 'Automation: Paused';
+        automationStatusDesc.textContent = 'Schedules are frozen. Resume to continue sending.';
+        if (svgReal) svgReal.setAttribute('stroke', '#FFB84D');
+    } else {
+        automationStatusTitle.textContent = 'Automation: Off';
+        automationStatusDesc.textContent = 'Enable automation to send outreach and follow-ups automatically.';
+        if (svgReal) svgReal.setAttribute('stroke', '#22C55E');
+    }
+
+    // Show real content, hide skeletons
+    if (svgSkel) svgSkel.style.display = 'none';
+    if (svgReal) svgReal.style.display = 'block';
+    if (automationStatusTitle) automationStatusTitle.style.display = 'inline';
+    if (automationStatusDesc) automationStatusDesc.style.display = 'block';
+    if (automationManageBtn) automationManageBtn.style.display = 'inline-block';
+}
+
+// ✅ NEW: Fetch automation status from backend
+async function checkAutomationStatus() {
+    if (!token || !automationCard) {
+        if (automationCard) automationCard.classList.remove('loading');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${BACKEND}/api/leads/schedules/pending`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+            console.warn('Failed to load automation status:', res.status);
+            updateAutomationUI('off');
+            return;
+        }
+
+        const data = await res.json();
+        const schedules = data.schedules || [];
+
+        const hasPending = schedules.some(s => s.status === 'pending');
+        const hasPaused = schedules.some(s => s.status === 'paused');
+
+        if (hasPending) {
+            updateAutomationUI('on');
+        } else if (hasPaused) {
+            updateAutomationUI('paused');
+        } else {
+            updateAutomationUI('off');
+        }
+
+    } catch (err) {
+        console.error('Automation status error:', err);
+        updateAutomationUI('off');
+    }
+}
+
 function checkPlan() {
-    if (!token) { if (planCard) planCard.classList.remove('loading'); return; }
+    if (!token) { 
+        if (planCard) planCard.classList.remove('loading'); 
+        if (automationCard) automationCard.classList.remove('loading');
+        return; 
+    }
     return fetch(`${BACKEND}/api/users/me`, { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' })
         .then(res => res.ok ? res.json() : null)
         .then(user => {
@@ -222,7 +301,22 @@ function checkPlan() {
                 updatePlanUI(p, limits);
             }
         })
-        .catch(err => { console.error('Plan check failed:', err); updatePlanUI('free', { emails: 0, research: 0, chats: 0, aiSuggestions: 0 }); });
+        .catch(err => { 
+            console.error('Plan check failed:', err); 
+            updatePlanUI('free', { emails: 0, research: 0, chats: 0, aiSuggestions: 0 }); 
+        })
+        .finally(() => {
+            // ✅ Fetch automation status after plan loads
+            checkAutomationStatus();
+        });
+}
+
+// ✅ NEW: Navigate to automation page when card is clicked
+if (automationCard) {
+    automationCard.style.cursor = 'pointer';
+    automationCard.addEventListener('click', function() {
+        window.location.href = 'automation.html';
+    });
 }
 
 function showToast(message, type, duration) {
