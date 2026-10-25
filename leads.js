@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// UPDATED: Clear Message Editor + Pre-Approved Schedule Modal
+// FIXED: Standardized 'body' property + Debug Logging
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -165,13 +165,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const row = document.createElement('div');
             row.className = 'company-row';
-            // Clean row styling matching screenshot
             row.style.cssText = 'padding:16px 0;border-bottom:1px solid #29323D;position:relative;';
             
-            // ✅ COLLAPSED HEADER ROW
             row.innerHTML = `
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <!-- Checkbox -->
                     <label style="position:relative;width:24px;height:24px;flex-shrink:0;">
                         <input type="checkbox" class="row-checkbox" ${isApproved ? 'checked' : ''} style="opacity:0;position:absolute;width:100%;height:100%;cursor:pointer;z-index:20;">
                         <span class="row-check" style="position:absolute;top:0;left:0;width:24px;height:24px;background-color:#F2F4F8;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#101216;${!isApproved ? 'background-color:transparent;border:2px solid #29323D;' : ''}">
@@ -179,29 +176,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                     </label>
                     
-                    <!-- Avatar -->
                     <div class="company-avatar" style="width:40px;height:40px;background-color:#1A1F26;border:1px solid #29323D;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#F2F4F8;font-size:14px;flex-shrink:0;">${initial}</div>
                     
-                    <!-- Company Info -->
                     <div style="flex:1;min-width:0;">
                         <div class="company-name-text" style="font-weight:600;color:#F2F4F8;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.companyName || 'Unknown'}</div>
                         <div class="company-email-text" style="color:#9BA7BA;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.email || 'No email'}</div>
                     </div>
                     
-                    <!-- Approve Button -->
                     <button class="approve-btn ${isApproved ? 'approved' : ''}" data-index="${index}" style="background-color:${isApproved ? '#77A8FF' : 'transparent'};border:1px solid #77A8FF;color:${isApproved ? '#101216' : '#77A8FF'};padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;cursor:pointer;transition:all 0.2s;flex-shrink:0;">
                         ${isApproved 
                             ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Approved' 
                             : 'Approve'}
                     </button>
                     
-                    <!-- Chevron Toggle -->
                     <button type="button" class="view-msg-toggle" data-index="${index}" style="background:none;border:none;color:#9BA7BA;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                 </div>
                 
-                <!-- ✅ EXPANDED MESSAGE EDITOR - LARGE & CLEAR -->
                 <div class="msg-editor" data-index="${index}" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed #29323D;">
                     <div style="margin-bottom:12px;">
                         <label style="font-size:12px;color:#9BA7BA;display:block;margin-bottom:6px;font-weight:500;">Subject</label>
@@ -209,26 +201,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div>
                         <label style="font-size:12px;color:#9BA7BA;display:block;margin-bottom:6px;font-weight:500;">Message</label>
-                        <textarea class="sched-msg-input" style="width:100%;background:#12161A;border:1px solid #29323D;border-radius:8px;padding:10px 12px;color:#F2F4F8;font-size:14px;min-height:100px;resize:vertical;outline:none;font-family:inherit;line-height:1.6;">${lead.message || ''}</textarea>
+                        <!-- ✅ FIXED: Use lead.body instead of lead.message -->
+                        <textarea class="sched-msg-input" style="width:100%;background:#12161A;border:1px solid #29323D;border-radius:8px;padding:10px 12px;color:#F2F4F8;font-size:14px;min-height:100px;resize:vertical;outline:none;font-family:inherit;line-height:1.6;">${lead.body || ''}</textarea>
                     </div>
                 </div>
             `;
 
-            // Checkbox Toggle
             const checkbox = row.querySelector('.row-checkbox');
             checkbox.addEventListener('change', function() {
                 lead.approved = this.checked;
                 renderScheduleCompanyList();
             });
 
-            // Approve Button Toggle
             const approveBtn = row.querySelector('.approve-btn');
             approveBtn.addEventListener('click', function() {
                 lead.approved = !lead.approved;
                 renderScheduleCompanyList();
             });
 
-            // ✅ Message Editor Expand/Collapse with Arrow Rotation
             const toggleBtn = row.querySelector('.view-msg-toggle');
             const msgEditor = row.querySelector('.msg-editor');
             const arrowSvg = toggleBtn.querySelector('svg');
@@ -244,17 +234,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Sync Edits Back to State
             const subjInput = row.querySelector('.sched-subject-input');
             const msgInput = row.querySelector('.sched-msg-input');
             
             subjInput.addEventListener('input', function() { lead.subject = this.value; });
-            msgInput.addEventListener('input', function() { lead.message = this.value; });
+            // ✅ FIXED: Sync edits to lead.body
+            msgInput.addEventListener('input', function() { lead.body = this.value; });
 
             companyListContainer.appendChild(row);
         });
 
-        // Update UI Counts
         if (scheduleSubtitle) scheduleSubtitle.textContent = `${approvedCount} approved emails`;
         if (summaryPrimaryText) summaryPrimaryText.textContent = `${approvedCount} emails will be sent separately`;
         
@@ -640,8 +629,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const message = draftEditMessage ? draftEditMessage.value : '';
             if (!email) return;
             
-            // ✅ PRE-APPROVED FOR SCHEDULE MODAL
-            scheduleLeads = [{ companyName: company, email: email, subject: subject, message: message, approved: true }];
+            // ✅ FIXED: Use 'body' property
+            scheduleLeads = [{ companyName: company, email: email, subject: subject, body: message, approved: true }];
             renderScheduleCompanyList();
             
             closeDraftViewModal();
@@ -796,12 +785,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
             if (approvedDrafts.length === 0) { alert('Please approve at least one draft first.'); return; }
             
-            // ✅ TRANSFER AS PRE-APPROVED
+            // ✅ FIXED: Map 'body' correctly
             scheduleLeads = approvedDrafts.map(d => ({
                 companyName: d.lead.companyName,
                 email: d.lead.email,
                 subject: d.subject,
-                message: d.body,
+                body: d.body, // ✅ WAS: message: d.body
                 approved: true
             }));
             
@@ -862,15 +851,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const draftLeads = allLeadsData.filter(lead => draftedEmails.has(lead.email));
             if (draftLeads.length === 0) { alert('No draft messages to schedule.'); return; }
             
-            // ✅ POPULATE SCHEDULE MODAL DIRECTLY - ALL PRE-APPROVED
+            // ✅ FIXED: Map 'message' from drafts to 'body' for schedule
             scheduleLeads = draftLeads.map(lead => { 
                 const draft = draftedEmails.get(lead.email); 
                 return { 
                     companyName: lead.companyName,
                     email: lead.email,
                     subject: draft.subject,
-                    message: draft.message,
-                    approved: true // ✅ STARTS APPROVED
+                    body: draft.message, // ✅ WAS: message: draft.message
+                    approved: true
                 }; 
             });
             
@@ -881,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ═══════════════════════════════════════════════════════════
     // HIGH-FI SCHEDULE MODAL LOGIC
-    // ══════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════
     
     function updateScheduleSelectors() {
         if (scheduleDateInput.value) {
@@ -950,6 +939,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     leads: approvedLeads
                 };
 
+                // ✅ DEBUG LOG: Inspect payload before sending
+                console.log('📤 SCHEDULE PAYLOAD:', JSON.stringify(payload, null, 2));
+
                 const res = await fetch(`${BACKEND}/api/leads/schedule`, {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -957,7 +949,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to schedule outreach');
+                
+                // ✅ DEBUG LOG: Inspect response
+                console.log('📥 SCHEDULE RESPONSE:', data);
+
+                if (!res.ok) throw new Error(data.message || `Server returned ${res.status}`);
 
                 if (data.leads && Array.isArray(data.leads)) {
                     data.leads.forEach(scheduledLead => {
@@ -974,8 +970,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Outreach scheduled successfully!');
 
             } catch (e) {
-                console.error('Schedule error:', e);
-                alert(e.message || 'Failed to schedule outreach.');
+                console.error('❌ Schedule error:', e);
+                alert(e.message || 'Failed to schedule outreach. Check console for details.');
             } finally {
                 scheduleConfirmBtn.querySelector('span').textContent = originalText;
                 scheduleConfirmBtn.disabled = false;
@@ -983,7 +979,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ═══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════
     // AI SUGGESTION LOGIC
     // ═══════════════════════════════════════════════════════════
     if (aiSuggestBtn) {
