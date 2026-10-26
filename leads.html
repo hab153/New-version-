@@ -61,7 +61,6 @@
                         <div class="dropdown-item" data-value="saved">Saved</div>
                         <div class="dropdown-item" data-value="recent">Recent</div>
                         <div class="dropdown-item" data-value="draft">Draft</div>
-                        <!-- ✅ NEW: Schedule Filter Option -->
                         <div class="dropdown-item" data-value="schedule">Schedule</div>
                     </div>
                 </div>
@@ -112,7 +111,6 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     <span id="saveBtnText">Save leads</span>
                 </button>
-                <!-- Send Button -->
                 <button class="action-btn secondary" id="sendBtn" disabled>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     Send
@@ -141,12 +139,10 @@
             </div>
             <span>Leads</span>
         </a>
-        <!-- ✅ UPDATED: Inbox now points to notifications.html -->
         <a href="notifications.html" class="nav-item">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             <span>Inbox</span>
         </a>
-        <!-- ✅ UPDATED: Alerts now points to alert.html -->
         <a href="alert.html" class="nav-item">
             <div class="nav-icon-wrap">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -192,7 +188,7 @@
         </div>
     </div>
 
-    <!-- Draft View Modal -->
+    <!-- ✅ UPDATED: Draft View Modal with Editable Email Field -->
     <div class="modal-overlay" id="draftViewOverlay" style="display: none;">
         <div class="modal-content draft-view-modal">
             <button class="close-modal" id="closeDraftView">
@@ -201,7 +197,7 @@
             <h3 class="draft-view-title" id="draftViewCompany">Company Name</h3>
             <div class="draft-view-field">
                 <label>Email</label>
-                <div class="draft-view-value" id="draftViewEmail">email@example.com</div>
+                <input type="email" class="draft-edit-input" id="draftEditEmail" value="">
             </div>
             <div class="draft-view-field">
                 <label>Subject</label>
@@ -215,7 +211,6 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 Send this message
             </button>
-            <!-- Schedule Outreach Button -->
             <button class="draft-schedule-btn" id="draftScheduleBtn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Schedule outreach
@@ -238,7 +233,6 @@
                 </button>
             </div>
 
-            <!-- ✅ NEW: AI Suggestion Section (Top of Review Sheet) -->
             <div class="ai-suggestion-section">
                 <button class="ai-suggest-btn" id="aiSuggestBtn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
@@ -259,7 +253,6 @@
                 </div>
             </div>
 
-            <!-- Button Row with Send + Draft Message + Schedule Outreach -->
             <div class="sheet-button-row three-buttons">
                 <button class="send-approved-btn disabled" id="sendApprovedBtn" disabled>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -269,7 +262,6 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     Draft message
                 </button>
-                <!-- This button opens the High-Fidelity Schedule Modal -->
                 <button class="schedule-outreach-btn" id="scheduleOutreachBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     Schedule outreach
@@ -278,12 +270,11 @@
         </div>
     </div>
 
-    <!-- ✅ HIGH-FIDELITY SCHEDULE OUTREACH MODAL -->
+    <!-- High-Fidelity Schedule Outreach Modal -->
     <div class="schedule-overlay" id="scheduleOverlay" style="display: none;">
         <div class="schedule-sheet">
             <div class="sheet-handle"></div>
 
-            <!-- Header -->
             <div class="schedule-header">
                 <div class="schedule-header-left">
                     <div class="schedule-icon-container">
@@ -299,15 +290,12 @@
                 </button>
             </div>
 
-            <!-- Scheduling Question -->
             <div class="section-heading">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
                 <span>When should these emails send?</span>
             </div>
 
-            <!-- Selectors -->
             <div class="selector-group">
-                <!-- Date -->
                 <div class="schedule-selector">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     <span class="selector-text" id="selectedDateText">Select a date</span>
@@ -315,7 +303,6 @@
                     <input type="date" id="scheduleDateInput" class="hidden-input">
                 </div>
 
-                <!-- Time -->
                 <div class="schedule-selector">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     <span class="selector-text" id="selectedTimeText">Select a time</span>
@@ -323,7 +310,6 @@
                     <input type="time" id="scheduleTimeInput" class="hidden-input">
                 </div>
 
-                <!-- Timezone -->
                 <div class="schedule-selector">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91A0B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                     <span class="selector-text" id="selectedTimezoneText">West Africa Time (WAT)</span>
@@ -335,7 +321,6 @@
                     </select>
                 </div>
 
-                <!-- Pace -->
                 <div class="section-heading" style="margin-top: 16px; font-size: 20px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
                     <span>Sending pace</span>
@@ -352,7 +337,6 @@
                 </div>
             </div>
 
-            <!-- Safety Rules -->
             <div class="section-heading" style="margin-top: 8px; font-size: 20px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                 <span>Safety rules</span>
@@ -381,7 +365,6 @@
                 </label>
             </div>
 
-            <!-- Email Summary Card -->
             <div class="email-summary-card">
                 <div class="summary-header">
                     <div class="summary-icon">
@@ -393,13 +376,11 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Company List -->
                 <div class="company-list" id="companyListContainer">
                     <!-- Rows injected by JS -->
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="schedule-button-row">
                 <button class="schedule-cancel-btn" id="scheduleCancelBtn">Cancel</button>
                 <button class="schedule-confirm-btn" id="scheduleConfirmBtn">
@@ -424,4 +405,4 @@
 
     <script src="leads.js"></script>
 </body>
-            </html>
+                                                                                                                                                             </html>
