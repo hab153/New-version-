@@ -1,6 +1,6 @@
 // ============================================================
 // leads.js - Skyline AI · Lead Results Logic
-// FIXED: Persistent Countdown + Paused Status Visibility + Schedule Filter
+// FIXED: Persistent Countdown + Paused Status Visibility + Schedule Filter + Editable Email
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const draftViewOverlay = document.getElementById('draftViewOverlay');
     const closeDraftViewBtn = document.getElementById('closeDraftView');
     const draftViewCompany = document.getElementById('draftViewCompany');
-    const draftViewEmail = document.getElementById('draftViewEmail');
+    // ✅ UPDATED: Changed from static div to editable input element
+    const draftEditEmail = document.getElementById('draftEditEmail');
     const draftEditSubject = document.getElementById('draftEditSubject');
     const draftEditMessage = document.getElementById('draftEditMessage');
     const draftSendBtn = document.getElementById('draftSendBtn');
@@ -390,6 +391,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="draft-editor" style="display: none;">
                     <div class="editor-field">
+                        <label>Email</label>
+                        <input type="email" class="subject-input" value="${String(draft.lead.email || '').replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="editor-field">
                         <label>Subject</label>
                         <input type="text" class="subject-input" value="${String(displaySubject).replace(/"/g, '&quot;')}">
                     </div>
@@ -400,17 +405,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
 
-            const subjectInput = row.querySelector('.subject-input');
+            const emailInput = row.querySelector('.editor-field:first-child .subject-input');
+            const subjectInput = row.querySelectorAll('.subject-input')[1];
             const messageTextarea = row.querySelector('.message-input');
             const checkbox = row.querySelector('.draft-checkbox');
             const expandBtn = row.querySelector('.expand-editor-btn');
             const editorDiv = row.querySelector('.draft-editor');
             const arrowSvg = expandBtn.querySelector('svg');
 
+            emailInput._draftRef = draft;
             subjectInput._draftRef = draft;
             messageTextarea._draftRef = draft;
             checkbox._draftRef = draft;
 
+            draft._emailInputEl = emailInput;
             draft._subjectInputEl = subjectInput;
             draft._messageInputEl = messageTextarea;
             draft._checkboxEl = checkbox;
@@ -441,6 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateSendButtonState();
             });
 
+            emailInput.addEventListener('input', function() {
+                draft.lead.email = this.value;
+                updateSendButtonState();
+            });
             subjectInput.addEventListener('input', function() {
                 draft.subject = this.value;
                 updateSendButtonState();
@@ -675,11 +687,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (viewInfoBtn) viewInfoBtn.addEventListener('click', function() { if (currentCardActionIndex !== null) { closeCardActionModal(); openDetailsModal(currentCardActionIndex); } });
     if (viewDraftBtn) viewDraftBtn.addEventListener('click', function() { if (currentCardActionIndex !== null) { const lead = allLeadsData[currentCardActionIndex]; closeCardActionModal(); openDraftViewModal(lead); } });
 
+    // ✅ UPDATED: Populates editable email input instead of static div
     function openDraftViewModal(lead) {
         if (!lead || !draftViewOverlay) return;
         const draft = draftedEmails.get(lead.email) || { subject: '', message: '' };
         if (draftViewCompany) draftViewCompany.textContent = lead.companyName || 'Unknown';
-        if (draftViewEmail) draftViewEmail.textContent = lead.email || '';
+        if (draftEditEmail) draftEditEmail.value = lead.email || '';
         if (draftEditSubject) draftEditSubject.value = draft.subject;
         if (draftEditMessage) draftEditMessage.value = draft.message;
         draftViewOverlay.style.display = 'flex';
@@ -688,14 +701,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeDraftViewBtn) closeDraftViewBtn.addEventListener('click', closeDraftViewModal);
     if (draftViewOverlay) draftViewOverlay.addEventListener('click', function(e) { if (e.target === draftViewOverlay) closeDraftViewModal(); });
 
+    // ✅ UPDATED: Reads email from editable input field
     if (draftSendBtn) {
         draftSendBtn.addEventListener('click', async function() {
             if (!token) return;
             const company = draftViewCompany ? draftViewCompany.textContent : '';
-            const email = draftViewEmail ? draftViewEmail.textContent : '';
+            // ✅ Read from editable input instead of static textContent
+            const email = draftEditEmail ? draftEditEmail.value.trim() : '';
             const subject = draftEditSubject ? draftEditSubject.value : '';
             const message = draftEditMessage ? draftEditMessage.value : '';
-            if (!email || !message.trim()) { alert('Please enter a message before sending.'); return; }
+            if (!email || !message.trim()) { alert('Please enter a valid email and message before sending.'); return; }
             const originalText = draftSendBtn.innerHTML;
             draftSendBtn.innerHTML = '<span>Sending...</span>';
             draftSendBtn.disabled = true;
@@ -716,10 +731,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ✅ UPDATED: Uses edited email value when scheduling from draft modal
     if (draftScheduleBtn) {
         draftScheduleBtn.addEventListener('click', function() {
             const company = draftViewCompany ? draftViewCompany.textContent : '';
-            const email = draftViewEmail ? draftViewEmail.textContent : '';
+            // ✅ Read from editable input instead of static textContent
+            const email = draftEditEmail ? draftEditEmail.value.trim() : '';
             const subject = draftEditSubject ? draftEditSubject.value : '';
             const message = draftEditMessage ? draftEditMessage.value : '';
             if (!email) return;
@@ -811,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeReviewSheet() { 
         if (reviewSheetOverlay) reviewSheetOverlay.style.display = 'none'; 
-        reviewDrafts.forEach(d => { d._subjectInputEl = null; d._messageInputEl = null; d._checkboxEl = null; }); 
+        reviewDrafts.forEach(d => { d._emailInputEl = null; d._subjectInputEl = null; d._messageInputEl = null; d._checkboxEl = null; }); 
     }
     
     function openReviewSheet() {
@@ -829,10 +846,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             reviewDrafts.push({ 
                 id: draftId, 
-                lead: lead, 
+                lead: { ...lead }, // Shallow copy so email edits don't mutate original
                 subject: existingDraft ? existingDraft.subject : `Partnership Inquiry – ${lead.companyName || 'Your Company'}`,
                 body: existingDraft ? existingDraft.message : `Hi ${lead.companyName || 'Team'},\n\nI came across your company and was impressed by your work. I would love to discuss a potential partnership.\n\nBest regards,\nSkyline AI User`,
                 approved: false,
+                _emailInputEl: null,
                 _subjectInputEl: null, 
                 _messageInputEl: null, 
                 _checkboxEl: null 
@@ -865,6 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = sendApprovedBtn.innerHTML;
             sendApprovedBtn.innerHTML = '<span>Sending...</span>';
             sendApprovedBtn.disabled = true;
+            // ✅ Uses potentially edited email from draft object
             const leadsToSend = approvedDrafts.map(d => ({ name: d.lead.companyName, email: d.lead.email, company: d.lead.companyName, messages: [{ subject: d.subject, body: d.body }] }));
             try {
                 const res = await fetch(BACKEND + '/api/leads/batch-send', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ leads: leadsToSend }) });
@@ -880,12 +899,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const approvedDrafts = reviewDrafts.filter(d => d.approved);
             if (approvedDrafts.length === 0) { alert('Please approve at least one draft first.'); return; }
             
-            // ✅ FIXED: Map 'body' correctly
+            // ✅ FIXED: Map 'body' correctly and use potentially edited email
             scheduleLeads = approvedDrafts.map(d => ({
                 companyName: d.lead.companyName,
-                email: d.lead.email,
+                email: d.lead.email, // ✅ Uses potentially edited email
                 subject: d.subject,
-                body: d.body, // ✅ WAS: message: d.body
+                body: d.body,
                 approved: true
             }));
             
@@ -925,10 +944,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const draftId = Date.now().toString() + Math.random().toString(36).substr(2, 9); 
                 return { 
                     id: draftId, 
-                    lead: lead, 
+                    lead: { ...lead },
                     subject: draft.subject, 
                     body: draft.message, 
                     approved: false,
+                    _emailInputEl: null,
                     _subjectInputEl: null, 
                     _messageInputEl: null, 
                     _checkboxEl: null 
@@ -953,7 +973,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     companyName: lead.companyName,
                     email: lead.email,
                     subject: draft.subject,
-                    body: draft.message, // ✅ WAS: message: draft.message
+                    body: draft.message,
                     approved: true
                 }; 
             });
@@ -1074,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ══════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════
     // AI SUGGESTION LOGIC
     // ═══════════════════════════════════════════════════════════
     if (aiSuggestBtn) {
