@@ -34,15 +34,58 @@ body { background-color: var(--bg-main); color: var(--text-primary); font-family
 .banner-content { flex: 1; min-width: 0; position: relative; }
 .banner-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
 .banner-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
-.connect-btn { background-color: var(--btn-primary); color: var(--text-dark); border: none; border-radius: var(--radius-full); padding: 8px 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; transition: background-color 0.2s; position: relative; }
+
+/* ✅ FIXED: Connect Button Base Styles */
+.connect-btn { 
+    background-color: var(--btn-primary); 
+    color: var(--text-dark); 
+    border: none; 
+    border-radius: var(--radius-full); 
+    padding: 8px 16px; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    cursor: pointer; 
+    white-space: nowrap; 
+    transition: background-color 0.2s; 
+    position: relative; 
+    flex-shrink: 0; /* Prevents squishing on mobile */
+}
 .connect-btn:hover { background-color: var(--btn-hover); }
 
 .skeleton-circle { width: 40px; height: 40px; border-radius: 50%; position: absolute; top: 0; left: 0; }
 .skeleton-line { border-radius: 4px; margin-bottom: 6px; }
-.banner-icon .real-icon, .banner-content .real-text, .connect-btn .btn-text { display: none; }
-.email-banner:not(.loading) .skeleton-circle, .email-banner:not(.loading) .skeleton-line, .email-banner:not(.loading) .connect-btn.skel { display: none !important; }
-.email-banner:not(.loading) .real-icon, .email-banner:not(.loading) .real-text, .email-banner:not(.loading) .connect-btn .btn-text { display: block; }
-.email-banner:not(.loading) .connect-btn { background-color: var(--btn-primary); color: var(--text-dark); border: none; border-radius: var(--radius-full); padding: 8px 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; animation: none; background: none; }
+
+/* ✅ FIXED: Atomic Skeleton Transition System for Banner */
+.banner-icon .real-icon, 
+.banner-content .real-text, 
+.connect-btn .btn-text, 
+.connect-btn svg.real-icon { 
+    display: none !important; 
+}
+
+.email-banner:not(.loading) .skeleton-circle, 
+.email-banner:not(.loading) .skeleton-line, 
+.email-banner:not(.loading) .connect-btn.skel { 
+    display: none !important; 
+}
+
+.email-banner:not(.loading) .banner-icon .real-icon, 
+.email-banner:not(.loading) .banner-content .real-text, 
+.email-banner:not(.loading) .connect-btn .btn-text,
+.email-banner:not(.loading) .connect-btn svg.real-icon { 
+    display: inline-flex !important; 
+    align-items: center;
+}
+
+.email-banner:not(.loading) .connect-btn { 
+    background-color: var(--btn-primary); 
+    color: var(--text-dark); 
+    animation: none; 
+    pointer-events: auto; 
+}
 
 .discovery-section { display: flex; flex-direction: column; gap: var(--space-md); }
 .section-heading { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
@@ -133,4 +176,16 @@ body { background-color: var(--bg-main); color: var(--text-primary); font-family
 .usage-error { color: var(--accent-red); }
 
 @media (min-width: 768px) { .dashboard-container { padding-top: var(--space-xl); } .section-heading { font-size: 2rem; } .email-banner { padding: var(--space-lg); } }
-@media (max-width: 380px) { .brand-name { font-size: 1.1rem; } .connect-btn span { display: none; } .connect-btn { padding: 8px; } .chip-btn { font-size: 0.8rem; padding: 6px 12px; } .usage-grid { grid-template-columns: 1fr; } }
+
+/* ✅ FIXED: Mobile Responsive Overrides */
+@media (max-width: 380px) { 
+    .brand-name { font-size: 1.1rem; } 
+    
+    /* Ensure connect button never hides text/icon on small screens */
+    .connect-btn span.btn-text { display: inline !important; } 
+    .connect-btn svg.real-icon { display: inline-block !important; }
+    .connect-btn { padding: 8px 12px; font-size: 0.8rem; }
+    
+    .chip-btn { font-size: 0.8rem; padding: 6px 12px; } 
+    .usage-grid { grid-template-columns: 1fr; } 
+    }
